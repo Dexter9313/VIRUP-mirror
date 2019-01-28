@@ -51,4 +51,4 @@ All used classes starting with Q (ex: QSettings) belongs to the Qt framework. Th
 
 ## Example releases
 
-You can see releases for Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [https://github.com/Dexter9313/HydrogenVR-mirror/releases](HydrogenVR Releases).
+You can see releases for Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [HydrogenVR Releases](https://github.com/Dexter9313/HydrogenVR-mirror/releases).
