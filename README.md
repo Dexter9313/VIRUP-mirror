@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/Dexter9313/QtVRHelloWorld.svg?branch=master)](https://travis-ci.org/Dexter9313/QtVRHelloWorld)
-[![Build status](https://ci.appveyor.com/api/projects/status/13tufv64f6k08gk9/branch/master?svg=true)](https://ci.appveyor.com/project/Dexter9313/qthelloworld/branch/master)
+[![Build Status](https://travis-ci.org/Dexter9313/HydrogenVR-mirror.svg?branch=master)](https://travis-ci.org/Dexter9313/HydrogenVR-mirror)
+[![Build status](https://ci.appveyor.com/api/projects/status/i44acm08ah869xdg/branch/master?svg=true)](https://ci.appveyor.com/project/Dexter9313/hydrogenvr-mirror/branch/master)
 
 # HydrogenVR
 
