@@ -47,3 +47,7 @@ You can also :
 The project name defined as CMakeLists.txt PROJECT_NAME will be accessible in C++ code as the PROJECT_NAME macro. It is a C-style string constant.
 
 All used classes starting with Q (ex: QSettings) belongs to the Qt framework. The engine didn't wrap anything from Qt, so you will have to use Qt a least a little.
+
+## Example releases
+
+You can see releases for Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [https://github.com/Dexter9313/HydrogenVR-mirror/releases](HydrogenVR Releases).

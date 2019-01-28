@@ -10,7 +10,7 @@
 #define MyAppPublisher "Florian Cabot"
 #define MyAppURL "https://gitlab.com/Dexter9313/hydrogenvr"
 #define MyAppExeName "HydrogenVR.exe"
-#define MyLicense "C:\projects\hydrogenvr\LICENSE"
+#define MyLicense "C:\projects\hydrogenvr-mirror\LICENSE"
 
 
 [Setup]
