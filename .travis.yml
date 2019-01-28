@@ -1,0 +1,79 @@
+# for OSX support, check :
+# https://github.com/pcolby/bipolar/blob/master/.travis.yml
+# https://github.com/qterm/qterm/blob/master/.travis.yml
+
+language: cpp
+os:
+    - linux
+    #- osx
+dist: xenial
+
+compiler:
+    - gcc
+    - clang
+
+env:
+    global:
+        - PROJECT_NAME=HydrogenVR
+    matrix:
+        exclude:
+            # Qt 5.6 no longer supports gcc on OS X.
+            - {os: osx, compiler: gcc}
+
+addons:
+    apt:
+        packages:
+            - qtbase5-dev
+
+install:
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        brew update ;
+        brew install qt5 ;
+        brew link --force qt ;
+      fi
+    # install openvr
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        wget --content-disposition https://github.com/ValveSoftware/openvr/raw/master/bin/linux64/libopenvr_api.so ;
+        sudo cp ./libopenvr_api.so /usr/lib ;
+        wget --content-disposition https://raw.githubusercontent.com/ValveSoftware/openvr/master/headers/openvr.h ;
+        sudo cp ./openvr.h /usr/include ;
+      fi
+    # install leap motion sdk
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        wget --content-disposition https://warehouse.leapmotion.com/apps/4185/download ;
+        tar xzf Leap_Motion_SDK_Linux_*.tgz ;
+        sudo cp ./LeapDeveloperKit*/LeapSDK/include/Leap*.h /usr/include ;
+        sudo cp ./LeapDeveloperKit*/LeapSDK/lib/x64/libLeap.so /usr/lib ;
+      fi
+
+
+script:
+    - mkdir build ; cd build
+    - cmake .. -DTAG=$TRAVIS_TAG -DWERROR=true
+    - make -j
+
+before_deploy:
+    - make package
+    - export RELEASE_DIR=$PROJECT_NAME-$TRAVIS_TAG-$TRAVIS_OS_NAME-64bit
+    - mkdir $RELEASE_DIR
+    - cp $PROJECT_NAME $RELEASE_DIR
+    - cp -r ../data $RELEASE_DIR
+    - cp -r /usr/lib/libopenvr_api.so $RELEASE_DIR
+    - cp -r /usr/lib/libLeap.so $RELEASE_DIR
+    - tar -zcvf $RELEASE_DIR.tar.gz $RELEASE_DIR
+    - mv *.tar.gz ..
+    - mv *.deb ../$RELEASE_DIR.deb
+    - cd ..
+    - ls
+
+deploy:
+    # Linux release
+    - provider: releases
+      api_key: "$API_KEY"
+      file:
+          - "$RELEASE_DIR.tar.gz"
+          - "$RELEASE_DIR.deb"
+      skip_cleanup: true
+      on:
+          tags: true
+          condition: $CXX = g++

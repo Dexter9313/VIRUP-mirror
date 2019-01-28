@@ -1,0 +1,59 @@
+
+Any world object (fullTransform matrix in Camera):
+
+Mesh --(model)> World -(lookat)> Camera -(eyeDist(inv(getHMDPosMat)))>    hmdscaled (*)
+     <(inv(-))-       <(inv(-)--        <(eyeDist(getHMDPosMat))------
+
+eyeDist() ~> multiply translation component by eyeDist
+
+
+
+Controller or any tracked space object (fullTrackedSpaceTransform matrix in Camera):
+
+Mesh --(model)> tracked world -(inv(getHMDPosMat))> hmd -(eyeDistCorrection)> hmdscaled (*)
+     <(inv(-))-               <(getHMDPosMat)------     <(inv(-)-------------
+
+hence:
+
+tracked world -(inv(getHMDPosMat))> hmd -(eyeDistCorrection)> hmdscaled -(eyeDist(getHMDPosMat))> Camera -(inv(lookat))> World
+              <(getHMDPosMat)------     <(inv(-))------------           <(inv(-))----------------        <(lookat)------
+
+
+Hand or any HMD space object (fullHMDSpaceTransform matrix in Camera):
+
+Mesh (=LMController world) --(model)> hmd -(eyeDistCorrection)>            hmdscaled (*)
+                           <(inv(-))-     <(inv(-)-------------
+
+hence:
+
+hmd -(eyeDistCorrection)> hmdscaled -(eyeDist(getHMDPosMat))> Camera -(inv(lookat))> World
+    <(inv(-))------------           <(inv(-))----------------        <(lookat)------
+
+
+
+(*) always present afterwards :
+
+hmdscaled -(eyeDist(getEyeView))> eyescaled -(eyeDistProj(eyeProj)> Screen
+          <(inv(-))--------------           <(inv(-))--------------
+
+if 2D :
+hmdscaled --(proj)-> Screen
+          <(inv(-))-
+
+eyeDistProj() ~> multiply nearPlan and farPlan by eyeDist
+
+eyescaled or hmdscaled mean the metric is "world scaled" (if in World an object is 1m away but eyeDistanceFactor is 0.1, the user will see it 10m away from them in room scale, but it will still be "1" away in hmdscaled or eyescaled).
+
+
+
+----- RT MATRIX INVERSE --------
+
+Let R be a 3x3 rotation matrix and T be a 3d translation column-vector :
+
+The inverse of the folowing 4x4 mat
+[R T]
+[0 1]
+
+is
+[Rt -T]
+[0   1]
