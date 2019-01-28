@@ -34,14 +34,15 @@ For initial setup, make sure you :
 
 * Erase and replace this README by a new one.
 * Change .travis.yml, .appveyor.yml and CMakeLists.txt PROJECT_NAME variables.
-* Change the PROJECT_NAME in CMakeLists.txt
+* If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
+* Change the PROJECT_NAME in CMakeLists.txt.
 * Change the CPack parameters in CMakeLists.txt (descriptions, dependencies, etc...).
 * Change innosetup/config.iss defines.
-* Change build status from Travis and Appveyor to your own
-* Inherit from AbstractMainWin to draw (replace all of the MainWin class code which serves as an example)
+* Change build status from Travis and Appveyor to your own.
+* Inherit from AbstractMainWin to draw (replace all of the MainWin class code which serves as an example).
 
 You can also :
-* Add settings to utils.cpp:initSettings()
+* Add settings to utils.cpp:initSettings().
 * Add assets to the data/ directory. The working directory will always contain data (so you can always reach data relatively from this path : "data/"). It will be packaged with the rest of the project.
 
 The project name defined as CMakeLists.txt PROJECT_NAME will be accessible in C++ code as the PROJECT_NAME macro. It is a C-style string constant.
