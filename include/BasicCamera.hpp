@@ -26,7 +26,7 @@ class BasicCamera
 	float getEyeDistanceFactor() const { return eyeDistanceFactor; };
 	void setEyeDistanceFactor(float EyeDistanceFactor);
 	QVector4D project(QVector3D const& vertex) const;
-	void update();
+	virtual void update();
 	void uploadMatrices() const;
 	QMatrix4x4 cameraSpaceToWorldTransform() const;
 	QMatrix4x4 trackedSpaceToWorldTransform() const;
