@@ -11,6 +11,12 @@ Strong OpenGL knowledge is required as the GLHandler class is merely a convenien
 
 Make sure your new project is an empty repository... (It will be easier for initial merge.)
 
+Add an empty commit to master and push it to origin so that master branch exists.
+
+    git checkout -b master #if needed
+    git commit --allow-empty
+    git push origin master
+
 Add the repo as the source remote (for example):
 
 	git remote add source https://gitlab.com/Dexter9313/hydrogenvr.git
