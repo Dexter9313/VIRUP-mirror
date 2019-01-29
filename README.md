@@ -56,3 +56,65 @@ All used classes starting with Q (ex: QSettings) belongs to the Qt framework. Th
 ## Example releases
 
 You can see releases for Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [HydrogenVR Releases](https://github.com/Dexter9313/HydrogenVR-mirror/releases).
+
+
+# Example of things that should be in your README
+
+## Installation and requirements
+
+### Microsoft Windows
+
+Simply run the HydrogenVR-VERSION-windows-ARCH_setup.exe setup wizard, where VERSION is the desired version and ARCH your system architecture.
+
+If you want to run HydrogenVR from a portable zip archive instead, you will need to manually install this (if you don't have it on your system already) :
+* [Microsoft Visual C++ 2015](https://www.microsoft.com/en-US/download/details.aspx?id=48145) (zip installation only; it is shipped with the setup wizard)
+
+### GNU/Linux binaries
+
+You will need the following requirements :
+* OpenGL
+* Qt5 Core and Gui (libqt5core5a and libqt5gui5 packages on Ubuntu)
+
+You can then install the DEB package you want from the Releases page or use the portable zip version.
+
+### GNU/Linux building from source
+
+You will need the following requirements :
+* A C++ compiler (g++ for example)
+* CMake
+* OpenGL dev
+* Qt Core and Gui (qtbase5-dev packages on Ubuntu)
+* [OpenVR](https://github.com/ValveSoftware/openvr)
+* (Optional) [Leap Motion SDK 2.3.1](https://developer.leapmotion.com/sdk/v2)
+
+
+Then clone this repository. We now suppose the root directory of the repository is stored in the $HydrogenVR_ROOT_DIR variable.
+
+        cd $HydrogenVR_ROOT_DIR
+        mkdir build && cd build
+        cmake ..
+        make -j
+        sudo make install
+
+Optionally, you can generate a deb package to make installation managing easier if you are on a debian-based system. The package name will be "hydrogenvr".
+
+        cd $HydrogenVR_ROOT_DIR
+        mkdir build && cd build
+        cmake ..
+        make -j package
+        sudo dpkg -i ./*.deb
+
+## Usage
+
+## Uninstall
+
+If the deb method for installation was used :
+
+        sudo apt-get autoremove hydrogenvr
+
+If the make install method for installation was used, uninstallation can only be done if the build directory has been left untouched since installation (at least the install_manifest.txt file within it) :
+
+        cd $HydrogenVR_ROOT_DIR
+        cd build
+        sudo make uninstall
+
