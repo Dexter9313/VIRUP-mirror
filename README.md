@@ -9,13 +9,7 @@ Strong OpenGL knowledge is required as the GLHandler class is merely a convenien
 
 ## To use the template
 
-Make sure your new project is an empty repository... (It will be easier for initial merge.)
-
-Add an empty commit to master and push it to origin so that master branch exists.
-
-    git checkout -b master #if needed
-    git commit --allow-empty
-    git push origin master
+Make sure your new project is an empty repository without any commit...
 
 Add the repo as the source remote (for example):
 
@@ -25,16 +19,17 @@ This new branch will be used to pull updates from this repo :
 
 	git checkout -b update-source
 
-First pull will need an extra parameter to be allowed by git (both repos don't share any history) :
+The any time you want to update :
 
-	git pull source master --allow-unrelated-histories
-	git branch -u source/master # only once
+	git pull source master
+	git branch -u source/master #only first time
 	
-Rebase everything needed to keep a clear git log in your project.
-
 Then from any other branch in the project (master for example with git checkout master) :
 
 	git merge update-source
+	
+Don't rebase anything in update-source if you want to be able to pull.
+
 
 This branch will now have an updated version of this template. Subsequent eninge updates will only need the pull/merge from update-source steps.
 
