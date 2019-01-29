@@ -14,7 +14,7 @@ compiler:
 
 env:
     global:
-        - PROJECT_NAME=HydrogenVR
+        - PROJECT_NAME=VIRUP
     matrix:
         exclude:
             # Qt 5.6 no longer supports gcc on OS X.

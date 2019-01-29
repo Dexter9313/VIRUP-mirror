@@ -4,7 +4,7 @@ build:
     verbosity: detailed
 environment:
   global:
-    PROJECT_NAME: 'HydrogenVR'
+    PROJECT_NAME: 'VIRUP'
   matrix:
     - QTPATH: 'C:\Qt\5.11.2\msvc2015'
       BUILD_TYPE: 32bit

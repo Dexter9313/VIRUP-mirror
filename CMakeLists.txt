@@ -17,7 +17,7 @@
 #INIT
 cmake_minimum_required(VERSION 3.0.0)
 
-set(PROJECT_NAME HydrogenVR)
+set(PROJECT_NAME VIRUP)
 project(${PROJECT_NAME} CXX)
 
 
@@ -116,7 +116,7 @@ INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION share/${PROJECT_N
 
 SET(CPACK_GENERATOR "DEB")
 SET(CPACK_PACKAGE_NAME ${PROJECT_NAME})
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A C++ lightweight 3D rendering engine that tightly integrates VR at its core. It is based on OpenGL, Qt, OpenVR and the Leap Motion SDK.")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The VIrtual Reality Universe Project uses astrophysical data to propose a virtual reality visualization of it.")
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Florian Cabot <florian.cabot@epfl.ch>")
 if(TAG)
 	SET(CPACK_PACKAGE_VERSION ${TAG})
