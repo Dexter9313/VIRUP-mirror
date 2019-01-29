@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/Dexter9313/QtVRHelloWorld.svg?branch=master)](https://travis-ci.org/Dexter9313/QtVRHelloWorld)
-[![Build status](https://ci.appveyor.com/api/projects/status/13tufv64f6k08gk9/branch/master?svg=true)](https://ci.appveyor.com/project/Dexter9313/qthelloworld/branch/master)
+[![Build Status](https://travis-ci.org/Dexter9313/HydrogenVR-mirror.svg?branch=master)](https://travis-ci.org/Dexter9313/HydrogenVR-mirror)
+[![Build status](https://ci.appveyor.com/api/projects/status/i44acm08ah869xdg/branch/master?svg=true)](https://ci.appveyor.com/project/Dexter9313/hydrogenvr-mirror/branch/master)
 
 # HydrogenVR
 
@@ -10,6 +10,12 @@ Strong OpenGL knowledge is required as the GLHandler class is merely a convenien
 ## To use the template
 
 Make sure your new project is an empty repository... (It will be easier for initial merge.)
+
+Add an empty commit to master and push it to origin so that master branch exists.
+
+    git checkout -b master #if needed
+    git commit --allow-empty
+    git push origin master
 
 Add the repo as the source remote (for example):
 
@@ -22,6 +28,9 @@ This new branch will be used to pull updates from this repo :
 First pull will need an extra parameter to be allowed by git (both repos don't share any history) :
 
 	git pull source master --allow-unrelated-histories
+	git branch -u source/master # only once
+	
+Rebase everything needed to keep a clear git log in your project.
 
 Then from any other branch in the project (master for example with git checkout master) :
 
@@ -34,16 +43,21 @@ For initial setup, make sure you :
 
 * Erase and replace this README by a new one.
 * Change .travis.yml, .appveyor.yml and CMakeLists.txt PROJECT_NAME variables.
-* Change the PROJECT_NAME in CMakeLists.txt
+* If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
+* Change the PROJECT_NAME in CMakeLists.txt.
 * Change the CPack parameters in CMakeLists.txt (descriptions, dependencies, etc...).
 * Change innosetup/config.iss defines.
-* Change build status from Travis and Appveyor to your own
-* Inherit from AbstractMainWin to draw (replace all of the MainWin class code which serves as an example)
+* Change build status from Travis and Appveyor to your own.
+* Inherit from AbstractMainWin to draw (replace all of the MainWin class code which serves as an example).
 
 You can also :
-* Add settings to utils.cpp:initSettings()
+* Add settings to utils.cpp:initSettings().
 * Add assets to the data/ directory. The working directory will always contain data (so you can always reach data relatively from this path : "data/"). It will be packaged with the rest of the project.
 
 The project name defined as CMakeLists.txt PROJECT_NAME will be accessible in C++ code as the PROJECT_NAME macro. It is a C-style string constant.
 
 All used classes starting with Q (ex: QSettings) belongs to the Qt framework. The engine didn't wrap anything from Qt, so you will have to use Qt a least a little.
+
+## Example releases
+
+You can see releases for Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [HydrogenVR Releases](https://github.com/Dexter9313/HydrogenVR-mirror/releases).
