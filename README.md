@@ -28,6 +28,9 @@ This new branch will be used to pull updates from this repo :
 First pull will need an extra parameter to be allowed by git (both repos don't share any history) :
 
 	git pull source master --allow-unrelated-histories
+	git branch -u source/master # only once
+	
+Rebase everything needed to keep a clear git log in your project.
 
 Then from any other branch in the project (master for example with git checkout master) :
 
