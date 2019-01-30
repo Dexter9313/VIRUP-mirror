@@ -17,15 +17,15 @@ void AbstractMainWin::setCamera(BasicCamera* newCamera)
 	camera = newCamera;
 }
 
-void AbstractMainWin::keyPressEvent(QKeyEvent* event)
+void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 {
-	if(event->key() == Qt::Key_F1)
+	if(e->key() == Qt::Key_F1)
 	{
 		QSettings().setValue(
 		    "debugcamera/enabled",
 		    !QSettings().value("debugcamera/enabled").toBool());
 	}
-	if(event->key() == Qt::Key_F11)
+	if(e->key() == Qt::Key_F11)
 	{
 		if(!vrHandler)
 		{
@@ -37,7 +37,7 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* event)
 			vrHandler.close();
 		}
 	}
-	else if(event->key() == Qt::Key_Escape)
+	else if(e->key() == Qt::Key_Escape)
 	{
 		close();
 	}
@@ -82,6 +82,13 @@ void AbstractMainWin::paintGL()
 	if(vrHandler)
 		frameTiming_ = vrHandler.getFrameTiming() / 1000.f;
 
+	// handle VR events if any
+	if(vrHandler)
+	{
+		VRHandler::Event e;
+		while(vrHandler.pollEvent(&e))
+			vrEvent(e);
+	}
 	// let user update before rendering
 	updateScene(*camera);
 

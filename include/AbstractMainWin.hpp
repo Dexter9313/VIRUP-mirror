@@ -20,6 +20,9 @@ class AbstractMainWin : public QOpenGLWindow
 	virtual ~AbstractMainWin();
 
   protected:
+	virtual void keyPressEvent(QKeyEvent* e) override;
+	virtual void vrEvent(VRHandler::Event const& e){ Q_UNUSED(e);};
+
 	// declare drawn resources
 	virtual void initScene() = 0;
 
@@ -33,8 +36,6 @@ class AbstractMainWin : public QOpenGLWindow
 
 	BasicCamera& getCamera() { return *camera; };
 	void setCamera(BasicCamera* newCamera);
-
-	void keyPressEvent(QKeyEvent* event) override;
 
 	VRHandler vrHandler;
 	float const& frameTiming = frameTiming_;
