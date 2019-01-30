@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <QSettings>
+#include <QVector3D>
 #include <vector>
 
 enum class Side

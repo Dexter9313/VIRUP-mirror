@@ -47,6 +47,19 @@ install:
     - set LEAP_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/leap/Leap/LeapSDK/lib/%ARCH%/Leap.lib
     - set LEAP_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\leap\Leap\LeapSDK\lib\%ARCH%\Leap.dll
     - cd ..
+    ############################################################################
+    # Install liboctree
+    ############################################################################
+    - mkdir octree
+    - cd octree
+    - set URL="https://github.com/Dexter9313/octree-file-format-mirror/releases/download/1.0.0/liboctree-1.0.0-windows-%BUILD_TYPE%.zip"
+    - appveyor DownloadFile %URL% -FileName octree.zip
+    - 7z x octree.zip > nul
+    - move liboctree-snapshot* liboctree
+    - set OCTREE_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/deps/octree/liboctree
+    - set OCTREE_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/octree/liboctree/Leap.lib
+    - set OCTREE_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\octree\liboctree\Leap.dll
+    - cd ..
 
 before_build:
     - set INNOSETUPPATH=C:\Program Files (x86)\Inno Setup 5
@@ -58,7 +71,7 @@ build_script:
     - cd %APPVEYOR_BUILD_FOLDER%
     - mkdir build
     - cd build
-    - cmake .. -G %GENERATOR% -DOPENVR_INCLUDE_DIR=%OPENVR_INCLUDE_DIR% -DOPENVR_LIBRARY=%OPENVR_LIBRARY% -DLEAPMOTION_INCLUDE_DIR=%LEAP_INCLUDE_DIR% -DLEAPMOTION_LIBRARY=%LEAP_LIBRARY%
+    - cmake .. -G %GENERATOR% -DOPENVR_INCLUDE_DIR=%OPENVR_INCLUDE_DIR% -DOPENVR_LIBRARY=%OPENVR_LIBRARY% -DLEAPMOTION_INCLUDE_DIR=%LEAP_INCLUDE_DIR% -DLEAPMOTION_LIBRARY=%LEAP_LIBRARY% -DOCTREE_INCLUDE_DIR=%OCTREE_INCLUDE_DIR% -DOCTREE_LIBRARY=%OCTREE_LIBRARY%
     - cmake --build . --config Release
 
 after_build:

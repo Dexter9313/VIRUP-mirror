@@ -1,7 +1,14 @@
 #ifndef MAINWIN_H
 #define MAINWIN_H
 
+#include <QCoreApplication>
+
 #include "AbstractMainWin.hpp"
+
+#include "methods/BaseLineMethod.hpp"
+#include "methods/BaseLineMethodTex.hpp"
+#include "methods/TreeMethodLOD.hpp"
+#include "methods/TreeMethodTex.hpp"
 
 class MainWin : public AbstractMainWin
 {
@@ -11,6 +18,10 @@ class MainWin : public AbstractMainWin
 	~MainWin();
 
   protected:
+
+	virtual void keyPressEvent(QKeyEvent* e) override;
+	virtual void vrEvent(VRHandler::Event const& e) override;
+
 	// declare drawn resources
 	virtual void initScene() override;
 
@@ -23,15 +34,15 @@ class MainWin : public AbstractMainWin
 	virtual void renderScene(BasicCamera const& camera) override;
 
   private:
-	GLHandler::Mesh mesh;
-	GLHandler::ShaderProgram shaderProgram;
-
-	GLHandler::Mesh pointsMesh;
-	GLHandler::ShaderProgram pointsShader;
+	static std::vector<float> generateVertices(unsigned int number, unsigned int seed);
+	static GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
+	static void deleteCube(GLHandler::Mesh mesh, GLHandler::ShaderProgram shader);
 
 	GLHandler::Mesh cube;
 	GLHandler::ShaderProgram cubeShader;
-	QElapsedTimer cubeTimer;
+
+	Method* method;
+	bool showCube = QSettings().value("misc/showcube").toBool();
 };
 
 #endif // MAINWIN_H
