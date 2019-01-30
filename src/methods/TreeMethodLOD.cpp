@@ -11,7 +11,7 @@ TreeMethodLOD::TreeMethodLOD(std::string const& vertexShaderPath,
     , currentTanAngle(1.0f)
 {
 	// init chrono
-	gettimeofday(&t0, NULL);
+	//gettimeofday(&t0, NULL);
 
 	// setting PID controller
 	ctrl.Kp = -0.000001f;
@@ -120,15 +120,15 @@ std::pair<float, std::string> humanReadable(long int bytes)
 
 void TreeMethodLOD::render(Camera const& camera)
 {
-	struct timeval tf;
+	/*struct timeval tf;
 	gettimeofday(&tf, NULL);
 	uint64_t dt = (tf.tv_sec * 1000000) + tf.tv_usec - t0.tv_usec
 	              - (t0.tv_sec * 1000000);
 	gettimeofday(&t0, NULL);
 
 	float dtf = dt;
-	if(camera.currentFrameTiming != 0)
-		dtf = camera.currentFrameTiming * 1000000.f;
+	if(camera.currentFrameTiming != 0)*/
+	float dtf = camera.currentFrameTiming * 1000000.f;
 	/*ctrl.targetMeasure = &dtf;
 	ctrl.setPoint          = 1000000.0f / camera.targetFPS;
 	ctrl.update(dt);

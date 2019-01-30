@@ -1,8 +1,6 @@
 #ifndef TREEMETHODLOD_H
 #define TREEMETHODLOD_H
 
-#include <sys/time.h>
-
 #include "Method.hpp"
 #include "OctreeLOD.hpp"
 #include "PIDController.hpp"
@@ -27,7 +25,7 @@ class TreeMethodLOD : public Method
 	OctreeLOD* gazTree        = nullptr;
 	OctreeLOD* starsTree      = nullptr;
 	OctreeLOD* darkMatterTree = nullptr;
-	struct timeval t0;
+	//struct timeval t0;
 	float currentTanAngle;
 	PIDController ctrl;
 };
