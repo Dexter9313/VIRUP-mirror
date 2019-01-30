@@ -57,7 +57,7 @@ install:
     - 7z x octree.zip > nul
     - move liboctree-snapshot* liboctree
     - set OCTREE_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/deps/octree/
-    - cd OCTREE_INCLUDE_DIR
+    - cd %OCTREE_INCLUDE_DIR%
     - dir
     - cd liboctree
     - dir
