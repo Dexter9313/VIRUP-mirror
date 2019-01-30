@@ -57,6 +57,10 @@ install:
     - 7z x octree.zip > nul
     - move liboctree-snapshot* liboctree
     - set OCTREE_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/deps/octree/
+    - cd OCTREE_INCLUDE_DIR
+    - dir
+    - cd liboctree
+    - dir
     - set OCTREE_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/octree/liboctree/Leap.lib
     - set OCTREE_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\octree\liboctree\Leap.dll
     - cd ..
