@@ -37,12 +37,15 @@ class AbstractMainWin : public QOpenGLWindow
 	void keyPressEvent(QKeyEvent* event) override;
 
 	VRHandler vrHandler;
+	float const& frameTiming = frameTiming_;
 
   private:
 	void initializeGL() override;
 	void paintGL() override;
 
+	float frameTiming_;
 	QElapsedTimer frameTimer;
+
 	BasicCamera* camera;
 	DebugCamera* dbgCamera;
 };

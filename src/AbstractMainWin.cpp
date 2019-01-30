@@ -74,8 +74,13 @@ void AbstractMainWin::initializeGL()
 
 void AbstractMainWin::paintGL()
 {
+	frameTiming_ = frameTimer.restart() / 1000.f;
+
 	setTitle(QString(PROJECT_NAME) + " - "
-	         + QString::number(1000.f / frameTimer.restart()) + " FPS");
+	         + QString::number(1.f / frameTiming) + " FPS");
+
+	if(vrHandler)
+		frameTiming_ = vrHandler.getFrameTiming() / 1000.f;
 
 	// let user update before rendering
 	updateScene(*camera);
