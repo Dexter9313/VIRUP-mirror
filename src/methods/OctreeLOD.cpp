@@ -1,7 +1,7 @@
 #include "methods/OctreeLOD.hpp"
 
-long int OctreeLOD::usedMem        = 0;
-const long int OctreeLOD::memLimit = (((long int) 1000000) * QSettings().value("misc/maxvramusagemb").toInt());
+int64_t OctreeLOD::usedMem        = 0;
+const int64_t OctreeLOD::memLimit = (((int64_t) 1000000) * QSettings().value("misc/maxvramusagemb").toInt());
 
 // TODO just draw nothing if vertices.size() == 0 (prevents nullptr tests when
 // drawing)
@@ -32,7 +32,7 @@ void OctreeLOD::init(std::istream& in)
 	Octree::init(in);
 }
 
-void OctreeLOD::init(long file_addr)
+void OctreeLOD::init(int64_t file_addr)
 {
 	Octree::init(file_addr);
 }
@@ -98,7 +98,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 {
 	if(camera.shouldBeCulled(bbox) && lvl > 0)
 	{
-		// if(usedMem > (memLimit - (long int) (10 * 16000 * 3 *
+		// if(usedMem > (memLimit - (int64_t) (10 * 16000 * 3 *
 		// sizeof(float))))
 		unload();
 		return 0;

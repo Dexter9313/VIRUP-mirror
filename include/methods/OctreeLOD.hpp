@@ -16,7 +16,7 @@ class OctreeLOD : public Octree
 	          unsigned int lvl = 0);
 	virtual void init(std::vector<float> data) override;
 	virtual void init(std::istream& in) override;
-	virtual void init(long file_addr) override;
+	virtual void init(int64_t file_addr) override;
 	virtual void readOwnData(std::istream& in) override;
 	void unload();
 	void setFile(std::istream* file);
@@ -26,7 +26,7 @@ class OctreeLOD : public Octree
 	                                 unsigned int maxPoints);
 	~OctreeLOD();
 
-	static long int getUsedMem() { return usedMem; };
+	static int64_t getUsedMem() { return usedMem; };
   protected:
 	virtual Octree* newOctree() const override;
 
@@ -38,8 +38,8 @@ class OctreeLOD : public Octree
 	std::istream* file;
 	bool isLoaded;
 	// total used memory across all instances
-	static long int usedMem;
-	static const long int memLimit;
+	static int64_t usedMem;
+	static const int64_t memLimit;
 
 	GLHandler::Mesh mesh;
 	GLHandler::ShaderProgram const* shaderProgram;
