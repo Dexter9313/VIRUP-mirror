@@ -57,8 +57,8 @@ install:
     - 7z x octree.zip > nul
     - move liboctree-snapshot* liboctree
     - set OCTREE_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/deps/octree/
-    - set OCTREE_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/octree/liboctree/Leap.lib
-    - set OCTREE_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\octree\liboctree\Leap.dll
+    - set OCTREE_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/octree/liboctree/octree.lib
+    - set OCTREE_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\octree\liboctree\octree.dll
     - cd ..
 
 before_build:
@@ -89,6 +89,7 @@ after_build:
     - copy %QTPATH%\plugins\platforms\qwindows.dll %RELEASE_DIR%\platforms
     - copy %OPENVR_SHARED% %RELEASE_DIR%
     - copy %LEAP_SHARED% %RELEASE_DIR%
+    - copy %OCTREE_SHARED% %RELEASE_DIR%
     - move %APPVEYOR_BUILD_FOLDER%\data %RELEASE_DIR%\data
     - 7z a -tzip %RELEASE_DIR_NAME%.zip %RELEASE_DIR%
     - IF "%BUILD_TYPE%" == "64bit" (set ARCH=/DX64) ELSE (set ARCH=/DX86)
