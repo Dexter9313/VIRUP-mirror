@@ -114,7 +114,10 @@ QMatrix4x4 BasicCamera::hmdSpaceToWorldTransform() const
 
 QMatrix4x4 BasicCamera::hmdScaledSpaceToWorldTransform() const
 {
-	return hmdScaledToWorld;
+	if(*vrHandler)
+		return hmdScaledToWorld;
+	else
+		return view.inverted();
 }
 
 
