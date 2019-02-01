@@ -31,6 +31,7 @@ class BasicCamera
 	QMatrix4x4 cameraSpaceToWorldTransform() const;
 	QMatrix4x4 trackedSpaceToWorldTransform() const;
 	QMatrix4x4 hmdSpaceToWorldTransform() const;
+	QMatrix4x4 hmdScaledSpaceToWorldTransform() const;
 	QMatrix4x4 screenToWorldTransform() const;
 	QMatrix4x4 hmdScreenToWorldTransform(Side side) const;
 	virtual ~BasicCamera(){};
