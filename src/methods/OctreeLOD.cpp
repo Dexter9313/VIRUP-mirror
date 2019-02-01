@@ -100,7 +100,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 	{
 		// if(usedMem > (memLimit - (int64_t) (10 * 16000 * 3 *
 		// sizeof(float))))
-		unload();
+		//unload();
 		return 0;
 	}
 
