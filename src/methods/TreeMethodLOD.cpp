@@ -140,7 +140,9 @@ void TreeMethodLOD::render(Camera const& camera)
 
 	// old way
 	float coeff((dtf - 1000000.0f / camera.targetFPS) / 5000000.0f);
+	coeff = coeff > 1.f / 90.f ? 1.f / 90.f : coeff;
 	currentTanAngle += coeff;
+	currentTanAngle = currentTanAngle > 1.2f ? 1.2f : currentTanAngle;
 
 	GLHandler::beginTransparent();
 	GLHandler::setShaderParam(shaderProgram, "color",
