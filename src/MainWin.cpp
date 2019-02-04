@@ -50,8 +50,55 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 			switch(e.button)
 			{
 				case VRHandler::Button::GRIP:
-					method->showdm = !method->showdm;
+				{
+					Controller const* left(vrHandler.getController(Side::LEFT));
+					Controller const* right(
+					    vrHandler.getController(Side::RIGHT));
+					if(e.side == Side::LEFT && left)
+					{
+						leftGripPressed = true;
+						initControllerPosInCube
+						    = getCamera().trackedSpaceToWorldTransform()
+						          * left->getPosition()
+						      - cubeTranslation;
+					}
+					else if(e.side == Side::RIGHT && right)
+					{
+						rightGripPressed = true;
+						initControllerPosInCube
+						    = getCamera().trackedSpaceToWorldTransform()
+						          * right->getPosition()
+						      - cubeTranslation;
+					}
+					else
+						break;
+					if(leftGripPressed && rightGripPressed && left && right)
+					{
+						initControllersDistance
+						    = left->getPosition().distanceToPoint(
+						        right->getPosition());
+						initScale = cubeScale;
+						QVector3D controllersMidPoint
+						    = left->getPosition() + right->getPosition();
+						controllersMidPoint /= 2.f;
+						controllersMidPoint
+						    = getCamera().trackedSpaceToWorldTransform()
+						      * controllersMidPoint;
+						scaleCenter = controllersMidPoint;
+
+						QVector3D controllersMidPointInCube(computeCubeModel().inverted()
+															* controllersMidPoint);
+
+						if(controllersMidPointInCube.x() < -1
+						   || controllersMidPointInCube.x() > 1
+						   || controllersMidPointInCube.y() < -1
+						   || controllersMidPointInCube.y() > 1
+						   || controllersMidPointInCube.z() < -1
+						   || controllersMidPointInCube.z() > 1)
+							scaleCenter = cubeTranslation;
+					}
 					break;
+				}
 				case VRHandler::Button::TOUCHPAD:
 				{
 					Controller const* ctrl(vrHandler.getController(e.side));
@@ -60,64 +107,25 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						QVector2D padCoords(ctrl->getPadCoords());
 						if(padCoords.length() < 0.5) // CENTER
 						{
-							if(e.side == Side::RIGHT)
-							{
-								cam.distance = 1.0f;
-								cam.angle    = 0.0f;
-								vrHandler.resetPos();
-							}
-							else if(e.side == Side::LEFT)
-							{
-								method->resetAlpha();
-								cam.setEyeDistanceFactor(1.0f);
-							}
+							method->resetAlpha();
+							cam.setEyeDistanceFactor(1.0f);
 						}
 						else if(fabs(padCoords[0])
 						        > fabs(padCoords[1])) // LEFT OR
 						                              // RIGHT
 						{
 							if(padCoords[0] < 0.0f) // LEFT
-							{
-								if(e.side == Side::RIGHT)
-									cam.angle -= 3.14f / 30.0f;
-								else if(e.side == Side::LEFT)
-									method->setAlpha(method->getAlpha() * 20
-									                 / 21);
-							}
+								method->setAlpha(method->getAlpha() * 20
+								                 / 21);
 							else // RIGHT
-							{
-								if(e.side == Side::RIGHT)
-									cam.angle += 3.14f / 30.0f;
-								else if(e.side == Side::LEFT)
-									method->setAlpha(method->getAlpha() * 21
-									                 / 20);
-							}
-						}
-						else // DOWN OR UP
-						{
-							if(padCoords[1] < 0.0f) // DOWN
-							{
-								if(e.side == Side::RIGHT)
-									cam.distance *= 1.2;
-								else if(e.side == Side::LEFT)
-									cam.setEyeDistanceFactor(
-									    cam.getEyeDistanceFactor() * 1.2);
-							}
-							else // UP
-							{
-								if(e.side == Side::RIGHT)
-									cam.distance /= 1.2;
-								else if(e.side == Side::LEFT)
-									cam.setEyeDistanceFactor(
-									    cam.getEyeDistanceFactor() / 1.2f);
-							}
+								method->setAlpha(method->getAlpha() * 21
+								                 / 20);
 						}
 					}
 					break;
 				}
 				case VRHandler::Button::TRIGGER:
-					std::cout << "Trigger Pressed on controller "
-					          << (unsigned int) e.side << " !" << std::endl;
+					method->showdm = !method->showdm;
 					break;
 				case VRHandler::Button::MENU:
 					std::cout << "Menu Pressed on controller "
@@ -126,6 +134,42 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 				default:
 					std::cout << "Button (?) Pressed on controller "
 					          << (unsigned int) e.side << " !" << std::endl;
+			}
+			break;
+		case VRHandler::EventType::BUTTON_UNPRESSED:
+			switch(e.button)
+			{
+				case VRHandler::Button::GRIP:
+				{
+					Controller const* left(vrHandler.getController(Side::LEFT));
+					Controller const* right(
+					    vrHandler.getController(Side::RIGHT));
+					if(e.side == Side::LEFT)
+					{
+						leftGripPressed = false;
+						if(right && rightGripPressed)
+						{
+							initControllerPosInCube
+							    = getCamera().trackedSpaceToWorldTransform()
+							          * right->getPosition()
+							      - cubeTranslation;
+						}
+					}
+					else if(e.side == Side::RIGHT)
+					{
+						rightGripPressed = false;
+						if(left && leftGripPressed)
+						{
+							initControllerPosInCube
+							    = getCamera().trackedSpaceToWorldTransform()
+							          * left->getPosition()
+							      - cubeTranslation;
+						}
+					}
+					break;
+				}
+				default:
+					break;
 			}
 			break;
 		default:
@@ -199,6 +243,39 @@ void MainWin::updateScene(BasicCamera& camera)
 {
 	Camera& cam(static_cast<Camera&>(camera));
 	cam.currentFrameTiming = frameTiming;
+
+	Controller const* left(vrHandler.getController(Side::LEFT));
+	Controller const* right(vrHandler.getController(Side::RIGHT));
+
+	// single grip = translation
+	if(leftGripPressed != rightGripPressed)
+	{
+		QVector3D controllerPosInCube;
+		if(leftGripPressed && left)
+		{
+			controllerPosInCube = getCamera().trackedSpaceToWorldTransform()
+			                          * left->getPosition()
+			                      - cubeTranslation;
+		}
+		else if(rightGripPressed && right)
+		{
+			controllerPosInCube = getCamera().trackedSpaceToWorldTransform()
+			                          * right->getPosition()
+			                      - cubeTranslation;
+		}
+		cubeTranslation += controllerPosInCube - initControllerPosInCube;
+	}
+	// double grip = scale
+	if(leftGripPressed && rightGripPressed && left && right)
+	{
+
+		rescaleCube(
+		    initScale
+		        * left->getPosition().distanceToPoint(right->getPosition())
+		        / initControllersDistance,
+		    scaleCenter);
+	}
+
 	/*float distPeriod = 60.f, anglePeriod = 10.f;
 	integralDt += dt;
 	if(integralDt
@@ -239,7 +316,16 @@ QMatrix4x4 MainWin::computeCubeModel() const
 	return result;
 }
 
-std::vector<float> MainWin::generateVertices(unsigned int number, unsigned int seed)
+void MainWin::rescaleCube(float newScale, QVector3D const& scaleCenter)
+{
+	QVector3D scaleCenterPosInCube = scaleCenter - cubeTranslation;
+	scaleCenterPosInCube *= newScale / cubeScale;
+	cubeTranslation = scaleCenter - scaleCenterPosInCube;
+	cubeScale       = newScale;
+}
+
+std::vector<float> MainWin::generateVertices(unsigned int number,
+                                             unsigned int seed)
 {
 	std::vector<float> vertices;
 	vertices.reserve(3 * number);

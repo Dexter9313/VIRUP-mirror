@@ -35,10 +35,12 @@ class MainWin : public AbstractMainWin
 
   private:
 	QMatrix4x4 computeCubeModel() const;
+	void rescaleCube(float newScale, QVector3D const& scaleCenter);
 	static std::vector<float> generateVertices(unsigned int number,
 	                                           unsigned int seed);
 	static GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
-	static void deleteCube(GLHandler::Mesh mesh, GLHandler::ShaderProgram shader);
+	static void deleteCube(GLHandler::Mesh mesh,
+	                       GLHandler::ShaderProgram shader);
 
 	GLHandler::Mesh cube;
 	GLHandler::ShaderProgram cubeShader;
@@ -48,6 +50,14 @@ class MainWin : public AbstractMainWin
 
 	float cubeScale           = 1.f;
 	QVector3D cubeTranslation = QVector3D(0.f, 0.f, 0.f);
+
+	// scaling/translation controls variables
+	bool leftGripPressed  = false;
+	bool rightGripPressed = false;
+	float initControllersDistance;
+	QVector3D scaleCenter;
+	QVector3D initControllerPosInCube;
+	float initScale;
 };
 
 #endif // MAINWIN_H
