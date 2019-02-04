@@ -127,7 +127,6 @@ QVector3D Camera::getCorner(BBox const& bBox, unsigned int i)
 
 bool Camera::inFrustrum(QVector3D const& projected)
 {
-	return projected.z() > -1;
-	//(projected.x > -1 && projected.x < 1 && projected.y > -1 && projected.y <
-	// 1 && projected.z > -1 && projected.z < 1);
+	return (projected.x() > -1 && projected.x() < 1 && projected.y() > -1
+	        && projected.y() < 1 && projected.z() > -1 && projected.z() < 1);
 }
