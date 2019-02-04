@@ -47,7 +47,7 @@ class Camera : public BasicCamera
 	QVector3D getLookDirection() const { return lookDirection; };
 	QVector3D getUp() const { return up; };
 	virtual void update() override;
-	bool shouldBeCulled(BBox const& bbox) const;
+	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const;
 
 	float angle;
 	float distance;

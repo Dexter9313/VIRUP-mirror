@@ -27,14 +27,14 @@ void Camera::update()
 
 // inspired by
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes/
-bool Camera::shouldBeCulled(BBox const& bbox) const
+bool Camera::shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const
 {
 	std::vector<QVector4D> projectedCorners;
 	// get all projected corners and test if any of them is inside the frustum
 	// if one of them is inside, we can stop there and return false
 	for(unsigned int i(0); i < 8; ++i)
 	{
-		projectedCorners.push_back(project(getCorner(bbox, i)));
+		projectedCorners.push_back(project(model*getCorner(bbox, i)));
 		projectedCorners[i] /= projectedCorners[i][3];
 		if(inFrustum(QVector3D(projectedCorners[i])))
 			return false;

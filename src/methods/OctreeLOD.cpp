@@ -94,9 +94,10 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 
 unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
                                             Camera const& camera,
+                                            QMatrix4x4 const& model,
                                             unsigned int maxPoints)
 {
-	if(camera.shouldBeCulled(bbox) && lvl > 0)
+	if(camera.shouldBeCulled(bbox, model) && lvl > 0)
 	{
 		// if(usedMem > (memLimit - (int64_t) (10 * 16000 * 3 *
 		// sizeof(float))))
@@ -112,7 +113,11 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		//	return 0;
 	}
 
-	if(bbox.diameter / bbox.mid.distanceToPoint(camera.getPosition()) > tanAngle
+	if(bbox.diameter
+	           / (model * bbox.mid)
+	                 .distanceToPoint(camera.hmdScaledSpaceToWorldTransform()
+	                                  * QVector3D(0.f, 0.f, 0.f))
+	       > tanAngle
 	   && !isLeaf())
 	{
 		unsigned int remaining = maxPoints;
@@ -121,7 +126,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		{
 			if(oct)
 				remaining -= static_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
-				    tanAngle, camera, remaining);
+				    tanAngle, camera, model, remaining);
 		}
 		return maxPoints - remaining;
 	}

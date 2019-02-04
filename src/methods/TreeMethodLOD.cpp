@@ -154,15 +154,15 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 	GLHandler::setShaderParam(shaderProgram, "color", QSettings().value("data/gazcolor").value<QVector3D>());
 	unsigned int rendered = 0;
 	if(gazTree)
-		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera,
+		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, model,
 		                                         1000000000);
 	GLHandler::setShaderParam(shaderProgram, "color", QSettings().value("data/starscolor").value<QVector3D>());
 	if(starsTree)
-		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera,
+		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera, model,
 		                                           1000000000);
 	GLHandler::setShaderParam(shaderProgram, "color", QSettings().value("data/darkmattercolor").value<QVector3D>());
 	if(darkMatterTree && showdm)
-		rendered += darkMatterTree->renderAboveTanAngle(currentTanAngle, camera,
+		rendered += darkMatterTree->renderAboveTanAngle(currentTanAngle, camera, model,
 		                                                1000000000);
 	GLHandler::endTransparent();
 
