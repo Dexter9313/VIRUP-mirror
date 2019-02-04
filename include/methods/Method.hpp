@@ -22,7 +22,7 @@ class Method
 	                  std::string const& starsPath      = "",
 	                  std::string const& darkMatterPath = "")
 	    = 0;
-	virtual void render(Camera const& camera) = 0;
+	virtual void render(Camera const& camera, QMatrix4x4 const& model) = 0;
 	void resetAlpha();
 	void setAlpha(float alpha);
 	float getAlpha() const { return alpha; };

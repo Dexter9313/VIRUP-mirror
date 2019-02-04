@@ -73,12 +73,12 @@ void BaseLineMethod::init(std::string const& gazPath,
 	          << " bytes worth of data" << std::endl;
 }
 
-void BaseLineMethod::render(Camera const& camera)
+void BaseLineMethod::render(Camera const& camera, QMatrix4x4 const& model)
 {
 	Q_UNUSED(camera);
 	GLHandler::setPointSize(pointSize);
 	GLHandler::beginTransparent();
-	GLHandler::setUpRender(shaderProgram);
+	GLHandler::setUpRender(shaderProgram, model);
 	GLHandler::render(mesh);
 	GLHandler::endTransparent();
 }

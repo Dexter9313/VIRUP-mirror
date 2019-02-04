@@ -121,7 +121,7 @@ std::pair<float, std::string> humanReadable(long int bytes)
 	                                     " Gib");
 }
 
-void TreeMethodLOD::render(Camera const& camera)
+void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 {
 	/*struct timeval tf;
 	gettimeofday(&tf, NULL);
@@ -150,7 +150,7 @@ void TreeMethodLOD::render(Camera const& camera)
 	GLHandler::beginTransparent();
 	GLHandler::setShaderParam(shaderProgram, "color",
 	                          QVector3D(1.0f, 1.0f, 1.0f));
-	GLHandler::setUpRender(shaderProgram);
+	GLHandler::setUpRender(shaderProgram, model);
 	GLHandler::setShaderParam(shaderProgram, "color", QSettings().value("data/gazcolor").value<QVector3D>());
 	unsigned int rendered = 0;
 	if(gazTree)

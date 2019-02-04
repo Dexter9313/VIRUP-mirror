@@ -18,7 +18,7 @@ class BaseLineMethod : public Method
 	                  std::vector<float> const& darkMatterVertices) override;
 	virtual void init(std::string const& gazPath, std::string const& starsPath,
 	                  std::string const& darkMatterPath) override;
-	virtual void render(Camera const& camera) override;
+	virtual void render(Camera const& camera, QMatrix4x4 const& model) override;
 	~BaseLineMethod();
 
   private:

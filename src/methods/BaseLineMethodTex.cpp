@@ -8,10 +8,10 @@ BaseLineMethodTex::BaseLineMethodTex()
 	tex = GLHandler::newTexture("data/images/particle.png");
 }
 
-void BaseLineMethodTex::render(Camera const& camera)
+void BaseLineMethodTex::render(Camera const& camera, QMatrix4x4 const& model)
 {
 	GLHandler::useTextures({tex});
-	BaseLineMethod::render(camera);
+	BaseLineMethod::render(camera, model);
 }
 
 BaseLineMethodTex::~BaseLineMethodTex()

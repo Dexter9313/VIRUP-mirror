@@ -18,8 +18,8 @@ class MainWin : public AbstractMainWin
 	~MainWin();
 
   protected:
-
 	virtual void keyPressEvent(QKeyEvent* e) override;
+	virtual void wheelEvent(QWheelEvent* e) override;
 	virtual void vrEvent(VRHandler::Event const& e) override;
 
 	// declare drawn resources
@@ -34,7 +34,9 @@ class MainWin : public AbstractMainWin
 	virtual void renderScene(BasicCamera const& camera) override;
 
   private:
-	static std::vector<float> generateVertices(unsigned int number, unsigned int seed);
+	QMatrix4x4 computeCubeModel() const;
+	static std::vector<float> generateVertices(unsigned int number,
+	                                           unsigned int seed);
 	static GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
 	static void deleteCube(GLHandler::Mesh mesh, GLHandler::ShaderProgram shader);
 
@@ -43,6 +45,9 @@ class MainWin : public AbstractMainWin
 
 	Method* method;
 	bool showCube = QSettings().value("misc/showcube").toBool();
+
+	float cubeScale           = 1.f;
+	QVector3D cubeTranslation = QVector3D(0.f, 0.f, 0.f);
 };
 
 #endif // MAINWIN_H

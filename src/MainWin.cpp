@@ -36,6 +36,11 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 	AbstractMainWin::keyPressEvent(e);
 }
 
+void MainWin::wheelEvent(QWheelEvent* e)
+{
+	cubeScale += cubeScale * e->angleDelta().y() / 1000.f;
+}
+
 void MainWin::vrEvent(VRHandler::Event const& e)
 {
 	Camera& cam(static_cast<Camera&>(getCamera()));
@@ -185,7 +190,7 @@ void MainWin::initScene()
 	Camera* cam = new Camera(&vrHandler);
 	cam->setPerspectiveProj(70.0f, (float) width() / (float) height());
 	cam->angle    = 0;
-	cam->distance = 0.01;
+	cam->distance = 0.5;
 
 	setCamera(cam);
 }
@@ -217,12 +222,21 @@ void MainWin::renderScene(BasicCamera const& camera)
 {
 	Camera const& cam(static_cast<Camera const&>(camera));
 
+	QMatrix4x4 model(computeCubeModel());
 	if(showCube)
 	{
-		GLHandler::setUpRender(cubeShader);
+		GLHandler::setUpRender(cubeShader, model);
 		GLHandler::render(cube, GLHandler::PrimitiveType::LINES);
 	}
-	method->render(cam);
+	method->render(cam, model);
+}
+
+QMatrix4x4 MainWin::computeCubeModel() const
+{
+	QMatrix4x4 result;
+	result.translate(cubeTranslation);
+	result.scale(cubeScale);
+	return result;
 }
 
 std::vector<float> MainWin::generateVertices(unsigned int number, unsigned int seed)
