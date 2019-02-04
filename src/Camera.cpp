@@ -30,20 +30,20 @@ void Camera::update()
 bool Camera::shouldBeCulled(BBox const& bbox) const
 {
 	std::vector<QVector4D> projectedCorners;
-	// get all projected corners and test if any of them is inside the frustrum
+	// get all projected corners and test if any of them is inside the frustum
 	// if one of them is inside, we can stop there and return false
 	for(unsigned int i(0); i < 8; ++i)
 	{
 		projectedCorners.push_back(project(getCorner(bbox, i)));
 		projectedCorners[i] /= projectedCorners[i][3];
-		if(inFrustrum(QVector3D(projectedCorners[i])))
+		if(inFrustum(QVector3D(projectedCorners[i])))
 			return false;
 	}
 	// cull too much for now
 	return true;
 
-	// if all corners are outside the frustrum we still have to check if all
-	// corners are at the same side of one the frustrum face (not exhaustive but
+	// if all corners are outside the frustum we still have to check if all
+	// corners are at the same side of one the frustum face (not exhaustive but
 	// pretty good); if there is one such face, then the cube should be culled
 	/*
 	    if(projectedCorners[0].x < -1)
@@ -125,7 +125,7 @@ QVector3D Camera::getCorner(BBox const& bBox, unsigned int i)
 	}
 }
 
-bool Camera::inFrustrum(QVector3D const& projected)
+bool Camera::inFrustum(QVector3D const& projected)
 {
 	return (projected.x() > -1 && projected.x() < 1 && projected.y() > -1
 	        && projected.y() < 1 && projected.z() > -1 && projected.z() < 1);

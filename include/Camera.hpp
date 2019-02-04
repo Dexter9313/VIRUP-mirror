@@ -61,7 +61,7 @@ class Camera : public BasicCamera
 	QVector3D up;
 
 	static QVector3D getCorner(BBox const& bBox, unsigned int i);
-	static bool inFrustrum(QVector3D const& projected);
+	static bool inFrustum(QVector3D const& projected);
 };
 
 #endif // CAMERA_H
