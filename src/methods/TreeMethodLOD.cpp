@@ -146,6 +146,7 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 	coeff = coeff > 1.f / 90.f ? 1.f / 90.f : coeff;
 	currentTanAngle += coeff;
 	currentTanAngle = currentTanAngle > 1.2f ? 1.2f : currentTanAngle;
+	currentTanAngle = currentTanAngle < 0.05f ? 0.05f : currentTanAngle;
 
 	GLHandler::beginTransparent();
 	GLHandler::setShaderParam(shaderProgram, "color",
