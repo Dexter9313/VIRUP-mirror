@@ -14,12 +14,12 @@ class BasicCamera
   protected: // protected typedefs
 	enum ClippingPlane
 	{
-		LEFT   = 0,
-		RIGHT  = 1,
-		BOTTOM = 2,
-		TOP    = 3,
-		NEAR   = 4,
-		FAR    = 5
+		LEFT_PLANE   = 0,
+		RIGHT_PLANE  = 1,
+		BOTTOM_PLANE = 2,
+		TOP_PLANE    = 3,
+		NEAR_PLANE   = 4,
+		FAR_PLANE    = 5,
 	};
 	typedef QVector4D Plane; // Ax+By+Cz+D=0 => [A,B,C,D]
   public:
