@@ -19,7 +19,7 @@ class BasicCamera
 		BOTTOM = 2,
 		TOP    = 3,
 		NEAR   = 4,
-		FAR    = 5,
+		FAR    = 5
 	};
 	typedef QVector4D Plane; // Ax+By+Cz+D=0 => [A,B,C,D]
   public:
