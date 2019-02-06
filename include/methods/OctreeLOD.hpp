@@ -16,7 +16,7 @@ class OctreeLOD : public Octree
 	          unsigned int lvl = 0);
 	virtual void init(std::vector<float> data) override;
 	virtual void init(std::istream& in) override;
-	virtual void init(int64_t file_addr) override;
+	virtual void init(int64_t file_addr, std::istream& in) override;
 	virtual void readOwnData(std::istream& in) override;
 	void unload();
 	void setFile(std::istream* file);
@@ -33,7 +33,6 @@ class OctreeLOD : public Octree
   private:
 	unsigned int lvl;
 	BBox bbox;
-	unsigned int totalVerticesNumber;
 
 	std::istream* file;
 	bool isLoaded;
@@ -45,6 +44,7 @@ class OctreeLOD : public Octree
 	GLHandler::ShaderProgram const* shaderProgram;
 
 	void computeBBox();
+	float currentTanAngle(Camera const& camera, QMatrix4x4 const& model) const;
 };
 
 #endif // OCTREELOD_H

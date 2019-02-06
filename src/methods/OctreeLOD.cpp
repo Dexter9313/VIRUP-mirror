@@ -19,7 +19,6 @@ OctreeLOD::OctreeLOD(GLHandler::ShaderProgram const& shaderProgram,
 void OctreeLOD::init(std::vector<float> data)
 {
 	Octree::init(data);
-	totalVerticesNumber = data.size() / 3;
 
 	computeBBox();
 
@@ -32,15 +31,14 @@ void OctreeLOD::init(std::istream& in)
 	Octree::init(in);
 }
 
-void OctreeLOD::init(int64_t file_addr)
+void OctreeLOD::init(int64_t file_addr, std::istream& in)
 {
-	Octree::init(file_addr);
+	Octree::init(file_addr, in);
 }
 
 void OctreeLOD::readOwnData(std::istream& in)
 {
 	Octree::readOwnData(in);
-	totalVerticesNumber = data.size() / 3;
 
 	computeBBox();
 
@@ -113,12 +111,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		//	return 0;
 	}
 
-	if(bbox.diameter
-	           / (model * bbox.mid)
-	                 .distanceToPoint(camera.hmdScaledSpaceToWorldTransform()
-	                                  * QVector3D(0.f, 0.f, 0.f))
-	       > tanAngle
-	   && !isLeaf())
+	if(currentTanAngle(camera, model) > tanAngle && !isLeaf())
 	{
 		unsigned int remaining = maxPoints;
 		// RENDER SUBTREES
@@ -139,8 +132,8 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		{
 		    GLHandler::setShaderParam(*shaderProgram, "color",
 		                              glm::vec3(1.0f, 1.0f, 1.0f));*/
-		if(!isLeaf() && sqrt(totalVerticesNumber / mesh.vboSize) <= 4)
-			GLHandler::setPointSize(sqrt(totalVerticesNumber / mesh.vboSize));
+		if(!isLeaf() && sqrt((getTotalDataSize()/3) / mesh.vboSize) <= 4)
+			GLHandler::setPointSize(sqrt((getTotalDataSize()/3) / mesh.vboSize));
 		else if(!isLeaf())
 			GLHandler::setPointSize(4);
 		else
@@ -167,6 +160,17 @@ void OctreeLOD::computeBBox()
 	bbox.mid.setX((bbox.maxx + bbox.minx) / 2.0f);
 	bbox.mid.setY((bbox.maxy + bbox.miny) / 2.0f);
 	bbox.mid.setZ((bbox.maxz + bbox.minz) / 2.0f);
+}
+
+float OctreeLOD::currentTanAngle(Camera const& camera, QMatrix4x4 const& model) const
+{
+	if(camera.shouldBeCulled(bbox, model))
+		return 0.f;
+
+	return bbox.diameter * model.constData()[0]
+	       / (model * bbox.mid)
+	             .distanceToPoint(camera.hmdScaledSpaceToWorldTransform()
+	                              * QVector3D(0.f, 0.f, 0.f));
 }
 
 Octree* OctreeLOD::newOctree() const
