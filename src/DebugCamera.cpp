@@ -23,7 +23,7 @@ DebugCamera::DebugCamera(VRHandler const* vrHandler)
     , camMesh(GLHandler::newMesh())
     , camMeshShader(GLHandler::newShader("default"))
 {
-	GLHandler::setShaderParam(camMeshShader, "color", {1.0f, 0.0f, 0.0f});
+	GLHandler::setShaderParam(camMeshShader, "color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 
 	std::vector<float> vertices = {
 	    -1.0f, -1.0f, -1.0f, // 0
@@ -57,18 +57,18 @@ void DebugCamera::renderCamera(BasicCamera const* cam)
 	bool followHMD(QSettings().value("debugcamera/followhmd").toBool());
 	if(*vrHandler && followHMD)
 	{
-		GLHandler::setShaderParam(camMeshShader, "color", {1.0f, 0.0f, 0.0f});
+		GLHandler::setShaderParam(camMeshShader, "color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader,
 		                       cam->hmdScreenToWorldTransform(Side::LEFT));
 		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
-		GLHandler::setShaderParam(camMeshShader, "color", {0.0f, 1.0f, 0.0f});
+		GLHandler::setShaderParam(camMeshShader, "color", QColor::fromRgbF(0.0f, 1.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader,
 		                       cam->hmdScreenToWorldTransform(Side::RIGHT));
 		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
 	}
 	else
 	{
-		GLHandler::setShaderParam(camMeshShader, "color", {1.0f, 0.0f, 0.0f});
+		GLHandler::setShaderParam(camMeshShader, "color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader, cam->screenToWorldTransform());
 		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
 	}
