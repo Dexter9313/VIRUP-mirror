@@ -46,7 +46,7 @@ For initial setup, make sure you :
 * Inherit from AbstractMainWin to draw (replace all of the MainWin class code which serves as an example).
 
 You can also :
-* Add settings to utils.cpp:initSettings().
+* Add settings to the SettingsWidget constructor.
 * Add assets to the data/ directory. The working directory will always contain data (so you can always reach data relatively from this path : "data/"). It will be packaged with the rest of the project.
 
 The project name defined as CMakeLists.txt PROJECT_NAME will be accessible in C++ code as the PROJECT_NAME macro. It is a C-style string constant.
