@@ -5,8 +5,8 @@
 #include <unistd.h>
 #endif
 
+#include "Launcher.hpp"
 #include "MainWin.hpp"
-#include "utils.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -18,14 +18,19 @@ int main(int argc, char* argv[])
 	QCoreApplication::setOrganizationName(PROJECT_NAME);
 	QCoreApplication::setApplicationName("config");
 	QSettings::setDefaultFormat(QSettings::IniFormat);
-	initSettings();
 
 	QApplication a(argc, argv);
+
+	{
+		Launcher launcher;
+		if(launcher.exec() == QDialog::Rejected)
+			return 1;
+	}
+
 	MainWin w;
 	if(QSettings().value("window/fullscreen").toBool())
 		w.showFullScreen();
 	else
 		w.show();
-
 	return a.exec();
 }
