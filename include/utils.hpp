@@ -1,8 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <QSettings>
-#include <QVector3D>
 #include <vector>
 
 enum class Side
@@ -12,7 +10,6 @@ enum class Side
 	RIGHT
 };
 
-void initSettings();
 template <typename T>
 inline void append(std::vector<T>& v1, std::vector<T> const& v2);
 
