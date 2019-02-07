@@ -83,17 +83,17 @@ void Hand::render() const
 	GLHandler::setUpRender(shaderProgram, model,
 	                       GLHandler::GeometricSpace::HMD);
 	if(isFlat() && side == Side::LEFT)
-		GLHandler::setShaderParam(shaderProgram, "color", {1.0f, 1.0f, 0.0f});
+		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 1.0f, 0.0f));
 	else if(isFlat())
-		GLHandler::setShaderParam(shaderProgram, "color", {0.0f, 1.0f, 1.0f});
+		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(0.0f, 1.0f, 1.0f));
 	else if(isClosed() && side == Side::LEFT)
-		GLHandler::setShaderParam(shaderProgram, "color", {1.0f, 1.0f, 1.0f});
+		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	else if(isClosed())
-		GLHandler::setShaderParam(shaderProgram, "color", {1.0f, 0.0f, 1.0f});
+		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 0.0f, 1.0f));
 	else if(side == Side::LEFT)
-		GLHandler::setShaderParam(shaderProgram, "color", {1.0f, 0.0f, 0.0f});
+		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 	else
-		GLHandler::setShaderParam(shaderProgram, "color", {0.0f, 1.0f, 0.0f});
+		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(0.0f, 1.0f, 0.0f));
 
 	GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
 }
