@@ -1,6 +1,7 @@
 #ifndef GLHANDLER_H
 #define GLHANDLER_H
 
+#include <QColor>
 #include <QDebug>
 #include <QFile>
 #include <QImage>
