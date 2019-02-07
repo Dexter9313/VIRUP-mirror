@@ -169,6 +169,12 @@ void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
 	                       GL_FALSE, value.data());
 }
 
+void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
+                               QColor const& value)
+{
+	setShaderParam(shader, paramName,
+	               QVector3D(value.redF(), value.greenF(), value.blueF()));
+}
 void GLHandler::useShader(ShaderProgram shader)
 {
 	glf.glUseProgram(shader);

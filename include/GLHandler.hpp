@@ -100,6 +100,8 @@ class GLHandler
 	                           QVector3D const& value);
 	static void setShaderParam(ShaderProgram shader, const char* paramName,
 	                           QMatrix4x4 const& value);
+	static void setShaderParam(ShaderProgram shader, const char* paramName,
+	                           QColor const& value);
 	static void useShader(ShaderProgram shader);
 	static void deleteShader(ShaderProgram shaderProgram);
 

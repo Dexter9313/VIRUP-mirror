@@ -54,7 +54,7 @@ void MainWin::initScene()
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	GLHandler::setShaderParam(shaderProgram, "alpha", 1.0f);
-	GLHandler::setShaderParam(shaderProgram, "color", {1.0f, 0.4f, 0.3f});
+	GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 0.4f, 0.3f));
 
 	std::vector<float> vertices = {
 	    0.5f,  0.5f,  0.0f, // top right
@@ -74,14 +74,14 @@ void MainWin::initScene()
 	// create cube
 	cubeShader = GLHandler::newShader("default");
 	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
-	GLHandler::setShaderParam(cubeShader, "color", {1.0f, 1.0f, 1.0f});
+	GLHandler::setShaderParam(cubeShader, "color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	cube = createCube(cubeShader);
 
 	// create points
 	pointsMesh   = GLHandler::newMesh();
 	pointsShader = GLHandler::newShader("default");
 	GLHandler::setShaderParam(pointsShader, "alpha", 1.0f);
-	GLHandler::setShaderParam(pointsShader, "color", {1.0f, 1.0f, 1.0f});
+	GLHandler::setShaderParam(pointsShader, "color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	std::vector<float> points = {0, 0, 0};
 	GLHandler::setVertices(pointsMesh, points, pointsShader, {{"position", 3}});
 	cubeTimer.start();
