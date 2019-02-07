@@ -76,8 +76,8 @@ void SettingsWidget::addUIntSetting(QString const& name,
 	sbox->setRange(minVal, maxVal);
 	sbox->setValue(settings.value(fullName).toUInt());
 
-	connect(sbox, QOverload<int>::of(&QSpinBox::valueChanged), this,
-	        [this, fullName](int v) { updateValue(fullName, v); });
+	connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+	        this, [this, fullName](int v) { updateValue(fullName, v); });
 
 	currentForm->addRow(label + " :", sbox);
 }
@@ -166,7 +166,8 @@ void SettingsWidget::addVector3DSetting(QString const& name,
 		layout->addWidget(sboxes[i]);
 	}
 	for(unsigned int i(0); i < 3; ++i)
-		connect(sboxes[i], QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+		connect(sboxes[i], static_cast<void (QDoubleSpinBox::*)(double)>(
+		                       &QDoubleSpinBox::valueChanged),
 		        this, [this, fullName, sboxes](double) {
 			        updateValue(fullName, QVector3D(sboxes[0]->value(),
 			                                        sboxes[1]->value(),
@@ -207,7 +208,7 @@ void SettingsWidget::addColorSetting(QString const& name,
 		                              + ";        \
     border-style: inset;                     \
     }");
-				updateValue(fullName, result);
+		        updateValue(fullName, result);
 
 		    });
 
