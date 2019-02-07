@@ -33,6 +33,22 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addBoolSetting("enabled", false, tr("Enable Debug Camera"));
 	addBoolSetting("followhmd", false, tr("Follow HMD Movement"));
 	addBoolSetting("debuginheadset", false, tr("Show Debug In HMD"));
+
+	addGroup("data", tr("Data"));
+	addFilePathSetting("gazfile", QString(""), tr("Gaz File"));
+	addFilePathSetting("starsfile", QString(""), tr("Stars File"));
+	addFilePathSetting("darkmatterfile", QString(""), tr("Dark Matter File"));
+	addBoolSetting("loaddarkmatter", true, tr("Load Dark Matter"));
+	addColorSetting("gazcolor", QColor::fromRgbF(0.427450f, 0.592156f, 0.709803f), tr("Gaz Color"));
+	addColorSetting("starscolor", QColor::fromRgbF(1.f, 1.f, 0.f), tr("Stars Color"));
+	addColorSetting("darkmattercolor", QColor::fromRgbF(1.f, 0.5f, 0.15f), tr("Dark Matter Color"));
+
+	addGroup("misc", tr("Miscellaneous"));
+	addBoolSetting("showcube", false, tr("Show Cube"));
+	addColorSetting("cubecolor", QColor(255, 255, 255), tr("Cube Color"));
+	addVector3DSetting("focuspoint", QVector3D(), tr("Focus Point"), {{tr("x"), tr("y"), tr("z")}}, -1000, 1000);
+	// focuspoint=-0.352592, -0.062213, 0.144314
+	addUIntSetting("maxvramusagemb", 500, tr("Max VRAM Usage (in Mb)"), 0, 1000000);
 }
 
 void SettingsWidget::addGroup(QString const& name, QString const& label)

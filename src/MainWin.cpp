@@ -228,7 +228,7 @@ void MainWin::initScene()
 	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
 	GLHandler::setShaderParam(
 	    cubeShader, "color",
-	    QSettings().value("misc/cubecolor").value<QVector3D>());
+	    QSettings().value("misc/cubecolor").value<QColor>());
 	cube = createCube(cubeShader);
 
 	Camera* cam = new Camera(&vrHandler);
