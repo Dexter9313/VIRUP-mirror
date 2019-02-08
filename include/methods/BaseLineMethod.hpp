@@ -10,6 +10,7 @@ class BaseLineMethod : public Method
 {
   public:
 	BaseLineMethod();
+	BaseLineMethod(std::string const& shadersCommonName);
 	BaseLineMethod(std::string const& vertexShaderPath,
 	               std::string const& fragmentShaderPath);
 	virtual std::string getName() const override { return "Base Line"; };

@@ -1,6 +1,11 @@
 #include "methods/BaseLineMethod.hpp"
 BaseLineMethod::BaseLineMethod()
-    : BaseLineMethod("default", "default")
+    : BaseLineMethod("default")
+{
+}
+
+BaseLineMethod::BaseLineMethod(std::string const& shadersCommonName)
+	: BaseLineMethod(shadersCommonName, shadersCommonName)
 {
 }
 

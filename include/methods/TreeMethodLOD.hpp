@@ -9,6 +9,7 @@ class TreeMethodLOD : public Method
 {
   public:
 	TreeMethodLOD();
+	TreeMethodLOD(std::string const& shadersCommonName);
 	TreeMethodLOD(std::string const& vertexShaderPath,
 	              std::string const& fragmentShaderPath);
 	virtual std::string getName() const override { return "Tree LOD"; };

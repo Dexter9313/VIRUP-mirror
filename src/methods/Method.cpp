@@ -1,5 +1,10 @@
 #include "methods/Method.hpp"
 
+Method::Method(std::string const& shadersCommonName)
+	: Method(shadersCommonName, shadersCommonName)
+{
+}
+
 Method::Method(std::string const& vertexShaderPath,
                std::string const& fragmentShaderPath)
 {

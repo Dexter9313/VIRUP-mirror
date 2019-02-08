@@ -11,6 +11,7 @@
 class Method
 {
   public:
+	Method(std::string const& shadersCommonName);
 	Method(std::string const& vertexShaderPath,
 	       std::string const& fragmentShaderPath);
 	virtual std::string getName() const = 0;

@@ -1,7 +1,12 @@
 #include "methods/TreeMethodLOD.hpp"
 
 TreeMethodLOD::TreeMethodLOD()
-    : TreeMethodLOD("default", "default")
+    : TreeMethodLOD("default")
+{
+}
+
+TreeMethodLOD::TreeMethodLOD(std::string const& shadersCommonName)
+    : TreeMethodLOD(shadersCommonName, shadersCommonName)
 {
 }
 
