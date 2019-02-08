@@ -3,6 +3,9 @@
 MainWin::MainWin()
     : AbstractMainWin()
 {
+	QSurfaceFormat sf(format());
+	sf.setAlphaBufferSize(16);
+	setFormat(sf);
 }
 
 void MainWin::keyPressEvent(QKeyEvent* e)
