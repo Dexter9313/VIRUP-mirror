@@ -74,6 +74,22 @@ void GLHandler::beginRendering(RenderTarget const& renderTarget)
 	glf.glViewport(0, 0, renderTarget.width, renderTarget.height);
 }
 
+void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
+                            RenderTarget const& to)
+{
+	Mesh quad(newMesh());
+	setVertices(quad,
+	            {-1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f},
+	            shader, {{"position", 2}});
+
+	beginRendering(to);
+	useShader(shader);
+	useTextures({from.texColorBuffer});
+	render(quad, PrimitiveType::TRIANGLES);
+
+	deleteMesh(quad);
+}
+
 void GLHandler::showOnScreen(RenderTarget const& renderTarget,
                              Rect const& screenRect)
 {

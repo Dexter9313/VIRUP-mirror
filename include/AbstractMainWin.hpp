@@ -21,8 +21,7 @@ class AbstractMainWin : public QOpenGLWindow
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
-	virtual void vrEvent(VRHandler::Event const& e){ Q_UNUSED(e);};
-
+	virtual void vrEvent(VRHandler::Event const& e) { Q_UNUSED(e); };
 	// declare drawn resources
 	virtual void initScene() = 0;
 
@@ -37,11 +36,28 @@ class AbstractMainWin : public QOpenGLWindow
 	BasicCamera& getCamera() { return *camera; };
 	void setCamera(BasicCamera* newCamera);
 
+	void appendPostProcessingShader(QString const& id, QString const& fragment);
+	void insertPostProcessingShader(QString const& id, QString const& fragment,
+	                                unsigned int pos);
+	void removePostProcessingShader(QString const& id);
+
+	virtual void applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const;
+
 	VRHandler vrHandler;
 	float const& frameTiming = frameTiming_;
 
+	// pair.first := shader custom id
+	// pair.second := shader
+	// frames will be postprocessed with effects in the same order as in this list
+	QList<QPair<QString, GLHandler::ShaderProgram>> const&
+	    postProcessingPipeline
+	    = postProcessingPipeline_;
+
+	float gamma = 2.2;
+
   private:
 	void initializeGL() override;
+	void vrRender(Side side, BasicCamera* renderingCam, bool debug, bool debugInHeadset);
 	void paintGL() override;
 
 	float frameTiming_;
@@ -49,6 +65,9 @@ class AbstractMainWin : public QOpenGLWindow
 
 	BasicCamera* camera;
 	DebugCamera* dbgCamera;
+
+	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
+	GLHandler::RenderTarget postProcessingTargets[2];
 };
 
 #endif // ABSTRACTMAINWIN_H

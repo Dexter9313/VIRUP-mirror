@@ -80,6 +80,11 @@ class GLHandler
 	                           = {0, 0, 0,
 	                              QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()});
+	static void postProcess(ShaderProgram shader, RenderTarget const& from,
+	                        RenderTarget const& to
+	                        = {0, 0, 0,
+	                           QSettings().value("window/width").toUInt(),
+	                           QSettings().value("window/height").toUInt()});
 	static void showOnScreen(RenderTarget const& renderTarget,
 	                         Rect const& screenRect
 	                         = {0, 0, QSettings().value("window/width").toInt(),

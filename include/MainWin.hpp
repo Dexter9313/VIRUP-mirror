@@ -33,6 +33,8 @@ class MainWin : public AbstractMainWin
 	// (no controllers or hands)
 	virtual void renderScene(BasicCamera const& camera) override;
 
+	virtual void applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const override;
+
   private:
 	QMatrix4x4 computeCubeModel() const;
 	void rescaleCube(float newScale, QVector3D const& scaleCenter);
@@ -44,7 +46,6 @@ class MainWin : public AbstractMainWin
 
 	GLHandler::Mesh cube;
 	GLHandler::ShaderProgram cubeShader;
-
 	Method* method;
 	bool showCube = QSettings().value("misc/showcube").toBool();
 
