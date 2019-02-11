@@ -56,10 +56,12 @@ class VRHandler
 	const Hand* getHand(Side side) const;
 	void resetPos();
 	void prepareRendering();
-	void beginRendering(Side eye);
+	void beginRendering(Side eye, bool postProcessed);
 	Side getCurrentRenderingEye() const { return currentRenderingEye; };
 	void renderControllers() const;
 	void renderHands();
+	GLHandler::RenderTarget& getEyeTarget(Side side) { return side == Side::LEFT ? leftTarget : rightTarget; };
+	GLHandler::RenderTarget& getPostProcessingTarget(unsigned int i) { return postProcessingTargets[i]; };
 	void submitRendering(Side eye);
 	void displayOnCompanion(unsigned int companionWidth,
 	                        unsigned int companionHeight) const;
@@ -86,6 +88,7 @@ class VRHandler
 
 	GLHandler::RenderTarget leftTarget;
 	GLHandler::RenderTarget rightTarget;
+	GLHandler::RenderTarget postProcessingTargets[2];
 
 	Side currentRenderingEye = Side::LEFT;
 

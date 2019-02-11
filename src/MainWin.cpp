@@ -130,6 +130,15 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 	AbstractMainWin::vrEvent(e);
 }
 
+void MainWin::keyPressEvent(QKeyEvent* e)
+{
+	AbstractMainWin::keyPressEvent(e);
+	if(e->key() == Qt::Key_PageUp)
+		barrelPower = 1.f + (barrelPower - 1.f) * 1.2f;
+	else
+		barrelPower = 1.f + (barrelPower - 1.f) / 1.2f;
+}
+
 void MainWin::initScene()
 {
 	QStringList argv = QCoreApplication::arguments();

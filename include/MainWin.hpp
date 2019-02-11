@@ -18,7 +18,6 @@ class MainWin : public AbstractMainWin
 	~MainWin();
 
   protected:
-
 	virtual void keyPressEvent(QKeyEvent* e) override;
 	virtual void vrEvent(VRHandler::Event const& e) override;
 
@@ -33,6 +32,8 @@ class MainWin : public AbstractMainWin
 	// (no controllers or hands)
 	virtual void renderScene(BasicCamera const& camera) override;
 
+	virtual void applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const override;
+
   private:
 	static std::vector<float> generateVertices(unsigned int number, unsigned int seed);
 	static GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
@@ -40,7 +41,6 @@ class MainWin : public AbstractMainWin
 
 	GLHandler::Mesh cube;
 	GLHandler::ShaderProgram cubeShader;
-
 	Method* method;
 	bool showCube = QSettings().value("misc/showcube").toBool();
 };
