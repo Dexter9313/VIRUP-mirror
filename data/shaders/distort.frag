@@ -3,6 +3,9 @@
 // https://www.geeks3d.com/20140213/glsl-shader-library-fish-eye-and-dome-and-barrel-distortion-post-processing-filters/2/
 
 in vec2 texCoord;
+
+out vec4 outColor;
+
 const float PI = 3.1415926535;
 
 
@@ -34,5 +37,5 @@ void main()
         uv = texCoord;
     }
     vec4 c = texture2D(tex0, uv);
-    gl_FragColor = c;
+    outColor = c;
 }
