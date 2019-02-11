@@ -53,6 +53,10 @@ bool VRHandler::init()
 	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
 	rightTarget
 	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+	postProcessingTargets[0]
+	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+	postProcessingTargets[1]
+	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
 
 #ifdef LEAP_MOTION
 	if(leapController.isConnected())
@@ -211,9 +215,12 @@ void VRHandler::prepareRendering()
 	}
 }
 
-void VRHandler::beginRendering(Side eye)
+void VRHandler::beginRendering(Side eye, bool postProcessed)
 {
-	GLHandler::beginRendering(eye == Side::LEFT ? leftTarget : rightTarget);
+	if(postProcessed)
+		GLHandler::beginRendering(postProcessingTargets[0]);
+	else
+		GLHandler::beginRendering(eye == Side::LEFT ? leftTarget : rightTarget);
 	currentRenderingEye = eye;
 }
 
@@ -314,6 +321,8 @@ void VRHandler::close()
 	delete rightHand;
 	GLHandler::deleteRenderTarget(leftTarget);
 	GLHandler::deleteRenderTarget(rightTarget);
+	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
+	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
 	std::cout << "Closing VR runtime..." << std::endl;
 	vr::VR_Shutdown();
 	vr_pointer = nullptr;

@@ -48,6 +48,15 @@ GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader)
 	return mesh;
 }
 
+void MainWin::keyPressEvent(QKeyEvent* e)
+{
+	AbstractMainWin::keyPressEvent(e);
+	if(e->key() == Qt::Key_PageUp)
+		barrelPower = 1.f + (barrelPower - 1.f) * 1.2f;
+	else
+		barrelPower = 1.f + (barrelPower - 1.f) / 1.2f;
+}
+
 void MainWin::initScene()
 {
 	shaderProgram = GLHandler::newShader("default");
@@ -87,6 +96,8 @@ void MainWin::initScene()
 	cubeTimer.start();
 
 	getCamera().setEyeDistanceFactor(5.0f);
+
+	appendPostProcessingShader("distort", "distort");
 }
 
 void MainWin::updateScene(BasicCamera& camera)
@@ -136,6 +147,13 @@ void MainWin::renderScene(BasicCamera const& camera)
 	GLHandler::setUpRender(pointsShader);
 	GLHandler::setPointSize(8);
 	GLHandler::render(pointsMesh);
+}
+
+void MainWin::applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const
+{
+	AbstractMainWin::applyPostProcShaderParams(id, shader);
+	if(id == "distort")
+		GLHandler::setShaderParam(shader, "BarrelPower", barrelPower);
 }
 
 MainWin::~MainWin()
