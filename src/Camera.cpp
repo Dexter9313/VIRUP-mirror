@@ -10,7 +10,7 @@ Camera::Camera(VRHandler const* vrHandler)
 	update();
 }
 
-void Camera::update()
+void Camera::update(bool force2D)
 {
 	position
 	    = QVector3D(cos(angle) * 2.0f * distance, sin(angle) * 2.0f * distance,
@@ -22,7 +22,7 @@ void Camera::update()
 		targetFPS = 90.f; // small margin to avoid frame drops
 	else
 		targetFPS = 60.f;
-	BasicCamera::update();
+	BasicCamera::update(force2D);
 }
 
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes/
