@@ -2,6 +2,8 @@
 
 QOpenGLFunctions_4_0_Core GLHandler::glf = QOpenGLFunctions_4_0_Core();
 
+GLint GLHandler::defaultRenderTargetFormat = GL_RGBA8;
+
 QMatrix4x4 GLHandler::fullTransform_             = QMatrix4x4();
 QMatrix4x4 GLHandler::fullCameraSpaceTransform_  = QMatrix4x4();
 QMatrix4x4 GLHandler::fullTrackedSpaceTransform_ = QMatrix4x4();
@@ -35,8 +37,8 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	// generate texture
 	glf.glGenTextures(1, &result.texColorBuffer);
 	glf.glBindTexture(GL_TEXTURE_2D, result.texColorBuffer);
-	glf.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
-	                 GL_UNSIGNED_BYTE, NULL);
+	glf.glTexImage2D(GL_TEXTURE_2D, 0, defaultRenderTargetFormat, width, height,
+	                 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glf.glBindTexture(GL_TEXTURE_2D, 0);
