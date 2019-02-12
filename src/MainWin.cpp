@@ -18,9 +18,9 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 	else if(e->key() == Qt::Key_Down)
 		cam.distance *= 1.2;
 	else if(e->key() == Qt::Key_PageUp)
-		method->setAlpha(method->getAlpha() * 21 / 20);
+		method->setAlpha(method->getAlpha() * 10 / 8);
 	else if(e->key() == Qt::Key_PageDown)
-		method->setAlpha(method->getAlpha() * 20 / 21);
+		method->setAlpha(method->getAlpha() * 8 / 10);
 	else if(e->key() == Qt::Key_Home)
 	{
 		// integralDt    = 0;
@@ -116,11 +116,11 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						                              // RIGHT
 						{
 							if(padCoords[0] < 0.0f) // LEFT
-								method->setAlpha(method->getAlpha() * 20
-								                 / 21);
+								method->setAlpha(method->getAlpha() * 8
+								                 / 10);
 							else // RIGHT
-								method->setAlpha(method->getAlpha() * 21
-								                 / 20);
+								method->setAlpha(method->getAlpha() * 10
+								                 / 8);
 						}
 					}
 					break;
