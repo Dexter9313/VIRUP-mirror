@@ -48,9 +48,9 @@ QVector4D BasicCamera::project(QVector4D const& vertex) const
 	return fullTransform * vertex;
 }
 
-void BasicCamera::update()
+void BasicCamera::update(bool force2D)
 {
-	if(*vrHandler)
+	if(*vrHandler && !force2D)
 	{
 		// proj
 		projLeft = vrHandler->getProjectionMatrix(
