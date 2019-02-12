@@ -6,10 +6,10 @@ environment:
   global:
     PROJECT_NAME: 'HydrogenVR'
   matrix:
-    - QTPATH: 'C:\Qt\5.11.2\msvc2015'
+    - QTPATH: 'C:\Qt\5.11\msvc2015'
       BUILD_TYPE: 32bit
       GENERATOR: '"Visual Studio 14 2015"'
-    - QTPATH: 'C:\Qt\5.11.2\msvc2015_64'
+    - QTPATH: 'C:\Qt\5.11\msvc2015_64'
       BUILD_TYPE: 64bit
       GENERATOR: '"Visual Studio 14 2015 Win64"'
 
