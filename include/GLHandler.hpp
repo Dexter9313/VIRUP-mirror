@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QImage>
+#include <QtMath>
 #include <QMatrix4x4>
 #include <QOpenGLFunctions_4_0_Core>
 #include <QSettings>
@@ -107,7 +108,7 @@ class GLHandler
 	static void setShaderParam(ShaderProgram shader, const char* paramName,
 	                           QMatrix4x4 const& value);
 	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           QColor const& value);
+	                           QColor const& value, bool sRGB = true);
 	static void useShader(ShaderProgram shader);
 	static void deleteShader(ShaderProgram shaderProgram);
 
@@ -136,13 +137,15 @@ class GLHandler
 	// textures
 	// for now it is very basic : we suppose one texture is loaded for the whole
 	// program and that's all
-	static Texture newTexture(const char* texturePath);
+	static Texture newTexture(const char* texturePath, bool sRGB = true);
 	static Texture newTexture(unsigned int width, unsigned int height,
-	                          const GLvoid* data);
+	                          const GLvoid* data, bool sRGB = true);
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
 
-	~GLHandler();
+	// http://entropymine.com/imageworsener/srgbformula/
+	static QColor sRGBToLinear(QColor const& srgb);
+	QColor linearTosRGB(QColor const& linear);
 
   private:
 	static GLuint loadShader(QString const& path, GLenum shaderType);
