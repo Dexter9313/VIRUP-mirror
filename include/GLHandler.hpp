@@ -108,7 +108,7 @@ class GLHandler
 	static void setShaderParam(ShaderProgram shader, const char* paramName,
 	                           QMatrix4x4 const& value);
 	static void setShaderParam(ShaderProgram shader, const char* paramName,
-	                           QColor const& value);
+	                           QColor const& value, bool sRGB = true);
 	static void useShader(ShaderProgram shader);
 	static void deleteShader(ShaderProgram shaderProgram);
 

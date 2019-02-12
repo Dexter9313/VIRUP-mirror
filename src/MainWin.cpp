@@ -63,7 +63,7 @@ void MainWin::initScene()
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	GLHandler::setShaderParam(shaderProgram, "alpha", 1.0f);
-	GLHandler::setShaderParam(shaderProgram, "color", GLHandler::sRGBToLinear(QColor::fromRgbF(1.0f, 0.4f, 0.3f)));
+	GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 0.4f, 0.3f));
 
 	std::vector<float> vertices = {
 	    0.5f,  0.5f,  0.0f, // top right

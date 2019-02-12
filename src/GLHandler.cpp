@@ -186,10 +186,11 @@ void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
 }
 
 void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               QColor const& value)
+                               QColor const& value, bool sRGB)
 {
+	QColor linVal(sRGB ? sRGBToLinear(value) : value);
 	setShaderParam(shader, paramName,
-	               QVector3D(value.redF(), value.greenF(), value.blueF()));
+	               QVector3D(linVal.redF(), linVal.greenF(), linVal.blueF()));
 }
 void GLHandler::useShader(ShaderProgram shader)
 {
