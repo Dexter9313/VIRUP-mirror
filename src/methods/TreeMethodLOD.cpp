@@ -1,7 +1,7 @@
 #include "methods/TreeMethodLOD.hpp"
 
 TreeMethodLOD::TreeMethodLOD()
-    : TreeMethodLOD("default")
+    : TreeMethodLOD("invsq")
 {
 }
 
@@ -110,7 +110,6 @@ void TreeMethodLOD::init(std::string const& gazPath,
 				break;
 		++lvlToLoad;
 	}
-	std::cout << "OK" << std::endl;
 }
 
 std::pair<float, std::string> humanReadable(long int bytes)
@@ -157,6 +156,8 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 	GLHandler::setShaderParam(shaderProgram, "color",
 	                          QVector3D(1.0f, 1.0f, 1.0f));
 	GLHandler::setUpRender(shaderProgram, model);
+	GLHandler::setShaderParam(shaderProgram, "alpha", model(0,0) * getAlpha());
+	GLHandler::setShaderParam(shaderProgram, "view", camera.hmdScaledSpaceToWorldTransform().inverted() * model);
 	GLHandler::setShaderParam(shaderProgram, "color", QSettings().value("data/gazcolor").value<QColor>());
 	unsigned int rendered = 0;
 	if(gazTree)
