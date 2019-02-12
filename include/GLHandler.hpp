@@ -147,6 +147,8 @@ class GLHandler
 	static QColor sRGBToLinear(QColor const& srgb);
 	QColor linearTosRGB(QColor const& linear);
 
+	static GLint defaultRenderTargetFormat;
+
   private:
 	static GLuint loadShader(QString const& path, GLenum shaderType);
 
