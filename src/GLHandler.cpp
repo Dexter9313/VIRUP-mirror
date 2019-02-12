@@ -186,10 +186,11 @@ void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
 }
 
 void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
-                               QColor const& value)
+                               QColor const& value, bool sRGB)
 {
+	QColor linVal(sRGB ? sRGBToLinear(value) : value);
 	setShaderParam(shader, paramName,
-	               QVector3D(value.redF(), value.greenF(), value.blueF()));
+	               QVector3D(linVal.redF(), linVal.greenF(), linVal.blueF()));
 }
 void GLHandler::useShader(ShaderProgram shader)
 {
@@ -338,7 +339,7 @@ void GLHandler::deleteMesh(Mesh const& mesh)
 	glf.glDeleteVertexArrays(1, &mesh.vao);
 }
 
-GLHandler::Texture GLHandler::newTexture(const char* texturePath)
+GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 {
 	QImage img_data;
 	if(!img_data.load(texturePath))
@@ -357,7 +358,7 @@ GLHandler::Texture GLHandler::newTexture(const char* texturePath)
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glf.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_data.width(),
+	glf.glTexImage2D(GL_TEXTURE_2D, 0, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA, img_data.width(),
 	                 img_data.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
 	                 img_data.bits());
 	glf.glBindTexture(GL_TEXTURE_2D, 0);
@@ -367,13 +368,14 @@ GLHandler::Texture GLHandler::newTexture(const char* texturePath)
 
 GLHandler::Texture GLHandler::newTexture(unsigned int width,
                                          unsigned int height,
-                                         const GLvoid* data)
+                                         const GLvoid* data,
+                                         bool sRGB)
 {
 	Texture tex;
 	glf.glGenTextures(1, &tex);
 	// glActiveTexture(GL_TEXTURE0);
 	glf.glBindTexture(GL_TEXTURE_2D, tex);
-	glf.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+	glf.glTexImage2D(GL_TEXTURE_2D, 0, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA, width, height, 0, GL_RGBA,
 	                 GL_UNSIGNED_BYTE, data);
 	// glGenerateMipmap(GL_TEXTURE_2D);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -402,6 +404,21 @@ void GLHandler::deleteTexture(Texture const& texture)
 	glf.glDeleteTextures(1, &texture);
 }
 
-GLHandler::~GLHandler()
+QColor GLHandler::sRGBToLinear(QColor const& srgb)
 {
+	QColor lin(srgb);
+	lin.setRedF(lin.redF() <= 0.04045 ? lin.redF() / 12.92 : qPow((lin.redF() + 0.055)/1.055, 2.4));
+	lin.setGreenF(lin.greenF() <= 0.04045 ? lin.greenF() / 12.92 : qPow((lin.greenF() + 0.055)/1.055, 2.4));
+	lin.setBlueF(lin.blueF() <= 0.04045 ? lin.blueF() / 12.92 : qPow((lin.blueF() + 0.055)/1.055, 2.4));
+	return lin;
 }
+
+QColor GLHandler::linearTosRGB(QColor const& linear)
+{
+	QColor srgb(linear);
+	srgb.setRedF(srgb.redF() <= 0.0031308 ? srgb.redF() * 12.92 : (1.055 * qPow(srgb.redF(), 1.0/2.4)) - 0.055);
+	srgb.setGreenF(srgb.greenF() <= 0.0031308 ? srgb.greenF() * 12.92 : (1.055 * qPow(srgb.greenF(), 1.0/2.4)) - 0.055);
+	srgb.setBlueF(srgb.blueF() <= 0.0031308 ? srgb.blueF() * 12.92 : (1.055 * qPow(srgb.blueF(), 1.0/2.4)) - 0.055);
+	return srgb;
+}
+
