@@ -25,6 +25,7 @@ class DebugCamera : public BasicCamera
 {
   public:
 	DebugCamera(VRHandler const* vrHandler);
+	virtual void update(bool force2D = false) override;
 	void renderCamera(BasicCamera const* cam);
 
   private:
