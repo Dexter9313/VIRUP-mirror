@@ -57,7 +57,8 @@ class GLHandler
 		POINTS    = GL_POINTS,
 		LINES     = GL_LINES,
 		TRIANGLES = GL_TRIANGLES,
-		AUTO
+		TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
+		AUTO // if no ebo, POINTS, else TRIANGLES
 	};
 
 	enum class GeometricSpace
@@ -113,20 +114,12 @@ class GLHandler
 	static void deleteShader(ShaderProgram shaderProgram);
 
 	// meshes
-	// For now it is very basic : we suppose vertices are positions only (no
-	// texCoord nor normal nor color).
-	//
-	// If no shader provided, first "in" in vertex shader is assumed to be the
-	// position
 	static Mesh newMesh();
-	// static Mesh newMesh(ShaderProgram sp, str in_name) would be a good idea
-	// too
 	static void setVertices(Mesh& mesh, std::vector<float> const& vertices,
 	                        ShaderProgram const& shaderProgram,
 	                        std::vector<VertexMapping> const& mapping,
 	                        std::vector<unsigned int> const& elements = {});
 	static void updateVertices(Mesh& mesh, std::vector<float> const& vertices);
-	// render renders as points as of now
 	static void setUpRender(ShaderProgram shader,
 	                        QMatrix4x4 const& model = QMatrix4x4(),
 	                        GeometricSpace space    = GeometricSpace::WORLD);
@@ -135,8 +128,6 @@ class GLHandler
 	static void deleteMesh(Mesh const& mesh);
 
 	// textures
-	// for now it is very basic : we suppose one texture is loaded for the whole
-	// program and that's all
 	static Texture newTexture(const char* texturePath, bool sRGB = true);
 	static Texture newTexture(unsigned int width, unsigned int height,
 	                          const GLvoid* data, bool sRGB = true);
