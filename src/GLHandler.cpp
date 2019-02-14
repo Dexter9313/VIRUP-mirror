@@ -81,13 +81,13 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 {
 	Mesh quad(newMesh());
 	setVertices(quad,
-	            {-1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f},
+	            {-1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, 1.f},
 	            shader, {{"position", 2}});
 
 	beginRendering(to);
 	useShader(shader);
 	useTextures({from.texColorBuffer});
-	render(quad, PrimitiveType::TRIANGLES);
+	render(quad, PrimitiveType::TRIANGLE_STRIP);
 
 	deleteMesh(quad);
 }
@@ -160,6 +160,7 @@ GLHandler::ShaderProgram GLHandler::newShader(QString vertex, QString fragment,
 	glf.glBindFragDataLocation(result, 0,
 	                           "outColor"); // optional for one buffer
 	glf.glLinkProgram(result);
+	glf.glValidateProgram(result);
 
 	return result;
 }
@@ -237,6 +238,7 @@ GLHandler::Mesh GLHandler::newMesh()
 	glf.glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
 	glf.glGenBuffers(1, &mesh.ebo);
 	glf.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
+	glf.glBindVertexArray(0);
 
 	mesh.vboSize = 0;
 	mesh.eboSize = 0;
@@ -294,6 +296,7 @@ void GLHandler::updateVertices(Mesh& mesh, std::vector<float> const& vertices)
 	// put data in buffer (it is now sent to graphics card)
 	glf.glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]),
 	                 &(vertices[0]), GL_DYNAMIC_DRAW);
+	glf.glBindVertexArray(0);
 }
 
 void GLHandler::setUpRender(ShaderProgram shader, QMatrix4x4 const& model,
