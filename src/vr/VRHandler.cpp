@@ -240,6 +240,16 @@ void VRHandler::renderHands()
 		rightHand->render();
 }
 
+void VRHandler::reloadPostProcessingTargets()
+{
+	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
+	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
+	postProcessingTargets[0]
+	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+	postProcessingTargets[1]
+	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+}
+
 void VRHandler::submitRendering(Side eye)
 {
 	GLHandler::RenderTarget* frame

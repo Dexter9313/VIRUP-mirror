@@ -40,8 +40,10 @@ class AbstractMainWin : public QOpenGLWindow
 	void insertPostProcessingShader(QString const& id, QString const& fragment,
 	                                unsigned int pos);
 	void removePostProcessingShader(QString const& id);
-
 	virtual void applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const;
+	void reloadPostProcessingTargets();
+	bool getHDR() const { return hdr; };
+	void setHDR(bool hdr);
 
 	VRHandler vrHandler;
 	float const& frameTiming = frameTiming_;
@@ -54,7 +56,6 @@ class AbstractMainWin : public QOpenGLWindow
 	    = postProcessingPipeline_;
 
 	float gamma = 2.2f;
-	bool hdr = true;
 
   private:
 	void initializeGL() override;
@@ -66,6 +67,8 @@ class AbstractMainWin : public QOpenGLWindow
 
 	BasicCamera* camera;
 	DebugCamera* dbgCamera;
+
+	bool hdr = QSettings().value("hdr").toBool();
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	GLHandler::RenderTarget postProcessingTargets[2];

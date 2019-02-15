@@ -62,6 +62,7 @@ class VRHandler
 	void renderHands();
 	GLHandler::RenderTarget& getEyeTarget(Side side) { return side == Side::LEFT ? leftTarget : rightTarget; };
 	GLHandler::RenderTarget& getPostProcessingTarget(unsigned int i) { return postProcessingTargets[i]; };
+	void reloadPostProcessingTargets();
 	void submitRendering(Side eye);
 	void displayOnCompanion(unsigned int companionWidth,
 	                        unsigned int companionHeight) const;
