@@ -29,6 +29,8 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 		method->showdm = !method->showdm;
 	else if(e->key() == Qt::Key_C)
 		showCube = !showCube;
+	else if(e->key() == Qt::Key_H)
+		setHDR(!getHDR());
 
 	AbstractMainWin::keyPressEvent(e);
 }
@@ -164,8 +166,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 					method->showdm = !method->showdm;
 					break;
 				case VRHandler::Button::MENU:
-					std::cout << "Menu Pressed on controller "
-					          << (unsigned int) e.side << " !" << std::endl;
+					setHDR(!getHDR());
 					break;
 				default:
 					std::cout << "Button (?) Pressed on controller "
