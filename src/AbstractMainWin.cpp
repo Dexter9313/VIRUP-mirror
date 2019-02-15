@@ -9,6 +9,9 @@ AbstractMainWin::AbstractMainWin()
 	format.setVersion(4, 0);
 	format.setSwapInterval(0);
 	setFormat(format);
+
+	if(hdr)
+		GLHandler::defaultRenderTargetFormat = GL_RGBA16F;
 }
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
@@ -74,8 +77,28 @@ void AbstractMainWin::removePostProcessingShader(QString const& id)
 void AbstractMainWin::applyPostProcShaderParams(
     QString const& id, GLHandler::ShaderProgram shader) const
 {
-	if(id == "gamma")
+	if(id == "colors")
+	{
 		GLHandler::setShaderParam(shader, "gamma", gamma);
+		GLHandler::setShaderParam(shader, "hdr", hdr);
+	}
+}
+
+void AbstractMainWin::reloadPostProcessingTargets()
+{
+	GLHandler::defaultRenderTargetFormat = hdr ? GL_RGBA16F : GL_RGBA;
+
+	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
+	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
+	postProcessingTargets[0] = GLHandler::newRenderTarget(width(), height());
+	postProcessingTargets[1] = GLHandler::newRenderTarget(width(), height());
+
+}
+
+void AbstractMainWin::setHDR(bool hdr)
+{
+	this->hdr = hdr;
+	reloadPostProcessingTargets();
 }
 
 void AbstractMainWin::initializeGL()
@@ -108,7 +131,7 @@ void AbstractMainWin::initializeGL()
 	initScene();
 
 	// make sure gamma correction is applied last
-	appendPostProcessingShader("gamma", "gamma");
+	appendPostProcessingShader("colors", "colors");
 
 	frameTimer.start();
 }
