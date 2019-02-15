@@ -74,7 +74,7 @@ void AbstractMainWin::removePostProcessingShader(QString const& id)
 void AbstractMainWin::applyPostProcShaderParams(
     QString const& id, GLHandler::ShaderProgram shader) const
 {
-	if(id == "gamma")
+	if(id == "colors")
 	{
 		GLHandler::setShaderParam(shader, "gamma", gamma);
 		GLHandler::setShaderParam(shader, "hdr", hdr);
@@ -111,7 +111,7 @@ void AbstractMainWin::initializeGL()
 	initScene();
 
 	// make sure gamma correction is applied last
-	appendPostProcessingShader("gamma", "gamma");
+	appendPostProcessingShader("colors", "colors");
 
 	frameTimer.start();
 }
