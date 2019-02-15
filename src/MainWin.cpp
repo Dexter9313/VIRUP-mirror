@@ -3,7 +3,6 @@
 MainWin::MainWin()
     : AbstractMainWin()
 {
-	GLHandler::defaultRenderTargetFormat = GL_RGBA16F;
 }
 
 void MainWin::keyPressEvent(QKeyEvent* e)
