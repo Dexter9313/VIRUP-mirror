@@ -8,11 +8,7 @@ MainWin::MainWin()
 void MainWin::keyPressEvent(QKeyEvent* e)
 {
 	Camera& cam(static_cast<Camera&>(getCamera()));
-	if(e->key() == Qt::Key_Left)
-		cam.angle -= 3.14f / 30.0f;
-	else if(e->key() == Qt::Key_Right)
-		cam.angle += 3.14f / 30.0f;
-	else if(e->key() == Qt::Key_Up)
+	if(e->key() == Qt::Key_Up)
 		cam.distance /= 1.2;
 	else if(e->key() == Qt::Key_Down)
 		cam.distance *= 1.2;
@@ -23,8 +19,9 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 	else if(e->key() == Qt::Key_Home)
 	{
 		// integralDt    = 0;
-		cam.angle    = 0;
-		cam.distance = 0.01;
+		cam.angleAroundZ = 0.f;
+		cam.angleAboveXY = 0.f;
+		cam.distance     = 0.01f;
 		if(vrHandler)
 			vrHandler.resetPos();
 	}
@@ -36,9 +33,48 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 	AbstractMainWin::keyPressEvent(e);
 }
 
+void MainWin::mousePressEvent(QMouseEvent* e)
+{
+	if(e->button() != Qt::MouseButton::RightButton)
+		return;
+
+	lastCursorPos = QCursor::pos();
+	QCursor::setPos(width() / 2, height() / 2);
+	QCursor c(cursor());
+	c.setShape(Qt::CursorShape::BlankCursor);
+	setCursor(c);
+	trackballEnabled = true;
+
+}
+
+void MainWin::mouseReleaseEvent(QMouseEvent* e)
+{
+	if(e->button() != Qt::MouseButton::RightButton)
+		return;
+
+	trackballEnabled = false;
+	QCursor c(cursor());
+	c.setShape(Qt::CursorShape::ArrowCursor);
+	setCursor(c);
+	QCursor::setPos(lastCursorPos);
+}
+
+void MainWin::mouseMoveEvent(QMouseEvent* e)
+{
+	if(!trackballEnabled)
+		return;
+	Camera& cam(static_cast<Camera&>(getCamera()));
+	float dx = static_cast<float>((width() / 2) - e->globalX()) / width();
+	float dy = static_cast<float>((height() / 2) - e->globalY()) / height();
+	cam.angleAroundZ += dx * 3.14f / 3.f;
+	cam.angleAboveXY += dy * 3.14f / 3.f;
+	QCursor::setPos(width() / 2, height() / 2);
+}
+
 void MainWin::wheelEvent(QWheelEvent* e)
 {
 	cubeScale += cubeScale * e->angleDelta().y() / 1000.f;
+	AbstractMainWin::wheelEvent(e);
 }
 
 void MainWin::vrEvent(VRHandler::Event const& e)
@@ -233,7 +269,6 @@ void MainWin::initScene()
 
 	Camera* cam = new Camera(&vrHandler);
 	cam->setPerspectiveProj(70.0f, (float) width() / (float) height());
-	cam->angle    = 0;
 	cam->distance = 0.5;
 
 	setCamera(cam);

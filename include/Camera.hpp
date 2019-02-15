@@ -49,7 +49,8 @@ class Camera : public BasicCamera
 	virtual void update(bool force2D = false) override;
 	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const;
 
-	float angle;
+	float angleAroundZ;
+	float angleAboveXY;
 	float distance;
 	float targetFPS;
 

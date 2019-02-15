@@ -2,7 +2,8 @@
 
 Camera::Camera(VRHandler const* vrHandler)
     : BasicCamera(vrHandler)
-    , angle(0.f)
+    , angleAroundZ(0.f)
+    , angleAboveXY(0.f)
     , distance(1.0f)
     , targetFPS(60.0f)
     , up(QVector3D(0.0f, 0.0f, 1.0f))
@@ -12,9 +13,13 @@ Camera::Camera(VRHandler const* vrHandler)
 
 void Camera::update(bool force2D)
 {
+	angleAboveXY = angleAboveXY > 3.1415f / 2.f ? 3.1415f / 2.f : angleAboveXY;
+	angleAboveXY
+	    = angleAboveXY < -3.1415f / 2.f ? -3.1415f / 2.f : angleAboveXY;
 	position
-	    = QVector3D(cos(angle) * 2.0f * distance, sin(angle) * 2.0f * distance,
-	                1.2f * distance * (distance / 2));
+	    = QVector3D(2.0f * distance * cos(angleAroundZ) * cos(angleAboveXY),
+	                2.0f * distance * sin(angleAroundZ) * cos(angleAboveXY),
+	                2.0f * distance * sin(angleAboveXY));
 	lookDirection = (-1.0f * getPosition()).normalized();
 	position += QSettings().value("misc/focuspoint").value<QVector3D>();
 	setView(position, lookDirection, up);

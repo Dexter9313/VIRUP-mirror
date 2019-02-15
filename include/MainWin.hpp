@@ -19,6 +19,9 @@ class MainWin : public AbstractMainWin
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
+	virtual void mousePressEvent(QMouseEvent* e) override;
+	virtual void mouseReleaseEvent(QMouseEvent* e) override;
+	virtual void mouseMoveEvent(QMouseEvent* e) override;
 	virtual void wheelEvent(QWheelEvent* e) override;
 	virtual void vrEvent(VRHandler::Event const& e) override;
 
@@ -49,6 +52,9 @@ class MainWin : public AbstractMainWin
 
 	float cubeScale           = 1.f;
 	QVector3D cubeTranslation = QVector3D(0.f, 0.f, 0.f);
+
+	QPoint lastCursorPos;
+	bool trackballEnabled = false;
 
 	// scaling/translation controls variables
 	bool leftGripPressed  = false;
