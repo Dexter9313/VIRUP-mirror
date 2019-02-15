@@ -68,7 +68,7 @@ class AbstractMainWin : public QOpenGLWindow
 	BasicCamera* camera;
 	DebugCamera* dbgCamera;
 
-	bool hdr = QSettings().value("hdr").toBool();
+	bool hdr = QSettings().value("window/hdr").toBool();
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	GLHandler::RenderTarget postProcessingTargets[2];
