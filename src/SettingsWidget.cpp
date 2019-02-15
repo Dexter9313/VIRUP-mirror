@@ -25,6 +25,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addUIntSetting("width", 1500, tr("Window Width"), 0, 10000);
 	addUIntSetting("height", 800, tr("Window Height"), 0, 10000);
 	addBoolSetting("fullscreen", false, tr("Window Fullscreen"));
+	addBoolSetting("hdr", true, tr("High Dynamic Range"));
 
 	addGroup("vr", tr("Virtual Reality"));
 	addBoolSetting("enabled", true, tr("Enable VR"));
