@@ -75,7 +75,10 @@ void AbstractMainWin::applyPostProcShaderParams(
     QString const& id, GLHandler::ShaderProgram shader) const
 {
 	if(id == "gamma")
+	{
 		GLHandler::setShaderParam(shader, "gamma", gamma);
+		GLHandler::setShaderParam(shader, "hdr", hdr);
+	}
 }
 
 void AbstractMainWin::initializeGL()

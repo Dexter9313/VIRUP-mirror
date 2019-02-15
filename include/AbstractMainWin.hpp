@@ -53,7 +53,8 @@ class AbstractMainWin : public QOpenGLWindow
 	    postProcessingPipeline
 	    = postProcessingPipeline_;
 
-	float gamma = 2.2;
+	float gamma = 2.2f;
+	bool hdr = true;
 
   private:
 	void initializeGL() override;
