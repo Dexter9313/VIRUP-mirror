@@ -77,6 +77,8 @@ class GLHandler
 	// rendering
 	static RenderTarget newRenderTarget(unsigned int width,
 	                                    unsigned int height);
+	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
+	                                    GLint format);
 	static void deleteRenderTarget(RenderTarget const& renderTarget);
 	static void beginRendering(RenderTarget const& renderTarget
 	                           = {0, 0, 0,
