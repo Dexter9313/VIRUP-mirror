@@ -50,9 +50,9 @@ bool VRHandler::init()
 		std::cout << "Render models loaded successfully" << std::endl;
 
 	leftTarget
-	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second, GL_RGBA8);
 	rightTarget
-	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second, GL_RGBA8);
 	postProcessingTargets[0]
 	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
 	postProcessingTargets[1]

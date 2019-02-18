@@ -27,6 +27,12 @@ void GLHandler::setPointSize(unsigned int size)
 GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
                                                    unsigned int height)
 {
+	return newRenderTarget(width, height, defaultRenderTargetFormat);
+}
+
+GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width, unsigned int height,
+                                                   GLint format)
+{
 	RenderTarget result;
 	result.width  = width;
 	result.height = height;
@@ -37,7 +43,7 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	// generate texture
 	glf.glGenTextures(1, &result.texColorBuffer);
 	glf.glBindTexture(GL_TEXTURE_2D, result.texColorBuffer);
-	glf.glTexImage2D(GL_TEXTURE_2D, 0, defaultRenderTargetFormat, width, height,
+	glf.glTexImage2D(GL_TEXTURE_2D, 0, format, width, height,
 	                 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
