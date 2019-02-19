@@ -49,7 +49,7 @@ install:
     ############################################################################
     # Install Additional Project Deps
     ############################################################################
-    - %APPVEYOR_BUILD_FOLDER%\%PROJECT_DIRECTORY%\ci\appveyor\install.bat
+    - "%APPVEYOR_BUILD_FOLDER%"\"%PROJECT_DIRECTORY%"\ci\appveyor\install.bat
 
 
 before_build:
