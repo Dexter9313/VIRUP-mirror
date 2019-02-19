@@ -81,6 +81,7 @@ after_build:
     - copy %OPENVR_SHARED% %RELEASE_DIR%
     - copy %LEAP_SHARED% %RELEASE_DIR%
     - move %APPVEYOR_BUILD_FOLDER%\data %RELEASE_DIR%\data
+    - %APPVEYOR_BUILD_FOLDER%\%PROJECT_DIRECTORY%\ci\appveyor\before_archiving.bat
     - 7z a -tzip %RELEASE_DIR_NAME%.zip %RELEASE_DIR%
     - IF "%BUILD_TYPE%" == "64bit" (set ARCH=/DX64) ELSE (set ARCH=/DX86)
     - IF "%BUILD_TYPE%" == "64bit" (set VCREDIST=vc_redist.x64.exe) ELSE (set VCREDIST=vc_redist.x86.exe)
