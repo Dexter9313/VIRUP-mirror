@@ -27,7 +27,6 @@ For initial setup, make sure you :
 * Erase and replace this README by a new one.
 * Change variables in build.conf
 * If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
-* Change innosetup/config.iss defines.
 * Change build status from Travis and Appveyor to your own.
 * Inherit from AbstractMainWin to draw (replace all of the MainWin class code which serves as an example).
 
