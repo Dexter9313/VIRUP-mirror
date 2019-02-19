@@ -46,6 +46,11 @@ install:
     - set LEAP_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/leap/Leap/LeapSDK/lib/%ARCH%/Leap.lib
     - set LEAP_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\leap\Leap\LeapSDK\lib\%ARCH%\Leap.dll
     - cd ..
+    ############################################################################
+    # Install Additional Project Deps
+    ############################################################################
+    - %APPVEYOR_BUILD_FOLDER%\%PROJECT_DIRECTORY%\ci\appveyor\install.bat
+
 
 before_build:
     - set INNOSETUPPATH=C:\Program Files (x86)\Inno Setup 5
