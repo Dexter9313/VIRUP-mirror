@@ -9,7 +9,6 @@
 #endif
 #define MyAppPublisher "Florian Cabot"
 #define MyAppURL "https://gitlab.com/Dexter9313/hydrogenvr"
-#define MyAppExeName "HydrogenVR.exe"
 #define MyLicense "C:\projects\hydrogenvr-mirror\LICENSE"
 
 
@@ -74,11 +73,11 @@ Source: "{#ROOT_DIR}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs c
 Source: "{#VCREDIST}"; DestDir: {tmp}; Flags: deleteafterinstall
 
 [Icons]
-Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppName}.exe"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 Filename: "{tmp}\{#VCREDIST_EXE}"; Check: VCRedistNeedsInstall
 
 [Code]
