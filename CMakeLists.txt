@@ -123,60 +123,61 @@ add_executable(${PROJECT_NAME} ${SRC_FILES} ${MOC_FILES})
 target_link_libraries(${PROJECT_NAME} ${LD_LIBS})
 
 
-#INSTALL RULES
-INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} DESTINATION bin)
-INSTALL(FILES ${OPENVR_LIBRARY} DESTINATION lib)
-if(LEAPMOTION_FOUND)
-	INSTALL(FILES ${LEAPMOTION_LIBRARY} DESTINATION lib)
+#INSTALL RULES / NOT FOR WINDOWS
+if(NOT WIN32)
+	INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} DESTINATION bin)
+	INSTALL(FILES ${OPENVR_LIBRARY} DESTINATION lib)
+	if(LEAPMOTION_FOUND)
+		INSTALL(FILES ${LEAPMOTION_LIBRARY} DESTINATION lib)
+	endif()
+	INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION share/${PROJECT_NAME})
+	include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Install.cmake)
+
+	SET(CPACK_GENERATOR "DEB")
+	SET(CPACK_PACKAGE_NAME ${PROJECT_NAME})
+	SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${PROJECT_MAINTAINER})
+	if(TAG)
+		SET(CPACK_PACKAGE_VERSION ${TAG})
+	endif()
+
+	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5:amd64,\
+	libqt5gui5:amd64,\
+	libqt5core5a:amd64,\
+	libstdc++6:amd64,\
+	libc6:amd64,\
+	libgcc1:amd64,\
+	libc6:amd64,\
+	libc6:amd64,\
+	libc6:amd64,\
+	libc6:amd64,\
+	libgl1:amd64,\
+	libpng16-16:amd64,\
+	libharfbuzz0b:amd64,\
+	zlib1g:amd64,\
+	libicu60:amd64,\
+	libicu60:amd64,\
+	libdouble-conversion1:amd64,\
+	libglib2.0-0:amd64,\
+	libglx0:amd64,\
+	libglvnd0:amd64,\
+	libfreetype6:amd64,\
+	libgraphite2-3:amd64,\
+	libicu60:amd64,\
+	libpcre3:amd64,\
+	libx11-6:amd64,\
+	libxcb1:amd64,\
+	libxau6:amd64,\
+	libxdmcp6:amd64,\
+	libbsd0:amd64,\
+	${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
+
+	INCLUDE(CPack)
+
+	#Create uninstall target
+	add_custom_target(uninstall
+			COMMAND xargs rm < install_manifest.txt && rm install_manifest.txt
+			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+			COMMENT "Uninstalling executable..."
+			VERBATIM)
 endif()
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION share/${PROJECT_NAME})
-include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Install.cmake)
-
-SET(CPACK_GENERATOR "DEB")
-SET(CPACK_PACKAGE_NAME ${PROJECT_NAME})
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${PROJECT_MAINTAINER})
-if(TAG)
-	SET(CPACK_PACKAGE_VERSION ${TAG})
-endif()
-
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5:amd64,\
-libqt5gui5:amd64,\
-libqt5core5a:amd64,\
-libstdc++6:amd64,\
-libc6:amd64,\
-libgcc1:amd64,\
-libc6:amd64,\
-libc6:amd64,\
-libc6:amd64,\
-libc6:amd64,\
-libgl1:amd64,\
-libpng16-16:amd64,\
-libharfbuzz0b:amd64,\
-zlib1g:amd64,\
-libicu60:amd64,\
-libicu60:amd64,\
-libdouble-conversion1:amd64,\
-libglib2.0-0:amd64,\
-libglx0:amd64,\
-libglvnd0:amd64,\
-libfreetype6:amd64,\
-libgraphite2-3:amd64,\
-libicu60:amd64,\
-libpcre3:amd64,\
-libx11-6:amd64,\
-libxcb1:amd64,\
-libxau6:amd64,\
-libxdmcp6:amd64,\
-libbsd0:amd64,\
-${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
-
-INCLUDE(CPack)
-
-#Create uninstall target
-add_custom_target(uninstall
-		COMMAND xargs rm < install_manifest.txt && rm install_manifest.txt
-		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Uninstalling executable..."
-		VERBATIM)
-
 
