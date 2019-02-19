@@ -3,7 +3,7 @@
 
 #include <liboctree/Octree.hpp>
 
-#include "../GLHandler.hpp"
+#include "GLHandler.hpp"
 #include "Method.hpp"
 
 class BaseLineMethod : public Method

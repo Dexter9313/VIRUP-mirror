@@ -3,9 +3,9 @@
 
 #include <liboctree/Octree.hpp>
 
-#include "../Camera.hpp"
-#include "../GLHandler.hpp"
-#include "../utils.hpp"
+#include "Camera.hpp"
+#include "GLHandler.hpp"
+#include "utils.hpp"
 
 #define MAX_LEAVES_PER_NODE 16000
 

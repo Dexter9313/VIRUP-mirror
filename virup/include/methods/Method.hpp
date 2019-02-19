@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "../Camera.hpp"
-#include "../GLHandler.hpp"
-#include "../utils.hpp"
+#include "Camera.hpp"
+#include "GLHandler.hpp"
+#include "utils.hpp"
 
 class Method
 {
