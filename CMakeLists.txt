@@ -17,8 +17,23 @@
 #INIT
 cmake_minimum_required(VERSION 3.0.0)
 
-set(PROJECT_NAME VIRUP)
+#READ CONFIG FILE AND SET VARIABLES
+file(STRINGS "build.conf" ConfigContents)
+foreach(NameAndValue ${ConfigContents})
+  # Strip leading spaces
+  string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
+  # Find variable name
+  string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
+  # Find the value
+  string(REPLACE "${Name}=" "" Value ${NameAndValue})
+  # Remove quotes
+  string(REPLACE "\"" "" Value ${Value})
+  # Set the variable
+  set(${Name} ${Value})
+endforeach()
+
 project(${PROJECT_NAME} CXX)
+set(CMAKE_PROJECT_DESCRIPTION ${PROJECT_DESCRIPTION})
 
 
 #C++11
@@ -49,6 +64,14 @@ endif()
 #Define project name in source for preprocessor
 add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
 
+
+#FILES/DIRECTORIES
+
+set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
+
+file(GLOB_RECURSE HPP_FILES ${COMMON_INCLUDES}/*.hpp)
+file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+
 #DEPENDENCIES
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
 
@@ -61,33 +84,23 @@ if((NOT DEFINED LEAPMOTION_INCLUDE_DIR) OR (NOT DEFINED LEAPMOTION_LIBRARY))
 else()
 	set(LEAPMOTION_FOUND true)
 endif()
-if((NOT DEFINED OCTREE_INCLUDE_DIR) OR (NOT DEFINED OCTREE_LIBRARY))
-	find_package(Octree REQUIRED)
-endif()
 
-if(LEAPMOTION_FOUND)
-	add_definitions(-DLEAP_MOTION)
-	set(EXTERNAL_LIBS_INCLUDE_DIRS ${OCTREE_INCLUDE_DIR} ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR} ${LEAPMOTION_INCLUDE_DIR})
-else()
-	set(EXTERNAL_LIBS_INCLUDE_DIRS ${OCTREE_INCLUDE_DIR} ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR})
-endif()
-
-#FILES/DIRECTORIES
-
-set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
-
-file(GLOB_RECURSE HPP_FILES ${COMMON_INCLUDES}/*.hpp)
-file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Dependencies.cmake)
 
 #INCLUDE
+
+set(EXTERNAL_LIBS_INCLUDE_DIRS ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR} ${PROJECT_INCLUDE_DIRS})
+if(LEAPMOTION_FOUND)
+	add_definitions(-DLEAP_MOTION)
+	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${LEAPMOTION_INCLUDE_DIR} ${PROJECT_LIBRARIES})
+endif()
 
 include_directories(${COMMON_INCLUDES} SYSTEM ${EXTERNAL_LIBS_INCLUDE_DIRS})
 
 #LINKING SETUP
+	set(LD_LIBS Qt5::Widgets ${OPENVR_LIBRARY})
 if(LEAPMOTION_FOUND)
-	set(LD_LIBS ${OCTREE_LIBRARY} Qt5::Widgets ${OPENVR_LIBRARY} ${LEAPMOTION_LIBRARY})
-else()
-	set(LD_LIBS ${OCTREE_LIBRARY} Qt5::Widgets ${OPENVR_LIBRARY})
+	set(LD_LIBS Qt5::Widgets ${LD_LIBS} ${LEAPMOTION_LIBRARY})
 endif()
 
 #Find .so in working directory
@@ -96,9 +109,9 @@ if(NOT WIN32)
 endif()
 
 #prevent console from popping on Windows
-#IF( WIN32 )
-#  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /entry:mainCRTStartup")
-#ENDIF()
+IF( WIN32 )
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /entry:mainCRTStartup")
+ENDIF()
 
 
 #RUN MOC (FOR QT5)
@@ -116,14 +129,15 @@ if(LEAPMOTION_FOUND)
 	INSTALL(FILES ${LEAPMOTION_LIBRARY} DESTINATION lib)
 endif()
 INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION share/${PROJECT_NAME})
+include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Install.cmake)
 
 SET(CPACK_GENERATOR "DEB")
 SET(CPACK_PACKAGE_NAME ${PROJECT_NAME})
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The VIrtual Reality Universe Project uses astrophysical data to propose a virtual reality visualization of it.")
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Florian Cabot <florian.cabot@epfl.ch>")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${PROJECT_MAINTAINER})
 if(TAG)
 	SET(CPACK_PACKAGE_VERSION ${TAG})
 endif()
+
 SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5:amd64,\
 libqt5gui5:amd64,\
 libqt5core5a:amd64,\
@@ -152,7 +166,8 @@ libx11-6:amd64,\
 libxcb1:amd64,\
 libxau6:amd64,\
 libxdmcp6:amd64,\
-libbsd0:amd64")
+libbsd0:amd64,\
+${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
 
 INCLUDE(CPack)
 

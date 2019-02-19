@@ -42,18 +42,15 @@ You will need the following requirements :
 Then clone this repository. We now suppose the root directory of the repository is stored in the $VIRUP_ROOT_DIR variable.
 
         cd $VIRUP_ROOT_DIR
-        mkdir build && cd build
-        cmake ..
-        make -j
+        ./build-linux.sh
+        cd build
         sudo make install
 
 Optionally, you can generate a deb package to make installation managing easier if you are on a debian-based system. The package name will be "virup".
 
         cd $VIRUP_ROOT_DIR
-        mkdir build && cd build
-        cmake ..
-        make -j package
-        sudo dpkg -i ./*.deb
+        ./build-linux.sh package
+        sudo dpkg -i ./build/*.deb
 
 ## Usage
 
@@ -87,4 +84,4 @@ If the make install method for installation was used, uninstallation can only be
         cd build
         sudo make uninstall
 
-As of now, this method can leave some empty directories in your file system though... Check the file content yourself if you want to clean everything properly.
+As of now, this method can leave some empty directories in your file system though... Check install_manifest.txt content yourself if you want to clean everything properly.

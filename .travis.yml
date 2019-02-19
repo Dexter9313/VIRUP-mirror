@@ -13,8 +13,6 @@ compiler:
     - clang
 
 env:
-    global:
-        - PROJECT_NAME=VIRUP
     matrix:
         exclude:
             # Qt 5.6 no longer supports gcc on OS X.
@@ -26,6 +24,7 @@ addons:
             - qtbase5-dev
 
 install:
+    - . ./build.conf
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         brew update ;
         brew install qt5 ;
@@ -45,11 +44,8 @@ install:
         sudo cp ./LeapDeveloperKit*/LeapSDK/include/Leap*.h /usr/include ;
         sudo cp ./LeapDeveloperKit*/LeapSDK/lib/x64/libLeap.so /usr/lib ;
       fi
-    # install liboctree
-    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        wget --content-disposition https://gitlab.com/Dexter9313/octree-file-format/-/jobs/artifacts/1.2.0/raw/liboctree-1.2.0-linux_amd64.deb?job=pack:liboctree ;
-        sudo dpkg -i ./*.deb ;
-      fi
+    # install project additional deps
+    - ./$PROJECT_DIRECTORY/ci/travis/install.sh
 
 
 script:
