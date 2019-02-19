@@ -58,7 +58,9 @@ before_deploy:
     - export RELEASE_DIR=$PROJECT_NAME-$TRAVIS_TAG-$TRAVIS_OS_NAME-64bit
     - mkdir $RELEASE_DIR
     - cp $PROJECT_NAME $RELEASE_DIR
-    - cp -r ../data $RELEASE_DIR
+    - mkdir $RELEASE_DIR/data
+    - cp -r ../data/core $RELEASE_DIR/data
+    - cp -r ../data/$PROJECT_DIRECTORY $RELEASE_DIR/data
     - cp -r /usr/lib/libopenvr_api.so $RELEASE_DIR
     - cp -r /usr/lib/libLeap.so $RELEASE_DIR
     - tar -zcvf $RELEASE_DIR.tar.gz $RELEASE_DIR
