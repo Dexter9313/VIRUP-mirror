@@ -30,6 +30,7 @@ For initial setup, make sure you :
 * Create a project directory. We will call it "projectdir" in this README but you can name it whatever you want as long as build.conf is set accordingly. All your source code should be within your project directory. Don't change anything at root level unless specified as safe here, unless you want engine update problems (see data/ and example/ directories for an example project).
 * Create a MainWin class that inherits from AbstractMainWin to draw.
 * Don't write a main() function, HydrogenVR already provides one.
+* Don't remove the examples, they are light and won't be included within your project packages. This is to ensure you can update HydrogenVR without any problem.
 
 You can also :
 * Add CMake dependencies in projectdir/cmake/Dependencies.cmake
@@ -38,9 +39,9 @@ You can also :
 * Add a custom install script for Appveyor as projectdir/ci/appveyor/install.bat
 * Add files to the final archive via a script for Appveyor as projectdir/ci/appveyor/before_archive.bat
 * Add settings to the SettingsWidget constructor.
-* Add assets to the data/ directory. The working directory will always contain data (so you can always reach data relatively from this path : "data/"). It will be packaged with the rest of the project.
+* Add assets to your data/projectdir directory. The working directory will always contain data/ (so you can always reach data relatively from this path; ex : "data/core/shaders/default.vert" is a valid path). The last example is what is called an "absolute data path" because you need to provide the "data/core" prefix to reach the data (if it is in data/core). The preferred way of accessing data is by using the utils.hpp:getAbsoluteDataPath() function and provide a "relative data path" to it (for last example it would have been "shaders/default.vert"). The function will figure in which data/ subdirectory is your data file and give back an "absolute data path" (for last example : "data/core/shaders/default.vert"). Your subdirectory has priority over core/, so you can override core/ data files by providing other versions in your data/projectdir. The data directory will automatically be packaged with your project releases (only the relevant subdirs).
 
-The project name defined in build.conf as PROJECT_NAME will be accessible in C++ code as the PROJECT_NAME macro. It is a C-style string constant.
+The project name defined in build.conf as PROJECT_NAME is accessible in C++ code as the PROJECT_NAME macro, and so is PROJECT_DIRECTORY. They are C-style string constants.
 
 All used classes starting with Q (ex: QSettings) belong to the Qt framework. The engine didn't wrap anything from Qt, so you will have to use Qt a least a little.
 

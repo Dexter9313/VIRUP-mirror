@@ -80,7 +80,9 @@ after_build:
     - copy %QTPATH%\plugins\platforms\qwindows.dll %RELEASE_DIR%\platforms
     - copy %OPENVR_SHARED% %RELEASE_DIR%
     - copy %LEAP_SHARED% %RELEASE_DIR%
-    - move %APPVEYOR_BUILD_FOLDER%\data %RELEASE_DIR%\data
+    - mkdir %RELEASE_DIR%\data
+    - move %APPVEYOR_BUILD_FOLDER%\data\core %RELEASE_DIR%\data
+    - move %APPVEYOR_BUILD_FOLDER%\data\%PROJECT_DIRECTORY% %RELEASE_DIR%\data
     - ..\..\%PROJECT_DIRECTORY%\ci\appveyor\before_archiving.bat
     - 7z a -tzip %RELEASE_DIR_NAME%.zip %RELEASE_DIR%
     - IF "%BUILD_TYPE%" == "64bit" (set ARCH=/DX64) ELSE (set ARCH=/DX86)

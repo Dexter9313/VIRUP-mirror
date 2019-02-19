@@ -145,16 +145,16 @@ GLHandler::ShaderProgram GLHandler::newShader(QString vertex, QString fragment,
 	(void) geometry;
 
 	if(!vertex.contains('.'))
-		vertex = "data/shaders/" + vertex + ".vert";
+		vertex = "shaders/" + vertex + ".vert";
 	if(!fragment.contains('.'))
-		fragment = "data/shaders/" + fragment + ".frag";
+		fragment = "shaders/" + fragment + ".frag";
 
 	ShaderProgram result;
 
 	// vertex shader
-	GLuint vertexShader = loadShader(vertex, GL_VERTEX_SHADER);
+	GLuint vertexShader = loadShader(getAbsoluteDataPath(vertex), GL_VERTEX_SHADER);
 	// fragment shader
-	GLuint fragmentShader = loadShader(fragment, GL_FRAGMENT_SHADER);
+	GLuint fragmentShader = loadShader(getAbsoluteDataPath(fragment), GL_FRAGMENT_SHADER);
 
 	// program
 	result = glf.glCreateProgram();
