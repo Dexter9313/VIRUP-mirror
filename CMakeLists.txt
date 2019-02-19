@@ -17,7 +17,21 @@
 #INIT
 cmake_minimum_required(VERSION 3.0.0)
 
+#READ CONFIG FILE AND SET VARIABLES
+file(STRINGS "build.conf" ConfigContents)
+foreach(NameAndValue ${ConfigContents})
+  # Strip leading spaces
+  string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
+  # Find variable name
+  string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
+  # Find the value
+  string(REPLACE "${Name}=" "" Value ${NameAndValue})
+  # Set the variable
+  set(${Name} "${Value}")
+endforeach()
+
 project(${PROJECT_NAME} CXX)
+set(CMAKE_PROJECT_DESCRIPTION "${PROJECT_DESCRIPTION}")
 
 
 #C++11
@@ -48,6 +62,14 @@ endif()
 #Define project name in source for preprocessor
 add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
 
+
+#FILES/DIRECTORIES
+
+set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
+
+file(GLOB_RECURSE HPP_FILES ${COMMON_INCLUDES}/*.hpp)
+file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+
 #DEPENDENCIES
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
 
@@ -61,29 +83,20 @@ else()
 	set(LEAPMOTION_FOUND true)
 endif()
 
+#INCLUDE
+
+set(EXTERNAL_LIBS_INCLUDE_DIRS ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR})
 if(LEAPMOTION_FOUND)
 	add_definitions(-DLEAP_MOTION)
-	set(EXTERNAL_LIBS_INCLUDE_DIRS ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR} ${LEAPMOTION_INCLUDE_DIR})
-else()
-	set(EXTERNAL_LIBS_INCLUDE_DIRS ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR})
+	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${LEAPMOTION_INCLUDE_DIR})
 endif()
-
-#FILES/DIRECTORIES
-
-set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
-
-file(GLOB_RECURSE HPP_FILES ${COMMON_INCLUDES}/*.hpp)
-file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-
-#INCLUDE
 
 include_directories(${COMMON_INCLUDES} SYSTEM ${EXTERNAL_LIBS_INCLUDE_DIRS})
 
 #LINKING SETUP
-if(LEAPMOTION_FOUND)
-	set(LD_LIBS Qt5::Widgets ${OPENVR_LIBRARY} ${LEAPMOTION_LIBRARY})
-else()
 	set(LD_LIBS Qt5::Widgets ${OPENVR_LIBRARY})
+if(LEAPMOTION_FOUND)
+	set(LD_LIBS Qt5::Widgets ${LD_LIBS} ${LEAPMOTION_LIBRARY})
 endif()
 
 #Find .so in working directory
@@ -115,8 +128,7 @@ INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION share/${PROJECT_N
 
 SET(CPACK_GENERATOR "DEB")
 SET(CPACK_PACKAGE_NAME ${PROJECT_NAME})
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A C++ lightweight 3D rendering engine that tightly integrates VR at its core. It is based on OpenGL, Qt, OpenVR and the Leap Motion SDK.")
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Florian Cabot <florian.cabot@epfl.ch>")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "${PROJECT_MAINTAINER}")
 if(TAG)
 	SET(CPACK_PACKAGE_VERSION ${TAG})
 endif()

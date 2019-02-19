@@ -48,7 +48,7 @@ install:
 
 script:
     - mkdir build ; cd build
-    - cmake .. -DPROJECT_NAME=$PROJECT_NAME -DTAG=$TRAVIS_TAG -DWERROR=true
+    - cmake .. -DTAG=$TRAVIS_TAG -DWERROR=true
     - make -j
 
 before_deploy:
