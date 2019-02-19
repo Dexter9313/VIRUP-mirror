@@ -15,7 +15,7 @@ Add the repo as the source remote (for example):
 
 	git remote add source https://gitlab.com/Dexter9313/hydrogenvr.git
 
-The any time you want to update :
+Then any time you want to update :
 
 	git pull source master
 
@@ -24,11 +24,12 @@ Don't rebase anything from source if you want to be able to pull.
 
 For initial setup, make sure you :
 
-* Erase and replace this README by a new one.
+* Write your own README.md (see bellow for informations to put in it)
 * Change variables in build.conf
 * If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
-* Change build status from Travis and Appveyor to your own.
-* Inherit from AbstractMainWin to draw (replace all of the MainWin class code which serves as an example).
+* Create a project directory. We will call it "projectdir" in this README but you can name it whatever you want as long as build.conf is set accordingly. All your source code should be within your project directory. Don't change anything at root level unless specified as safe here, unless you want engine update problems (see data/ and example/ directories for an example project).
+* Create a MainWin class that inherits from AbstractMainWin to draw.
+* Don't write a main() function, HydrogenVR already provides one.
 
 You can also :
 * Add CMake dependencies in projectdir/cmake/Dependencies.cmake
@@ -39,9 +40,9 @@ You can also :
 * Add settings to the SettingsWidget constructor.
 * Add assets to the data/ directory. The working directory will always contain data (so you can always reach data relatively from this path : "data/"). It will be packaged with the rest of the project.
 
-The project name defined as CMakeLists.txt PROJECT_NAME will be accessible in C++ code as the PROJECT_NAME macro. It is a C-style string constant.
+The project name defined in build.conf as PROJECT_NAME will be accessible in C++ code as the PROJECT_NAME macro. It is a C-style string constant.
 
-All used classes starting with Q (ex: QSettings) belongs to the Qt framework. The engine didn't wrap anything from Qt, so you will have to use Qt a least a little.
+All used classes starting with Q (ex: QSettings) belong to the Qt framework. The engine didn't wrap anything from Qt, so you will have to use Qt a least a little.
 
 ## Example releases
 
@@ -49,6 +50,8 @@ You can see releases for Linux and Windows produced by the engine build system t
 
 
 # Example of things that should be in your README
+
+Put build status on top.
 
 ## Installation and requirements
 
