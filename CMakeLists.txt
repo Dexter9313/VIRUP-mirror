@@ -26,12 +26,14 @@ foreach(NameAndValue ${ConfigContents})
   string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
   # Find the value
   string(REPLACE "${Name}=" "" Value ${NameAndValue})
+  # Remove quotes
+  string(REPLACE "\"" "" Value ${Value})
   # Set the variable
-  set(${Name} "${Value}")
+  set(${Name} ${Value})
 endforeach()
 
 project(${PROJECT_NAME} CXX)
-set(CMAKE_PROJECT_DESCRIPTION "${PROJECT_DESCRIPTION}")
+set(CMAKE_PROJECT_DESCRIPTION ${PROJECT_DESCRIPTION})
 
 
 #C++11
@@ -83,12 +85,14 @@ else()
 	set(LEAPMOTION_FOUND true)
 endif()
 
+include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Dependencies.cmake)
+
 #INCLUDE
 
-set(EXTERNAL_LIBS_INCLUDE_DIRS ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR})
+set(EXTERNAL_LIBS_INCLUDE_DIRS ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR} ${PROJECT_INCLUDE_DIRS})
 if(LEAPMOTION_FOUND)
 	add_definitions(-DLEAP_MOTION)
-	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${LEAPMOTION_INCLUDE_DIR})
+	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${LEAPMOTION_INCLUDE_DIR} ${PROJECT_LIBRARIES})
 endif()
 
 include_directories(${COMMON_INCLUDES} SYSTEM ${EXTERNAL_LIBS_INCLUDE_DIRS})
@@ -128,10 +132,11 @@ INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION share/${PROJECT_N
 
 SET(CPACK_GENERATOR "DEB")
 SET(CPACK_PACKAGE_NAME ${PROJECT_NAME})
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "${PROJECT_MAINTAINER}")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${PROJECT_MAINTAINER})
 if(TAG)
 	SET(CPACK_PACKAGE_VERSION ${TAG})
 endif()
+
 SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5:amd64,\
 libqt5gui5:amd64,\
 libqt5core5a:amd64,\
@@ -160,7 +165,8 @@ libx11-6:amd64,\
 libxcb1:amd64,\
 libxau6:amd64,\
 libxdmcp6:amd64,\
-libbsd0:amd64")
+libbsd0:amd64,\
+${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
 
 INCLUDE(CPack)
 
