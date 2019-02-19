@@ -4,7 +4,7 @@ TreeMethodTex::TreeMethodTex()
     : TreeMethodLOD("default", "texture")
 {
 	// load texture
-	tex = GLHandler::newTexture("data/images/particle.png");
+	tex = GLHandler::newTexture("data/virup/images/particle.png");
 
 	GLHandler::setPointSize(8);
 

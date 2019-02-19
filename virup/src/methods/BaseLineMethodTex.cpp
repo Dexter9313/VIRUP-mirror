@@ -5,7 +5,7 @@ BaseLineMethodTex::BaseLineMethodTex()
 {
 	pointSize = 4;
 	// load texture
-	tex = GLHandler::newTexture("data/images/particle.png");
+	tex = GLHandler::newTexture("data/virup/images/particle.png");
 }
 
 void BaseLineMethodTex::render(Camera const& camera, QMatrix4x4 const& model)
