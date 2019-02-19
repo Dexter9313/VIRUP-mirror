@@ -44,6 +44,8 @@ install:
         sudo cp ./LeapDeveloperKit*/LeapSDK/include/Leap*.h /usr/include ;
         sudo cp ./LeapDeveloperKit*/LeapSDK/lib/x64/libLeap.so /usr/lib ;
       fi
+    # install project additional deps
+    - ./$PROJECT_DIRECTORY/ci/travis/install.sh
 
 
 script:
