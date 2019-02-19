@@ -31,6 +31,11 @@ For initial setup, make sure you :
 * Inherit from AbstractMainWin to draw (replace all of the MainWin class code which serves as an example).
 
 You can also :
+* Add CMake dependencies in projectdir/cmake/Dependencies.cmake
+* Add files to install with CMake install() in projectdir/cmake/Install.cmake
+* Add a custom install script for Travis CI as projectdir/ci/travis/install.sh
+* Add a custom install script for Appveyor as projectdir/ci/appveyor/install.bat
+* Add files to the final archive via a script for Appveyor as projectdir/ci/appveyor/before_archive.bat
 * Add settings to the SettingsWidget constructor.
 * Add assets to the data/ directory. The working directory will always contain data (so you can always reach data relatively from this path : "data/"). It will be packaged with the rest of the project.
 
