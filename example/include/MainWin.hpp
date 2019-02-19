@@ -1,14 +1,7 @@
 #ifndef MAINWIN_H
 #define MAINWIN_H
 
-#include <QCoreApplication>
-
 #include "AbstractMainWin.hpp"
-
-#include "methods/BaseLineMethod.hpp"
-#include "methods/BaseLineMethodTex.hpp"
-#include "methods/TreeMethodLOD.hpp"
-#include "methods/TreeMethodTex.hpp"
 
 class MainWin : public AbstractMainWin
 {
@@ -19,11 +12,6 @@ class MainWin : public AbstractMainWin
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
-	virtual void mousePressEvent(QMouseEvent* e) override;
-	virtual void mouseReleaseEvent(QMouseEvent* e) override;
-	virtual void mouseMoveEvent(QMouseEvent* e) override;
-	virtual void wheelEvent(QWheelEvent* e) override;
-	virtual void vrEvent(VRHandler::Event const& e) override;
 
 	// declare drawn resources
 	virtual void initScene() override;
@@ -36,33 +24,20 @@ class MainWin : public AbstractMainWin
 	// (no controllers or hands)
 	virtual void renderScene(BasicCamera const& camera) override;
 
+	virtual void applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const override;
+
   private:
-	QMatrix4x4 computeCubeModel() const;
-	void rescaleCube(float newScale, QVector3D const& scaleCenter);
-	static std::vector<float> generateVertices(unsigned int number,
-	                                           unsigned int seed);
-	static GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
-	static void deleteCube(GLHandler::Mesh mesh,
-	                       GLHandler::ShaderProgram shader);
+	GLHandler::Mesh mesh;
+	GLHandler::ShaderProgram shaderProgram;
+
+	GLHandler::Mesh pointsMesh;
+	GLHandler::ShaderProgram pointsShader;
 
 	GLHandler::Mesh cube;
 	GLHandler::ShaderProgram cubeShader;
-	Method* method;
-	bool showCube = QSettings().value("misc/showcube").toBool();
+	QElapsedTimer cubeTimer;
 
-	float cubeScale           = 1.f;
-	QVector3D cubeTranslation = QVector3D(0.f, 0.f, 0.f);
-
-	QPoint lastCursorPos;
-	bool trackballEnabled = false;
-
-	// scaling/translation controls variables
-	bool leftGripPressed  = false;
-	bool rightGripPressed = false;
-	float initControllersDistance;
-	QVector3D scaleCenter;
-	QVector3D initControllerPosInCube;
-	float initScale;
+	float barrelPower = 1.01f;
 };
 
 #endif // MAINWIN_H
