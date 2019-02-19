@@ -15,31 +15,18 @@ Add the repo as the source remote (for example):
 
 	git remote add source https://gitlab.com/Dexter9313/hydrogenvr.git
 
-This new branch will be used to pull updates from this repo :
-
-	git checkout -b update-source
-
 The any time you want to update :
 
 	git pull source master
-	git branch -u source/master #only first time
-	
-Then from any other branch in the project (master for example with git checkout master) :
 
-	git merge update-source
-	
-Don't rebase anything in update-source if you want to be able to pull.
-
-
-This branch will now have an updated version of this template. Subsequent eninge updates will only need the pull/merge from update-source steps.
+Don't rebase anything from source if you want to be able to pull.
 
 
 For initial setup, make sure you :
 
 * Erase and replace this README by a new one.
-* Change .travis.yml, .appveyor.yml and CMakeLists.txt PROJECT_NAME variables.
+* Change variables in build.conf
 * If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
-* Change the PROJECT_NAME in CMakeLists.txt.
 * Change the CPack parameters in CMakeLists.txt (descriptions, dependencies, etc...).
 * Change innosetup/config.iss defines.
 * Change build status from Travis and Appveyor to your own.
@@ -91,18 +78,15 @@ You will need the following requirements :
 Then clone this repository. We now suppose the root directory of the repository is stored in the $HydrogenVR_ROOT_DIR variable.
 
         cd $HydrogenVR_ROOT_DIR
-        mkdir build && cd build
-        cmake ..
-        make -j
+        ./build-linux.sh
+        cd build
         sudo make install
 
 Optionally, you can generate a deb package to make installation managing easier if you are on a debian-based system. The package name will be "hydrogenvr".
 
         cd $HydrogenVR_ROOT_DIR
-        mkdir build && cd build
-        cmake ..
-        make -j package
-        sudo dpkg -i ./*.deb
+        ./build-linux.sh package
+        sudo dpkg -i ./build/*.deb
 
 ## Usage
 
@@ -118,4 +102,4 @@ If the make install method for installation was used, uninstallation can only be
         cd build
         sudo make uninstall
 
-As of now, this method can leave some empty directories in your file system though... Check the file content yourself if you want to clean everything properly.
+As of now, this method can leave some empty directories in your file system though... Check install_manifest.txt content yourself if you want to clean everything properly.

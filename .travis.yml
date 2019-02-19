@@ -13,8 +13,6 @@ compiler:
     - clang
 
 env:
-    global:
-        - PROJECT_NAME=HydrogenVR
     matrix:
         exclude:
             # Qt 5.6 no longer supports gcc on OS X.
@@ -26,6 +24,7 @@ addons:
             - qtbase5-dev
 
 install:
+    - . ./build.conf
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         brew update ;
         brew install qt5 ;
@@ -49,7 +48,7 @@ install:
 
 script:
     - mkdir build ; cd build
-    - cmake .. -DTAG=$TRAVIS_TAG -DWERROR=true
+    - cmake .. -DPROJECT_NAME=$PROJECT_NAME -DTAG=$TRAVIS_TAG -DWERROR=true
     - make -j
 
 before_deploy:

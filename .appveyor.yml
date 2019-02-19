@@ -3,8 +3,6 @@ image:
 build:
     verbosity: detailed
 environment:
-  global:
-    PROJECT_NAME: 'HydrogenVR'
   matrix:
     - QTPATH: 'C:\Qt\5.11\msvc2015'
       BUILD_TYPE: 32bit
@@ -15,6 +13,7 @@ environment:
 
 install:
     - cd %APPVEYOR_BUILD_FOLDER%
+    - for /f "delims=" %%x in (build.conf) do (set "%%x")
     - mkdir deps
     - cd deps
     ############################################################################
@@ -58,7 +57,7 @@ build_script:
     - cd %APPVEYOR_BUILD_FOLDER%
     - mkdir build
     - cd build
-    - cmake .. -G %GENERATOR% -DOPENVR_INCLUDE_DIR=%OPENVR_INCLUDE_DIR% -DOPENVR_LIBRARY=%OPENVR_LIBRARY% -DLEAPMOTION_INCLUDE_DIR=%LEAP_INCLUDE_DIR% -DLEAPMOTION_LIBRARY=%LEAP_LIBRARY%
+    - cmake .. -G %GENERATOR% -DPROJECT_NAME=%PROJECT_NAME% -DOPENVR_INCLUDE_DIR=%OPENVR_INCLUDE_DIR% -DOPENVR_LIBRARY=%OPENVR_LIBRARY% -DLEAPMOTION_INCLUDE_DIR=%LEAP_INCLUDE_DIR% -DLEAPMOTION_LIBRARY=%LEAP_LIBRARY%
     - cmake --build . --config Release
 
 after_build:
