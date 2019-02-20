@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
 
 	{
 		Launcher launcher;
+		launcher.init();
 		if(launcher.exec() == QDialog::Rejected)
 			return 1;
 	}
