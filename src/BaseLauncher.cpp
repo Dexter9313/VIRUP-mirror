@@ -20,6 +20,10 @@
 
 BaseLauncher::BaseLauncher()
 {
+}
+
+void BaseLauncher::init()
+{
 	this->setWindowTitle(QString(PROJECT_NAME) + tr(" Launcher"));
 
 	mainLayout = new QVBoxLayout(this);
@@ -44,6 +48,6 @@ BaseLauncher::BaseLauncher()
 
 SettingsWidget* BaseLauncher::newSettingsWidget()
 {
-	return new SettingsWidget();
+	return new SettingsWidget(this);
 }
 

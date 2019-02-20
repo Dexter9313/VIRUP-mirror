@@ -32,9 +32,10 @@ class BaseLauncher : public QDialog
 	Q_OBJECT
   public:
 	BaseLauncher();
-	virtual SettingsWidget* newSettingsWidget();
+	void init();
 
   protected:
+	virtual SettingsWidget* newSettingsWidget();
 	QVBoxLayout* mainLayout;
 };
 
