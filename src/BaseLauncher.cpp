@@ -16,22 +16,34 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef LAUNCHER_H
-#define LAUNCHER_H
+#include "BaseLauncher.hpp"
 
-#include <QDebug>
-#include <QDialog>
-#include <QHBoxLayout>
-#include <QPushButton>
-#include <QVBoxLayout>
-
-#include "SettingsWidget.hpp"
-
-class Launcher : public QDialog
+BaseLauncher::BaseLauncher()
 {
-	Q_OBJECT
-  public:
-	Launcher();
-};
+	this->setWindowTitle(QString(PROJECT_NAME) + tr(" Launcher"));
 
-#endif // LAUNCHER_H
+	mainLayout = new QVBoxLayout(this);
+
+	// SETTINGS TAB WIDGET
+	SettingsWidget* settingsWidget = newSettingsWidget();
+	mainLayout->addWidget(settingsWidget);
+
+	// LAUNCH AND QUIT BUTTONS
+	QWidget* w = new QWidget(this);
+	mainLayout->addWidget(w);
+	QHBoxLayout* l = new QHBoxLayout(w);
+	QPushButton* pbl = new QPushButton(this);
+	l->addWidget(pbl);
+	pbl->setText(tr("LAUNCH"));
+	connect(pbl, SIGNAL(pressed()), this, SLOT(accept()));
+	QPushButton* pbq = new QPushButton(this);
+	l->addWidget(pbq);
+	pbq->setText(tr("QUIT"));
+	connect(pbq, SIGNAL(pressed()), this, SLOT(reject()));
+}
+
+SettingsWidget* BaseLauncher::newSettingsWidget()
+{
+	return new SettingsWidget();
+}
+
