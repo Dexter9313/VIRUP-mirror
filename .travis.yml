@@ -56,8 +56,9 @@ install:
     # install PythonQt
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         git clone https://github.com/Orochimarufan/PythonQt ;
+        cd PythonQt ;
         git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
-        cd PythonQt/build ;
+        cd build ;
         cmake .. -DPythonQt_Python3=ON -DBUILD_SHARED_LIBS=ON ;
         make ;
         sudo make install ;

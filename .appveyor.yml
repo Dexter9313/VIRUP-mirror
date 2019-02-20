@@ -5,13 +5,22 @@ build:
 environment:
   matrix:
     - QTPATH: 'C:\Qt\5.11\msvc2015'
+      PYTHON_PATH: 'C:\Python37'
+      PYTHON_LIB: 'C:\Python37\libs'
       BUILD_TYPE: 32bit
       GENERATOR: '"Visual Studio 14 2015"'
     - QTPATH: 'C:\Qt\5.11\msvc2015_64'
+      PYTHON_PATH: 'C:\Python37-x64'
+      PYTHON_LIB: 'C:\Python37-x64\libs'
       BUILD_TYPE: 64bit
       GENERATOR: '"Visual Studio 14 2015 Win64"'
 
 install:
+    - set INNOSETUPPATH=C:\Program Files (x86)\Inno Setup 5
+    - set BINDIR=%APPVEYOR_BUILD_FOLDER%\build\Release\
+    - set CLPATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\bin\Hostx64\x64"
+    - set Path=%QTPATH%;%QTPATH%/bin;%INNOSETUPPATH%;%PATH%
+
     - cd %APPVEYOR_BUILD_FOLDER%
     - for /f "delims=" %%x in (build.conf) do (set "%%x")
     - mkdir deps
@@ -47,15 +56,35 @@ install:
     - set LEAP_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\leap\Leap\LeapSDK\lib\%ARCH%\Leap.dll
     - cd ..
     ############################################################################
+    # Install PythonQt3.2
+    ############################################################################
+    - mkdir pythonqt
+    - cd pythonqt
+    - set URL="https://sourceforge.net/projects/pythonqt/files/pythonqt/PythonQt-3.2/PythonQt3.2.zip/download"
+    - appveyor DownloadFile %URL% -FileName pythonqt.zip
+    - 7z x pythonqt.zip > nul
+    - cd PythonQt3.2
+    - del PythonQt.pro
+    - del build\python.prf
+    - del build\PythonQt.prf
+    - del build\PythonQt_QtAll.prf
+    - move %APPVEYOR_BUILD_FOLDER%\misc\PythonQt.pro .
+    - move %APPVEYOR_BUILD_FOLDER%\misc\python.prf .\build\python.prf
+    - move %APPVEYOR_BUILD_FOLDER%\misc\PythonQt.prf .\build\PythonQt.prf
+    - move %APPVEYOR_BUILD_FOLDER%\misc\PythonQt_QtAll.prf .\build\PythonQt_QtAll.prf
+    - IF "%BUILD_TYPE%" == "64bit" (set ARCH=amd64) ELSE (set ARCH=x86)
+    - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %ARCH%
+    - qmake
+    - nmake
+    - dir
+    - cd ..\..
+    ############################################################################
     # Install Additional Project Deps
     ############################################################################
     - ..\%PROJECT_DIRECTORY%\ci\appveyor\install.bat
 
 
 before_build:
-    - set INNOSETUPPATH=C:\Program Files (x86)\Inno Setup 5
-    - set BINDIR=%APPVEYOR_BUILD_FOLDER%\build\Release\
-    - set Path=%QTPATH%;%QTPATH%/bin;%INNOSETUPPATH%;%PATH%
     - IF %APPVEYOR_REPO_TAG% == true (set VERSION=%APPVEYOR_REPO_TAG_NAME%) ELSE (set VERSION=snapshot-%APPVEYOR_BUILD_NUMBER%)
 
 build_script:
