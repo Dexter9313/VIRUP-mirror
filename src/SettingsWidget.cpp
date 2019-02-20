@@ -45,6 +45,15 @@ void SettingsWidget::addGroup(QString const& name, QString const& label)
 	currentForm = new QFormLayout(newTab);
 }
 
+void SettingsWidget::insertGroup(QString const& name, QString const& label, int index)
+{
+	currentGroup = name;
+
+	QWidget* newTab = new QWidget(this);
+	QTabWidget::insertTab(index, newTab, label);
+	currentForm = new QFormLayout(newTab);
+}
+
 void SettingsWidget::addBoolSetting(QString const& name, bool defaultVal,
                                     QString const& label)
 {

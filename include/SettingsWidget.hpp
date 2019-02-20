@@ -43,8 +43,9 @@ class SettingsWidget : public QTabWidget
 	SettingsWidget(QWidget* parent = nullptr);
 	~SettingsWidget()              = default;
 
-  private:
+  protected:
 	void addGroup(QString const& name, QString const& label);
+	void insertGroup(QString const& name, QString const& label, int index);
 	void addBoolSetting(QString const& name, bool defaultVal,
 	                    QString const& label);
 	void addUIntSetting(QString const& name, unsigned int defaultVal,
@@ -61,6 +62,7 @@ class SettingsWidget : public QTabWidget
 	void addColorSetting(QString const& name, QColor const& defaultVal,
 	                     QString const& label);
 
+  private:
 	QFormLayout* currentForm = nullptr;
 
 	QSettings settings;
