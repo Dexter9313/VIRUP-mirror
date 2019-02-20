@@ -22,6 +22,15 @@ addons:
     apt:
         packages:
             - qtbase5-dev
+            # needed for PythonQt
+            - libqt5opengl5-dev
+            - qtdeclarative5-dev
+            - libqt5svg5-dev
+            - qttools5-dev
+            - libqt5webkit5-dev
+            - qtmultimedia5-dev
+            - libqt5xmlpatterns5-dev 
+            - libpython3-dev
 
 install:
     - . ./build.conf
@@ -43,6 +52,18 @@ install:
         tar xzf Leap_Motion_SDK_Linux_*.tgz ;
         sudo cp ./LeapDeveloperKit*/LeapSDK/include/Leap*.h /usr/include ;
         sudo cp ./LeapDeveloperKit*/LeapSDK/lib/x64/libLeap.so /usr/lib ;
+      fi
+    # install PythonQt
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        git clone https://github.com/Orochimarufan/PythonQt ;
+        git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
+        cd PythonQt/build ;
+        cmake .. -DPythonQt_Python3=ON -DBUILD_SHARED_LIBS=ON ;
+        make ;
+        sudo make install ;
+        sudo ln -s /usr/local/lib/libQt5Python34.so /usr/local/lib/libQtPython.so ;
+        sudo ln -s /usr/local/lib/libQt5Python34_QtAll.so /usr/local/lib/libQtPython_QtAll.so ;
+        cd ../.. ;
       fi
     # install project additional deps
     - ./$PROJECT_DIRECTORY/ci/travis/install.sh
