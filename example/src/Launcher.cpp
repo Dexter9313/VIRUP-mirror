@@ -16,22 +16,10 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef LAUNCHER_H
-#define LAUNCHER_H
+#include "Launcher.hpp"
 
-#include <QDebug>
-#include <QDialog>
-#include <QHBoxLayout>
-#include <QPushButton>
-#include <QVBoxLayout>
-
-#include "SettingsWidget.hpp"
-
-class Launcher : public QDialog
+Launcher::Launcher()
+	: BaseLauncher()
 {
-	Q_OBJECT
-  public:
-	Launcher();
-};
 
-#endif // LAUNCHER_H
+}

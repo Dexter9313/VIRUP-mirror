@@ -28,7 +28,8 @@ For initial setup, make sure you :
 * Change variables in build.conf
 * If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
 * Create a project directory. We will call it "projectdir" in this README but you can name it whatever you want as long as build.conf is set accordingly. All your source code should be within your project directory. Don't change anything at root level unless specified as safe here, unless you want engine update problems (see data/ and example/ directories for an example project).
-* Create a MainWin class that inherits from AbstractMainWin to draw.
+* Create a MainWin class in projectdir/include/MainWin.hpp that inherits from AbstractMainWin to draw. It can do nothing if you don't want to do anything (you only have to implement the pure virtual methods, but you can make them do nothing).
+* Create a Launcher class in projectdir/include/Launcher.hpp that inherits from BaseLauncher to instanciate a Launcher. It can do nothing if you don't want to do anything.
 * Don't write a main() function, HydrogenVR already provides one.
 * Don't remove the examples, they are light and won't be included within your project packages. This is to ensure you can update HydrogenVR without any problem.
 
