@@ -37,6 +37,7 @@ void PythonQtHandler::init()
 #ifdef PYTHONQT
 	// init PythonQt and Python
 	PythonQt::init(PythonQt::IgnoreSiteModule | PythonQt::RedirectStdOut);
+	PythonQt_QtAll::init();
 
 	// get the __main__ python module
 	mainModule = new PythonQtObjectPtr(PythonQt::self()->getMainModule());

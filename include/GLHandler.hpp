@@ -138,7 +138,7 @@ class GLHandler
 
 	// http://entropymine.com/imageworsener/srgbformula/
 	static QColor sRGBToLinear(QColor const& srgb);
-	QColor linearTosRGB(QColor const& linear);
+	static QColor linearTosRGB(QColor const& linear);
 
 	static GLint defaultRenderTargetFormat;
 
