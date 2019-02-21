@@ -26,6 +26,7 @@ class AbstractMainWin : public QOpenGLWindow
 	virtual ~AbstractMainWin();
 
   protected:
+	virtual bool event(QEvent* e) override;
 	virtual void keyPressEvent(QKeyEvent* e) override;
 	virtual void vrEvent(VRHandler::Event const& e) { Q_UNUSED(e); };
 	// declare drawn resources

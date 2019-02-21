@@ -32,6 +32,13 @@ AbstractMainWin::AbstractMainWin()
 
 }
 
+bool AbstractMainWin::event(QEvent* e)
+{
+	if(e->type() == QEvent::Type::Close)
+		console->close();
+	return QOpenGLWindow::event(e);;
+}
+
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 {
 	if(e->key() == Qt::Key_F1)
