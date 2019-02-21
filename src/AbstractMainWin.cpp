@@ -12,6 +12,24 @@ AbstractMainWin::AbstractMainWin()
 
 	if(hdr)
 		GLHandler::defaultRenderTargetFormat = GL_RGBA16F;
+
+#ifdef PYTHONQT
+	// init PythonQt and Python
+	PythonQt::init(PythonQt::IgnoreSiteModule | PythonQt::RedirectStdOut);
+
+	// get the __main__ python module
+	PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
+
+	QProcess process;
+	process.start("python3 -c \"import sys;print(sys.path)\"");
+	process.waitForFinished(-1);
+	QString syspath(process.readAllStandardOutput());
+	mainModule.evalScript("import sys\nsys.path=" + syspath + "\ndel sys");
+
+	console = new PythonQtScriptingConsole(nullptr, mainModule);
+	mainModule.addObject("mainwin", this);
+#endif
+
 }
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
@@ -22,6 +40,12 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 		    "debugcamera/enabled",
 		    !QSettings().value("debugcamera/enabled").toBool());
 	}
+#ifdef PYTHONQT
+	if(e->key() == Qt::Key_F8)
+	{
+		console->setVisible(!console->isVisible());
+	}
+#endif
 	if(e->key() == Qt::Key_F11)
 	{
 		if(!vrHandler)
@@ -263,4 +287,8 @@ AbstractMainWin::~AbstractMainWin()
 
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
+
+#ifdef PYTHONQT
+	delete console;
+#endif
 }

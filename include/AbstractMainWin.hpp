@@ -5,7 +5,13 @@
 #include <QElapsedTimer>
 #include <QKeyEvent>
 #include <QOpenGLWindow>
+#include <QProcess>
 #include <vector>
+
+#ifdef PYTHONQT
+#include <PythonQt.h>
+#include <gui/PythonQtScriptingConsole.h>
+#endif
 
 #include "BasicCamera.hpp"
 #include "DebugCamera.hpp"
@@ -72,6 +78,10 @@ class AbstractMainWin : public QOpenGLWindow
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	GLHandler::RenderTarget postProcessingTargets[2];
+
+	#ifdef PYTHONQT
+	PythonQtScriptingConsole* console;
+	#endif
 };
 
 #endif // ABSTRACTMAINWIN_H

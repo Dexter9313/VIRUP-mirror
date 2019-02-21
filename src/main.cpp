@@ -1,13 +1,9 @@
 #include <QApplication>
-#include <QProcess>
 #include <QSettings>
 #ifdef Q_OS_UNIX
 #include <QDir>
 #include <unistd.h>
 #endif
-
-#include <PythonQt.h>
-#include <gui/PythonQtScriptingConsole.h>
 
 #include "Launcher.hpp"
 #include "MainWin.hpp"
@@ -25,18 +21,6 @@ int main(int argc, char* argv[])
 
 	QApplication a(argc, argv);
 
-	// init PythonQt and Python
-	PythonQt::init(PythonQt::IgnoreSiteModule | PythonQt::RedirectStdOut);
-
-	// get the __main__ python module
-	PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
-
-	QProcess process;
-	process.start("python3 -c \"import sys;print(sys.path)\"");
-	process.waitForFinished(-1);
-	QString syspath(process.readAllStandardOutput());
-	mainModule.evalScript("import sys\nsys.path=" + syspath + "\ndel sys");
-
 	{
 		Launcher launcher;
 		launcher.init();
@@ -45,10 +29,6 @@ int main(int argc, char* argv[])
 	}
 
 	MainWin w;
-	PythonQtScriptingConsole console(nullptr, mainModule);
-	console.show();
-	mainModule.addObject("mainwin", &w);
-
 	if(QSettings().value("window/fullscreen").toBool())
 		w.showFullScreen();
 	else
