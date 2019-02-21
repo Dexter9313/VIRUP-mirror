@@ -76,7 +76,12 @@ install:
     - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %ARCH%
     - qmake
     - nmake
-    - dir
+    - set PYTHONQT_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/pythonqt/PythonQt3.2/src
+    - set PYTHONQT_LIBRARIES=%APPVEYOR_BUILD_FOLDER%/deps/pythonqt/PythonQt3.2/lib/PythonQt-Qt5-Python373.lib
+    - set PYTHONQT_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\pythonqt\PythonQt3.2\lib\PythonQt-Qt5-Python373.dll
+    - set PYTHONQT_QTALL_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/pythonqt/PythonQt3.2/extensions/PythonQt_QtAll
+    - set PYTHONQT_QTALL_LIBRARIES=%APPVEYOR_BUILD_FOLDER%/deps/pythonqt/PythonQt3.2/lib/PythonQt_QtAll-Qt5-Python373.lib
+    - set PYTHONQT_QTALL_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\pythonqt\PythonQt3.2\lib\PythonQt_QtAll-Qt5-Python373.dll
     - cd ..\..
     ############################################################################
     # Install Additional Project Deps
@@ -91,7 +96,7 @@ build_script:
     - cd %APPVEYOR_BUILD_FOLDER%
     - mkdir build
     - cd build
-    - cmake .. -G %GENERATOR% -DOPENVR_INCLUDE_DIR=%OPENVR_INCLUDE_DIR% -DOPENVR_LIBRARY=%OPENVR_LIBRARY% -DLEAPMOTION_INCLUDE_DIR=%LEAP_INCLUDE_DIR% -DLEAPMOTION_LIBRARY=%LEAP_LIBRARY%
+    - cmake .. -G %GENERATOR%
     - cmake --build . --config Release
 
 after_build:
@@ -109,6 +114,8 @@ after_build:
     - copy %QTPATH%\plugins\platforms\qwindows.dll %RELEASE_DIR%\platforms
     - copy %OPENVR_SHARED% %RELEASE_DIR%
     - copy %LEAP_SHARED% %RELEASE_DIR%
+    - copy %PYTHONQT_SHARED% %RELEASE_DIR%
+    - copy %PYTHONQT_QTALL_SHARED% %RELEASE_DIR%
     - mkdir %RELEASE_DIR%\data
     - move %APPVEYOR_BUILD_FOLDER%\data\core %RELEASE_DIR%\data
     - move %APPVEYOR_BUILD_FOLDER%\data\%PROJECT_DIRECTORY% %RELEASE_DIR%\data
