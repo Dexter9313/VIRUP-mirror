@@ -58,12 +58,15 @@ install:
         git clone https://github.com/Orochimarufan/PythonQt ;
         cd PythonQt ;
         git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
+        sed -i "s/PythonQt_init_QtQml(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
+        sed -i "s/PythonQt_init_QtQuick(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
+        cat ./extensions/PythonQt_QtAll/vim PythonQt_QtAll.cpp ;
         cd build ;
         cmake .. -DPythonQt_Python3=ON -DBUILD_SHARED_LIBS=ON ;
         make ;
         sudo make install ;
-        sudo ln -s /usr/local/lib/libQt5Python34.so /usr/local/lib/libQtPython.so ;
-        sudo ln -s /usr/local/lib/libQt5Python34_QtAll.so /usr/local/lib/libQtPython_QtAll.so ;
+        sudo ln -s /usr/local/lib/libQt5Python35.so /usr/local/lib/libQtPython.so ;
+        sudo ln -s /usr/local/lib/libQt5Python35_QtAll.so /usr/local/lib/libQtPython_QtAll.so ;
         cd ../.. ;
       fi
     # install project additional deps
