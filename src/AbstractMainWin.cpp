@@ -44,6 +44,27 @@ void AbstractMainWin::toggleFullscreen()
 	setFullscreen(!isFullscreen());
 }
 
+bool AbstractMainWin::vrIsEnabled() const
+{
+	return static_cast<bool>(vrHandler);
+}
+
+void AbstractMainWin::setVR(bool vr)
+{
+	if(vrHandler && !vr)
+		vrHandler.close();
+	else if(!vrHandler && vr)
+	{
+		if(vrHandler.init())
+			vrHandler.resetPos();
+	}
+}
+
+void AbstractMainWin::toggleVR()
+{
+	setVR(!vrIsEnabled());
+}
+
 bool AbstractMainWin::event(QEvent* e)
 {
 	if(e->type() == QEvent::Type::Close)
@@ -65,15 +86,7 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 	}
 	if(e->key() == Qt::Key_F11)
 	{
-		if(!vrHandler)
-		{
-			if(vrHandler.init())
-				vrHandler.resetPos();
-		}
-		else
-		{
-			vrHandler.close();
-		}
+		toggleVR();
 	}
 	else if(e->key() == Qt::Key_Return && (e->modifiers() & Qt::AltModifier))
 	{

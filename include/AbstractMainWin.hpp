@@ -27,6 +27,9 @@ class AbstractMainWin : public QOpenGLWindow
 	void toggleFullscreen();
 	bool getHDR() const { return hdr; };
 	void setHDR(bool hdr);
+	bool vrIsEnabled() const;
+	void setVR(bool vr);
+	void toggleVR();
 
   protected:
 	virtual bool event(QEvent* e) override;
