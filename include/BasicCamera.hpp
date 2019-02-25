@@ -44,14 +44,16 @@ class BasicCamera : public QObject
 	void setEyeDistanceFactor(float EyeDistanceFactor);
 	QVector4D project(QVector3D const& vertex) const;
 	QVector4D project(QVector4D const& vertex) const;
-	virtual void update(bool force2D = false);
-	void uploadMatrices() const;
 	QMatrix4x4 cameraSpaceToWorldTransform() const;
 	QMatrix4x4 trackedSpaceToWorldTransform() const;
 	QMatrix4x4 hmdSpaceToWorldTransform() const;
 	QMatrix4x4 hmdScaledSpaceToWorldTransform() const;
 	QMatrix4x4 screenToWorldTransform() const;
 	QMatrix4x4 hmdScreenToWorldTransform(Side side) const;
+
+  public:
+	virtual void update(bool force2D = false);
+	void uploadMatrices() const;
 
   protected:
 
