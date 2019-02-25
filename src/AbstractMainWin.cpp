@@ -280,6 +280,14 @@ void AbstractMainWin::paintGL()
 	update();
 }
 
+void AbstractMainWin::resizeGL(int w, int h)
+{
+	QSettings().setValue("window/width", w);
+	QSettings().setValue("window/height", h);
+	camera->setPerspectiveProj(70.0f, (float) width() / (float) height());
+	dbgCamera->setPerspectiveProj(70.0f, (float) width() / (float) height());
+}
+
 AbstractMainWin::~AbstractMainWin()
 {
 	for(QPair<QString, GLHandler::ShaderProgram> p : postProcessingPipeline_)

@@ -64,6 +64,7 @@ class AbstractMainWin : public QOpenGLWindow
 	void initializeGL() override;
 	void vrRender(Side side, BasicCamera* renderingCam, bool debug, bool debugInHeadset);
 	void paintGL() override;
+	void resizeGL(int w, int h) override;
 
 	float frameTiming_;
 	QElapsedTimer frameTimer;
