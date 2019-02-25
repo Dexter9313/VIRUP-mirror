@@ -58,6 +58,7 @@ void AbstractMainWin::setVR(bool vr)
 		if(vrHandler.init())
 			vrHandler.resetPos();
 	}
+	QSettings().setValue("vr/enabled", vrIsEnabled());
 }
 
 void AbstractMainWin::toggleVR()
@@ -166,8 +167,7 @@ void AbstractMainWin::initializeGL()
 	// Init GL
 	GLHandler::init();
 	// Init VR
-	if(QSettings().value("vr/enabled").toBool())
-		vrHandler.init();
+	setVR(QSettings().value("vr/enabled").toBool());
 
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
 	         << format().minorVersion() << '\n';
