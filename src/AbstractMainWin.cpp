@@ -146,6 +146,13 @@ void AbstractMainWin::initializeGL()
 	// let user init
 	initScene();
 
+	QString mainScriptPath(QSettings().value("scripting/rootdir").toString() + "/main.py");
+	if(QFile(mainScriptPath).exists())
+		PythonQtHandler::evalFile(mainScriptPath);
+
+	PythonQtHandler::evalScript("if \"initScene\" in dir():\n\tinitScene()");
+
+
 	// make sure gamma correction is applied last
 	appendPostProcessingShader("colors", "colors");
 
@@ -163,6 +170,7 @@ void AbstractMainWin::vrRender(Side side, BasicCamera* renderingCam, bool debug,
 	vrHandler.renderHands();
 	// render scene
 	renderScene(*camera);
+	PythonQtHandler::evalScript("if \"renderScene\" in dir():\n\trenderScene()");
 	if(debug && debugInHeadset)
 		dbgCamera->renderCamera(camera);
 
@@ -210,6 +218,7 @@ void AbstractMainWin::paintGL()
 	}
 	// let user update before rendering
 	updateScene(*camera);
+	PythonQtHandler::evalScript("if \"updateScene\" in dir():\n\tupdateScene()");
 
 	bool debug(QSettings().value("debugcamera/enabled").toBool());
 	bool debugInHeadset(
@@ -243,6 +252,7 @@ void AbstractMainWin::paintGL()
 		renderingCam->uploadMatrices();
 		// render scene
 		renderScene(*camera);
+		PythonQtHandler::evalScript("if \"renderScene\" in dir():\n\trenderScene()");
 		if(debug)
 			dbgCamera->renderCamera(camera);
 

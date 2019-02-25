@@ -30,6 +30,9 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addGroup("vr", tr("Virtual Reality"));
 	addBoolSetting("enabled", true, tr("Enable VR"));
 
+	addGroup("scripting", tr("Scripting"));
+	addDirPathSetting("rootdir", QFileInfo(settings.fileName()).absoluteDir().absolutePath() + "/scripts", tr("Scripts Root Directory"));
+
 	addGroup("debugcamera", tr("Debug Camera"));
 	addBoolSetting("enabled", false, tr("Enable Debug Camera"));
 	addBoolSetting("followhmd", false, tr("Follow HMD Movement"));
@@ -134,6 +137,46 @@ void SettingsWidget::addFilePathSetting(QString const& name,
 	connect(browsePb, &QPushButton::clicked, this,
 	        [this, label, lineEdit](bool) {
 		        QString result(QFileDialog::getOpenFileName(this, label,
+		                                                    lineEdit->text()));
+		        if(result != "")
+			        lineEdit->setText(result);
+		    });
+
+	QWidget* w          = new QWidget(this);
+	QHBoxLayout* layout = new QHBoxLayout(w);
+	layout->addWidget(lineEdit);
+	layout->addWidget(browsePb);
+
+	connect(lineEdit, &QLineEdit::textChanged, this,
+	        [this, fullName](QString const& t) { updateValue(fullName, t); });
+
+	currentForm->addRow(label + " :", w);
+}
+
+void SettingsWidget::addDirPathSetting(QString const& name,
+                                        QString const& defaultVal,
+                                        QString const& label)
+{
+	QString fullName(currentGroup + '/' + name);
+
+	if(!settings.contains(fullName))
+		settings.setValue(fullName, defaultVal);
+
+	QLineEdit* lineEdit = new QLineEdit(this);
+	lineEdit->setText(settings.value(fullName).toString());
+
+	QFileSystemModel* dirModel = new QFileSystemModel(this);
+	dirModel->setRootPath(QDir::currentPath());
+	QCompleter* completer = new QCompleter(dirModel, this);
+	completer->setCaseSensitivity(Qt::CaseInsensitive);
+	completer->setCompletionMode(QCompleter::PopupCompletion);
+	lineEdit->setCompleter(completer);
+
+	QPushButton* browsePb = new QPushButton(this);
+	browsePb->setText(tr("..."));
+	connect(browsePb, &QPushButton::clicked, this,
+	        [this, label, lineEdit](bool) {
+		        QString result(QFileDialog::getExistingDirectory(this, label,
 		                                                    lineEdit->text()));
 		        if(result != "")
 			        lineEdit->setText(result);

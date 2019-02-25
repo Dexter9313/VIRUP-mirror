@@ -55,6 +55,8 @@ class SettingsWidget : public QTabWidget
 	                      QString const& label);
 	void addFilePathSetting(QString const& name, QString const& defaultVal,
 	                        QString const& label);
+	void addDirPathSetting(QString const& name, QString const& defaultVal,
+	                       QString const& label);
 	void addVector3DSetting(QString const& name, QVector3D const& defaultVal,
 	                        QString const& label,
 	                        std::array<QString, 3> componentLabels,
