@@ -47,6 +47,7 @@ class AbstractMainWin : public QOpenGLWindow
 	virtual void renderScene(BasicCamera const& camera) = 0;
 
 	BasicCamera& getCamera() { return *camera; };
+	DebugCamera& getDebugCamera() { return *dbgCamera; };
 	void setCamera(BasicCamera* newCamera);
 
 	void appendPostProcessingShader(QString const& id, QString const& fragment);

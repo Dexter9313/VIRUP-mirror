@@ -23,10 +23,22 @@
 
 class DebugCamera : public BasicCamera
 {
+	Q_OBJECT
   public:
 	DebugCamera(VRHandler const* vrHandler);
 	virtual void update(bool force2D = false) override;
 	void renderCamera(BasicCamera const* cam);
+
+  public slots:
+	bool isEnabled() const;
+	void setEnabled(bool enabled);
+	void toggle();
+	bool debugInHeadset() const;
+	void setDebugInHeadset(bool debuginheadset);
+	void toggleDebugInHeadset();
+	bool followHMD() const;
+	void setFollowHMD(bool followhmd);
+	void toggleFollowHMD();
 
   private:
 	GLHandler::Mesh camMesh;

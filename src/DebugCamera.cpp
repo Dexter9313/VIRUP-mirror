@@ -61,8 +61,7 @@ void DebugCamera::update(bool force2D)
 
 void DebugCamera::renderCamera(BasicCamera const* cam)
 {
-	bool followHMD(QSettings().value("debugcamera/followhmd").toBool());
-	if(*vrHandler && followHMD)
+	if(*vrHandler && followHMD())
 	{
 		GLHandler::setShaderParam(camMeshShader, "color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader,
@@ -80,3 +79,49 @@ void DebugCamera::renderCamera(BasicCamera const* cam)
 		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
 	}
 }
+
+bool DebugCamera::isEnabled() const
+{
+	return QSettings().value("debugcamera/enabled").toBool();
+}
+
+void DebugCamera::setEnabled(bool enabled)
+{
+	QSettings().setValue("debugcamera/enabled", enabled);
+}
+
+void DebugCamera::toggle()
+{
+	setEnabled(!isEnabled());
+}
+
+bool DebugCamera::debugInHeadset() const
+{
+	return QSettings().value("debugcamera/debuginheadset").toBool();
+}
+
+void DebugCamera::setDebugInHeadset(bool debuginheadset)
+{
+	QSettings().setValue("debugcamera/debuginheadset", debuginheadset);
+}
+
+void DebugCamera::toggleDebugInHeadset()
+{
+	setDebugInHeadset(!debugInHeadset());
+}
+
+bool DebugCamera::followHMD() const
+{
+	return QSettings().value("debugcamera/followhmd").toBool();
+}
+
+void DebugCamera::setFollowHMD(bool followhmd)
+{
+	QSettings().setValue("debugcamera/followhmd", followhmd);
+}
+
+void DebugCamera::toggleFollowHMD()
+{
+	setFollowHMD(!followHMD());
+}
+

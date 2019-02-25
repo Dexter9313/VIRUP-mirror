@@ -77,9 +77,7 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 {
 	if(e->key() == Qt::Key_F1)
 	{
-		QSettings().setValue(
-		    "debugcamera/enabled",
-		    !QSettings().value("debugcamera/enabled").toBool());
+		dbgCamera->toggle();
 	}
 	if(e->key() == Qt::Key_F8)
 	{
@@ -177,9 +175,12 @@ void AbstractMainWin::initializeGL()
 	dbgCamera->setPerspectiveProj(70.0f, (float) width() / (float) height());
 
 	camera = new BasicCamera(&vrHandler);
-	PythonQtHandler::addObject("camera", camera);
 	camera->lookAt({1, 1, 1}, {0, 0, 0}, {0, 0, 1});
 	camera->setPerspectiveProj(70.0f, (float) width() / (float) height());
+
+	PythonQtHandler::addObject("camera", camera);
+	PythonQtHandler::addObject("dbgcamera", dbgCamera);
+
 	if(vrHandler)
 		vrHandler.resetPos();
 
@@ -263,9 +264,8 @@ void AbstractMainWin::paintGL()
 	updateScene(*camera);
 	PythonQtHandler::evalScript("if \"updateScene\" in dir():\n\tupdateScene()");
 
-	bool debug(QSettings().value("debugcamera/enabled").toBool());
-	bool debugInHeadset(
-	    QSettings().value("debugcamera/debuginheadset").toBool());
+	bool debug(dbgCamera->isEnabled());
+	bool debugInHeadset(dbgCamera->debugInHeadset());
 	BasicCamera* renderingCam(
 	    debug && ((debugInHeadset && vrHandler) || !vrHandler) ? dbgCamera
 	                                                           : camera);
