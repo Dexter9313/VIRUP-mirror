@@ -29,9 +29,6 @@ int main(int argc, char* argv[])
 	}
 
 	MainWin w;
-	if(QSettings().value("window/fullscreen").toBool())
-		w.showFullScreen();
-	else
-		w.show();
+	w.setFullscreen(QSettings().value("window/fullscreen").toBool());
 	return a.exec();
 }

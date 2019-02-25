@@ -1,6 +1,8 @@
 #ifndef BASICCAMERA_H
 #define BASICCAMERA_H
 
+#include <QApplication>
+#include <QDesktopWidget>
 #include <QMatrix4x4>
 #include <QVector3D>
 #include <QVector4D>

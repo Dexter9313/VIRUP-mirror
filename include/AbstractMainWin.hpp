@@ -21,6 +21,13 @@ class AbstractMainWin : public QOpenGLWindow
 	AbstractMainWin();
 	virtual ~AbstractMainWin();
 
+  public slots:
+	bool isFullscreen() const;
+	void setFullscreen(bool fullscreen);
+	void toggleFullscreen();
+	bool getHDR() const { return hdr; };
+	void setHDR(bool hdr);
+
   protected:
 	virtual bool event(QEvent* e) override;
 	virtual void keyPressEvent(QKeyEvent* e) override;
@@ -45,8 +52,6 @@ class AbstractMainWin : public QOpenGLWindow
 	void removePostProcessingShader(QString const& id);
 	virtual void applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const;
 	void reloadPostProcessingTargets();
-	bool getHDR() const { return hdr; };
-	void setHDR(bool hdr);
 
 	VRHandler vrHandler;
 	float const& frameTiming = frameTiming_;

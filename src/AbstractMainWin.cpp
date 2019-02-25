@@ -17,6 +17,33 @@ AbstractMainWin::AbstractMainWin()
 	PythonQtHandler::addObject("mainwin", this);
 }
 
+bool AbstractMainWin::isFullscreen() const
+{
+	return QSettings().value("window/fullscreen").toBool();
+}
+
+void AbstractMainWin::setFullscreen(bool fullscreen)
+{
+	QSettings().setValue("window/fullscreen", fullscreen);
+	if(fullscreen)
+	{
+		QRect screenGeometry(QApplication::desktop()->screenGeometry());
+		resize(screenGeometry.width(), screenGeometry.height());
+	}
+	else
+		resize(QSettings().value("window/width").toUInt(),
+		       QSettings().value("window/height").toUInt());
+	if(fullscreen)
+		showFullScreen();
+	else
+		show();
+}
+
+void AbstractMainWin::toggleFullscreen()
+{
+	setFullscreen(!isFullscreen());
+}
+
 bool AbstractMainWin::event(QEvent* e)
 {
 	if(e->type() == QEvent::Type::Close)
@@ -47,6 +74,10 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 		{
 			vrHandler.close();
 		}
+	}
+	else if(e->key() == Qt::Key_Return && (e->modifiers() & Qt::AltModifier))
+	{
+		toggleFullscreen();
 	}
 	else if(e->key() == Qt::Key_Escape)
 	{
@@ -113,6 +144,7 @@ void AbstractMainWin::reloadPostProcessingTargets()
 void AbstractMainWin::setHDR(bool hdr)
 {
 	this->hdr = hdr;
+	QSettings().setValue("window/hdr", hdr);
 	reloadPostProcessingTargets();
 }
 
@@ -126,8 +158,6 @@ void AbstractMainWin::initializeGL()
 
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
 	         << format().minorVersion() << '\n';
-	resize(QSettings().value("window/width").toUInt(),
-	       QSettings().value("window/height").toUInt());
 
 	dbgCamera = new DebugCamera(&vrHandler);
 	dbgCamera->lookAt({2, 0, 2}, {0, 0, 0}, {0, 0, 1});
