@@ -58,6 +58,7 @@ void AbstractMainWin::setCamera(BasicCamera* newCamera)
 {
 	delete camera;
 	camera = newCamera;
+	PythonQtHandler::addObject("camera", camera);
 }
 
 void AbstractMainWin::appendPostProcessingShader(QString const& id,
@@ -133,6 +134,7 @@ void AbstractMainWin::initializeGL()
 	dbgCamera->setPerspectiveProj(70.0f, (float) width() / (float) height());
 
 	camera = new BasicCamera(&vrHandler);
+	PythonQtHandler::addObject("camera", camera);
 	camera->lookAt({1, 1, 1}, {0, 0, 0}, {0, 0, 1});
 	camera->setPerspectiveProj(70.0f, (float) width() / (float) height());
 	if(vrHandler)

@@ -9,8 +9,9 @@
 
 class VRHandler;
 
-class BasicCamera
+class BasicCamera : public QObject
 {
+	Q_OBJECT
   protected: // protected typedefs
 	enum ClippingPlane
 	{
@@ -24,6 +25,9 @@ class BasicCamera
 	typedef QVector4D Plane; // Ax+By+Cz+D=0 => [A,B,C,D]
   public:
 	BasicCamera(VRHandler const* vrHandler);
+	virtual ~BasicCamera(){};
+
+  public slots:
 	QMatrix4x4 getView() const { return view; };
 	void setView(QMatrix4x4 const& view) { this->view = view; };
 	void setView(QVector3D const& position, QVector3D const& lookDirection,
@@ -46,7 +50,6 @@ class BasicCamera
 	QMatrix4x4 hmdScaledSpaceToWorldTransform() const;
 	QMatrix4x4 screenToWorldTransform() const;
 	QMatrix4x4 hmdScreenToWorldTransform(Side side) const;
-	virtual ~BasicCamera(){};
 
   protected:
 
