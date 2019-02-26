@@ -254,7 +254,7 @@ void VRHandler::submitRendering(Side eye)
 {
 	GLHandler::RenderTarget* frame
 	    = eye == Side::LEFT ? &leftTarget : &rightTarget;
-	vr::Texture_t texture = {(void*) (uintptr_t) frame->texColorBuffer,
+	vr::Texture_t texture = {(void*) (uintptr_t) GLHandler::getColorAttachmentTexture(*frame),
 	                         vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
 	vr::EVRCompositorError error = vr_compositor->Submit(getEye(eye), &texture);
 	if(error != vr::VRCompositorError_None)
@@ -267,10 +267,10 @@ void VRHandler::displayOnCompanion(unsigned int companionWidth,
                                    unsigned int companionHeight) const
 {
 	GLHandler::showOnScreen(
-	    leftTarget, {0, 0, (int) companionWidth / 2, (int) companionHeight});
+	    leftTarget, 0, 0, (int) companionWidth / 2, (int) companionHeight);
 	GLHandler::showOnScreen(rightTarget,
-	                        {(int) companionWidth / 2, 0, (int) companionWidth,
-	                         (int) companionHeight});
+	                        (int) companionWidth / 2, 0, (int) companionWidth,
+	                         (int) companionHeight);
 }
 
 float VRHandler::getFrameTiming() const

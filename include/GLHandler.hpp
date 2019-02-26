@@ -11,14 +11,18 @@
 #include <QSettings>
 #include <QString>
 #include <QVector3D>
+#include <QVector>
 
+#include "PythonQtHandler.hpp"
 #include "utils.hpp"
 
-class GLHandler
+class GLHandler : public QObject
 {
-  public: // public types
-	struct Mesh
+	Q_OBJECT
+  public: // useful types
+	class Mesh
 	{
+		friend GLHandler;
 		GLuint vao;
 		GLuint vbo;
 		GLuint ebo;
@@ -26,27 +30,20 @@ class GLHandler
 		unsigned int eboSize;
 	};
 
-	struct RenderTarget
+	class RenderTarget
 	{
+		friend GLHandler;
+		RenderTarget(GLuint _0, GLuint _1, GLuint _2, unsigned int _3, unsigned int _4) : frameBuffer(_0), texColorBuffer(_1), renderBuffer(_2), width(_3), height(_4) {};
 		GLuint frameBuffer;
 		GLuint texColorBuffer;
 		GLuint renderBuffer;
 		unsigned int width;
 		unsigned int height;
-	};
-
-	struct Rect
-	{
-		int x0;
-		int y0;
-		int x1;
-		int y1;
-	};
-
-	struct VertexMapping
-	{
-		const char* inputName;
-		unsigned int inputSize;
+	  public:
+		RenderTarget() = default;
+		RenderTarget(RenderTarget const&) = default;
+		RenderTarget(RenderTarget&&) = default;
+		RenderTarget& operator=(RenderTarget const&) = default;
 	};
 
 	typedef GLuint Texture;
@@ -60,6 +57,7 @@ class GLHandler
 		TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
 		AUTO // if no ebo, POINTS, else TRIANGLES
 	};
+	Q_ENUM(PrimitiveType)
 
 	enum class GeometricSpace
 	{
@@ -68,10 +66,17 @@ class GLHandler
 		TRACKED,
 		HMD
 	};
+	Q_ENUM(GeometricSpace)
 
   public:
-	GLHandler() = delete;
+	// should only be used within PythonQtHandler
+	GLHandler();
+
 	static bool init();
+
+	static GLint defaultRenderTargetFormat;
+
+  public slots:
 	static void setPointSize(unsigned int size);
 
 	// rendering
@@ -79,20 +84,19 @@ class GLHandler
 	                                    unsigned int height);
 	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
 	                                    GLint format);
-	static void deleteRenderTarget(RenderTarget const& renderTarget);
-	static void beginRendering(RenderTarget const& renderTarget
+	static Texture getColorAttachmentTexture(GLHandler::RenderTarget const& renderTarget);
+	static void deleteRenderTarget(GLHandler::RenderTarget const& renderTarget);
+	static void beginRendering(GLHandler::RenderTarget const& renderTarget
 	                           = {0, 0, 0,
 	                              QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()});
-	static void postProcess(ShaderProgram shader, RenderTarget const& from,
+	static void postProcess(ShaderProgram shader, GLHandler::RenderTarget const& from,
 	                        RenderTarget const& to
 	                        = {0, 0, 0,
 	                           QSettings().value("window/width").toUInt(),
 	                           QSettings().value("window/height").toUInt()});
-	static void showOnScreen(RenderTarget const& renderTarget,
-	                         Rect const& screenRect
-	                         = {0, 0, QSettings().value("window/width").toInt(),
-	                            QSettings().value("window/height").toInt()});
+	static void showOnScreen(GLHandler::RenderTarget const& renderTarget,
+	                         int screenx0, int screeny0, int screenx1, int screeny1);
 	static void beginTransparent();
 	static void endTransparent();
 	static void setUpTransforms(QMatrix4x4 const& fullTransform,
@@ -117,17 +121,24 @@ class GLHandler
 
 	// meshes
 	static Mesh newMesh();
-	static void setVertices(Mesh& mesh, std::vector<float> const& vertices,
+  public: // doesn't work in PythonQt
+	static void setVertices(GLHandler::Mesh& mesh, std::vector<float> const& vertices,
 	                        ShaderProgram const& shaderProgram,
-	                        std::vector<VertexMapping> const& mapping,
+	                        std::vector<QPair<const char*, unsigned int>> const& mapping,
 	                        std::vector<unsigned int> const& elements = {});
-	static void updateVertices(Mesh& mesh, std::vector<float> const& vertices);
+  public slots:
+	static void setVertices(GLHandler::Mesh& mesh, std::vector<float> const& vertices,
+	                        ShaderProgram const& shaderProgram,
+	                        QStringList const& mappingNames,
+	                        std::vector<unsigned int> const& mappingSizes,
+	                        std::vector<unsigned int> const& elements = {});
+	static void updateVertices(GLHandler::Mesh& mesh, std::vector<float> const& vertices);
 	static void setUpRender(ShaderProgram shader,
 	                        QMatrix4x4 const& model = QMatrix4x4(),
 	                        GeometricSpace space    = GeometricSpace::WORLD);
-	static void render(Mesh const& mesh,
+	static void render(GLHandler::Mesh const& mesh,
 	                   PrimitiveType primitiveType = PrimitiveType::AUTO);
-	static void deleteMesh(Mesh const& mesh);
+	static void deleteMesh(GLHandler::Mesh const& mesh);
 
 	// textures
 	static Texture newTexture(const char* texturePath, bool sRGB = true);
@@ -139,8 +150,6 @@ class GLHandler
 	// http://entropymine.com/imageworsener/srgbformula/
 	static QColor sRGBToLinear(QColor const& srgb);
 	static QColor linearTosRGB(QColor const& linear);
-
-	static GLint defaultRenderTargetFormat;
 
   private:
 	static GLuint loadShader(QString const& path, GLenum shaderType);
@@ -157,5 +166,9 @@ class GLHandler
 	// transform for any HMD space object (follows HMD)
 	static QMatrix4x4 fullHmdSpaceTransform_;
 };
+
+Q_DECLARE_METATYPE(GLHandler::Mesh)
+Q_DECLARE_METATYPE(GLHandler::RenderTarget)
+Q_DECLARE_METATYPE(GLuint) // for typedefs Texture and ShaderProgram
 
 #endif // GLHANDLER_H

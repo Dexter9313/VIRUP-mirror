@@ -9,6 +9,14 @@ QMatrix4x4 GLHandler::fullCameraSpaceTransform_  = QMatrix4x4();
 QMatrix4x4 GLHandler::fullTrackedSpaceTransform_ = QMatrix4x4();
 QMatrix4x4 GLHandler::fullHmdSpaceTransform_     = QMatrix4x4();
 
+GLHandler::GLHandler()
+{
+	PythonQtHandler::addClass<Mesh>("Mesh");
+	PythonQtHandler::addClass<RenderTarget>("RenderTarget");
+	PythonQtHandler::addClass<Texture>("Texture");
+	PythonQtHandler::addClass<ShaderProgram>("ShaderProgram");
+}
+
 bool GLHandler::init()
 {
 	glf.initializeOpenGLFunctions();
@@ -67,6 +75,11 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width, unsigned 
 	return result;
 }
 
+GLHandler::Texture GLHandler::getColorAttachmentTexture(RenderTarget const& renderTarget)
+{
+	return renderTarget.texColorBuffer;
+}
+
 void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
 {
 	glf.glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -99,13 +112,13 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 }
 
 void GLHandler::showOnScreen(RenderTarget const& renderTarget,
-                             Rect const& screenRect)
+	                         int screenx0, int screeny0, int screenx1, int screeny1)
 {
 	glf.glBindFramebuffer(GL_READ_FRAMEBUFFER, renderTarget.frameBuffer);
 	glf.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glf.glBlitFramebuffer(0, 0, renderTarget.width, renderTarget.height,
-	                      screenRect.x0, screenRect.y0, screenRect.x1,
-	                      screenRect.y1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	                      screenx0, screeny0, screenx1,
+	                      screeny1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
 void GLHandler::beginTransparent()
@@ -254,7 +267,7 @@ GLHandler::Mesh GLHandler::newMesh()
 
 void GLHandler::setVertices(Mesh& mesh, std::vector<float> const& vertices,
                             ShaderProgram const& shaderProgram,
-                            std::vector<VertexMapping> const& mapping,
+                            std::vector<QPair<const char*, unsigned int>> const& mapping,
                             std::vector<unsigned int> const& elements)
 {
 	glf.glBindVertexArray(mesh.vao);
@@ -266,21 +279,21 @@ void GLHandler::setVertices(Mesh& mesh, std::vector<float> const& vertices,
 	size_t offset = 0, stride = 0;
 	for(unsigned int i(0); i < mapping.size(); ++i)
 	{
-		stride += mapping[i].inputSize;
+		stride += mapping[i].second;
 	}
 	for(unsigned int i(0); i < mapping.size(); ++i)
 	{
 		// map position
 		GLint posAttrib
-		    = glf.glGetAttribLocation(shaderProgram, mapping[i].inputName);
+		    = glf.glGetAttribLocation(shaderProgram, mapping[i].first);
 		if(posAttrib != -1)
 		{
 			glf.glEnableVertexAttribArray(posAttrib);
-			glf.glVertexAttribPointer(posAttrib, mapping[i].inputSize, GL_FLOAT,
+			glf.glVertexAttribPointer(posAttrib, mapping[i].second, GL_FLOAT,
 			                          GL_FALSE, stride * sizeof(float),
 			                          (void*) (offset * sizeof(float)));
 		}
-		offset += mapping[i].inputSize;
+		offset += mapping[i].second;
 	}
 	mesh.vboSize = vertices.size() / offset;
 	if(elements.size() != 0)
@@ -293,6 +306,18 @@ void GLHandler::setVertices(Mesh& mesh, std::vector<float> const& vertices,
 	}
 
 	glf.glBindVertexArray(0);
+}
+
+void GLHandler::setVertices(GLHandler::Mesh& mesh, std::vector<float> const& vertices,
+                        ShaderProgram const& shaderProgram,
+                        QStringList const& mappingNames,
+                        std::vector<unsigned int> const& mappingSizes,
+                        std::vector<unsigned int> const& elements)
+{
+	std::vector<QPair<const char*, unsigned int>> mapping;
+	for(unsigned int i(0); i < mappingSizes.size(); ++i)
+		mapping.push_back({mappingNames[i].toLatin1().constData(), mappingSizes[i]});
+	setVertices(mesh, vertices, shaderProgram, mapping, elements);
 }
 
 void GLHandler::updateVertices(Mesh& mesh, std::vector<float> const& vertices)

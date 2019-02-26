@@ -15,6 +15,7 @@ AbstractMainWin::AbstractMainWin()
 
 	PythonQtHandler::init();
 	PythonQtHandler::addObject("mainwin", this);
+	PythonQtHandler::addObject("GLHandler", new GLHandler);
 }
 
 bool AbstractMainWin::isFullscreen() const
@@ -333,6 +334,7 @@ void AbstractMainWin::resizeGL(int w, int h)
 
 AbstractMainWin::~AbstractMainWin()
 {
+	PythonQtHandler::evalScript("if \"cleanUpScene\" in dir():\n\tcleanUpScene()");
 	for(QPair<QString, GLHandler::ShaderProgram> p : postProcessingPipeline_)
 		GLHandler::deleteShader(p.second);
 	delete camera;
