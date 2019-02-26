@@ -35,6 +35,8 @@ class PythonQtHandler
 	PythonQtHandler() = delete;
 	static bool isSupported();
 	static void init();
+	template<typename T>
+	static void addClass(QString const& name, QString const& package = "");
 	static void addVariable(QString const& name, QVariant const& v);
 	static QVariant getVariable(QString const& name);
 	static void removeVariable(QString const& name);
@@ -53,6 +55,14 @@ class PythonQtHandler
 #endif
 };
 
+template<typename T>
+void PythonQtHandler::addClass(QString const& name, QString const& package)
+{
+#ifdef PYTHONQT
+	qRegisterMetaType<T>(name.toLatin1().constData());
+	PythonQt::self()->registerCPPClass(name.toLatin1().constData(), "", package.toLatin1().constData());
+#endif
+}
 
 #endif // PYTHONQTHANDLER_H
 
