@@ -59,6 +59,10 @@ void AbstractMainWin::setVR(bool vr)
 		if(vrHandler.init())
 			vrHandler.resetPos();
 	}
+	if(vrIsEnabled())
+		PythonQtHandler::addObject("VRHandler", &vrHandler);
+	else
+		PythonQtHandler::evalScript("if \"VRHandler\" in dir():\n\tdel VRHandler");
 	QSettings().setValue("vr/enabled", vrIsEnabled());
 }
 

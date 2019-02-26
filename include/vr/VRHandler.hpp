@@ -16,8 +16,9 @@ class BasicCamera;
 class Controller;
 class Hand;
 
-class VRHandler
+class VRHandler : public QObject
 {
+	Q_OBJECT
   public: // public types
 	enum class EventType
 	{
