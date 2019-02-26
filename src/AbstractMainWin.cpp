@@ -14,6 +14,8 @@ AbstractMainWin::AbstractMainWin()
 		GLHandler::defaultRenderTargetFormat = GL_RGBA16F;
 
 	PythonQtHandler::init();
+	PythonQtHandler::addClass<int>("Side");
+	PythonQtHandler::addObject("Side", new PySide);
 	PythonQtHandler::addObject("mainwin", this);
 	PythonQtHandler::addObject("GLHandler", new GLHandler);
 }
