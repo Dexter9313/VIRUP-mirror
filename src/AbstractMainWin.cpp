@@ -147,6 +147,11 @@ void AbstractMainWin::applyPostProcShaderParams(
 		GLHandler::setShaderParam(shader, "gamma", gamma);
 		GLHandler::setShaderParam(shader, "hdr", hdr);
 	}
+	else
+	{
+		QString pyCmd("if \"applyPostProcShaderParams\" in dir():\n\tapplyPostProcShaderParams(\"" + id + "\"," + QString::number(shader) + ")");
+		PythonQtHandler::evalScript(pyCmd);
+	}
 }
 
 void AbstractMainWin::reloadPostProcessingTargets()

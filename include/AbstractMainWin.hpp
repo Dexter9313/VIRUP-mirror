@@ -30,6 +30,10 @@ class AbstractMainWin : public QOpenGLWindow
 	bool vrIsEnabled() const;
 	void setVR(bool vr);
 	void toggleVR();
+	void appendPostProcessingShader(QString const& id, QString const& fragment);
+	void insertPostProcessingShader(QString const& id, QString const& fragment,
+	                                unsigned int pos);
+	void removePostProcessingShader(QString const& id);
 
   protected:
 	virtual bool event(QEvent* e) override;
@@ -50,10 +54,6 @@ class AbstractMainWin : public QOpenGLWindow
 	DebugCamera& getDebugCamera() { return *dbgCamera; };
 	void setCamera(BasicCamera* newCamera);
 
-	void appendPostProcessingShader(QString const& id, QString const& fragment);
-	void insertPostProcessingShader(QString const& id, QString const& fragment,
-	                                unsigned int pos);
-	void removePostProcessingShader(QString const& id);
 	virtual void applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const;
 	void reloadPostProcessingTargets();
 
