@@ -23,7 +23,7 @@ def initScene():
 
     GLHandler.setVertices(mesh, [0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5], shader, ["position"], [3], [0, 1, 1, 2, 2, 0])
 
-    mainwin.appendPostProcessingShader("py", "grayscale")
+    HydrogenVR.appendPostProcessingShader("py", "grayscale")
 
 
 def updateScene():

@@ -16,7 +16,7 @@ AbstractMainWin::AbstractMainWin()
 	PythonQtHandler::init();
 	PythonQtHandler::addClass<int>("Side");
 	PythonQtHandler::addObject("Side", new PySide);
-	PythonQtHandler::addObject("mainwin", this);
+	PythonQtHandler::addObject("HydrogenVR", this);
 	PythonQtHandler::addObject("GLHandler", new GLHandler);
 }
 
