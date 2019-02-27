@@ -8,19 +8,23 @@
 #include "../BasicCamera.hpp"
 #include "../utils.hpp"
 
-class Controller
+class Controller : public QObject
 {
+	Q_OBJECT
   public:
 	Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice, Side side);
 	void update(QMatrix4x4 const& model);
-	QVector2D const& getPadCoords() const { return padCoords; };
-	float getTriggerValue() const { return triggerValue; };
-	QVector3D getPosition() const { return QVector3D(model.column(3)); };
 	void render() const;
 	~Controller();
 
 	const Side side;
 	const unsigned int nDevice;
+
+  public slots:
+	Side getSide() const { return side; };
+	QVector2D getPadCoords() const { return padCoords; };
+	float getTriggerValue() const { return triggerValue; };
+	QVector3D getPosition() const { return QVector3D(model.column(3)); };
 
   private:
 	vr::IVRSystem* const vr_pointer;

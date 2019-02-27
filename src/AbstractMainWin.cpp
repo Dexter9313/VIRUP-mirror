@@ -349,5 +349,6 @@ AbstractMainWin::~AbstractMainWin()
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
 
+	vrHandler.close();
 	PythonQtHandler::clean();
 }

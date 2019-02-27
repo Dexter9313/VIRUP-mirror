@@ -370,6 +370,7 @@ void VRHandler::updateController(Side side, int nDevice)
 	{
 		(*controller)->update(tracked_device_pose_matrix[nDevice]);
 	}
+	PythonQtHandler::addObject(((side == Side::LEFT) ? QString("left") : QString("right")) + "Controller", *controller);
 }
 
 void VRHandler::updateHands()
