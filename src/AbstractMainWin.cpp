@@ -123,6 +123,33 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 	PythonQtHandler::evalScript("if \"keyPressEvent\" in dir():\n\tkeyPressEvent(" + pyKeyEvent + ")");
 }
 
+void AbstractMainWin::keyReleaseEvent(QKeyEvent* e)
+{
+	if(!PythonQtHandler::isSupported())
+		return;
+
+	QString pyKeyEvent("QKeyEvent(");
+	pyKeyEvent += QString::number(e->type()) + ",";
+	pyKeyEvent += QString::number(e->key()) + ",";
+	pyKeyEvent += QString::number(e->modifiers()) + ",";
+	pyKeyEvent += QString::number(e->nativeScanCode()) + ",";
+	pyKeyEvent += QString::number(e->nativeVirtualKey()) + ",";
+	pyKeyEvent += QString::number(e->nativeModifiers()) + ",";
+	if(e->key() != Qt::Key_Return && e->key() != Qt::Key_Enter)
+		pyKeyEvent += "\"" + e->text().replace('"', "\\\"") + "\",";
+	else
+		pyKeyEvent += "\"\\n\",";
+	pyKeyEvent += e->isAutoRepeat() ? "True," : "False,";
+	pyKeyEvent += QString::number(e->count()) + ")";
+
+	PythonQtHandler::evalScript("if \"keyReleaseEvent\" in dir():\n\tkeyReleaseEvent(" + pyKeyEvent + ")");
+}
+
+void AbstractMainWin::vrEvent(VRHandler::Event const& e)
+{
+	PythonQtHandler::evalScript("if \"vrEvent\" in dir():\n\tvrEvent(" + QString::number((int)e.type) + "," + QString::number((int)e.side) + ", " + QString::number((int)e.button) +  ")");
+}
+
 void AbstractMainWin::setCamera(BasicCamera* newCamera)
 {
 	delete camera;

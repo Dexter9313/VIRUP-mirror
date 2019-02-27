@@ -27,6 +27,7 @@ class VRHandler : public QObject
 		BUTTON_PRESSED,
 		BUTTON_UNPRESSED
 	};
+	Q_ENUM(EventType)
 
 	enum class Button
 	{
@@ -37,6 +38,7 @@ class VRHandler : public QObject
 		MENU,
 		SYSTEM
 	};
+	Q_ENUM(Button)
 
 	struct Event
 	{
