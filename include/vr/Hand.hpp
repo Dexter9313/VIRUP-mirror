@@ -25,8 +25,9 @@
 #include "../BasicCamera.hpp"
 #include "../utils.hpp"
 
-class Hand
+class Hand : public QObject
 {
+	Q_OBJECT
   public:
 	Hand(Side side);
 	void invalidate() { _isValid = false; };
@@ -38,6 +39,8 @@ class Hand
 
 	const Side side;
 
+  public slots:
+	Side getSide() const { return side; };
 	bool isValid() const { return _isValid; };
 	bool isFlat() const { return _isFlat; };
 	bool isClosed() const { return _isClosed; };

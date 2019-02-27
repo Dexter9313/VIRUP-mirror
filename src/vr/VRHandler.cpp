@@ -68,6 +68,9 @@ bool VRHandler::init()
 	leftHand  = new Hand(Side::LEFT);
 	rightHand = new Hand(Side::RIGHT);
 
+	PythonQtHandler::addObject("leftHand", leftHand);
+	PythonQtHandler::addObject("leftHand", rightHand);
+
 	return true;
 }
 
@@ -329,6 +332,8 @@ void VRHandler::close()
 	updateController(Side::RIGHT, -1);
 	delete leftHand;
 	delete rightHand;
+	PythonQtHandler::addObject("leftHand", nullptr);
+	PythonQtHandler::addObject("leftHand", nullptr);
 	GLHandler::deleteRenderTarget(leftTarget);
 	GLHandler::deleteRenderTarget(rightTarget);
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
