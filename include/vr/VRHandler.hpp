@@ -9,6 +9,7 @@
 #include <openvr.h>
 
 #include "../GLHandler.hpp"
+#include "../PythonQtHandler.hpp"
 #include "Controller.hpp"
 #include "Hand.hpp"
 
@@ -48,17 +49,10 @@ class VRHandler : public QObject
 	VRHandler() = default;
 	explicit operator bool() const { return vr_pointer != nullptr; }
 	bool init();
-	std::pair<unsigned int, unsigned int> getEyeDims() const;
-	QMatrix4x4 getEyeViewMatrix(Side eye) const;
-	QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan = 0.1f,
-	                               float farPlan = 100.0f) const;
-	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
 	const Controller* getController(Side side) const;
 	const Hand* getHand(Side side) const;
-	void resetPos();
 	void prepareRendering();
 	void beginRendering(Side eye, bool postProcessed);
-	Side getCurrentRenderingEye() const { return currentRenderingEye; };
 	void renderControllers() const;
 	void renderHands();
 	GLHandler::RenderTarget& getEyeTarget(Side side) { return side == Side::LEFT ? leftTarget : rightTarget; };
@@ -67,10 +61,19 @@ class VRHandler : public QObject
 	void submitRendering(Side eye);
 	void displayOnCompanion(unsigned int companionWidth,
 	                        unsigned int companionHeight) const;
-	float getFrameTiming() const;
 	bool pollEvent(Event* e);
 	void close();
 	~VRHandler();
+
+  public slots:
+	QSize getEyeRenderTargetSize() const;
+	QMatrix4x4 getEyeViewMatrix(Side eye) const;
+	QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan = 0.1f,
+	                               float farPlan = 100.0f) const;
+	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
+	void resetPos();
+	Side getCurrentRenderingEye() const { return currentRenderingEye; };
+	float getFrameTiming() const;
 
   private:
 	vr::IVRSystem* vr_pointer        = nullptr;

@@ -50,13 +50,13 @@ bool VRHandler::init()
 		std::cout << "Render models loaded successfully" << std::endl;
 
 	leftTarget
-	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second, GL_RGBA8);
+	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height(), GL_RGBA8);
 	rightTarget
-	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second, GL_RGBA8);
+	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height(), GL_RGBA8);
 	postProcessingTargets[0]
-	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
 	postProcessingTargets[1]
-	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
 
 #ifdef LEAP_MOTION
 	if(leapController.isConnected())
@@ -74,11 +74,11 @@ bool VRHandler::init()
 	return true;
 }
 
-std::pair<unsigned int, unsigned int> VRHandler::getEyeDims() const
+QSize VRHandler::getEyeRenderTargetSize() const
 {
-	std::pair<unsigned int, unsigned int> result;
-	vr_pointer->GetRecommendedRenderTargetSize(&result.first, &result.second);
-	return result;
+	unsigned int w, h;
+	vr_pointer->GetRecommendedRenderTargetSize(&w, &h);
+	return QSize(w, h);
 }
 
 QMatrix4x4 VRHandler::getEyeViewMatrix(Side eye) const
@@ -248,9 +248,9 @@ void VRHandler::reloadPostProcessingTargets()
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
 	postProcessingTargets[0]
-	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
 	postProcessingTargets[1]
-	    = GLHandler::newRenderTarget(getEyeDims().first, getEyeDims().second);
+	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
 }
 
 void VRHandler::submitRendering(Side eye)
