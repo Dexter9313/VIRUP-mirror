@@ -36,17 +36,11 @@ void PythonQtHandler::init()
 {
 #ifdef PYTHONQT
 	// init PythonQt and Python
-	PythonQt::init(PythonQt::IgnoreSiteModule | PythonQt::RedirectStdOut);
+	PythonQt::init(PythonQt::RedirectStdOut);
 	PythonQt_QtAll::init();
 
 	// get the __main__ python module
 	mainModule = new PythonQtObjectPtr(PythonQt::self()->getMainModule());
-
-	QProcess process;
-	process.start("python3 -c \"import sys;print(sys.path)\"");
-	process.waitForFinished(-1);
-	QString syspath(process.readAllStandardOutput());
-	mainModule->evalScript("import sys\nsys.path=" + syspath + "\ndel sys");
 
 	console = new PythonQtScriptingConsole(nullptr, *mainModule);
 #endif
