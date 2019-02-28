@@ -22,19 +22,11 @@ addons:
     apt:
         packages:
             - qtbase5-dev
-            # needed for PythonQt
-            - libqt5opengl5-dev
-            - qtdeclarative5-dev
-            - libqt5svg5-dev
-            - qttools5-dev
-            - libqt5webkit5-dev
-            - qtmultimedia5-dev
-            - libqt5xmlpatterns5-dev 
-            - libpython3-dev
 
 install:
     - . ./build.conf
     - CACHED=false
+    # travis creates deps/ even if there's nothing in cache
     - if [ ! -d ./deps ]; then
           mkdir deps ;
       elif [ -f ./deps/libopenvr_api.so ]; then
@@ -67,6 +59,7 @@ install:
       fi
     # install PythonQt
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+            sudo apt-get install libqt5opengl5-dev qtdeclarative5-dev libqt5svg5-dev qttools5-dev libqt5webkit5-dev qtmultimedia5-dev libqt5xmlpatterns5-dev libpython3-dev ;
         if [[ "$CACHED" = false ]]; then
             git clone https://github.com/Orochimarufan/PythonQt ;
             cd PythonQt ;
@@ -86,7 +79,6 @@ install:
         cd ../.. ;
       fi
     - cd ..
-    - pwd
     # install project additional deps
     - ./$PROJECT_DIRECTORY/ci/travis/install.sh
 
