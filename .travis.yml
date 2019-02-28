@@ -34,7 +34,13 @@ addons:
 
 install:
     - . ./build.conf
-    - mkdir deps
+    - CACHED=false
+    - if [ ! -d ./deps ]; then
+          mkdir deps ;
+      elif [ -f ./deps/libopenvr_api.so ]; then
+          CACHED=true ;
+      fi
+    - echo $CACHED
     - cd deps
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         brew update ;
@@ -43,34 +49,44 @@ install:
       fi
     # install openvr
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        wget --content-disposition https://github.com/ValveSoftware/openvr/raw/master/bin/linux64/libopenvr_api.so ;
+        if [[ "$CACHED" = false ]]; then
+            wget --content-disposition https://github.com/ValveSoftware/openvr/raw/master/bin/linux64/libopenvr_api.so ;
+            wget --content-disposition https://raw.githubusercontent.com/ValveSoftware/openvr/master/headers/openvr.h ;
+        fi;
         sudo cp ./libopenvr_api.so /usr/lib ;
-        wget --content-disposition https://raw.githubusercontent.com/ValveSoftware/openvr/master/headers/openvr.h ;
         sudo cp ./openvr.h /usr/include ;
       fi
     # install leap motion sdk
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        wget --content-disposition https://warehouse.leapmotion.com/apps/4185/download ;
-        tar xzf Leap_Motion_SDK_Linux_*.tgz ;
+        if [[ "$CACHED" = false ]]; then
+            wget --content-disposition https://warehouse.leapmotion.com/apps/4185/download ;
+            tar xzf Leap_Motion_SDK_Linux_*.tgz ;
+        fi;
         sudo cp ./LeapDeveloperKit*/LeapSDK/include/Leap*.h /usr/include ;
         sudo cp ./LeapDeveloperKit*/LeapSDK/lib/x64/libLeap.so /usr/lib ;
       fi
     # install PythonQt
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        git clone https://github.com/Orochimarufan/PythonQt ;
-        cd PythonQt ;
-        git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
-        sed -i "s/PythonQt_init_QtQml(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
-        sed -i "s/PythonQt_init_QtQuick(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
-        cat ./extensions/PythonQt_QtAll/vim PythonQt_QtAll.cpp ;
-        cd build ;
-        cmake .. -DPythonQt_Python3=ON -DBUILD_SHARED_LIBS=ON ;
-        make ;
+        if [[ "$CACHED" = false ]]; then
+            git clone https://github.com/Orochimarufan/PythonQt ;
+            cd PythonQt ;
+            git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
+            sed -i "s/PythonQt_init_QtQml(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
+            sed -i "s/PythonQt_init_QtQuick(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
+            cat ./extensions/PythonQt_QtAll/vim PythonQt_QtAll.cpp ;
+            cd build ;
+            cmake .. -DPythonQt_Python3=ON -DBUILD_SHARED_LIBS=ON ;
+            make ;
+        else
+            cd PythonQt/build ;
+        fi;
         sudo make install ;
         sudo ln -s /usr/local/lib/libQt5Python35.so /usr/local/lib/libQtPython.so ;
         sudo ln -s /usr/local/lib/libQt5Python35_QtAll.so /usr/local/lib/libQtPython_QtAll.so ;
         cd ../.. ;
       fi
+    - cd ..
+    - pwd
     # install project additional deps
     - ./$PROJECT_DIRECTORY/ci/travis/install.sh
 

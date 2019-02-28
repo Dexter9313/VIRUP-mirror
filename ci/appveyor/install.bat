@@ -4,13 +4,15 @@
 IF NOT EXIST openvr\ (
 	mkdir openvr
 	cd openvr
-	set URL="https://raw.githubusercontent.com/ValveSoftware/openvr/master/headers/openvr.h"
-	appveyor DownloadFile %URL% -FileName openvr.h
-	IF "%BUILD_TYPE%" == "64bit" (set WIN=win64) ELSE (set WIN=win32)
-	set URL="https://raw.githubusercontent.com/ValveSoftware/openvr/master/lib/%WIN%/openvr_api.lib"
-	appveyor DownloadFile %URL% -FileName openvr_api.lib
-	set URL="https://raw.githubusercontent.com/ValveSoftware/openvr/master/bin/%WIN%/openvr_api.dll"
-	appveyor DownloadFile %URL% -FileName openvr_api.dll
+	appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/master/headers/openvr.h -FileName openvr.h
+	IF "%BUILD_TYPE%" == "64bit" (
+		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/master/lib/win64/openvr_api.lib -FileName openvr_api.lib
+		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/master/bin/win64/openvr_api.dll -FileName openvr_api.dll
+	) ELSE (
+		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/master/lib/win32/openvr_api.lib -FileName openvr_api.lib
+		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/master/bin/win32/openvr_api.dll -FileName openvr_api.dll
+	)
+	echo "OpenVR installed..."
 	cd ..
 )
 set OPENVR_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/deps/openvr/
@@ -23,10 +25,10 @@ set OPENVR_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\openvr\openvr_api.dll
 IF NOT EXIST leap\ (
 	mkdir leap
 	cd leap
-	set URL="https://warehouse.leapmotion.com/apps/4183/download"
-	appveyor DownloadFile %URL% -FileName leap.zip
+	appveyor DownloadFile https://warehouse.leapmotion.com/apps/4183/download -FileName leap.zip
 	7z x leap.zip > nul
 	move LeapDeveloperKit* Leap
+	echo "LeapMotionSDK installed..."
 	cd ..
 )
 IF "%BUILD_TYPE%" == "64bit" (set ARCH=x64) ELSE (set ARCH=x86)
@@ -40,8 +42,7 @@ set LEAPMOTION_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\leap\Leap\LeapSDK\lib\%ARCH%\
 if NOT EXIST pythonqt\ (
 	mkdir pythonqt
 	cd pythonqt
-	set URL="https://sourceforge.net/projects/pythonqt/files/pythonqt/PythonQt-3.2/PythonQt3.2.zip/download"
-	appveyor DownloadFile %URL% -FileName pythonqt.zip
+	appveyor DownloadFile https://sourceforge.net/projects/pythonqt/files/pythonqt/PythonQt-3.2/PythonQt3.2.zip/download -FileName pythonqt.zip
 	7z x pythonqt.zip > nul
 	cd PythonQt3.2
 	del PythonQt.pro
@@ -56,6 +57,7 @@ if NOT EXIST pythonqt\ (
 	call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %ARCH%
 	qmake
 	nmake
+	echo "PythonQt installed..."
 	cd ..\..
 )
 set PYTHONQT_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/pythonqt/PythonQt3.2/src

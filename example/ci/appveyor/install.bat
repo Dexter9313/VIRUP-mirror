@@ -4,8 +4,7 @@
 IF NOT EXIST octree\ (
 	mkdir octree
 	cd octree
-	set URL="https://github.com/Dexter9313/octree-file-format-mirror/releases/download/1.2.0/liboctree-1.2.0-windows-%BUILD_TYPE%.zip"
-	appveyor DownloadFile %URL% -FileName octree.zip
+	appveyor DownloadFile https://github.com/Dexter9313/octree-file-format-mirror/releases/download/1.2.0/liboctree-1.2.0-windows-%BUILD_TYPE%.zip -FileName octree.zip
 	7z x octree.zip > nul
 	move liboctree* liboctree
 	cd ..
