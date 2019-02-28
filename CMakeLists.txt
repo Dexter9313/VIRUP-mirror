@@ -206,35 +206,66 @@ if(NOT WIN32)
 	endif()
 
 	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5:amd64,\
+	libpythonqt-qt5-python3-3:amd64,\
+	libpythonqt-qtall-qt5-python3-3:amd64,\
 	libqt5gui5:amd64,\
 	libqt5core5a:amd64,\
 	libstdc++6:amd64,\
 	libc6:amd64,\
 	libgcc1:amd64,\
-	libc6:amd64,\
-	libc6:amd64,\
-	libc6:amd64,\
-	libc6:amd64,\
+	libpython3.6:amd64,\
+	libqt5svg5:amd64,\
+	libqt5opengl5:amd64,\
+	libqt5printsupport5:amd64,\
+	libqt5multimediawidgets5:amd64,\
+	libqt5quickwidgets5:amd64,\
+	libqt5multimedia5:amd64,\
+	libqt5quick5:amd64,\
+	libqt5sql5:amd64,\
+	libqt5xmlpatterns5,\
+	libqt5qml5:amd64,\
+	libqt5network5:amd64,\
+	libqt5xml5:amd64,\
 	libgl1:amd64,\
 	libpng16-16:amd64,\
 	libharfbuzz0b:amd64,\
 	zlib1g:amd64,\
 	libicu60:amd64,\
-	libicu60:amd64,\
 	libdouble-conversion1:amd64,\
 	libglib2.0-0:amd64,\
+	libexpat1:amd64,\
+	libpulse0:amd64,\
 	libglx0:amd64,\
 	libglvnd0:amd64,\
 	libfreetype6:amd64,\
 	libgraphite2-3:amd64,\
 	libicu60:amd64,\
 	libpcre3:amd64,\
+	libpulse0:amd64,\
+	libdbus-1-3:amd64,\
 	libx11-6:amd64,\
 	libxcb1:amd64,\
+	libsystemd0:amd64,\
+	libwrap0:amd64,\
+	libsndfile1:amd64,\
+	libasyncns0:amd64,\
 	libxau6:amd64,\
 	libxdmcp6:amd64,\
-	libbsd0:amd64,\
-	${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
+	liblzma5:amd64,\
+	liblz4-1:amd64,\
+	libgcrypt20:amd64,\
+	libflac8:amd64,\
+	libogg0:amd64,\
+	libvorbis0a:amd64,\
+	libvorbisenc2:amd64,\
+	libgpg-error0:amd64,\
+	libbsd0:amd64")
+
+	if(NOT "${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}" STREQUAL "")
+		message(STATUS "${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
+		set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
+		message(STATUS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
+	endif()
 
 	INCLUDE(CPack)
 

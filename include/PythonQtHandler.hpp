@@ -21,7 +21,9 @@
 
 #ifdef PYTHONQT
 #include <PythonQt.h>
+#ifdef PYTHONQT_QTALL
 #include <PythonQt_QtAll.h>
+#endif
 #include <gui/PythonQtScriptingConsole.h>
 #endif
 
