@@ -90,6 +90,9 @@ script:
     - mkdir build ; cd build
     - cmake .. -DTAG=$TRAVIS_TAG -DWERROR=true
     - make -j
+    - PROJECT_TESTS=./"$PROJECT_NAME"_tests
+    - echo PROJECT_TESTS
+    - $(PROJECT_TESTS)
 
 before_deploy:
     - make package
