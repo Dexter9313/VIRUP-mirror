@@ -47,7 +47,8 @@ build_script:
     - cmake .. -G %GENERATOR%
     - cmake --build . --config Release
     - cd %BINDIR%
-    - %PROJECT_NAME%_tests.exe
+    - set TESTS=%PROJECT_NAME%_tests.exe
+    - %TESTS%
 
 after_build:
     - cd %BINDIR%
