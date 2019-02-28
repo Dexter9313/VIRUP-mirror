@@ -188,8 +188,8 @@ qt5_wrap_cpp(TEST_MOC_FILES ${TEST_HPP_FILES})
 add_library(objects OBJECT ${SRC_FILES} ${MOC_FILES})
 
 #TESTS
-add_executable(${PROJECT_NAME}_tests ${TEST_SRC_FILES} ${TEST_MOC_FILES} $<TARGET_OBJECTS:objects>)
-target_link_libraries(${PROJECT_NAME}_tests ${LD_LIBS})
+add_executable(tests ${TEST_SRC_FILES} ${TEST_MOC_FILES} $<TARGET_OBJECTS:objects>)
+target_link_libraries(tests ${LD_LIBS})
 
 #EXECUTABLE : PROJECT_NAME
 add_executable(${PROJECT_NAME} ${MAIN_FILE} $<TARGET_OBJECTS:objects>)
