@@ -41,7 +41,7 @@ class BasicCamera : public QObject
 	void setPerspectiveProj(float fov, float aspectratio, float nearPlan = 0.1f,
 	                        float farPlan = 10000.f);
 	float getEyeDistanceFactor() const { return eyeDistanceFactor; };
-	void setEyeDistanceFactor(float EyeDistanceFactor);
+	void setEyeDistanceFactor(float eyeDistanceFactor);
 	QVector4D project(QVector3D const& vertex) const;
 	QVector4D project(QVector4D const& vertex) const;
 	QMatrix4x4 cameraSpaceToWorldTransform() const;

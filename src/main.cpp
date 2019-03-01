@@ -12,7 +12,9 @@ int main(int argc, char* argv[])
 {
 #ifdef Q_OS_UNIX
 	if(!QDir("./data/shaders").exists())
+	{
 		chdir((QString("/usr/share/") + PROJECT_NAME).toLocal8Bit().data());
+	}
 #endif
 	// Set config file names for QSettings
 	QCoreApplication::setOrganizationName(PROJECT_NAME);

@@ -53,7 +53,7 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	glf.glGenTextures(1, &result.texColorBuffer);
 	glf.glBindTexture(GL_TEXTURE_2D, result.texColorBuffer);
 	glf.glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA,
-	                 GL_UNSIGNED_BYTE, NULL);
+	                 GL_UNSIGNED_BYTE, nullptr);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glf.glBindTexture(GL_TEXTURE_2D, 0);
@@ -159,9 +159,13 @@ GLHandler::ShaderProgram GLHandler::newShader(QString vertex, QString fragment,
 	(void) geometry;
 
 	if(!vertex.contains('.'))
+	{
 		vertex = "shaders/" + vertex + ".vert";
+	}
 	if(!fragment.contains('.'))
+	{
 		fragment = "shaders/" + fragment + ".frag";
+	}
 
 	ShaderProgram result;
 
@@ -238,15 +242,17 @@ GLuint GLHandler::loadShader(QString const& path, GLenum shaderType)
 	const char* source = bytes.data();
 
 	GLuint shader = glf.glCreateShader(shaderType);
-	glf.glShaderSource(shader, 1, &source, NULL);
+	glf.glShaderSource(shader, 1, &source, nullptr);
 	glf.glCompileShader(shader);
 	// checks
 	GLint status;
 	glf.glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 	char buffer[512];
-	glf.glGetShaderInfoLog(shader, 512, NULL, buffer);
+	glf.glGetShaderInfoLog(shader, 512, nullptr, buffer);
 	if(status != GL_TRUE)
+	{
 		qWarning() << "SHADER ERROR : " << buffer << '\n';
+	}
 
 	return shader;
 }
@@ -299,8 +305,11 @@ void GLHandler::setVertices(
 		}
 		offset += mapping[i].second;
 	}
-	mesh.vboSize = vertices.size() / offset;
-	if(elements.size() != 0)
+	if(offset != 0)
+	{
+		mesh.vboSize = vertices.size() / offset;
+	}
+	if(!elements.empty())
 	{
 		glf.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
 		glf.glBufferData(GL_ELEMENT_ARRAY_BUFFER,
@@ -321,8 +330,10 @@ void GLHandler::setVertices(GLHandler::Mesh& mesh,
 {
 	std::vector<QPair<const char*, unsigned int>> mapping;
 	for(unsigned int i(0); i < mappingSizes.size(); ++i)
+	{
 		mapping.push_back(
 		    {mappingNames[i].toLatin1().constData(), mappingSizes[i]});
+	}
 	setVertices(mesh, vertices, shaderProgram, mapping, elements);
 }
 
@@ -362,15 +373,21 @@ void GLHandler::setUpRender(ShaderProgram shader, QMatrix4x4 const& model,
 void GLHandler::render(Mesh const& mesh, PrimitiveType primitiveType)
 {
 	if(primitiveType == PrimitiveType::AUTO)
+	{
 		primitiveType = (mesh.eboSize == 0) ? PrimitiveType::POINTS
 		                                    : PrimitiveType::TRIANGLES;
+	}
 
 	glf.glBindVertexArray(mesh.vao);
 	if(mesh.eboSize == 0)
+	{
 		glf.glDrawArrays(static_cast<GLenum>(primitiveType), 0, mesh.vboSize);
+	}
 	else
+	{
 		glf.glDrawElements(static_cast<GLenum>(primitiveType), mesh.eboSize,
 		                   GL_UNSIGNED_INT, 0);
+	}
 	glf.glBindVertexArray(0);
 }
 

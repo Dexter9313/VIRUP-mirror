@@ -22,7 +22,6 @@ addons:
     apt:
         packages:
             - qtbase5-dev
-            - clang-format
 
 install:
     - . ./build.conf

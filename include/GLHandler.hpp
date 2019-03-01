@@ -126,7 +126,7 @@ class GLHandler : public QObject
 	static void setShaderParam(ShaderProgram shader, const char* paramName,
 	                           QColor const& value, bool sRGB = true);
 	static void useShader(ShaderProgram shader);
-	static void deleteShader(ShaderProgram shaderProgram);
+	static void deleteShader(ShaderProgram shader);
 
 	// meshes
 	static Mesh newMesh();

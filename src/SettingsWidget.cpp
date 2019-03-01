@@ -47,7 +47,7 @@ void SettingsWidget::addGroup(QString const& name, QString const& label)
 {
 	currentGroup = name;
 
-	QWidget* newTab = new QWidget(this);
+	auto newTab = new QWidget(this);
 	QTabWidget::addTab(newTab, label);
 	currentForm = new QFormLayout(newTab);
 }
@@ -68,9 +68,11 @@ void SettingsWidget::addBoolSetting(QString const& name, bool defaultVal,
 	QString fullName(currentGroup + '/' + name);
 
 	if(!settings.contains(fullName))
+	{
 		settings.setValue(fullName, defaultVal);
+	}
 
-	QCheckBox* checkBox = new QCheckBox(this);
+	auto checkBox = new QCheckBox(this);
 	checkBox->setCheckState(settings.value(fullName).toBool() ? Qt::Checked
 	                                                          : Qt::Unchecked);
 	connect(checkBox, &QCheckBox::stateChanged, this, [this, fullName](int s) {
@@ -88,9 +90,11 @@ void SettingsWidget::addUIntSetting(QString const& name,
 	QString fullName(currentGroup + '/' + name);
 
 	if(!settings.contains(fullName))
+	{
 		settings.setValue(fullName, defaultVal);
+	}
 
-	QSpinBox* sbox = new QSpinBox(this);
+	auto sbox = new QSpinBox(this);
 	sbox->setRange(minVal, maxVal);
 	sbox->setValue(settings.value(fullName).toUInt());
 
@@ -107,9 +111,11 @@ void SettingsWidget::addStringSetting(QString const& name,
 	QString fullName(currentGroup + '/' + name);
 
 	if(!settings.contains(fullName))
+	{
 		settings.setValue(fullName, defaultVal);
+	}
 
-	QLineEdit* lineEdit = new QLineEdit(this);
+	auto lineEdit = new QLineEdit(this);
 	lineEdit->setText(settings.value(fullName).toString());
 
 	connect(lineEdit, &QLineEdit::textChanged, this,
@@ -125,19 +131,21 @@ void SettingsWidget::addFilePathSetting(QString const& name,
 	QString fullName(currentGroup + '/' + name);
 
 	if(!settings.contains(fullName))
+	{
 		settings.setValue(fullName, defaultVal);
+	}
 
-	QLineEdit* lineEdit = new QLineEdit(this);
+	auto lineEdit = new QLineEdit(this);
 	lineEdit->setText(settings.value(fullName).toString());
 
-	QFileSystemModel* dirModel = new QFileSystemModel(this);
+	auto dirModel = new QFileSystemModel(this);
 	dirModel->setRootPath(QDir::currentPath());
-	QCompleter* completer = new QCompleter(dirModel, this);
+	auto completer = new QCompleter(dirModel, this);
 	completer->setCaseSensitivity(Qt::CaseInsensitive);
 	completer->setCompletionMode(QCompleter::PopupCompletion);
 	lineEdit->setCompleter(completer);
 
-	QPushButton* browsePb = new QPushButton(this);
+	auto browsePb = new QPushButton(this);
 	browsePb->setText(tr("..."));
 	connect(browsePb, &QPushButton::clicked, this,
 	        [this, label, lineEdit](bool) {
@@ -147,8 +155,8 @@ void SettingsWidget::addFilePathSetting(QString const& name,
 			        lineEdit->setText(result);
 	        });
 
-	QWidget* w          = new QWidget(this);
-	QHBoxLayout* layout = new QHBoxLayout(w);
+	auto w      = new QWidget(this);
+	auto layout = new QHBoxLayout(w);
 	layout->addWidget(lineEdit);
 	layout->addWidget(browsePb);
 
@@ -165,19 +173,21 @@ void SettingsWidget::addDirPathSetting(QString const& name,
 	QString fullName(currentGroup + '/' + name);
 
 	if(!settings.contains(fullName))
+	{
 		settings.setValue(fullName, defaultVal);
+	}
 
-	QLineEdit* lineEdit = new QLineEdit(this);
+	auto lineEdit = new QLineEdit(this);
 	lineEdit->setText(settings.value(fullName).toString());
 
-	QFileSystemModel* dirModel = new QFileSystemModel(this);
+	auto dirModel = new QFileSystemModel(this);
 	dirModel->setRootPath(QDir::currentPath());
-	QCompleter* completer = new QCompleter(dirModel, this);
+	auto completer = new QCompleter(dirModel, this);
 	completer->setCaseSensitivity(Qt::CaseInsensitive);
 	completer->setCompletionMode(QCompleter::PopupCompletion);
 	lineEdit->setCompleter(completer);
 
-	QPushButton* browsePb = new QPushButton(this);
+	auto browsePb = new QPushButton(this);
 	browsePb->setText(tr("..."));
 	connect(browsePb, &QPushButton::clicked, this,
 	        [this, label, lineEdit](bool) {
@@ -187,8 +197,8 @@ void SettingsWidget::addDirPathSetting(QString const& name,
 			        lineEdit->setText(result);
 	        });
 
-	QWidget* w          = new QWidget(this);
-	QHBoxLayout* layout = new QHBoxLayout(w);
+	auto w      = new QWidget(this);
+	auto layout = new QHBoxLayout(w);
 	layout->addWidget(lineEdit);
 	layout->addWidget(browsePb);
 
@@ -207,12 +217,14 @@ void SettingsWidget::addVector3DSetting(QString const& name,
 	QString fullName(currentGroup + '/' + name);
 
 	if(!settings.contains(fullName))
+	{
 		settings.setValue(fullName, defaultVal);
+	}
 
 	QVector3D stored(settings.value(fullName).value<QVector3D>());
 
-	QWidget* w          = new QWidget(this);
-	QHBoxLayout* layout = new QHBoxLayout(w);
+	auto w      = new QWidget(this);
+	auto layout = new QHBoxLayout(w);
 	std::array<QDoubleSpinBox*, 3> sboxes;
 	for(unsigned int i(0); i < 3; ++i)
 	{
@@ -243,11 +255,13 @@ void SettingsWidget::addColorSetting(QString const& name,
 	QString fullName(currentGroup + '/' + name);
 
 	if(!settings.contains(fullName))
+	{
 		settings.setValue(fullName, defaultVal);
+	}
 
 	QColor stored(settings.value(fullName).value<QColor>());
 
-	QPushButton* button = new QPushButton(this);
+	auto button = new QPushButton(this);
 
 	button->setStyleSheet("QPushButton{ \
     background-color: " + stored.name()

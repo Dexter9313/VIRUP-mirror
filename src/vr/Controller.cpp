@@ -7,12 +7,14 @@
 std::string GetTrackedDeviceString(vr::IVRSystem* pHmd,
                                    vr::TrackedDeviceIndex_t unDevice,
                                    vr::TrackedDeviceProperty prop,
-                                   vr::TrackedPropertyError* peError = NULL)
+                                   vr::TrackedPropertyError* peError = nullptr)
 {
 	uint32_t requiredBufferLen = pHmd->GetStringTrackedDeviceProperty(
-	    unDevice, prop, NULL, 0, peError);
+	    unDevice, prop, nullptr, 0, peError);
 	if(requiredBufferLen == 0)
+	{
 		return "";
+	}
 
 	char* pchBuffer   = new char[requiredBufferLen];
 	requiredBufferLen = pHmd->GetStringTrackedDeviceProperty(
@@ -33,7 +35,9 @@ int getAxisId(vr::IVRSystem* vr_pointer, unsigned int deviceId, int axis)
 		    (vr::ETrackedDeviceProperty)(vr::Prop_Axis0Type_Int32 + i));
 
 		if(prop == axis)
+		{
 			return i;
+		}
 	}
 	return -1;
 }
@@ -61,7 +65,9 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 		error = vr::VRRenderModels()->LoadRenderModel_Async(
 		    render_model_name.c_str(), &model);
 		if(error != vr::VRRenderModelError_Loading)
+		{
 			break;
+		}
 
 		QThread::sleep(1);
 	}
@@ -85,7 +91,9 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 		error = vr::VRRenderModels()->LoadTexture_Async(model->diffuseTextureId,
 		                                                &rm_texture);
 		if(error != vr::VRRenderModelError_Loading)
+		{
 			break;
+		}
 
 		QThread::sleep(1);
 	}
@@ -165,11 +173,15 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 
 	GLHandler::setShaderParam(shaderProgram, "alpha", 1.0f);
 	if(side == Side::LEFT)
+	{
 		GLHandler::setShaderParam(shaderProgram, "color",
 		                          QVector3D(1.0f, 0.0f, 0.0f));
+	}
 	else
+	{
 		GLHandler::setShaderParam(shaderProgram, "color",
 		                          QVector3D(0.0f, 1.0f, 0.0f));
+	}
 
 	vr::VRRenderModels()->FreeRenderModel(model);
 	vr::VRRenderModels()->FreeTexture(rm_texture);
@@ -181,7 +193,9 @@ void Controller::update(QMatrix4x4 const& model)
 	vr::VRControllerState_t controllerState;
 	if(!vr_pointer->GetControllerState(nDevice, &controllerState,
 	                                   sizeof(controllerState)))
+	{
 		return;
+	}
 	triggerValue = controllerState.rAxis[triggerid].x;
 	padCoords[0] = controllerState.rAxis[padid].x;
 	padCoords[1] = controllerState.rAxis[padid].y;

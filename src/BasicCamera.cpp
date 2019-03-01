@@ -3,9 +3,6 @@
 BasicCamera::BasicCamera(VRHandler const* vrHandler)
     : vrHandler(vrHandler)
     , eyeDistanceFactor(1.0f)
-    , view()
-    , proj()
-    , fullTransform()
 {
 }
 
@@ -134,9 +131,10 @@ QMatrix4x4 BasicCamera::hmdSpaceToWorldTransform() const
 QMatrix4x4 BasicCamera::hmdScaledSpaceToWorldTransform() const
 {
 	if(*vrHandler)
+	{
 		return hmdScaledToWorld;
-	else
-		return view.inverted();
+	}
+	return view.inverted();
 }
 
 QMatrix4x4 BasicCamera::screenToWorldTransform() const
@@ -147,9 +145,10 @@ QMatrix4x4 BasicCamera::screenToWorldTransform() const
 QMatrix4x4 BasicCamera::hmdScreenToWorldTransform(Side side) const
 {
 	if(side == Side::LEFT)
+	{
 		return hmdScaledToWorld * projLeft.inverted();
-	else
-		return hmdScaledToWorld * projRight.inverted();
+	}
+	return hmdScaledToWorld * projRight.inverted();
 }
 
 QMatrix4x4 BasicCamera::eyeDist(QMatrix4x4 const& matrix,

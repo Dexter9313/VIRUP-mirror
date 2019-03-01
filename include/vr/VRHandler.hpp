@@ -114,8 +114,8 @@ class VRHandler : public QObject
 	{
 		return (eye == Side::LEFT) ? vr::Eye_Left : vr::Eye_Right;
 	};
-	static QMatrix4x4 toQt(const vr::HmdMatrix34_t& matPose);
-	static QMatrix4x4 toQt(const vr::HmdMatrix44_t& matPose);
+	static QMatrix4x4 toQt(const vr::HmdMatrix34_t& matrix);
+	static QMatrix4x4 toQt(const vr::HmdMatrix44_t& matrix);
 	std::string sideToStr(Side side) const
 	{
 		return (side == Side::LEFT) ? "left" : "right";

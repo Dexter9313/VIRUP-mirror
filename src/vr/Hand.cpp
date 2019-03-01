@@ -22,7 +22,6 @@ Hand::Hand(Side side)
     : side(side)
     , shaderProgram(GLHandler::newShader("default"))
     , mesh(GLHandler::newMesh())
-    , model()
     , _isValid(false)
     , _isFlat(false)
     , _isClosed(false)
@@ -57,7 +56,9 @@ void Hand::update(Leap::Hand const& hand)
 {
 	_isValid = hand.isValid();
 	if(!_isValid)
+	{
 		return;
+	}
 
 	GLHandler::updateVertices(mesh, getHandVBO(hand));
 
@@ -82,23 +83,35 @@ void Hand::render() const
 	GLHandler::setUpRender(shaderProgram, model,
 	                       GLHandler::GeometricSpace::HMD);
 	if(isFlat() && side == Side::LEFT)
+	{
 		GLHandler::setShaderParam(shaderProgram, "color",
 		                          QColor::fromRgbF(1.0f, 1.0f, 0.0f));
+	}
 	else if(isFlat())
+	{
 		GLHandler::setShaderParam(shaderProgram, "color",
 		                          QColor::fromRgbF(0.0f, 1.0f, 1.0f));
+	}
 	else if(isClosed() && side == Side::LEFT)
+	{
 		GLHandler::setShaderParam(shaderProgram, "color",
 		                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
+	}
 	else if(isClosed())
+	{
 		GLHandler::setShaderParam(shaderProgram, "color",
 		                          QColor::fromRgbF(1.0f, 0.0f, 1.0f));
+	}
 	else if(side == Side::LEFT)
+	{
 		GLHandler::setShaderParam(shaderProgram, "color",
 		                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+	}
 	else
+	{
 		GLHandler::setShaderParam(shaderProgram, "color",
 		                          QColor::fromRgbF(0.0f, 1.0f, 0.0f));
+	}
 
 	GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
 }
@@ -136,7 +149,9 @@ std::vector<float> Hand::getHandVBO(Leap::Hand const& hand)
 	Leap::Vector outward
 	    = hand.palmNormal().cross(hand.direction()).normalized();
 	if(hand.isLeft())
+	{
 		outward *= -1;
+	}
 	append(result,
 	       leapMotionToGL(wrist + 0.75f * hand.palmWidth() * outward / 2.f));
 	append(result,

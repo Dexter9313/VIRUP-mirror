@@ -80,11 +80,11 @@ class AbstractMainWin : public QOpenGLWindow
 	void paintGL() override;
 	void resizeGL(int w, int h) override;
 
-	float frameTiming_;
+	float frameTiming_ = 0.f;
 	QElapsedTimer frameTimer;
 
-	BasicCamera* camera;
-	DebugCamera* dbgCamera;
+	BasicCamera* camera    = nullptr;
+	DebugCamera* dbgCamera = nullptr;
 
 	bool hdr = QSettings().value("window/hdr").toBool();
 
