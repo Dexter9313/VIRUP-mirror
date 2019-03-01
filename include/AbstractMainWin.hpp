@@ -55,7 +55,9 @@ class AbstractMainWin : public QOpenGLWindow
 	DebugCamera& getDebugCamera() { return *dbgCamera; };
 	void setCamera(BasicCamera* newCamera);
 
-	virtual void applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const;
+	virtual void
+	    applyPostProcShaderParams(QString const& id,
+	                              GLHandler::ShaderProgram shader) const;
 	void reloadPostProcessingTargets();
 
 	VRHandler vrHandler;
@@ -63,7 +65,8 @@ class AbstractMainWin : public QOpenGLWindow
 
 	// pair.first := shader custom id
 	// pair.second := shader
-	// frames will be postprocessed with effects in the same order as in this list
+	// frames will be postprocessed with effects in the same order as in this
+	// list
 	QList<QPair<QString, GLHandler::ShaderProgram>> const&
 	    postProcessingPipeline
 	    = postProcessingPipeline_;
@@ -72,7 +75,8 @@ class AbstractMainWin : public QOpenGLWindow
 
   private:
 	void initializeGL() override;
-	void vrRender(Side side, BasicCamera* renderingCam, bool debug, bool debugInHeadset);
+	void vrRender(Side side, BasicCamera* renderingCam, bool debug,
+	              bool debugInHeadset);
 	void paintGL() override;
 	void resizeGL(int w, int h) override;
 
@@ -86,7 +90,6 @@ class AbstractMainWin : public QOpenGLWindow
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	GLHandler::RenderTarget postProcessingTargets[2];
-
 };
 
 #endif // ABSTRACTMAINWIN_H

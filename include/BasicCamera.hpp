@@ -56,7 +56,6 @@ class BasicCamera : public QObject
 	void uploadMatrices() const;
 
   protected:
-
 	VRHandler const* vrHandler;
 	float eyeDistanceFactor;
 

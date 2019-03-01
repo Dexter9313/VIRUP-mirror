@@ -41,7 +41,7 @@ class SettingsWidget : public QTabWidget
 	Q_OBJECT
   public:
 	SettingsWidget(QWidget* parent = nullptr);
-	~SettingsWidget()              = default;
+	~SettingsWidget() = default;
 
   protected:
 	void addGroup(QString const& name, QString const& label);

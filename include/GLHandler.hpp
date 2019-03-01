@@ -5,13 +5,13 @@
 #include <QDebug>
 #include <QFile>
 #include <QImage>
-#include <QtMath>
 #include <QMatrix4x4>
 #include <QOpenGLFunctions_4_0_Core>
 #include <QSettings>
 #include <QString>
 #include <QVector3D>
 #include <QVector>
+#include <QtMath>
 
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
@@ -33,16 +33,23 @@ class GLHandler : public QObject
 	class RenderTarget
 	{
 		friend GLHandler;
-		RenderTarget(GLuint _0, GLuint _1, GLuint _2, unsigned int _3, unsigned int _4) : frameBuffer(_0), texColorBuffer(_1), renderBuffer(_2), width(_3), height(_4) {};
+		RenderTarget(GLuint _0, GLuint _1, GLuint _2, unsigned int _3,
+		             unsigned int _4)
+		    : frameBuffer(_0)
+		    , texColorBuffer(_1)
+		    , renderBuffer(_2)
+		    , width(_3)
+		    , height(_4){};
 		GLuint frameBuffer;
 		GLuint texColorBuffer;
 		GLuint renderBuffer;
 		unsigned int width;
 		unsigned int height;
+
 	  public:
-		RenderTarget() = default;
+		RenderTarget()                    = default;
 		RenderTarget(RenderTarget const&) = default;
-		RenderTarget(RenderTarget&&) = default;
+		RenderTarget(RenderTarget&&)      = default;
 		RenderTarget& operator=(RenderTarget const&) = default;
 	};
 
@@ -51,9 +58,9 @@ class GLHandler : public QObject
 
 	enum class PrimitiveType
 	{
-		POINTS    = GL_POINTS,
-		LINES     = GL_LINES,
-		TRIANGLES = GL_TRIANGLES,
+		POINTS         = GL_POINTS,
+		LINES          = GL_LINES,
+		TRIANGLES      = GL_TRIANGLES,
 		TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
 		AUTO // if no ebo, POINTS, else TRIANGLES
 	};
@@ -84,19 +91,21 @@ class GLHandler : public QObject
 	                                    unsigned int height);
 	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
 	                                    GLint format);
-	static Texture getColorAttachmentTexture(GLHandler::RenderTarget const& renderTarget);
+	static Texture
+	    getColorAttachmentTexture(GLHandler::RenderTarget const& renderTarget);
 	static void deleteRenderTarget(GLHandler::RenderTarget const& renderTarget);
 	static void beginRendering(GLHandler::RenderTarget const& renderTarget
 	                           = {0, 0, 0,
 	                              QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()});
-	static void postProcess(ShaderProgram shader, GLHandler::RenderTarget const& from,
-	                        RenderTarget const& to
-	                        = {0, 0, 0,
-	                           QSettings().value("window/width").toUInt(),
-	                           QSettings().value("window/height").toUInt()});
+	static void
+	    postProcess(ShaderProgram shader, GLHandler::RenderTarget const& from,
+	                RenderTarget const& to
+	                = {0, 0, 0, QSettings().value("window/width").toUInt(),
+	                   QSettings().value("window/height").toUInt()});
 	static void showOnScreen(GLHandler::RenderTarget const& renderTarget,
-	                         int screenx0, int screeny0, int screenx1, int screeny1);
+	                         int screenx0, int screeny0, int screenx1,
+	                         int screeny1);
 	static void beginTransparent();
 	static void endTransparent();
 	static void setUpTransforms(QMatrix4x4 const& fullTransform,
@@ -121,18 +130,22 @@ class GLHandler : public QObject
 
 	// meshes
 	static Mesh newMesh();
+
   public: // doesn't work in PythonQt
-	static void setVertices(GLHandler::Mesh& mesh, std::vector<float> const& vertices,
-	                        ShaderProgram const& shaderProgram,
-	                        std::vector<QPair<const char*, unsigned int>> const& mapping,
-	                        std::vector<unsigned int> const& elements = {});
+	static void setVertices(
+	    GLHandler::Mesh& mesh, std::vector<float> const& vertices,
+	    ShaderProgram const& shaderProgram,
+	    std::vector<QPair<const char*, unsigned int>> const& mapping,
+	    std::vector<unsigned int> const& elements = {});
   public slots:
-	static void setVertices(GLHandler::Mesh& mesh, std::vector<float> const& vertices,
+	static void setVertices(GLHandler::Mesh& mesh,
+	                        std::vector<float> const& vertices,
 	                        ShaderProgram const& shaderProgram,
 	                        QStringList const& mappingNames,
 	                        std::vector<unsigned int> const& mappingSizes,
 	                        std::vector<unsigned int> const& elements = {});
-	static void updateVertices(GLHandler::Mesh& mesh, std::vector<float> const& vertices);
+	static void updateVertices(GLHandler::Mesh& mesh,
+	                           std::vector<float> const& vertices);
 	static void setUpRender(ShaderProgram shader,
 	                        QMatrix4x4 const& model = QMatrix4x4(),
 	                        GeometricSpace space    = GeometricSpace::WORLD);

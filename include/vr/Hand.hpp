@@ -47,6 +47,7 @@ class Hand : public QObject
 	QVector3D palmNormal() const { return _palmNormal; };
 	QVector3D palmPosition() const { return _palmPosition; };
 	QVector3D direction() const { return _direction; };
+
   private:
 	GLHandler::ShaderProgram shaderProgram;
 	GLHandler::Mesh mesh;
