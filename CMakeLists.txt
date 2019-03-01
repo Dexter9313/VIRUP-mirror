@@ -48,6 +48,9 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+#For clang-tidy to use (clang-tidy -p)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 #WARNINGS
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wsuggest-override")
