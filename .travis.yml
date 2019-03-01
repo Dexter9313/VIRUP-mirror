@@ -22,6 +22,7 @@ addons:
     apt:
         packages:
             - qtbase5-dev
+            - clang-format
 
 install:
     - . ./build.conf
@@ -91,6 +92,7 @@ script:
     - cmake .. -DTAG=$TRAVIS_TAG -DWERROR=true
     - make -j
     - ./tests
+    - make clang-format
 
 before_deploy:
     - make package
