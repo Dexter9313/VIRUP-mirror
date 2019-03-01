@@ -49,14 +49,16 @@ bool VRHandler::init()
 	else
 		std::cout << "Render models loaded successfully" << std::endl;
 
-	leftTarget
-	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height(), GL_RGBA8);
-	rightTarget
-	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height(), GL_RGBA8);
-	postProcessingTargets[0]
-	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
-	postProcessingTargets[1]
-	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	leftTarget  = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(),
+                                            getEyeRenderTargetSize().height(),
+                                            GL_RGBA8);
+	rightTarget = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(),
+	                                         getEyeRenderTargetSize().height(),
+	                                         GL_RGBA8);
+	postProcessingTargets[0] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	postProcessingTargets[1] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
 
 #ifdef LEAP_MOTION
 	if(leapController.isConnected())
@@ -153,19 +155,19 @@ string GetTrackedDeviceClassString(vr::ETrackedDeviceClass td_class)
 			str_td_class = "Controller";
 			break;
 		case TrackedDeviceClass_GenericTracker: // = 3, Generic trackers,
-			                                    // similar to controllers
+		                                        // similar to controllers
 			str_td_class = "Generic Tracker";
 			break;
 		case TrackedDeviceClass_TrackingReference: // = 4, Camera and base
-			                                       // stations that serve as
-			                                       // tracking reference points
+		                                           // stations that serve as
+		                                           // tracking reference points
 			str_td_class = "Tracking Reference";
 			break;
 		case TrackedDeviceClass_DisplayRedirect: // = 5, Accessories that aren't
-			                                     // necessarily tracked
-			                                     // themselves, but may redirect
-			                                     // video output from other
-			                                     // tracked devices
+		                                         // necessarily tracked
+		                                         // themselves, but may redirect
+		                                         // video output from other
+		                                         // tracked devices
 			str_td_class = "Display Redirecd";
 			break;
 		default:
@@ -247,18 +249,19 @@ void VRHandler::reloadPostProcessingTargets()
 {
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
-	postProcessingTargets[0]
-	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
-	postProcessingTargets[1]
-	    = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	postProcessingTargets[0] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	postProcessingTargets[1] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
 }
 
 void VRHandler::submitRendering(Side eye)
 {
 	GLHandler::RenderTarget* frame
 	    = eye == Side::LEFT ? &leftTarget : &rightTarget;
-	vr::Texture_t texture = {(void*) (uintptr_t) GLHandler::getColorAttachmentTexture(*frame),
-	                         vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
+	vr::Texture_t texture
+	    = {(void*) (uintptr_t) GLHandler::getColorAttachmentTexture(*frame),
+	       vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
 	vr::EVRCompositorError error = vr_compositor->Submit(getEye(eye), &texture);
 	if(error != vr::VRCompositorError_None)
 	{
@@ -269,11 +272,10 @@ void VRHandler::submitRendering(Side eye)
 void VRHandler::displayOnCompanion(unsigned int companionWidth,
                                    unsigned int companionHeight) const
 {
-	GLHandler::showOnScreen(
-	    leftTarget, 0, 0, (int) companionWidth / 2, (int) companionHeight);
-	GLHandler::showOnScreen(rightTarget,
-	                        (int) companionWidth / 2, 0, (int) companionWidth,
-	                         (int) companionHeight);
+	GLHandler::showOnScreen(leftTarget, 0, 0, (int) companionWidth / 2,
+	                        (int) companionHeight);
+	GLHandler::showOnScreen(rightTarget, (int) companionWidth / 2, 0,
+	                        (int) companionWidth, (int) companionHeight);
 }
 
 float VRHandler::getFrameTiming() const
@@ -305,7 +307,7 @@ bool VRHandler::pollEvent(Event* e)
 				if(rightController)
 					if(rightController->nDevice == vrevent.trackedDeviceIndex)
 						e->side = Side::RIGHT;
-				e->button       = getButton(vrevent.data.controller.button);
+				e->button = getButton(vrevent.data.controller.button);
 				return true;
 			case VREvent_ButtonUnpress:
 				e->type = EventType::BUTTON_UNPRESSED;
@@ -315,7 +317,7 @@ bool VRHandler::pollEvent(Event* e)
 				if(rightController)
 					if(rightController->nDevice == vrevent.trackedDeviceIndex)
 						e->side = Side::RIGHT;
-				e->button       = getButton(vrevent.data.controller.button);
+				e->button = getButton(vrevent.data.controller.button);
 				return true;
 			default:
 				return false;
@@ -375,7 +377,10 @@ void VRHandler::updateController(Side side, int nDevice)
 	{
 		(*controller)->update(tracked_device_pose_matrix[nDevice]);
 	}
-	PythonQtHandler::addObject(((side == Side::LEFT) ? QString("left") : QString("right")) + "Controller", *controller);
+	PythonQtHandler::addObject(
+	    ((side == Side::LEFT) ? QString("left") : QString("right"))
+	        + "Controller",
+	    *controller);
 }
 
 void VRHandler::updateHands()

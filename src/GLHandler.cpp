@@ -38,7 +38,8 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	return newRenderTarget(width, height, defaultRenderTargetFormat);
 }
 
-GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width, unsigned int height,
+GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
+                                                   unsigned int height,
                                                    GLint format)
 {
 	RenderTarget result;
@@ -51,8 +52,8 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width, unsigned 
 	// generate texture
 	glf.glGenTextures(1, &result.texColorBuffer);
 	glf.glBindTexture(GL_TEXTURE_2D, result.texColorBuffer);
-	glf.glTexImage2D(GL_TEXTURE_2D, 0, format, width, height,
-	                 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glf.glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA,
+	                 GL_UNSIGNED_BYTE, NULL);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glf.glBindTexture(GL_TEXTURE_2D, 0);
@@ -75,7 +76,8 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width, unsigned 
 	return result;
 }
 
-GLHandler::Texture GLHandler::getColorAttachmentTexture(RenderTarget const& renderTarget)
+GLHandler::Texture
+    GLHandler::getColorAttachmentTexture(RenderTarget const& renderTarget)
 {
 	return renderTarget.texColorBuffer;
 }
@@ -99,9 +101,8 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
                             RenderTarget const& to)
 {
 	Mesh quad(newMesh());
-	setVertices(quad,
-	            {-1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, 1.f},
-	            shader, {{"position", 2}});
+	setVertices(quad, {-1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, 1.f}, shader,
+	            {{"position", 2}});
 
 	beginRendering(to);
 	useShader(shader);
@@ -111,14 +112,14 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 	deleteMesh(quad);
 }
 
-void GLHandler::showOnScreen(RenderTarget const& renderTarget,
-	                         int screenx0, int screeny0, int screenx1, int screeny1)
+void GLHandler::showOnScreen(RenderTarget const& renderTarget, int screenx0,
+                             int screeny0, int screenx1, int screeny1)
 {
 	glf.glBindFramebuffer(GL_READ_FRAMEBUFFER, renderTarget.frameBuffer);
 	glf.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glf.glBlitFramebuffer(0, 0, renderTarget.width, renderTarget.height,
-	                      screenx0, screeny0, screenx1,
-	                      screeny1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	                      screenx0, screeny0, screenx1, screeny1,
+	                      GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
 void GLHandler::beginTransparent()
@@ -165,9 +166,11 @@ GLHandler::ShaderProgram GLHandler::newShader(QString vertex, QString fragment,
 	ShaderProgram result;
 
 	// vertex shader
-	GLuint vertexShader = loadShader(getAbsoluteDataPath(vertex), GL_VERTEX_SHADER);
+	GLuint vertexShader
+	    = loadShader(getAbsoluteDataPath(vertex), GL_VERTEX_SHADER);
 	// fragment shader
-	GLuint fragmentShader = loadShader(getAbsoluteDataPath(fragment), GL_FRAGMENT_SHADER);
+	GLuint fragmentShader
+	    = loadShader(getAbsoluteDataPath(fragment), GL_FRAGMENT_SHADER);
 
 	// program
 	result = glf.glCreateProgram();
@@ -265,10 +268,11 @@ GLHandler::Mesh GLHandler::newMesh()
 	return mesh;
 }
 
-void GLHandler::setVertices(Mesh& mesh, std::vector<float> const& vertices,
-                            ShaderProgram const& shaderProgram,
-                            std::vector<QPair<const char*, unsigned int>> const& mapping,
-                            std::vector<unsigned int> const& elements)
+void GLHandler::setVertices(
+    Mesh& mesh, std::vector<float> const& vertices,
+    ShaderProgram const& shaderProgram,
+    std::vector<QPair<const char*, unsigned int>> const& mapping,
+    std::vector<unsigned int> const& elements)
 {
 	glf.glBindVertexArray(mesh.vao);
 	glf.glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
@@ -308,15 +312,17 @@ void GLHandler::setVertices(Mesh& mesh, std::vector<float> const& vertices,
 	glf.glBindVertexArray(0);
 }
 
-void GLHandler::setVertices(GLHandler::Mesh& mesh, std::vector<float> const& vertices,
-                        ShaderProgram const& shaderProgram,
-                        QStringList const& mappingNames,
-                        std::vector<unsigned int> const& mappingSizes,
-                        std::vector<unsigned int> const& elements)
+void GLHandler::setVertices(GLHandler::Mesh& mesh,
+                            std::vector<float> const& vertices,
+                            ShaderProgram const& shaderProgram,
+                            QStringList const& mappingNames,
+                            std::vector<unsigned int> const& mappingSizes,
+                            std::vector<unsigned int> const& elements)
 {
 	std::vector<QPair<const char*, unsigned int>> mapping;
 	for(unsigned int i(0); i < mappingSizes.size(); ++i)
-		mapping.push_back({mappingNames[i].toLatin1().constData(), mappingSizes[i]});
+		mapping.push_back(
+		    {mappingNames[i].toLatin1().constData(), mappingSizes[i]});
 	setVertices(mesh, vertices, shaderProgram, mapping, elements);
 }
 
@@ -394,9 +400,9 @@ GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glf.glTexImage2D(GL_TEXTURE_2D, 0, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA, img_data.width(),
-	                 img_data.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-	                 img_data.bits());
+	glf.glTexImage2D(GL_TEXTURE_2D, 0, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA,
+	                 img_data.width(), img_data.height(), 0, GL_RGBA,
+	                 GL_UNSIGNED_BYTE, img_data.bits());
 	glf.glBindTexture(GL_TEXTURE_2D, 0);
 
 	return tex;
@@ -404,15 +410,14 @@ GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 
 GLHandler::Texture GLHandler::newTexture(unsigned int width,
                                          unsigned int height,
-                                         const GLvoid* data,
-                                         bool sRGB)
+                                         const GLvoid* data, bool sRGB)
 {
 	Texture tex;
 	glf.glGenTextures(1, &tex);
 	// glActiveTexture(GL_TEXTURE0);
 	glf.glBindTexture(GL_TEXTURE_2D, tex);
-	glf.glTexImage2D(GL_TEXTURE_2D, 0, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA, width, height, 0, GL_RGBA,
-	                 GL_UNSIGNED_BYTE, data);
+	glf.glTexImage2D(GL_TEXTURE_2D, 0, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA, width,
+	                 height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	// glGenerateMipmap(GL_TEXTURE_2D);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glf.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -443,18 +448,29 @@ void GLHandler::deleteTexture(Texture const& texture)
 QColor GLHandler::sRGBToLinear(QColor const& srgb)
 {
 	QColor lin(srgb);
-	lin.setRedF(lin.redF() <= 0.04045 ? lin.redF() / 12.92 : qPow((lin.redF() + 0.055)/1.055, 2.4));
-	lin.setGreenF(lin.greenF() <= 0.04045 ? lin.greenF() / 12.92 : qPow((lin.greenF() + 0.055)/1.055, 2.4));
-	lin.setBlueF(lin.blueF() <= 0.04045 ? lin.blueF() / 12.92 : qPow((lin.blueF() + 0.055)/1.055, 2.4));
+	lin.setRedF(lin.redF() <= 0.04045
+	                ? lin.redF() / 12.92
+	                : qPow((lin.redF() + 0.055) / 1.055, 2.4));
+	lin.setGreenF(lin.greenF() <= 0.04045
+	                  ? lin.greenF() / 12.92
+	                  : qPow((lin.greenF() + 0.055) / 1.055, 2.4));
+	lin.setBlueF(lin.blueF() <= 0.04045
+	                 ? lin.blueF() / 12.92
+	                 : qPow((lin.blueF() + 0.055) / 1.055, 2.4));
 	return lin;
 }
 
 QColor GLHandler::linearTosRGB(QColor const& linear)
 {
 	QColor srgb(linear);
-	srgb.setRedF(srgb.redF() <= 0.0031308 ? srgb.redF() * 12.92 : (1.055 * qPow(srgb.redF(), 1.0/2.4)) - 0.055);
-	srgb.setGreenF(srgb.greenF() <= 0.0031308 ? srgb.greenF() * 12.92 : (1.055 * qPow(srgb.greenF(), 1.0/2.4)) - 0.055);
-	srgb.setBlueF(srgb.blueF() <= 0.0031308 ? srgb.blueF() * 12.92 : (1.055 * qPow(srgb.blueF(), 1.0/2.4)) - 0.055);
+	srgb.setRedF(srgb.redF() <= 0.0031308
+	                 ? srgb.redF() * 12.92
+	                 : (1.055 * qPow(srgb.redF(), 1.0 / 2.4)) - 0.055);
+	srgb.setGreenF(srgb.greenF() <= 0.0031308
+	                   ? srgb.greenF() * 12.92
+	                   : (1.055 * qPow(srgb.greenF(), 1.0 / 2.4)) - 0.055);
+	srgb.setBlueF(srgb.blueF() <= 0.0031308
+	                  ? srgb.blueF() * 12.92
+	                  : (1.055 * qPow(srgb.blueF(), 1.0 / 2.4)) - 0.055);
 	return srgb;
 }
-

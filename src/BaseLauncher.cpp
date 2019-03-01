@@ -18,9 +18,7 @@
 
 #include "BaseLauncher.hpp"
 
-BaseLauncher::BaseLauncher()
-{
-}
+BaseLauncher::BaseLauncher() {}
 
 void BaseLauncher::init()
 {
@@ -35,7 +33,7 @@ void BaseLauncher::init()
 	// LAUNCH AND QUIT BUTTONS
 	QWidget* w = new QWidget(this);
 	mainLayout->addWidget(w);
-	QHBoxLayout* l = new QHBoxLayout(w);
+	QHBoxLayout* l   = new QHBoxLayout(w);
 	QPushButton* pbl = new QPushButton(this);
 	l->addWidget(pbl);
 	pbl->setText(tr("LAUNCH"));
@@ -50,4 +48,3 @@ SettingsWidget* BaseLauncher::newSettingsWidget()
 {
 	return new SettingsWidget(this);
 }
-

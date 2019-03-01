@@ -31,13 +31,12 @@ Hand::Hand(Side side)
 {
 	GLHandler::setShaderParam(shaderProgram, "alpha", 1.f);
 	std::vector<unsigned int> ebo = {
-	   // 0,  1,  0,  5,  0,  9,  0, 13, 0, 17, // "metacarpal bones"
-	    /*1,  2,*/  2,  3,  3,  4,                // thumb
-	    5,  6,  6,  7,  7,  8,                // index
-	    9,  10, 10, 11, 11, 12,               // middle
-	    13, 14, 14, 15, 15, 16,               // ring
-	    17, 18, 18, 19, 19, 20,                // pinkie
-	    2, 5, 5, 9, 9, 13, 13, 17, 17, 21 , 21, 22, 22, 2 // palm
+	    2,  3,  3,  4,                                        // thumb
+	    5,  6,  6,  7,  7,  8,                                // index
+	    9,  10, 10, 11, 11, 12,                               // middle
+	    13, 14, 14, 15, 15, 16,                               // ring
+	    17, 18, 18, 19, 19, 20,                               // pinkie
+	    2,  5,  5,  9,  9,  13, 13, 17, 17, 21, 21, 22, 22, 2 // palm
 	};
 
 	std::vector<float> vertices(22 * 3); // 21 random positions
@@ -83,17 +82,23 @@ void Hand::render() const
 	GLHandler::setUpRender(shaderProgram, model,
 	                       GLHandler::GeometricSpace::HMD);
 	if(isFlat() && side == Side::LEFT)
-		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 1.0f, 0.0f));
+		GLHandler::setShaderParam(shaderProgram, "color",
+		                          QColor::fromRgbF(1.0f, 1.0f, 0.0f));
 	else if(isFlat())
-		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(0.0f, 1.0f, 1.0f));
+		GLHandler::setShaderParam(shaderProgram, "color",
+		                          QColor::fromRgbF(0.0f, 1.0f, 1.0f));
 	else if(isClosed() && side == Side::LEFT)
-		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
+		GLHandler::setShaderParam(shaderProgram, "color",
+		                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	else if(isClosed())
-		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 0.0f, 1.0f));
+		GLHandler::setShaderParam(shaderProgram, "color",
+		                          QColor::fromRgbF(1.0f, 0.0f, 1.0f));
 	else if(side == Side::LEFT)
-		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+		GLHandler::setShaderParam(shaderProgram, "color",
+		                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 	else
-		GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(0.0f, 1.0f, 0.0f));
+		GLHandler::setShaderParam(shaderProgram, "color",
+		                          QColor::fromRgbF(0.0f, 1.0f, 0.0f));
 
 	GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
 }

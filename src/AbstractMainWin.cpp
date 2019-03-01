@@ -64,7 +64,8 @@ void AbstractMainWin::setVR(bool vr)
 	if(vrIsEnabled())
 		PythonQtHandler::addObject("VRHandler", &vrHandler);
 	else
-		PythonQtHandler::evalScript("if \"VRHandler\" in dir():\n\tdel VRHandler");
+		PythonQtHandler::evalScript(
+		    "if \"VRHandler\" in dir():\n\tdel VRHandler");
 	QSettings().setValue("vr/enabled", vrIsEnabled());
 }
 
@@ -77,7 +78,7 @@ bool AbstractMainWin::event(QEvent* e)
 {
 	if(e->type() == QEvent::Type::Close)
 		PythonQtHandler::closeConsole();
-	return QOpenGLWindow::event(e);;
+	return QOpenGLWindow::event(e);
 }
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
@@ -120,7 +121,8 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 	pyKeyEvent += e->isAutoRepeat() ? "True," : "False,";
 	pyKeyEvent += QString::number(e->count()) + ")";
 
-	PythonQtHandler::evalScript("if \"keyPressEvent\" in dir():\n\tkeyPressEvent(" + pyKeyEvent + ")");
+	PythonQtHandler::evalScript(
+	    "if \"keyPressEvent\" in dir():\n\tkeyPressEvent(" + pyKeyEvent + ")");
 }
 
 void AbstractMainWin::keyReleaseEvent(QKeyEvent* e)
@@ -142,12 +144,17 @@ void AbstractMainWin::keyReleaseEvent(QKeyEvent* e)
 	pyKeyEvent += e->isAutoRepeat() ? "True," : "False,";
 	pyKeyEvent += QString::number(e->count()) + ")";
 
-	PythonQtHandler::evalScript("if \"keyReleaseEvent\" in dir():\n\tkeyReleaseEvent(" + pyKeyEvent + ")");
+	PythonQtHandler::evalScript(
+	    "if \"keyReleaseEvent\" in dir():\n\tkeyReleaseEvent(" + pyKeyEvent
+	    + ")");
 }
 
 void AbstractMainWin::vrEvent(VRHandler::Event const& e)
 {
-	PythonQtHandler::evalScript("if \"vrEvent\" in dir():\n\tvrEvent(" + QString::number((int)e.type) + "," + QString::number((int)e.side) + ", " + QString::number((int)e.button) +  ")");
+	PythonQtHandler::evalScript("if \"vrEvent\" in dir():\n\tvrEvent("
+	                            + QString::number((int) e.type) + ","
+	                            + QString::number((int) e.side) + ", "
+	                            + QString::number((int) e.button) + ")");
 }
 
 void AbstractMainWin::setCamera(BasicCamera* newCamera)
@@ -195,7 +202,9 @@ void AbstractMainWin::applyPostProcShaderParams(
 	}
 	else
 	{
-		QString pyCmd("if \"applyPostProcShaderParams\" in dir():\n\tapplyPostProcShaderParams(\"" + id + "\"," + QString::number(shader) + ")");
+		QString pyCmd("if \"applyPostProcShaderParams\" in "
+		              "dir():\n\tapplyPostProcShaderParams(\""
+		              + id + "\"," + QString::number(shader) + ")");
 		PythonQtHandler::evalScript(pyCmd);
 	}
 }
@@ -208,7 +217,6 @@ void AbstractMainWin::reloadPostProcessingTargets()
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
 	postProcessingTargets[0] = GLHandler::newRenderTarget(width(), height());
 	postProcessingTargets[1] = GLHandler::newRenderTarget(width(), height());
-
 }
 
 void AbstractMainWin::setHDR(bool hdr)
@@ -248,12 +256,12 @@ void AbstractMainWin::initializeGL()
 	// let user init
 	initScene();
 
-	QString mainScriptPath(QSettings().value("scripting/rootdir").toString() + "/main.py");
+	QString mainScriptPath(QSettings().value("scripting/rootdir").toString()
+	                       + "/main.py");
 	if(QFile(mainScriptPath).exists())
 		PythonQtHandler::evalFile(mainScriptPath);
 
 	PythonQtHandler::evalScript("if \"initScene\" in dir():\n\tinitScene()");
-
 
 	// make sure gamma correction is applied last
 	appendPostProcessingShader("colors", "colors");
@@ -272,7 +280,8 @@ void AbstractMainWin::vrRender(Side side, BasicCamera* renderingCam, bool debug,
 	vrHandler.renderHands();
 	// render scene
 	renderScene(*camera);
-	PythonQtHandler::evalScript("if \"renderScene\" in dir():\n\trenderScene()");
+	PythonQtHandler::evalScript(
+	    "if \"renderScene\" in dir():\n\trenderScene()");
 	if(debug && debugInHeadset)
 		dbgCamera->renderCamera(camera);
 
@@ -281,10 +290,9 @@ void AbstractMainWin::vrRender(Side side, BasicCamera* renderingCam, bool debug,
 	{
 		applyPostProcShaderParams(postProcessingPipeline_[i].first,
 		                          postProcessingPipeline_[i].second);
-		GLHandler::postProcess(
-		    postProcessingPipeline_[i].second,
-		    vrHandler.getPostProcessingTarget(i % 2),
-		    vrHandler.getPostProcessingTarget((i + 1) % 2));
+		GLHandler::postProcess(postProcessingPipeline_[i].second,
+		                       vrHandler.getPostProcessingTarget(i % 2),
+		                       vrHandler.getPostProcessingTarget((i + 1) % 2));
 	}
 	// render last one on true target
 	if(postProcessingPipeline_.size() != 0)
@@ -292,10 +300,9 @@ void AbstractMainWin::vrRender(Side side, BasicCamera* renderingCam, bool debug,
 		int i = postProcessingPipeline_.size() - 1;
 		applyPostProcShaderParams(postProcessingPipeline_[i].first,
 		                          postProcessingPipeline_[i].second);
-		GLHandler::postProcess(
-		    postProcessingPipeline_[i].second,
-		    vrHandler.getPostProcessingTarget(i % 2),
-		    vrHandler.getEyeTarget(side));
+		GLHandler::postProcess(postProcessingPipeline_[i].second,
+		                       vrHandler.getPostProcessingTarget(i % 2),
+		                       vrHandler.getEyeTarget(side));
 	}
 
 	vrHandler.submitRendering(side);
@@ -320,7 +327,8 @@ void AbstractMainWin::paintGL()
 	}
 	// let user update before rendering
 	updateScene(*camera);
-	PythonQtHandler::evalScript("if \"updateScene\" in dir():\n\tupdateScene()");
+	PythonQtHandler::evalScript(
+	    "if \"updateScene\" in dir():\n\tupdateScene()");
 
 	bool debug(dbgCamera->isEnabled());
 	bool debugInHeadset(dbgCamera->debugInHeadset());
@@ -353,7 +361,8 @@ void AbstractMainWin::paintGL()
 		renderingCam->uploadMatrices();
 		// render scene
 		renderScene(*camera);
-		PythonQtHandler::evalScript("if \"renderScene\" in dir():\n\trenderScene()");
+		PythonQtHandler::evalScript(
+		    "if \"renderScene\" in dir():\n\trenderScene()");
 		if(debug)
 			dbgCamera->renderCamera(camera);
 
@@ -391,7 +400,8 @@ void AbstractMainWin::resizeGL(int w, int h)
 
 AbstractMainWin::~AbstractMainWin()
 {
-	PythonQtHandler::evalScript("if \"cleanUpScene\" in dir():\n\tcleanUpScene()");
+	PythonQtHandler::evalScript(
+	    "if \"cleanUpScene\" in dir():\n\tcleanUpScene()");
 	for(QPair<QString, GLHandler::ShaderProgram> p : postProcessingPipeline_)
 		GLHandler::deleteShader(p.second);
 	delete camera;

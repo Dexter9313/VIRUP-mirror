@@ -31,7 +31,11 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addBoolSetting("enabled", true, tr("Enable VR"));
 
 	addGroup("scripting", tr("Scripting"));
-	addDirPathSetting("rootdir", QFileInfo(settings.fileName()).absoluteDir().absolutePath() + "/scripts", tr("Scripts Root Directory"));
+	addDirPathSetting(
+	    "rootdir",
+	    QFileInfo(settings.fileName()).absoluteDir().absolutePath()
+	        + "/scripts",
+	    tr("Scripts Root Directory"));
 
 	addGroup("debugcamera", tr("Debug Camera"));
 	addBoolSetting("enabled", false, tr("Enable Debug Camera"));
@@ -48,7 +52,8 @@ void SettingsWidget::addGroup(QString const& name, QString const& label)
 	currentForm = new QFormLayout(newTab);
 }
 
-void SettingsWidget::insertGroup(QString const& name, QString const& label, int index)
+void SettingsWidget::insertGroup(QString const& name, QString const& label,
+                                 int index)
 {
 	currentGroup = name;
 
@@ -140,7 +145,7 @@ void SettingsWidget::addFilePathSetting(QString const& name,
 		                                                    lineEdit->text()));
 		        if(result != "")
 			        lineEdit->setText(result);
-		    });
+	        });
 
 	QWidget* w          = new QWidget(this);
 	QHBoxLayout* layout = new QHBoxLayout(w);
@@ -154,8 +159,8 @@ void SettingsWidget::addFilePathSetting(QString const& name,
 }
 
 void SettingsWidget::addDirPathSetting(QString const& name,
-                                        QString const& defaultVal,
-                                        QString const& label)
+                                       QString const& defaultVal,
+                                       QString const& label)
 {
 	QString fullName(currentGroup + '/' + name);
 
@@ -176,11 +181,11 @@ void SettingsWidget::addDirPathSetting(QString const& name,
 	browsePb->setText(tr("..."));
 	connect(browsePb, &QPushButton::clicked, this,
 	        [this, label, lineEdit](bool) {
-		        QString result(QFileDialog::getExistingDirectory(this, label,
-		                                                    lineEdit->text()));
+		        QString result(QFileDialog::getExistingDirectory(
+		            this, label, lineEdit->text()));
 		        if(result != "")
 			        lineEdit->setText(result);
-		    });
+	        });
 
 	QWidget* w          = new QWidget(this);
 	QHBoxLayout* layout = new QHBoxLayout(w);
@@ -219,13 +224,14 @@ void SettingsWidget::addVector3DSetting(QString const& name,
 		layout->addWidget(sboxes[i]);
 	}
 	for(unsigned int i(0); i < 3; ++i)
-		connect(sboxes[i], static_cast<void (QDoubleSpinBox::*)(double)>(
-		                       &QDoubleSpinBox::valueChanged),
+		connect(sboxes[i],
+		        static_cast<void (QDoubleSpinBox::*)(double)>(
+		            &QDoubleSpinBox::valueChanged),
 		        this, [this, fullName, sboxes](double) {
 			        updateValue(fullName, QVector3D(sboxes[0]->value(),
 			                                        sboxes[1]->value(),
 			                                        sboxes[2]->value()));
-			    });
+		        });
 
 	currentForm->addRow(label + " :", w);
 }
@@ -262,8 +268,7 @@ void SettingsWidget::addColorSetting(QString const& name,
     border-style: inset;                     \
     }");
 		        updateValue(fullName, result);
-
-		    });
+	        });
 
 	currentForm->addRow(label + " :", button);
 }

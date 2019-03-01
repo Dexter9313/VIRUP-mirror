@@ -32,7 +32,7 @@ void BasicCamera::setPerspectiveProj(float fov, float aspectratio,
 
 void BasicCamera::setEyeDistanceFactor(float eyeDistanceFactor)
 {
-	this->eyeDistanceFactor = eyeDistanceFactor;
+	this->eyeDistanceFactor     = eyeDistanceFactor;
 	eyeDistanceCorrection(0, 0) = eyeDistanceFactor;
 	eyeDistanceCorrection(1, 1) = eyeDistanceFactor;
 	eyeDistanceCorrection(2, 2) = eyeDistanceFactor;
@@ -58,11 +58,12 @@ void BasicCamera::update(bool force2D)
 		projRight = vrHandler->getProjectionMatrix(
 		    Side::RIGHT, 0.1f * eyeDistanceFactor, 10000.f * eyeDistanceFactor);
 
-		projLeft = projLeft * eyeDist(vrHandler->getEyeViewMatrix(Side::LEFT),
-		                              eyeDistanceFactor);
-		projRight
-		    = projRight * eyeDist(vrHandler->getEyeViewMatrix(Side::RIGHT),
-		                          eyeDistanceFactor);
+		projLeft = projLeft
+		           * eyeDist(vrHandler->getEyeViewMatrix(Side::LEFT),
+		                     eyeDistanceFactor);
+		projRight = projRight
+		            * eyeDist(vrHandler->getEyeViewMatrix(Side::RIGHT),
+		                      eyeDistanceFactor);
 
 		QMatrix4x4* projEye
 		    = (vrHandler->getCurrentRenderingEye() == Side::LEFT) ? &projLeft
