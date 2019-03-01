@@ -19,7 +19,6 @@
 #include "Launcher.hpp"
 
 Launcher::Launcher()
-	: BaseLauncher()
+    : BaseLauncher()
 {
-
 }
