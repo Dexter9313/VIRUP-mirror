@@ -22,11 +22,13 @@ class OctreeLOD : public Octree
 	void setFile(std::istream* file);
 	std::istream* getFile() { return file; };
 	bool preloadLevel(unsigned int lvlToLoad);
-	unsigned int renderAboveTanAngle(float tanAngle, Camera const& camera, QMatrix4x4 const& model,
+	unsigned int renderAboveTanAngle(float tanAngle, Camera const& camera,
+	                                 QMatrix4x4 const& model,
 	                                 unsigned int maxPoints);
 	~OctreeLOD();
 
 	static int64_t getUsedMem() { return usedMem; };
+
   protected:
 	virtual Octree* newOctree() const override;
 

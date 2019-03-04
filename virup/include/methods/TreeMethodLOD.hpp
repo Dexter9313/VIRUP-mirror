@@ -26,7 +26,7 @@ class TreeMethodLOD : public Method
 	OctreeLOD* gazTree        = nullptr;
 	OctreeLOD* starsTree      = nullptr;
 	OctreeLOD* darkMatterTree = nullptr;
-	//struct timeval t0;
+	// struct timeval t0;
 	float currentTanAngle;
 	PIDController ctrl;
 };

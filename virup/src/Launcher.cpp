@@ -19,7 +19,7 @@
 #include "Launcher.hpp"
 
 Launcher::Launcher()
-	: BaseLauncher()
+    : BaseLauncher()
 {
 }
 
@@ -27,4 +27,3 @@ SettingsWidget* Launcher::newSettingsWidget()
 {
 	return new VIRUPSettings(this);
 }
-

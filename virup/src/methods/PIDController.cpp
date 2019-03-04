@@ -28,5 +28,5 @@ void PIDController::update(uint64_t dt)
 		*controlVariable = 1;
 	if(*controlVariable < 0)
 		*controlVariable = 0;
-	lasterr              = err;
+	lasterr = err;
 }

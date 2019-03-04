@@ -38,7 +38,6 @@ struct BBox
 	QVector3D mid;
 };
 
-
 class Camera : public BasicCamera
 {
   public:

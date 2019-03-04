@@ -9,7 +9,7 @@ TreeMethodTex::TreeMethodTex()
 	GLHandler::setPointSize(8);
 
 	// init chrono
-	//gettimeofday(&t0, NULL);
+	// gettimeofday(&t0, NULL);
 }
 
 void TreeMethodTex::render(Camera const& camera, QMatrix4x4 const& model)

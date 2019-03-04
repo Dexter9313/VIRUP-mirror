@@ -23,10 +23,8 @@
 
 class VIRUPSettings : public SettingsWidget
 {
-	public:
-		VIRUPSettings(QWidget* parent);
+  public:
+	VIRUPSettings(QWidget* parent);
 };
 
-
 #endif // VIRUPSETTINGS_H
-

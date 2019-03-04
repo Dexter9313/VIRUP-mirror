@@ -46,7 +46,6 @@ void MainWin::mousePressEvent(QMouseEvent* e)
 	c.setShape(Qt::CursorShape::BlankCursor);
 	setCursor(c);
 	trackballEnabled = true;
-
 }
 
 void MainWin::mouseReleaseEvent(QMouseEvent* e)
@@ -124,8 +123,9 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						      * controllersMidPoint;
 						scaleCenter = controllersMidPoint;
 
-						QVector3D controllersMidPointInCube(computeCubeModel().inverted()
-															* controllersMidPoint);
+						QVector3D controllersMidPointInCube(
+						    computeCubeModel().inverted()
+						    * controllersMidPoint);
 
 						if(controllersMidPointInCube.x() < -1
 						   || controllersMidPointInCube.x() > 1
@@ -153,11 +153,9 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						                              // RIGHT
 						{
 							if(padCoords[0] < 0.0f) // LEFT
-								method->setAlpha(method->getAlpha() * 8
-								                 / 10);
+								method->setAlpha(method->getAlpha() * 8 / 10);
 							else // RIGHT
-								method->setAlpha(method->getAlpha() * 10
-								                 / 8);
+								method->setAlpha(method->getAlpha() * 10 / 8);
 						}
 					}
 					break;
@@ -219,7 +217,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 void MainWin::initScene()
 {
 	QStringList argv = QCoreApplication::arguments();
-	int argc = argv.size();
+	int argc         = argv.size();
 	unsigned int numberOfVertices(500000), seed(time(NULL));
 	QString methodStr("");
 
@@ -247,7 +245,7 @@ void MainWin::initScene()
 		vertices[0]      = generateVertices(numberOfVertices / 3, seed);
 		vertices[1]      = generateVertices(numberOfVertices / 3, seed);
 		vertices[2]      = generateVertices(
-		    numberOfVertices - 2 * (numberOfVertices / 3), seed);
+            numberOfVertices - 2 * (numberOfVertices / 3), seed);
 		method->init(vertices[0], vertices[1], vertices[2]);
 	}
 	else
@@ -304,7 +302,6 @@ void MainWin::updateScene(BasicCamera& camera)
 	// double grip = scale
 	if(leftGripPressed && rightGripPressed && left && right)
 	{
-
 		rescaleCube(
 		    initScale
 		        * left->getPosition().distanceToPoint(right->getPosition())

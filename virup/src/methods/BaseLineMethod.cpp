@@ -5,7 +5,7 @@ BaseLineMethod::BaseLineMethod()
 }
 
 BaseLineMethod::BaseLineMethod(std::string const& shadersCommonName)
-	: BaseLineMethod(shadersCommonName, shadersCommonName)
+    : BaseLineMethod(shadersCommonName, shadersCommonName)
 {
 }
 
@@ -80,8 +80,10 @@ void BaseLineMethod::init(std::string const& gazPath,
 
 void BaseLineMethod::render(Camera const& camera, QMatrix4x4 const& model)
 {
-	GLHandler::setShaderParam(shaderProgram, "alpha", model(0,0) * getAlpha());
-	GLHandler::setShaderParam(shaderProgram, "view", camera.hmdScaledSpaceToWorldTransform().inverted() * model);
+	GLHandler::setShaderParam(shaderProgram, "alpha", model(0, 0) * getAlpha());
+	GLHandler::setShaderParam(shaderProgram, "view",
+	                          camera.hmdScaledSpaceToWorldTransform().inverted()
+	                              * model);
 	GLHandler::setPointSize(pointSize);
 	GLHandler::beginTransparent();
 	GLHandler::setUpRender(shaderProgram, model);

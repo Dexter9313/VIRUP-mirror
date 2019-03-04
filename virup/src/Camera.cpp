@@ -41,7 +41,6 @@ void Camera::updateView()
 		targetFPS = 60.f;
 }
 
-
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes/
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes-ii/
 bool Camera::shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const
