@@ -6,6 +6,7 @@
 #include <QMatrix4x4>
 #include <QVector3D>
 #include <QVector4D>
+#include <array>
 
 #include "GLHandler.hpp"
 
@@ -90,7 +91,7 @@ class BasicCamera : public QObject
 
 	// For culling. Normals point Inside i.e. clippingPlanes[i]*v >= 0 <=>
 	// v is at the inner side of clippingPlanes[i]
-	Plane clippingPlanes[6];
+	std::array<Plane, 6> clippingPlanes;
 };
 
 #include "vr/VRHandler.hpp"
