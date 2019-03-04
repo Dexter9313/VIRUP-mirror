@@ -11,7 +11,19 @@ Camera::Camera(VRHandler const* vrHandler)
 	update();
 }
 
-void Camera::update(bool force2D)
+void Camera::update()
+{
+	updateView();
+	BasicCamera::update();
+}
+
+void Camera::update2D()
+{
+	updateView();
+	BasicCamera::update2D();
+}
+
+void Camera::updateView()
 {
 	angleAboveXY = angleAboveXY > 3.1415f / 2.f ? 3.1415f / 2.f : angleAboveXY;
 	angleAboveXY
@@ -27,8 +39,8 @@ void Camera::update(bool force2D)
 		targetFPS = 90.f; // small margin to avoid frame drops
 	else
 		targetFPS = 60.f;
-	BasicCamera::update(force2D);
 }
+
 
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes/
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes-ii/

@@ -36,6 +36,7 @@ class OctreeLOD : public Octree
 
 	std::istream* file;
 	bool isLoaded;
+	unsigned int dataSize;
 	// total used memory across all instances
 	static int64_t usedMem;
 	static const int64_t memLimit;

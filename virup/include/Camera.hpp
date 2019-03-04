@@ -46,7 +46,8 @@ class Camera : public BasicCamera
 	QVector3D getPosition() const { return position; };
 	QVector3D getLookDirection() const { return lookDirection; };
 	QVector3D getUp() const { return up; };
-	virtual void update(bool force2D = false) override;
+	virtual void update() override;
+	virtual void update2D() override;
 	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const;
 
 	float angleAroundZ;
@@ -60,6 +61,8 @@ class Camera : public BasicCamera
 	QVector3D position;
 	QVector3D lookDirection;
 	QVector3D up;
+
+	void updateView();
 
 	/* Not useful anymore
 	static QVector4D getCorner(BBox const& bBox, unsigned int i);

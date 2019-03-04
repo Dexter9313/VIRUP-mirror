@@ -12,6 +12,7 @@ OctreeLOD::OctreeLOD(GLHandler::ShaderProgram const& shaderProgram,
     , lvl(lvl)
     , file(nullptr)
     , isLoaded(false)
+    , dataSize(0)
     , shaderProgram(&shaderProgram)
 {
 }
@@ -23,6 +24,7 @@ void OctreeLOD::init(std::vector<float> data)
 	computeBBox();
 
 	GLHandler::setVertices(mesh, data, *shaderProgram, {{"position", 3}});
+	dataSize = data.size();
 	this->data.clear();
 }
 
@@ -44,7 +46,8 @@ void OctreeLOD::readOwnData(std::istream& in)
 
 	mesh = GLHandler::newMesh();
 	GLHandler::setVertices(mesh, data, *shaderProgram, {{"position", 3}});
-	usedMem += mesh.vboSize * 3 * sizeof(float);
+	dataSize = data.size();
+	usedMem += dataSize * sizeof(float);
 	this->data.clear();
 	isLoaded = true;
 }
@@ -53,7 +56,8 @@ void OctreeLOD::unload()
 {
 	if(isLoaded)
 	{
-		usedMem -= mesh.vboSize * 3 * sizeof(float);
+		usedMem -= dataSize * sizeof(float);
+		dataSize = 0;
 		GLHandler::deleteMesh(mesh);
 		for(Octree* oct : children)
 			if(oct)
@@ -123,7 +127,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		}
 		return maxPoints - remaining;
 	}
-	else if(mesh.vboSize <= maxPoints)
+	else if(dataSize / 3 <= maxPoints)
 	{
 		/*if(isLeaf)
 		    GLHandler::setShaderParam(*shaderProgram, "color",
@@ -132,14 +136,14 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		{
 		    GLHandler::setShaderParam(*shaderProgram, "color",
 		                              glm::vec3(1.0f, 1.0f, 1.0f));*/
-		if(!isLeaf() && sqrt((getTotalDataSize()/3) / mesh.vboSize) <= 4)
-			GLHandler::setPointSize(sqrt((getTotalDataSize()/3) / mesh.vboSize));
+		if(!isLeaf() && sqrt(getTotalDataSize() / dataSize) <= 4)
+			GLHandler::setPointSize(sqrt(getTotalDataSize() / dataSize));
 		else if(!isLeaf())
 			GLHandler::setPointSize(4);
 		else
 			GLHandler::setPointSize(1);
 		GLHandler::render(mesh);
-		return mesh.vboSize;
+		return dataSize / 3;
 		//}
 	}
 	return 0;
