@@ -37,7 +37,7 @@ void BaseLineMethod::init(std::string const& gazPath,
                           std::string const& darkMatterPath)
 {
 	std::vector<float> vertices;
-	if(gazPath != "")
+	if(!gazPath.empty())
 	{
 		std::ifstream file;
 		file.open(gazPath, std::fstream::in | std::fstream::binary);
@@ -49,7 +49,7 @@ void BaseLineMethod::init(std::string const& gazPath,
 		vertices.insert(vertices.end(), tData.begin(), tData.end());
 		file.close();
 	}
-	if(starsPath != "")
+	if(!starsPath.empty())
 	{
 		std::ifstream file;
 		file.open(starsPath, std::fstream::in | std::fstream::binary);
@@ -61,7 +61,7 @@ void BaseLineMethod::init(std::string const& gazPath,
 		vertices.insert(vertices.end(), tData.begin(), tData.end());
 		file.close();
 	}
-	if(darkMatterPath != "")
+	if(!darkMatterPath.empty())
 	{
 		std::ifstream file;
 		file.open(darkMatterPath, std::fstream::in | std::fstream::binary);

@@ -19,9 +19,10 @@ class Method
 	                  std::vector<float> const& starsVertices,
 	                  std::vector<float> const& darkMatterVertices)
 	    = 0;
-	virtual void init(std::string const& gazPath,
-	                  std::string const& starsPath      = "",
-	                  std::string const& darkMatterPath = "")
+	void init(std::string const& gazPath);
+	void init(std::string const& gazPath, std::string const& starsPath);
+	virtual void init(std::string const& gazPath, std::string const& starsPath,
+	                  std::string const& darkMatterPath)
 	    = 0;
 	virtual void render(Camera const& camera, QMatrix4x4 const& model) = 0;
 	void resetAlpha();
@@ -30,10 +31,10 @@ class Method
 	virtual ~Method();
 
 	GLHandler::ShaderProgram shaderProgram;
-	bool showdm;
+	bool showdm = false;
 
   protected:
-	float alpha;
+	float alpha = 0.011;
 };
 
 #endif // DEFINE_H

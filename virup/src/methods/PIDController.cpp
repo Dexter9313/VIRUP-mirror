@@ -13,7 +13,7 @@ void PIDController::update(uint64_t dt)
 	{
 		return;
 	}
-	else if(fabsf(err) < tol / 2.0f)
+	if(fabsf(err) < tol / 2.0f)
 	{
 		fixing = false;
 		return;

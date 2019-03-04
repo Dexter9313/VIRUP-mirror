@@ -70,9 +70,9 @@ Checks:          "abseil-string-find-startswith, \
     cert-err61-cpp, \
     cert-fio38-c, \
     cert-flp30-c, \
-    cert-msc30-c, \
+    -cert-msc30-c, \ # we don't do cryptography so we don't care
     cert-msc32-c, \
-    cert-msc50-cpp, \
+    -cert-msc50-cpp, \ # we don't do cryptography so we don't care
     cert-msc51-cpp, \
     cert-oop11-cpp, \
     clang-analyzer-apiModeling.TrustNonnull, \
@@ -200,7 +200,7 @@ Checks:          "abseil-string-find-startswith, \
     google-readability-function-size, \
     google-readability-namespace-comments, \
     google-readability-redundant-smartptr-get, \
-    google-readability-todo, \
+    -google-readability-todo, \ # useless for us as of now
     google-runtime-int, \
     google-runtime-member-string-references, \
     google-runtime-operator, \

@@ -18,11 +18,6 @@
 
 #include "Launcher.hpp"
 
-Launcher::Launcher()
-    : BaseLauncher()
-{
-}
-
 SettingsWidget* Launcher::newSettingsWidget()
 {
 	return new VIRUPSettings(this);

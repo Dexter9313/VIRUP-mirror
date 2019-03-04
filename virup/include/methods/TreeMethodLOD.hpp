@@ -16,9 +16,8 @@ class TreeMethodLOD : public Method
 	virtual void init(std::vector<float> const& gazVertices,
 	                  std::vector<float> const& starsVertices,
 	                  std::vector<float> const& darkMatterVertices) override;
-	virtual void init(std::string const& gazPath,
-	                  std::string const& starsPath      = "",
-	                  std::string const& darkMatterPath = "") override;
+	virtual void init(std::string const& gazPath, std::string const& starsPath,
+	                  std::string const& darkMatterPath) override;
 	virtual void render(Camera const& camera, QMatrix4x4 const& model) override;
 	virtual ~TreeMethodLOD();
 

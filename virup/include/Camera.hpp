@@ -49,17 +49,17 @@ class Camera : public BasicCamera
 	virtual void update2D() override;
 	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const;
 
-	float angleAroundZ;
-	float angleAboveXY;
-	float distance;
-	float targetFPS;
+	float angleAroundZ = 0.f;
+	float angleAboveXY = 0.f;
+	float distance     = 1.f;
+	float targetFPS    = 60.f;
 
 	float currentFrameTiming = 0;
 
   private:
-	QVector3D position;
-	QVector3D lookDirection;
-	QVector3D up;
+	QVector3D position      = {1.f, 0.f, 0.f};
+	QVector3D lookDirection = {-1.f, 0.f, 0.f};
+	QVector3D up            = {0.f, 0.f, 1.f};
 
 	void updateView();
 

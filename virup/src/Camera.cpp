@@ -2,13 +2,7 @@
 
 Camera::Camera(VRHandler const* vrHandler)
     : BasicCamera(vrHandler)
-    , angleAroundZ(0.f)
-    , angleAboveXY(0.f)
-    , distance(1.0f)
-    , targetFPS(60.0f)
-    , up(QVector3D(0.0f, 0.0f, 1.0f))
 {
-	update();
 }
 
 void Camera::update()
@@ -95,32 +89,32 @@ bool Camera::shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const
 	END NAIVE WAY */
 
 	// OPTIMIZED WAY (using p-vertex)
-	int result = false;
+	bool result = false;
 	// for each plane do ...
-	for(int i = 0; i < 6; i++)
+	for(auto clippingPlane : clippingPlanes)
 	{
 		QVector4D pVertex = QVector4D(bbox.minx, bbox.miny, bbox.minz, 1.f);
-		if(clippingPlanes[i].x() >= 0)
+		if(clippingPlane.x() >= 0)
 		{
 			pVertex.setX(bbox.maxx);
 		}
-		if(clippingPlanes[i].y() >= 0)
+		if(clippingPlane.y() >= 0)
 		{
 			pVertex.setY(bbox.maxy);
 		}
-		if(clippingPlanes[i].z() >= 0)
+		if(clippingPlane.z() >= 0)
 		{
 			pVertex.setZ(bbox.maxz);
 		}
 		// p-vertex is conserved by model, because there are no rotations
 		pVertex = model * pVertex;
 		// is the p-vertex outside?
-		if(QVector4D::dotProduct(clippingPlanes[i], pVertex) < 0)
+		if(QVector4D::dotProduct(clippingPlane, pVertex) < 0)
 		{
 			return true;
 		}
 	}
-	return (result);
+	return result;
 }
 
 /* Not useful anymore

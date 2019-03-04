@@ -13,6 +13,16 @@ Method::Method(std::string const& vertexShaderPath,
 	resetAlpha();
 }
 
+void Method::init(std::string const& gazPath)
+{
+	init(gazPath, "", "");
+}
+
+void Method::init(std::string const& gazPath, std::string const& starsPath)
+{
+	init(gazPath, starsPath, "");
+}
+
 void Method::resetAlpha()
 {
 	setAlpha(0.011);

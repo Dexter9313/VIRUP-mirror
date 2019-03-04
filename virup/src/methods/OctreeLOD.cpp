@@ -1,16 +1,25 @@
 #include "methods/OctreeLOD.hpp"
 
-int64_t OctreeLOD::usedMem = 0;
-const int64_t OctreeLOD::memLimit
-    = (((int64_t) 1000000) * QSettings().value("misc/maxvramusagemb").toInt());
+int64_t& OctreeLOD::usedMem()
+{
+	static int64_t usedMem(0);
+	return usedMem;
+}
+
+const int64_t& OctreeLOD::memLimit()
+{
+	static const int64_t memLimit(
+	    static_cast<int64_t>(1000000)
+	    * QSettings().value("misc/maxvramusagemb").toInt());
+	return memLimit;
+}
 
 // TODO just draw nothing if vertices.size() == 0 (prevents nullptr tests when
 // drawing)
 
 OctreeLOD::OctreeLOD(GLHandler::ShaderProgram const& shaderProgram,
                      unsigned int lvl)
-    : Octree()
-    , lvl(lvl)
+    : lvl(lvl)
     , file(nullptr)
     , isLoaded(false)
     , dataSize(0)
@@ -48,7 +57,7 @@ void OctreeLOD::readOwnData(std::istream& in)
 	mesh = GLHandler::newMesh();
 	GLHandler::setVertices(mesh, data, *shaderProgram, {{"position", 3}});
 	dataSize = data.size();
-	usedMem += dataSize * sizeof(float);
+	usedMem() += dataSize * sizeof(float);
 	this->data.clear();
 	isLoaded = true;
 }
@@ -57,14 +66,14 @@ void OctreeLOD::unload()
 {
 	if(isLoaded)
 	{
-		usedMem -= dataSize * sizeof(float);
+		usedMem() -= dataSize * sizeof(float);
 		dataSize = 0;
 		GLHandler::deleteMesh(mesh);
 		for(Octree* oct : children)
 		{
-			if(oct)
+			if(oct != nullptr)
 			{
-				static_cast<OctreeLOD*>(oct)->unload();
+				dynamic_cast<OctreeLOD*>(oct)->unload();
 			}
 		}
 		isLoaded = false;
@@ -76,16 +85,16 @@ void OctreeLOD::setFile(std::istream* file)
 	this->file = file;
 	for(Octree* oct : children)
 	{
-		if(oct)
+		if(oct != nullptr)
 		{
-			static_cast<OctreeLOD*>(oct)->setFile(file);
+			dynamic_cast<OctreeLOD*>(oct)->setFile(file);
 		}
 	}
 }
 
 bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 {
-	if(usedMem >= memLimit)
+	if(usedMem() >= memLimit())
 	{
 		return false;
 	}
@@ -97,9 +106,9 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 	{
 		for(Octree* oct : children)
 		{
-			if(oct)
+			if(oct != nullptr)
 			{
-				if(!static_cast<OctreeLOD*>(oct)->preloadLevel(lvlToLoad - 1))
+				if(!dynamic_cast<OctreeLOD*>(oct)->preloadLevel(lvlToLoad - 1))
 				{
 					return false;
 				}
@@ -116,7 +125,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 {
 	if(camera.shouldBeCulled(bbox, model) && lvl > 0)
 	{
-		// if(usedMem > (memLimit - (int64_t) (10 * 16000 * 3 *
+		// if(usedMem() > (memLimit() - (int64_t) (10 * 16000 * 3 *
 		// sizeof(float))))
 		// unload();
 		return 0;
@@ -124,7 +133,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 
 	if(!isLoaded)
 	{
-		// if(usedMem < memLimit)
+		// if(usedMem() < memLimit())
 		readOwnData(*file);
 		// else
 		//	return 0;
@@ -136,15 +145,16 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		// RENDER SUBTREES
 		for(Octree* oct : children)
 		{
-			if(oct)
+			if(oct != nullptr)
 			{
-				remaining -= static_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
+				remaining -= dynamic_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
 				    tanAngle, camera, model, remaining);
 			}
 		}
 		return maxPoints - remaining;
 	}
-	else if(dataSize / 3 <= maxPoints)
+
+	if(dataSize / 3 <= maxPoints)
 	{
 		/*if(isLeaf)
 		    GLHandler::setShaderParam(*shaderProgram, "color",
@@ -155,7 +165,8 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		                              glm::vec3(1.0f, 1.0f, 1.0f));*/
 		if(!isLeaf() && sqrt(getTotalDataSize() / dataSize) <= 4)
 		{
-			GLHandler::setPointSize(sqrt(getTotalDataSize() / dataSize));
+			GLHandler::setPointSize(
+			    static_cast<unsigned int>(sqrt(getTotalDataSize() / dataSize)));
 		}
 		else if(!isLeaf())
 		{
@@ -197,7 +208,7 @@ float OctreeLOD::currentTanAngle(Camera const& camera,
 		return 0.f;
 	}
 
-	return bbox.diameter * model.constData()[0]
+	return bbox.diameter * model.column(0).x()
 	       / (model * bbox.mid)
 	             .distanceToPoint(camera.hmdScaledSpaceToWorldTransform()
 	                              * QVector3D(0.f, 0.f, 0.f));

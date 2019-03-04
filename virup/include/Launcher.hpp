@@ -25,7 +25,7 @@
 class Launcher : public BaseLauncher
 {
   public:
-	Launcher();
+	Launcher() = default;
 
   protected:
 	virtual SettingsWidget* newSettingsWidget() override;

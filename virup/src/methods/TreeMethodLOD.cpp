@@ -34,17 +34,17 @@ void TreeMethodLOD::init(std::vector<float> const& gazVertices,
                          std::vector<float> const& starsVertices,
                          std::vector<float> const& darkMatterVertices)
 {
-	if(gazVertices.size() != 0 && !gazTree)
+	if(!gazVertices.empty() && gazTree == nullptr)
 	{
 		gazTree = new OctreeLOD(shaderProgram);
 		gazTree->init(gazVertices);
 	}
-	if(starsVertices.size() != 0 && !starsTree)
+	if(!starsVertices.empty() && starsTree == nullptr)
 	{
 		starsTree = new OctreeLOD(shaderProgram);
 		starsTree->init(starsVertices);
 	}
-	if(darkMatterVertices.size() != 0 && !darkMatterTree)
+	if(!darkMatterVertices.empty() && darkMatterTree == nullptr)
 	{
 		darkMatterTree = new OctreeLOD(shaderProgram);
 		darkMatterTree->init(darkMatterVertices);
@@ -55,10 +55,10 @@ void TreeMethodLOD::init(std::string const& gazPath,
                          std::string const& starsPath,
                          std::string const& darkMatterPath)
 {
-	if(gazPath != "" && !gazTree)
+	if(!gazPath.empty() && gazTree == nullptr)
 	{
 		std::cout << "Loading gaz..." << std::endl;
-		std::ifstream* file = new std::ifstream();
+		auto file = new std::ifstream();
 		file->open(gazPath, std::fstream::in | std::fstream::binary);
 		gazTree = new OctreeLOD(shaderProgram);
 		gazTree->init(*file);
@@ -68,10 +68,10 @@ void TreeMethodLOD::init(std::string const& gazPath,
 		gazTree->readData(*file);
 		std::cout << "Gaz loaded..." << std::endl;
 	}
-	if(starsPath != "" && !starsTree)
+	if(!starsPath.empty() && starsTree == nullptr)
 	{
 		std::cout << "Loading stars..." << std::endl;
-		std::ifstream* file = new std::ifstream();
+		auto file = new std::ifstream();
 		file->open(starsPath, std::fstream::in | std::fstream::binary);
 		starsTree = new OctreeLOD(shaderProgram);
 		starsTree->init(*file);
@@ -81,10 +81,10 @@ void TreeMethodLOD::init(std::string const& gazPath,
 		starsTree->readData(*file);
 		std::cout << "Stars loaded..." << std::endl;
 	}
-	if(darkMatterPath != "" && !darkMatterTree)
+	if(!darkMatterPath.empty() && darkMatterTree == nullptr)
 	{
 		std::cout << "Loading dark matter..." << std::endl;
-		std::ifstream* file = new std::ifstream;
+		auto file = new std::ifstream();
 		file->open(darkMatterPath, std::fstream::in | std::fstream::binary);
 		darkMatterTree = new OctreeLOD(shaderProgram);
 		darkMatterTree->init(*file);
@@ -99,21 +99,21 @@ void TreeMethodLOD::init(std::string const& gazPath,
 	unsigned int lvlToLoad(0);
 	while(lvlToLoad == 0)
 	{
-		if(gazTree)
+		if(gazTree != nullptr)
 		{
 			if(!gazTree->preloadLevel(lvlToLoad))
 			{
 				break;
 			}
 		}
-		if(starsTree)
+		if(starsTree != nullptr)
 		{
 			if(!starsTree->preloadLevel(lvlToLoad))
 			{
 				break;
 			}
 		}
-		if(darkMatterTree)
+		if(darkMatterTree != nullptr)
 		{
 			if(!darkMatterTree->preloadLevel(lvlToLoad))
 			{
@@ -124,23 +124,22 @@ void TreeMethodLOD::init(std::string const& gazPath,
 	}
 }
 
-std::pair<float, std::string> humanReadable(long int bytes)
+std::pair<float, std::string> humanReadable(int64_t bytes)
 {
+	float fbytes(bytes);
 	if(bytes < 1024)
 	{
-		return std::pair<float, std::string>(bytes, " bytes");
+		return std::pair<float, std::string>(fbytes, " bytes");
 	}
 	if(bytes < 1024 * 1024)
 	{
-		return std::pair<float, std::string>(bytes / (float) 1024, " Kib");
+		return std::pair<float, std::string>(fbytes / 1024, " Kib");
 	}
 	if(bytes < 1024 * 1024 * 1024)
 	{
-		return std::pair<float, std::string>(bytes / (float) (1024 * 1024),
-		                                     " Mib");
+		return std::pair<float, std::string>(fbytes / (1024 * 1024), " Mib");
 	}
-	return std::pair<float, std::string>(bytes / (float) (1024 * 1024 * 1024),
-	                                     " Gib");
+	return std::pair<float, std::string>(fbytes / (1024 * 1024 * 1024), " Gib");
 }
 
 void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
@@ -182,7 +181,7 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 	    shaderProgram, "color",
 	    QSettings().value("data/gazcolor").value<QColor>());
 	unsigned int rendered = 0;
-	if(gazTree)
+	if(gazTree != nullptr)
 	{
 		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, model,
 		                                         1000000000);
@@ -190,7 +189,7 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
 	    QSettings().value("data/starscolor").value<QColor>());
-	if(starsTree)
+	if(starsTree != nullptr)
 	{
 		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera,
 		                                           model, 1000000000);
@@ -198,7 +197,7 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
 	    QSettings().value("data/darkmattercolor").value<QColor>());
-	if(darkMatterTree && showdm)
+	if(darkMatterTree != nullptr && showdm)
 	{
 		rendered += darkMatterTree->renderAboveTanAngle(currentTanAngle, camera,
 		                                                model, 1000000000);
@@ -216,7 +215,7 @@ TreeMethodLOD::~TreeMethodLOD()
 {
 	if(gazTree != nullptr)
 	{
-		if(gazTree->getFile())
+		if(gazTree->getFile() != nullptr)
 		{
 			delete gazTree->getFile();
 		}
@@ -225,7 +224,7 @@ TreeMethodLOD::~TreeMethodLOD()
 	gazTree = nullptr;
 	if(starsTree != nullptr)
 	{
-		if(starsTree->getFile())
+		if(starsTree->getFile() != nullptr)
 		{
 			delete starsTree->getFile();
 		}
@@ -234,7 +233,7 @@ TreeMethodLOD::~TreeMethodLOD()
 	starsTree = nullptr;
 	if(darkMatterTree != nullptr)
 	{
-		if(darkMatterTree->getFile())
+		if(darkMatterTree->getFile() != nullptr)
 		{
 			delete darkMatterTree->getFile();
 		}

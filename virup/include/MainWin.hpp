@@ -14,7 +14,7 @@ class MainWin : public AbstractMainWin
 {
 	Q_OBJECT
   public:
-	MainWin();
+	MainWin() = default;
 	~MainWin();
 
   protected:
@@ -45,9 +45,9 @@ class MainWin : public AbstractMainWin
 	static void deleteCube(GLHandler::Mesh mesh,
 	                       GLHandler::ShaderProgram shader);
 
-	GLHandler::Mesh cube;
-	GLHandler::ShaderProgram cubeShader;
-	Method* method;
+	GLHandler::Mesh cube                = {};
+	GLHandler::ShaderProgram cubeShader = {};
+	Method* method                      = nullptr;
 	bool showCube = QSettings().value("misc/showcube").toBool();
 
 	float cubeScale           = 1.f;

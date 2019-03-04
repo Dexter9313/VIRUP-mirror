@@ -27,7 +27,7 @@ class OctreeLOD : public Octree
 	                                 unsigned int maxPoints);
 	~OctreeLOD();
 
-	static int64_t getUsedMem() { return usedMem; };
+	static int64_t getUsedMem() { return usedMem(); };
 
   protected:
 	virtual Octree* newOctree() const override;
@@ -40,10 +40,10 @@ class OctreeLOD : public Octree
 	bool isLoaded;
 	unsigned int dataSize;
 	// total used memory across all instances
-	static int64_t usedMem;
-	static const int64_t memLimit;
+	static int64_t& usedMem();
+	static const int64_t& memLimit();
 
-	GLHandler::Mesh mesh;
+	GLHandler::Mesh mesh = {};
 	GLHandler::ShaderProgram const* shaderProgram;
 
 	void computeBBox();
