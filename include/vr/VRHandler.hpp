@@ -86,8 +86,10 @@ class VRHandler : public QObject
   private:
 	vr::IVRSystem* vr_pointer        = nullptr;
 	vr::IVRCompositor* vr_compositor = nullptr;
-	vr::TrackedDevicePose_t tracked_device_pose[vr::k_unMaxTrackedDeviceCount];
-	QMatrix4x4 tracked_device_pose_matrix[vr::k_unMaxTrackedDeviceCount];
+	std::array<vr::TrackedDevicePose_t, vr::k_unMaxTrackedDeviceCount>
+	    tracked_device_pose;
+	std::array<QMatrix4x4, vr::k_unMaxTrackedDeviceCount>
+	    tracked_device_pose_matrix;
 	vr::IVRRenderModels* vr_render_models;
 
 	Controller* leftController  = nullptr;

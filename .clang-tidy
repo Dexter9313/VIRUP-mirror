@@ -66,7 +66,7 @@ Checks:          "android-cloexec-accept, \
     clang-analyzer-core.uninitialized.CapturedBlockVariable, \
     clang-analyzer-core.uninitialized.UndefReturn, \
     clang-analyzer-cplusplus.NewDelete, \
-    #clang-analyzer-cplusplus.NewDeleteLeaks, \ # impossible to suppress if needed
+    -clang-analyzer-cplusplus.NewDeleteLeaks, \ # impossible to suppress if needed
     clang-analyzer-cplusplus.SelfAssignment, \
     clang-analyzer-deadcode.DeadStores, \
     clang-analyzer-llvm.Conventions, \
@@ -129,7 +129,7 @@ Checks:          "android-cloexec-accept, \
     cppcoreguidelines-c-copy-assignment-signature, \
     cppcoreguidelines-interfaces-global-init, \
     cppcoreguidelines-no-malloc, \
-    #cppcoreguidelines-owning-memory, \ # not planning to use GSL as of now
+    -cppcoreguidelines-owning-memory, \ # not planning to use GSL as of now
     cppcoreguidelines-pro-bounds-array-to-pointer-decay, \
     cppcoreguidelines-pro-bounds-constant-array-index, \
     cppcoreguidelines-pro-bounds-pointer-arithmetic, \
@@ -142,7 +142,7 @@ Checks:          "android-cloexec-accept, \
     cppcoreguidelines-pro-type-vararg, \
     cppcoreguidelines-slicing, \
     cppcoreguidelines-special-member-functions, \
-    #fuchsia-default-arguments, \ # too restrictive for us
+    -fuchsia-default-arguments, \ # too restrictive for us
     fuchsia-overloaded-operator, \
     fuchsia-virtual-inheritance, \
     google-build-explicit-make-pair, \

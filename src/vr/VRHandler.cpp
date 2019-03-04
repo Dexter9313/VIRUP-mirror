@@ -9,14 +9,20 @@ bool VRHandler::init()
 
 // Start SteamVR if not running on unix-based
 #ifdef Q_OS_UNIX
-	if(system("pgrep vrcompositor > /dev/null 2>&1") != 0)
+	// check if vrcompositor is running, and if not, attempt to run it
+	QProcess pgrep;
+	QString cmd("pgrep");
+	QStringList args = QStringList() << "vrcompositor";
+	pgrep.start(cmd, args);
+	pgrep.waitForReadyRead();
+	if(pgrep.readAllStandardOutput().isEmpty())
 	{
 		std::cout << "Starting SteamVR..." << std::endl;
 		std::cout << "Runtime path : " << vr::VR_RuntimePath() << std::endl;
-		system((std::string("cd ") + vr::VR_RuntimePath() + "/bin && "
-		        + "./vrstartup.sh > /dev/null 2>&1 &")
-		           .c_str());
-		system("sleep 7");
+		QProcess vrstartup;
+		cmd = QString(vr::VR_RuntimePath()) + "bin/vrstartup.sh";
+		vrstartup.start(cmd);
+		QThread::sleep(7);
 	}
 #endif
 
@@ -190,7 +196,7 @@ std::string GetTrackedDeviceClassString(vr::ETrackedDeviceClass td_class)
 void VRHandler::prepareRendering()
 {
 	vr::EVRCompositorError error = vr::VRCompositor()->WaitGetPoses(
-	    tracked_device_pose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
+	    &tracked_device_pose[0], vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
 	int nDeviceLeft  = -1;
 	int nDeviceRight = -1;
@@ -204,10 +210,10 @@ void VRHandler::prepareRendering()
 		{
 			continue;
 		}
-		if(tracked_device_pose[nDevice].bPoseIsValid)
+		if(tracked_device_pose.at(nDevice).bPoseIsValid)
 		{
-			tracked_device_pose_matrix[nDevice]
-			    = toQt(tracked_device_pose[nDevice].mDeviceToAbsoluteTracking);
+			tracked_device_pose_matrix.at(nDevice) = toQt(
+			    tracked_device_pose.at(nDevice).mDeviceToAbsoluteTracking);
 		}
 		vr::ETrackedControllerRole role
 		    = vr_pointer->GetControllerRoleForTrackedDeviceIndex(nDevice);
@@ -288,6 +294,7 @@ void VRHandler::submitRendering(Side eye)
 {
 	GLHandler::RenderTarget* frame
 	    = eye == Side::LEFT ? &leftTarget : &rightTarget;
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	vr::Texture_t texture = {reinterpret_cast<void*>(static_cast<uintptr_t>(
 	                             GLHandler::getColorAttachmentTexture(*frame))),
 	                         vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
@@ -430,7 +437,7 @@ void VRHandler::updateController(Side side, int nDevice)
 	}
 	else if(*controller != nullptr)
 	{
-		(*controller)->update(tracked_device_pose_matrix[nDevice]);
+		(*controller)->update(tracked_device_pose_matrix.at(nDevice));
 	}
 	PythonQtHandler::addObject(
 	    ((side == Side::LEFT) ? QString("left") : QString("right"))

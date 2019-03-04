@@ -19,8 +19,8 @@
 UNBUFFER=""
 if [[ $(command -v unbuffer) ]]; then UNBUFFER="unbuffer" ; fi
 result=$($UNBUFFER $1 ${@:2} 2> /dev/null | tee /dev/tty)
-result=$(echo "$result" | wc -l)
-if [ "$result" != "1" ]; then
+result=$(echo "$result" | grep -v "warnings generated\.$" | grep -v "^Suppressed " | grep -v "Use -header-filter=.* to display errors from all non-system headers." | grep -v "^$" | wc -l)
+if [ "$result" != "0" ]; then
 	exit 1
 fi
 
