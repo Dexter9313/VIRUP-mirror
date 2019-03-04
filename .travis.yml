@@ -92,7 +92,7 @@ script:
     - make -j
     - ./tests
     - make clang-format
-    - make clang-tidy
+    - if [ "$CXX" == "clang++" ]; then make clang-tidy ; fi
 
 before_deploy:
     - make package
