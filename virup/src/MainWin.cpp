@@ -170,9 +170,9 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 							method->resetAlpha();
 							cam->setEyeDistanceFactor(1.0f);
 						}
-						else if(fabs(padCoords[0])
-						        > fabs(padCoords[1])) // LEFT OR
-						                              // RIGHT
+						else if(fabsf(padCoords[0])
+						        > fabsf(padCoords[1])) // LEFT OR
+						                               // RIGHT
 						{
 							if(padCoords[0] < 0.0f) // LEFT
 							{

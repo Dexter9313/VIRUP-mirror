@@ -163,10 +163,11 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		{
 		    GLHandler::setShaderParam(*shaderProgram, "color",
 		                              glm::vec3(1.0f, 1.0f, 1.0f));*/
-		if(!isLeaf() && sqrt(getTotalDataSize() / dataSize) <= 4)
+		if(!isLeaf()
+		   && sqrt(static_cast<double>(getTotalDataSize()) / dataSize) <= 4.0)
 		{
-			GLHandler::setPointSize(
-			    static_cast<unsigned int>(sqrt(getTotalDataSize() / dataSize)));
+			GLHandler::setPointSize(static_cast<unsigned int>(
+			    sqrt(static_cast<double>(getTotalDataSize()) / dataSize)));
 		}
 		else if(!isLeaf())
 		{
@@ -191,9 +192,9 @@ void OctreeLOD::computeBBox()
 	bbox.maxy     = maxY;
 	bbox.minz     = minZ;
 	bbox.maxz     = maxZ;
-	bbox.diameter = sqrt((bbox.maxx - bbox.minx) * (bbox.maxx - bbox.minx)
-	                     + (bbox.maxy - bbox.miny) * (bbox.maxy - bbox.miny)
-	                     + (bbox.maxz - bbox.minz) * (bbox.maxz - bbox.minz));
+	bbox.diameter = sqrtf((bbox.maxx - bbox.minx) * (bbox.maxx - bbox.minx)
+	                      + (bbox.maxy - bbox.miny) * (bbox.maxy - bbox.miny)
+	                      + (bbox.maxz - bbox.minz) * (bbox.maxz - bbox.minz));
 
 	bbox.mid.setX((bbox.maxx + bbox.minx) / 2.0f);
 	bbox.mid.setY((bbox.maxy + bbox.miny) / 2.0f);

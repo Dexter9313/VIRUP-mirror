@@ -23,9 +23,9 @@ void Camera::updateView()
 	angleAboveXY
 	    = angleAboveXY < -3.1415f / 2.f ? -3.1415f / 2.f : angleAboveXY;
 	position
-	    = QVector3D(2.0f * distance * cos(angleAroundZ) * cos(angleAboveXY),
-	                2.0f * distance * sin(angleAroundZ) * cos(angleAboveXY),
-	                2.0f * distance * sin(angleAboveXY));
+	    = QVector3D(2.0f * distance * cosf(angleAroundZ) * cosf(angleAboveXY),
+	                2.0f * distance * sinf(angleAroundZ) * cosf(angleAboveXY),
+	                2.0f * distance * sinf(angleAboveXY));
 	lookDirection = (-1.0f * getPosition()).normalized();
 	position += QSettings().value("misc/focuspoint").value<QVector3D>();
 	setView(position, lookDirection, up);
