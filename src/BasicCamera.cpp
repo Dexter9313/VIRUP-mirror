@@ -45,9 +45,9 @@ QVector4D BasicCamera::project(QVector4D const& vertex) const
 	return fullTransform * vertex;
 }
 
-void BasicCamera::update(bool force2D)
+void BasicCamera::update()
 {
-	if(*vrHandler && !force2D)
+	if(*vrHandler)
 	{
 		// proj
 		projLeft = vrHandler->getProjectionMatrix(
@@ -80,15 +80,34 @@ void BasicCamera::update(bool force2D)
 		hmdScaledToWorld = hmdScaledToWorld.inverted();
 
 		fullCameraSpaceTransform = *projEye * hmdMat;
-	}
-	else
-	{
-		fullTransform             = proj * view;
-		fullCameraSpaceTransform  = proj;
-		fullTrackedSpaceTransform = proj * eyeDistanceCorrection;
-		fullHmdSpaceTransform     = fullTrackedSpaceTransform;
+
+		updateClippingPlanes();
+
+		return;
 	}
 
+	update2D();
+}
+
+void BasicCamera::update2D()
+{
+	fullTransform             = proj * view;
+	fullCameraSpaceTransform  = proj;
+	fullTrackedSpaceTransform = proj * eyeDistanceCorrection;
+	fullHmdSpaceTransform     = fullTrackedSpaceTransform;
+
+	updateClippingPlanes();
+}
+
+void BasicCamera::uploadMatrices() const
+{
+	GLHandler::setUpTransforms(fullTransform, fullCameraSpaceTransform,
+	                           fullTrackedSpaceTransform,
+	                           fullHmdSpaceTransform);
+}
+
+void BasicCamera::updateClippingPlanes()
+{
 	// update clipping planes
 	// Gribb, G., & Hartmann, K. (2001). Fast extraction of viewing frustum
 	// planes from the world-view-projection matrix.
@@ -101,13 +120,6 @@ void BasicCamera::update(bool force2D)
 
 	clippingPlanes[NEAR_PLANE] = fullTransform.row(3) + fullTransform.row(2);
 	clippingPlanes[FAR_PLANE]  = fullTransform.row(3) - fullTransform.row(2);
-}
-
-void BasicCamera::uploadMatrices() const
-{
-	GLHandler::setUpTransforms(fullTransform, fullCameraSpaceTransform,
-	                           fullTrackedSpaceTransform,
-	                           fullHmdSpaceTransform);
 }
 
 QMatrix4x4 BasicCamera::cameraSpaceToWorldTransform() const

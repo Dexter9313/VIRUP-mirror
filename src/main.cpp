@@ -27,10 +27,12 @@ int main(int argc, char* argv[])
 		Launcher launcher;
 		launcher.init();
 		if(launcher.exec() == QDialog::Rejected)
+		{
 			return 1;
+		}
 	}
 
 	MainWin w;
 	w.setFullscreen(QSettings().value("window/fullscreen").toBool());
-	return a.exec();
+	return QApplication::exec();
 }

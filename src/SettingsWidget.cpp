@@ -152,7 +152,9 @@ void SettingsWidget::addFilePathSetting(QString const& name,
 		        QString result(QFileDialog::getOpenFileName(this, label,
 		                                                    lineEdit->text()));
 		        if(result != "")
+		        {
 			        lineEdit->setText(result);
+		        }
 	        });
 
 	auto w      = new QWidget(this);
@@ -194,7 +196,9 @@ void SettingsWidget::addDirPathSetting(QString const& name,
 		        QString result(QFileDialog::getExistingDirectory(
 		            this, label, lineEdit->text()));
 		        if(result != "")
+		        {
 			        lineEdit->setText(result);
+		        }
 	        });
 
 	auto w      = new QWidget(this);
@@ -223,20 +227,23 @@ void SettingsWidget::addVector3DSetting(QString const& name,
 
 	QVector3D stored(settings.value(fullName).value<QVector3D>());
 
-	auto w      = new QWidget(this);
-	auto layout = new QHBoxLayout(w);
-	std::array<QDoubleSpinBox*, 3> sboxes;
-	for(unsigned int i(0); i < 3; ++i)
+	auto w                                = new QWidget(this);
+	auto layout                           = new QHBoxLayout(w);
+	std::array<QDoubleSpinBox*, 3> sboxes = {{nullptr, nullptr, nullptr}};
+	unsigned int i(0);
+	for(auto& sbox : sboxes)
 	{
-		sboxes[i] = new QDoubleSpinBox(this);
-		sboxes[i]->setRange(minVal, maxVal);
-		sboxes[i]->setSingleStep((maxVal - minVal) / 100.f);
-		sboxes[i]->setValue(stored[i]);
-		layout->addWidget(new QLabel(componentLabels[i] + " :", this));
-		layout->addWidget(sboxes[i]);
+		sbox = new QDoubleSpinBox(this);
+		sbox->setRange(minVal, maxVal);
+		sbox->setSingleStep((maxVal - minVal) / 100.f);
+		sbox->setValue(stored[i]);
+		layout->addWidget(new QLabel(componentLabels.at(i) + " :", this));
+		layout->addWidget(sbox);
+		++i;
 	}
-	for(unsigned int i(0); i < 3; ++i)
-		connect(sboxes[i],
+	for(auto sbox : sboxes)
+	{
+		connect(sbox,
 		        static_cast<void (QDoubleSpinBox::*)(double)>(
 		            &QDoubleSpinBox::valueChanged),
 		        this, [this, fullName, sboxes](double) {
@@ -244,6 +251,7 @@ void SettingsWidget::addVector3DSetting(QString const& name,
 			                                        sboxes[1]->value(),
 			                                        sboxes[2]->value()));
 		        });
+	}
 
 	currentForm->addRow(label + " :", w);
 }
@@ -274,7 +282,9 @@ void SettingsWidget::addColorSetting(QString const& name,
 		        QColor result(QColorDialog::getColor(
 		            settings.value(fullName).value<QColor>(), this, label));
 		        if(!result.isValid())
+		        {
 			        return;
+		        }
 
 		        button->setStyleSheet("QPushButton{ \
     background-color: " + result.name()

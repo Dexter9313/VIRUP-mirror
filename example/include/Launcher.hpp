@@ -24,7 +24,7 @@
 class Launcher : public BaseLauncher
 {
   public:
-	Launcher();
+	Launcher() = default;
 };
 
 #endif // LAUNCHER_H

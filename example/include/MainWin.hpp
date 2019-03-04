@@ -7,7 +7,7 @@ class MainWin : public AbstractMainWin
 {
 	Q_OBJECT
   public:
-	MainWin();
+	MainWin() = default;
 	~MainWin();
 
   protected:

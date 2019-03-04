@@ -145,41 +145,40 @@ void VRHandler::resetPos()
 	    vr::ETrackingUniverseOrigin::TrackingUniverseSeated);
 }
 
-using namespace std;
-using namespace vr;
-
 //-----------------------------------------------------------------------------
 // Purpose: Helper to get a string from a tracked device type class
 //-----------------------------------------------------------------------------
-string GetTrackedDeviceClassString(vr::ETrackedDeviceClass td_class)
+std::string GetTrackedDeviceClassString(vr::ETrackedDeviceClass td_class)
 {
-	string str_td_class = "Unknown class";
+	std::string str_td_class = "Unknown class";
 
 	switch(td_class)
 	{
-		case TrackedDeviceClass_Invalid: // = 0, the ID was not valid.
+		case vr::TrackedDeviceClass_Invalid: // = 0, the ID was not valid.
 			str_td_class = "Invalid";
 			break;
-		case TrackedDeviceClass_HMD: // = 1, Head-Mounted Displays
+		case vr::TrackedDeviceClass_HMD: // = 1, Head-Mounted Displays
 			str_td_class = "HMD";
 			break;
-		case TrackedDeviceClass_Controller: // = 2, Tracked controllers
+		case vr::TrackedDeviceClass_Controller: // = 2, Tracked controllers
 			str_td_class = "Controller";
 			break;
-		case TrackedDeviceClass_GenericTracker: // = 3, Generic trackers,
-		                                        // similar to controllers
+		case vr::TrackedDeviceClass_GenericTracker: // = 3, Generic trackers,
+		                                            // similar to controllers
 			str_td_class = "Generic Tracker";
 			break;
-		case TrackedDeviceClass_TrackingReference: // = 4, Camera and base
-		                                           // stations that serve as
-		                                           // tracking reference points
+		case vr::TrackedDeviceClass_TrackingReference: // = 4, Camera and base
+		                                               // stations that serve as
+		                                               // tracking reference
+		                                               // points
 			str_td_class = "Tracking Reference";
 			break;
-		case TrackedDeviceClass_DisplayRedirect: // = 5, Accessories that aren't
-		                                         // necessarily tracked
-		                                         // themselves, but may redirect
-		                                         // video output from other
-		                                         // tracked devices
+		case vr::TrackedDeviceClass_DisplayRedirect: // = 5, Accessories that
+		                                             // aren't necessarily
+		                                             // tracked themselves, but
+		                                             // may redirect video
+		                                             // output from other
+		                                             // tracked devices
 			str_td_class = "Display Redirecd";
 			break;
 		default:
@@ -201,7 +200,7 @@ void VRHandler::prepareRendering()
 	{
 		vr::ETrackedDeviceClass tracked_device_class
 		    = vr_pointer->GetTrackedDeviceClass(nDevice);
-		if(tracked_device_class == TrackedDeviceClass_Invalid)
+		if(tracked_device_class == vr::TrackedDeviceClass_Invalid)
 		{
 			continue;
 		}
@@ -289,9 +288,9 @@ void VRHandler::submitRendering(Side eye)
 {
 	GLHandler::RenderTarget* frame
 	    = eye == Side::LEFT ? &leftTarget : &rightTarget;
-	vr::Texture_t texture
-	    = {(void*) (uintptr_t) GLHandler::getColorAttachmentTexture(*frame),
-	       vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
+	vr::Texture_t texture = {reinterpret_cast<void*>(static_cast<uintptr_t>(
+	                             GLHandler::getColorAttachmentTexture(*frame))),
+	                         vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
 	vr::EVRCompositorError error = vr_compositor->Submit(getEye(eye), &texture);
 	if(error != vr::VRCompositorError_None)
 	{
@@ -312,8 +311,8 @@ void VRHandler::displayOnCompanion(unsigned int companionWidth,
 
 float VRHandler::getFrameTiming() const
 {
-	vr::Compositor_FrameTiming result;
-	result.m_nSize = sizeof(vr::Compositor_FrameTiming);
+	vr::Compositor_FrameTiming result = {};
+	result.m_nSize                    = sizeof(vr::Compositor_FrameTiming);
 	vr_compositor->GetFrameTiming(&result);
 
 	// see https://developer.valvesoftware.com/wiki/SteamVR/Frame_Timing
@@ -322,7 +321,7 @@ float VRHandler::getFrameTiming() const
 
 bool VRHandler::pollEvent(Event* e)
 {
-	vr::VREvent_t vrevent;
+	vr::VREvent_t vrevent = {};
 
 	e->type   = EventType::NONE;
 	e->side   = Side::NONE;
@@ -331,7 +330,7 @@ bool VRHandler::pollEvent(Event* e)
 	{
 		switch(vrevent.eventType)
 		{
-			case VREvent_ButtonPress:
+			case vr::VREvent_ButtonPress:
 				e->type = EventType::BUTTON_PRESSED;
 				if(leftController != nullptr)
 				{
@@ -349,7 +348,7 @@ bool VRHandler::pollEvent(Event* e)
 				}
 				e->button = getButton(vrevent.data.controller.button);
 				return true;
-			case VREvent_ButtonUnpress:
+			case vr::VREvent_ButtonUnpress:
 				e->type = EventType::BUTTON_UNPRESSED;
 				if(leftController != nullptr)
 				{

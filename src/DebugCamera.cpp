@@ -53,11 +53,17 @@ DebugCamera::DebugCamera(VRHandler const* vrHandler)
 	                       elements);
 }
 
-void DebugCamera::update(bool force2D)
+void DebugCamera::update()
 {
 	// act as a 2D camera if we debug from screen only
-	BasicCamera::update(
-	    force2D || !QSettings().value("debugcamera/debuginheadset").toBool());
+	if(!QSettings().value("debugcamera/debuginheadset").toBool())
+	{
+		BasicCamera::update2D();
+	}
+	else
+	{
+		BasicCamera::update();
+	}
 }
 
 void DebugCamera::renderCamera(BasicCamera const* cam)

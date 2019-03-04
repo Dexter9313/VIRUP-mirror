@@ -16,9 +16,9 @@ std::string GetTrackedDeviceString(vr::IVRSystem* pHmd,
 		return "";
 	}
 
-	char* pchBuffer   = new char[requiredBufferLen];
-	requiredBufferLen = pHmd->GetStringTrackedDeviceProperty(
-	    unDevice, prop, pchBuffer, requiredBufferLen, peError);
+	auto pchBuffer = new char[requiredBufferLen];
+	pHmd->GetStringTrackedDeviceProperty(unDevice, prop, pchBuffer,
+	                                     requiredBufferLen, peError);
 	std::string sResult = pchBuffer;
 	delete[] pchBuffer;
 	return sResult;
@@ -28,11 +28,11 @@ int getAxisId(vr::IVRSystem* vr_pointer, unsigned int deviceId, int axis)
 {
 	// Used to get/store property ids for the xy of the pad and the analog
 	// reading of the trigger
-	for(int i = 0; i < (int) vr::k_unControllerStateAxisCount; i++)
+	for(int i = 0; i < static_cast<int>(vr::k_unControllerStateAxisCount); i++)
 	{
 		int prop = vr_pointer->GetInt32TrackedDeviceProperty(
-		    deviceId,
-		    (vr::ETrackedDeviceProperty)(vr::Prop_Axis0Type_Int32 + i));
+		    deviceId, static_cast<vr::ETrackedDeviceProperty>(
+		                  vr::Prop_Axis0Type_Int32 + i));
 
 		if(prop == axis)
 		{
@@ -51,14 +51,13 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
     , padid(getAxisId(vr_pointer, nDevice, vr::k_eControllerAxis_TrackPad))
     , shaderProgram(GLHandler::newShader("controllers"))
     , mesh(GLHandler::newMesh())
-    , model()
 {
 	std::string render_model_name = GetTrackedDeviceString(
 	    vr_pointer, nDevice, vr::Prop_RenderModelName_String);
 
 	vr::RenderModel_t* model;
 	vr::EVRRenderModelError error;
-	while(1)
+	while(true)
 	{
 		std::cout << "Starting loading render model's model ("
 		          << render_model_name << ")" << std::endl;
@@ -84,7 +83,7 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 	}
 
 	vr::RenderModel_TextureMap_t* rm_texture;
-	while(1)
+	while(true)
 	{
 		std::cout << "Starting loading render model's texture ("
 		          << render_model_name << ")" << std::endl;
@@ -149,18 +148,27 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 
 	for(unsigned int i(0); i < model->unVertexCount; ++i)
 	{
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vPosition.v[0]);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vPosition.v[1]);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vPosition.v[2]);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vNormal.v[0]);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vNormal.v[1]);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vNormal.v[2]);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].rfTextureCoord[0]);
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].rfTextureCoord[1]);
 	}
 
 	for(unsigned int i(0); i < model->unTriangleCount * 3; ++i)
 	{
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		elements.push_back(model->rIndexData[i]);
 	}
 
@@ -196,8 +204,11 @@ void Controller::update(QMatrix4x4 const& model)
 	{
 		return;
 	}
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
 	triggerValue = controllerState.rAxis[triggerid].x;
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
 	padCoords[0] = controllerState.rAxis[padid].x;
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
 	padCoords[1] = controllerState.rAxis[padid].y;
 }
 

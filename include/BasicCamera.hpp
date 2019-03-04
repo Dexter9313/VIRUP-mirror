@@ -52,12 +52,15 @@ class BasicCamera : public QObject
 	QMatrix4x4 hmdScreenToWorldTransform(Side side) const;
 
   public:
-	virtual void update(bool force2D = false);
+	virtual void update();
+	virtual void update2D();
 	void uploadMatrices() const;
 
   protected:
 	VRHandler const* vrHandler;
 	float eyeDistanceFactor;
+
+	void updateClippingPlanes();
 
 	// See TRANSFORMS beyond here
 	static QMatrix4x4 eyeDist(QMatrix4x4 const& matrix,

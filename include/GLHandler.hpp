@@ -81,7 +81,7 @@ class GLHandler : public QObject
 
 	static bool init();
 
-	static GLint defaultRenderTargetFormat;
+	static GLint& defaultRenderTargetFormat();
 
   public slots:
 	static void setPointSize(unsigned int size);
@@ -167,17 +167,17 @@ class GLHandler : public QObject
   private:
 	static GLuint loadShader(QString const& path, GLenum shaderType);
 
-	static QOpenGLFunctions_4_0_Core glf;
+	static QOpenGLFunctions_4_0_Core& glf();
 
 	// object to screen transforms
 	// transform for any world object
-	static QMatrix4x4 fullTransform_;
+	static QMatrix4x4& fullTransform();
 	// transform for any Camera space object (follows Camera)
-	static QMatrix4x4 fullCameraSpaceTransform_;
+	static QMatrix4x4& fullCameraSpaceTransform();
 	// transform for any Tracked space object
-	static QMatrix4x4 fullTrackedSpaceTransform_;
+	static QMatrix4x4& fullTrackedSpaceTransform();
 	// transform for any HMD space object (follows HMD)
-	static QMatrix4x4 fullHmdSpaceTransform_;
+	static QMatrix4x4& fullHmdSpaceTransform();
 };
 
 Q_DECLARE_METATYPE(GLHandler::Mesh)

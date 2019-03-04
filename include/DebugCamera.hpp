@@ -26,7 +26,7 @@ class DebugCamera : public BasicCamera
 	Q_OBJECT
   public:
 	DebugCamera(VRHandler const* vrHandler);
-	virtual void update(bool force2D = false) override;
+	virtual void update() override;
 	void renderCamera(BasicCamera const* cam);
 
   public slots:

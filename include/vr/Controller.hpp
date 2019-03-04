@@ -32,7 +32,7 @@ class Controller : public QObject
 	const int padid;
 
 	QVector2D padCoords;
-	float triggerValue;
+	float triggerValue = 0.f;
 
 	GLHandler::ShaderProgram shaderProgram;
 	GLHandler::Mesh mesh;

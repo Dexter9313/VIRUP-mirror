@@ -11,7 +11,7 @@ AbstractMainWin::AbstractMainWin()
 
 	if(hdr)
 	{
-		GLHandler::defaultRenderTargetFormat = GL_RGBA16F;
+		GLHandler::defaultRenderTargetFormat() = GL_RGBA16F;
 	}
 
 	PythonQtHandler::init();
@@ -242,7 +242,7 @@ void AbstractMainWin::applyPostProcShaderParams(
 
 void AbstractMainWin::reloadPostProcessingTargets()
 {
-	GLHandler::defaultRenderTargetFormat = hdr ? GL_RGBA16F : GL_RGBA;
+	GLHandler::defaultRenderTargetFormat() = hdr ? GL_RGBA16F : GL_RGBA;
 
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
@@ -264,6 +264,7 @@ void AbstractMainWin::initializeGL()
 	// Init VR
 	setVR(QSettings().value("vr/enabled").toBool());
 
+	// NOLINTNEXTLINE(hicpp-no-array-decay)
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
 	         << format().minorVersion() << '\n';
 
@@ -362,11 +363,12 @@ void AbstractMainWin::paintGL()
 	// handle VR events if any
 	if(vrHandler)
 	{
-		VRHandler::Event e;
-		while(vrHandler.pollEvent(&e))
+		auto e = new VRHandler::Event;
+		while(vrHandler.pollEvent(e))
 		{
-			vrEvent(e);
+			vrEvent(*e);
 		}
+		delete e;
 	}
 	// let user update before rendering
 	updateScene(*camera);
@@ -425,8 +427,8 @@ void AbstractMainWin::paintGL()
 			applyPostProcShaderParams(postProcessingPipeline_[i].first,
 			                          postProcessingPipeline_[i].second);
 			GLHandler::postProcess(postProcessingPipeline_[i].second,
-			                       postProcessingTargets[i % 2],
-			                       postProcessingTargets[(i + 1) % 2]);
+			                       postProcessingTargets.at(i % 2),
+			                       postProcessingTargets.at((i + 1) % 2));
 		}
 		// render last one on screen target
 		if(!postProcessingPipeline_.empty())
@@ -435,7 +437,7 @@ void AbstractMainWin::paintGL()
 			applyPostProcShaderParams(postProcessingPipeline_[i].first,
 			                          postProcessingPipeline_[i].second);
 			GLHandler::postProcess(postProcessingPipeline_[i].second,
-			                       postProcessingTargets[i % 2]);
+			                       postProcessingTargets.at(i % 2));
 		}
 	}
 

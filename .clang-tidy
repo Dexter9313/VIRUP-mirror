@@ -1,3 +1,4 @@
+#Based on clang-tidy 6
 ---
 Checks:          "android-cloexec-accept, \
     android-cloexec-accept4, \
@@ -65,7 +66,7 @@ Checks:          "android-cloexec-accept, \
     clang-analyzer-core.uninitialized.CapturedBlockVariable, \
     clang-analyzer-core.uninitialized.UndefReturn, \
     clang-analyzer-cplusplus.NewDelete, \
-    clang-analyzer-cplusplus.NewDeleteLeaks, \
+    #clang-analyzer-cplusplus.NewDeleteLeaks, \ # impossible to suppress if needed
     clang-analyzer-cplusplus.SelfAssignment, \
     clang-analyzer-deadcode.DeadStores, \
     clang-analyzer-llvm.Conventions, \

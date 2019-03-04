@@ -89,7 +89,7 @@ class AbstractMainWin : public QOpenGLWindow
 	bool hdr = QSettings().value("window/hdr").toBool();
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
-	GLHandler::RenderTarget postProcessingTargets[2];
+	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
 };
 
 #endif // ABSTRACTMAINWIN_H

@@ -1,10 +1,5 @@
 #include "MainWin.hpp"
 
-MainWin::MainWin()
-    : AbstractMainWin()
-{
-}
-
 std::vector<float> cubeVertices(uint64_t dt)
 {
 	float dtf = dt / 2000.f;
@@ -21,9 +16,13 @@ std::vector<float> cubeVertices(uint64_t dt)
 	};
 
 	for(unsigned int i(0); i < 24; i += 3)
+	{
 		result[i] *= cos(dtf);
+	}
 	for(unsigned int i(1); i < 24; i += 3)
+	{
 		result[i] *= sin(dtf);
+	}
 
 	return result;
 }
@@ -52,9 +51,13 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 {
 	AbstractMainWin::keyPressEvent(e);
 	if(e->key() == Qt::Key_PageUp)
+	{
 		barrelPower = 1.f + (barrelPower - 1.f) * 1.2f;
+	}
 	else
+	{
 		barrelPower = 1.f + (barrelPower - 1.f) / 1.2f;
+	}
 }
 
 void MainWin::initScene()
@@ -106,9 +109,11 @@ void MainWin::initScene()
 void MainWin::updateScene(BasicCamera& camera)
 {
 	Controller const* cont(vrHandler.getController(Side::LEFT));
-	if(!cont)
+	if(cont == nullptr)
+	{
 		cont = vrHandler.getController(Side::RIGHT);
-	if(cont)
+	}
+	if(cont != nullptr)
 	{
 		if(cont->getTriggerValue() > 0.5)
 		{
@@ -123,7 +128,7 @@ void MainWin::updateScene(BasicCamera& camera)
 	}
 
 	Hand const* leftHand(vrHandler.getHand(Side::LEFT));
-	if(leftHand)
+	if(leftHand != nullptr)
 	{
 		if(leftHand->isClosed())
 		{
@@ -157,7 +162,9 @@ void MainWin::applyPostProcShaderParams(QString const& id,
 {
 	AbstractMainWin::applyPostProcShaderParams(id, shader);
 	if(id == "distort")
+	{
 		GLHandler::setShaderParam(shader, "BarrelPower", barrelPower);
+	}
 }
 
 MainWin::~MainWin()
