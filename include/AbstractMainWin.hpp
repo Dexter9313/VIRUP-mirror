@@ -40,6 +40,9 @@ class AbstractMainWin : public QOpenGLWindow
 	virtual void keyPressEvent(QKeyEvent* e) override;
 	virtual void keyReleaseEvent(QKeyEvent* e) override;
 	virtual void vrEvent(VRHandler::Event const& e);
+
+	virtual void setupPythonAPI();
+
 	// declare drawn resources
 	virtual void initScene() = 0;
 
