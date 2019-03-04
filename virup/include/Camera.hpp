@@ -40,11 +40,9 @@ struct BBox
 
 class Camera : public BasicCamera
 {
+	Q_OBJECT
   public:
 	Camera(VRHandler const* vrHandler);
-	QVector3D getPosition() const { return position; };
-	QVector3D getLookDirection() const { return lookDirection; };
-	QVector3D getUp() const { return up; };
 	virtual void update() override;
 	virtual void update2D() override;
 	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const;
@@ -55,6 +53,27 @@ class Camera : public BasicCamera
 	float targetFPS    = 60.f;
 
 	float currentFrameTiming = 0;
+
+  public slots:
+	QVector3D getPosition() const { return position; };
+	QVector3D getLookDirection() const { return lookDirection; };
+	QVector3D getUp() const { return up; };
+
+	float getAngleAroundZ() const { return angleAroundZ; };
+	void setAngleAroundZ(float angleAroundZ)
+	{
+		this->angleAroundZ = angleAroundZ;
+	};
+	float getAngleAboveXY() const { return angleAboveXY; };
+	void setAngleAboveXY(float angleAboveXY)
+	{
+		this->angleAboveXY = angleAboveXY;
+	};
+	float getDistance() const { return distance; };
+	void setDistance(float distance) { this->distance = distance; };
+	float getTargetFPS() const { return targetFPS; };
+	void setTargetFPS(float targetFPS) { this->targetFPS = targetFPS; };
+	float getCurrentFrameTiming() const { return currentFrameTiming; };
 
   private:
 	QVector3D position      = {1.f, 0.f, 0.f};
