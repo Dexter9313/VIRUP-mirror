@@ -3,9 +3,6 @@
 BasicCamera::BasicCamera(VRHandler const* vrHandler)
     : vrHandler(vrHandler)
     , eyeDistanceFactor(1.0f)
-    , view()
-    , proj()
-    , fullTransform()
 {
 }
 
@@ -32,7 +29,7 @@ void BasicCamera::setPerspectiveProj(float fov, float aspectratio,
 
 void BasicCamera::setEyeDistanceFactor(float eyeDistanceFactor)
 {
-	this->eyeDistanceFactor = eyeDistanceFactor;
+	this->eyeDistanceFactor     = eyeDistanceFactor;
 	eyeDistanceCorrection(0, 0) = eyeDistanceFactor;
 	eyeDistanceCorrection(1, 1) = eyeDistanceFactor;
 	eyeDistanceCorrection(2, 2) = eyeDistanceFactor;
@@ -48,9 +45,9 @@ QVector4D BasicCamera::project(QVector4D const& vertex) const
 	return fullTransform * vertex;
 }
 
-void BasicCamera::update(bool force2D)
+void BasicCamera::update()
 {
-	if(*vrHandler && !force2D)
+	if(*vrHandler)
 	{
 		// proj
 		projLeft = vrHandler->getProjectionMatrix(
@@ -58,11 +55,12 @@ void BasicCamera::update(bool force2D)
 		projRight = vrHandler->getProjectionMatrix(
 		    Side::RIGHT, 0.1f * eyeDistanceFactor, 10000.f * eyeDistanceFactor);
 
-		projLeft = projLeft * eyeDist(vrHandler->getEyeViewMatrix(Side::LEFT),
-		                              eyeDistanceFactor);
-		projRight
-		    = projRight * eyeDist(vrHandler->getEyeViewMatrix(Side::RIGHT),
-		                          eyeDistanceFactor);
+		projLeft = projLeft
+		           * eyeDist(vrHandler->getEyeViewMatrix(Side::LEFT),
+		                     eyeDistanceFactor);
+		projRight = projRight
+		            * eyeDist(vrHandler->getEyeViewMatrix(Side::RIGHT),
+		                      eyeDistanceFactor);
 
 		QMatrix4x4* projEye
 		    = (vrHandler->getCurrentRenderingEye() == Side::LEFT) ? &projLeft
@@ -82,15 +80,34 @@ void BasicCamera::update(bool force2D)
 		hmdScaledToWorld = hmdScaledToWorld.inverted();
 
 		fullCameraSpaceTransform = *projEye * hmdMat;
-	}
-	else
-	{
-		fullTransform             = proj * view;
-		fullCameraSpaceTransform  = proj;
-		fullTrackedSpaceTransform = proj * eyeDistanceCorrection;
-		fullHmdSpaceTransform     = fullTrackedSpaceTransform;
+
+		updateClippingPlanes();
+
+		return;
 	}
 
+	update2D();
+}
+
+void BasicCamera::update2D()
+{
+	fullTransform             = proj * view;
+	fullCameraSpaceTransform  = proj;
+	fullTrackedSpaceTransform = proj * eyeDistanceCorrection;
+	fullHmdSpaceTransform     = fullTrackedSpaceTransform;
+
+	updateClippingPlanes();
+}
+
+void BasicCamera::uploadMatrices() const
+{
+	GLHandler::setUpTransforms(fullTransform, fullCameraSpaceTransform,
+	                           fullTrackedSpaceTransform,
+	                           fullHmdSpaceTransform);
+}
+
+void BasicCamera::updateClippingPlanes()
+{
 	// update clipping planes
 	// Gribb, G., & Hartmann, K. (2001). Fast extraction of viewing frustum
 	// planes from the world-view-projection matrix.
@@ -103,13 +120,6 @@ void BasicCamera::update(bool force2D)
 
 	clippingPlanes[NEAR_PLANE] = fullTransform.row(3) + fullTransform.row(2);
 	clippingPlanes[FAR_PLANE]  = fullTransform.row(3) - fullTransform.row(2);
-}
-
-void BasicCamera::uploadMatrices() const
-{
-	GLHandler::setUpTransforms(fullTransform, fullCameraSpaceTransform,
-	                           fullTrackedSpaceTransform,
-	                           fullHmdSpaceTransform);
 }
 
 QMatrix4x4 BasicCamera::cameraSpaceToWorldTransform() const
@@ -133,9 +143,10 @@ QMatrix4x4 BasicCamera::hmdSpaceToWorldTransform() const
 QMatrix4x4 BasicCamera::hmdScaledSpaceToWorldTransform() const
 {
 	if(*vrHandler)
+	{
 		return hmdScaledToWorld;
-	else
-		return view.inverted();
+	}
+	return view.inverted();
 }
 
 QMatrix4x4 BasicCamera::screenToWorldTransform() const
@@ -146,9 +157,10 @@ QMatrix4x4 BasicCamera::screenToWorldTransform() const
 QMatrix4x4 BasicCamera::hmdScreenToWorldTransform(Side side) const
 {
 	if(side == Side::LEFT)
+	{
 		return hmdScaledToWorld * projLeft.inverted();
-	else
-		return hmdScaledToWorld * projRight.inverted();
+	}
+	return hmdScaledToWorld * projRight.inverted();
 }
 
 QMatrix4x4 BasicCamera::eyeDist(QMatrix4x4 const& matrix,

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2019 Florian Cabot <florian.cabot@epfl.ch>
+    Copyright (C) 2019 Florian Cabot <florian.cabot@hotmail.fr>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,33 +16,15 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef DEBUGCAMERA_H
-#define DEBUGCAMERA_H
+#ifndef TEST_MAIN_H
+#define TEST_MAIN_H
 
-#include "BasicCamera.hpp"
+#include "TestExample.hpp"
 
-class DebugCamera : public BasicCamera
+template <typename Functor>
+void test_main(Functor assert)
 {
-	Q_OBJECT
-  public:
-	DebugCamera(VRHandler const* vrHandler);
-	virtual void update() override;
-	void renderCamera(BasicCamera const* cam);
+	assert(new TestExample());
+}
 
-  public slots:
-	bool isEnabled() const;
-	void setEnabled(bool enabled);
-	void toggle();
-	bool debugInHeadset() const;
-	void setDebugInHeadset(bool debuginheadset);
-	void toggleDebugInHeadset();
-	bool followHMD() const;
-	void setFollowHMD(bool followhmd);
-	void toggleFollowHMD();
-
-  private:
-	GLHandler::Mesh camMesh;
-	GLHandler::ShaderProgram camMeshShader;
-};
-
-#endif // DEBUGCAMERA_H
+#endif // TEST_MAIN_H

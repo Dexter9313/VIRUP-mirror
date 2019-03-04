@@ -25,8 +25,9 @@
 #include "../BasicCamera.hpp"
 #include "../utils.hpp"
 
-class Hand
+class Hand : public QObject
 {
+	Q_OBJECT
   public:
 	Hand(Side side);
 	void invalidate() { _isValid = false; };
@@ -38,12 +39,15 @@ class Hand
 
 	const Side side;
 
+  public slots:
+	Side getSide() const { return side; };
 	bool isValid() const { return _isValid; };
 	bool isFlat() const { return _isFlat; };
 	bool isClosed() const { return _isClosed; };
 	QVector3D palmNormal() const { return _palmNormal; };
 	QVector3D palmPosition() const { return _palmPosition; };
 	QVector3D direction() const { return _direction; };
+
   private:
 	GLHandler::ShaderProgram shaderProgram;
 	GLHandler::Mesh mesh;

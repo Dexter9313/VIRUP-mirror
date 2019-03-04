@@ -12,7 +12,9 @@ int main(int argc, char* argv[])
 {
 #ifdef Q_OS_UNIX
 	if(!QDir("./data/shaders").exists())
+	{
 		chdir((QString("/usr/share/") + PROJECT_NAME).toLocal8Bit().data());
+	}
 #endif
 	// Set config file names for QSettings
 	QCoreApplication::setOrganizationName(PROJECT_NAME);
@@ -25,13 +27,12 @@ int main(int argc, char* argv[])
 		Launcher launcher;
 		launcher.init();
 		if(launcher.exec() == QDialog::Rejected)
+		{
 			return 1;
+		}
 	}
 
 	MainWin w;
-	if(QSettings().value("window/fullscreen").toBool())
-		w.showFullScreen();
-	else
-		w.show();
-	return a.exec();
+	w.setFullscreen(QSettings().value("window/fullscreen").toBool());
+	return QApplication::exec();
 }

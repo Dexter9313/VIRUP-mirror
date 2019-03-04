@@ -1,10 +1,5 @@
 #include "MainWin.hpp"
 
-MainWin::MainWin()
-    : AbstractMainWin()
-{
-}
-
 std::vector<float> cubeVertices(uint64_t dt)
 {
 	float dtf = dt / 2000.f;
@@ -21,9 +16,13 @@ std::vector<float> cubeVertices(uint64_t dt)
 	};
 
 	for(unsigned int i(0); i < 24; i += 3)
-		result[i] *= cos(dtf);
+	{
+		result[i] *= cosf(dtf);
+	}
 	for(unsigned int i(1); i < 24; i += 3)
-		result[i] *= sin(dtf);
+	{
+		result[i] *= sinf(dtf);
+	}
 
 	return result;
 }
@@ -52,9 +51,13 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 {
 	AbstractMainWin::keyPressEvent(e);
 	if(e->key() == Qt::Key_PageUp)
+	{
 		barrelPower = 1.f + (barrelPower - 1.f) * 1.2f;
+	}
 	else
+	{
 		barrelPower = 1.f + (barrelPower - 1.f) / 1.2f;
+	}
 }
 
 void MainWin::initScene()
@@ -63,7 +66,8 @@ void MainWin::initScene()
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	GLHandler::setShaderParam(shaderProgram, "alpha", 1.0f);
-	GLHandler::setShaderParam(shaderProgram, "color", QColor::fromRgbF(1.0f, 0.4f, 0.3f));
+	GLHandler::setShaderParam(shaderProgram, "color",
+	                          QColor::fromRgbF(1.0f, 0.4f, 0.3f));
 
 	std::vector<float> vertices = {
 	    0.5f,  0.5f,  0.0f, // top right
@@ -83,14 +87,16 @@ void MainWin::initScene()
 	// create cube
 	cubeShader = GLHandler::newShader("default");
 	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
-	GLHandler::setShaderParam(cubeShader, "color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
+	GLHandler::setShaderParam(cubeShader, "color",
+	                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	cube = createCube(cubeShader);
 
 	// create points
 	pointsMesh   = GLHandler::newMesh();
 	pointsShader = GLHandler::newShader("default");
 	GLHandler::setShaderParam(pointsShader, "alpha", 1.0f);
-	GLHandler::setShaderParam(pointsShader, "color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
+	GLHandler::setShaderParam(pointsShader, "color",
+	                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	std::vector<float> points = {0, 0, 0};
 	GLHandler::setVertices(pointsMesh, points, pointsShader, {{"position", 3}});
 	cubeTimer.start();
@@ -103,9 +109,11 @@ void MainWin::initScene()
 void MainWin::updateScene(BasicCamera& camera)
 {
 	Controller const* cont(vrHandler.getController(Side::LEFT));
-	if(!cont)
+	if(cont == nullptr)
+	{
 		cont = vrHandler.getController(Side::RIGHT);
-	if(cont)
+	}
+	if(cont != nullptr)
 	{
 		if(cont->getTriggerValue() > 0.5)
 		{
@@ -120,7 +128,7 @@ void MainWin::updateScene(BasicCamera& camera)
 	}
 
 	Hand const* leftHand(vrHandler.getHand(Side::LEFT));
-	if(leftHand)
+	if(leftHand != nullptr)
 	{
 		if(leftHand->isClosed())
 		{
@@ -149,11 +157,14 @@ void MainWin::renderScene(BasicCamera const& camera)
 	GLHandler::render(pointsMesh);
 }
 
-void MainWin::applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const
+void MainWin::applyPostProcShaderParams(QString const& id,
+                                        GLHandler::ShaderProgram shader) const
 {
 	AbstractMainWin::applyPostProcShaderParams(id, shader);
 	if(id == "distort")
+	{
 		GLHandler::setShaderParam(shader, "BarrelPower", barrelPower);
+	}
 }
 
 MainWin::~MainWin()

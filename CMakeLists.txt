@@ -48,6 +48,9 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+#For clang-tidy to use (clang-tidy -p)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 #WARNINGS
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wsuggest-override")
@@ -55,6 +58,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 	endif()
 endif()
+set(unusedVal "${WERROR}")
 
 #Qt options
 if(NOT WIN32)
@@ -70,39 +74,106 @@ add_definitions(-DPROJECT_DIRECTORY="${PROJECT_DIRECTORY}")
 
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
 set(PROJECT_INCLUDES ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/include)
+set(TEST_INCLUDES ${PROJECT_SOURCE_DIR}/test ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/test)
 
-file(GLOB_RECURSE HPP_FILES ${COMMON_INCLUDES}/*.hpp ${PROJECT_INCLUDES}/*.hpp)
-file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/src/*.cpp)
+file(GLOB_RECURSE ENGINE_HPP_FILES ${COMMON_INCLUDES}/*.hpp)
+file(GLOB_RECURSE HPP_FILES ${ENGINE_HPP_FILES} ${PROJECT_INCLUDES}/*.hpp)
+file(GLOB_RECURSE ENGINE_SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE SRC_FILES ${ENGINE_SRC_FILES} ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/src/*.cpp)
+file(GLOB_RECURSE MAIN_FILE ${PROJECT_SOURCE_DIR}/src/main.cpp)
+list(REMOVE_ITEM SRC_FILES ${MAIN_FILE})
+
+file(GLOB_RECURSE ENGINE_TEST_HPP_FILES ${PROJECT_SOURCE_DIR}/test/*.hpp)
+file(GLOB_RECURSE TEST_HPP_FILES ${ENGINE_TEST_HPP_FILES} ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/test/*.hpp)
+file(GLOB_RECURSE ENGINE_TEST_CPP_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
+file(GLOB_RECURSE TEST_SRC_FILES ${ENGINE_TEST_CPP_FILES} ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/test/*.cpp)
+
 
 #DEPENDENCIES
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+#Qt
+find_package(Qt5 COMPONENTS Widgets Test REQUIRED)
+
+#OpenVR
+set(OPENVR_INCLUDE_DIR $ENV{OPENVR_INCLUDE_DIR})
+set(OPENVR_LIBRARY $ENV{OPENVR_LIBRARY})
 if((NOT DEFINED OPENVR_INCLUDE_DIR) OR (NOT DEFINED OPENVR_LIBRARY))
 	find_package(OpenVR REQUIRED)
 endif()
+
+#LeapMotionSDK
+set(LEAPMOTION_INCLUDE_DIR $ENV{LEAPMOTION_INCLUDE_DIR})
+set(LEAPMOTION_LIBRARY $ENV{LEAPMOTION_LIBRARY})
 if((NOT DEFINED LEAPMOTION_INCLUDE_DIR) OR (NOT DEFINED LEAPMOTION_LIBRARY))
 	find_package(LeapMotion)
 else()
 	set(LEAPMOTION_FOUND true)
 endif()
 
+#PythonQt
+set(PYTHONQT_INCLUDE_DIRS $ENV{PYTHONQT_INCLUDE_DIRS})
+set(PYTHONQT_LIBRARIES $ENV{PYTHONQT_LIBRARIES})
+set(PYTHONQT_QTALL_INCLUDE_DIRS $ENV{PYTHONQT_QTALL_INCLUDE_DIRS})
+set(PYTHONQT_QTALL_LIBRARIES $ENV{PYTHONQT_QTALL_LIBRARIES})
+if((NOT DEFINED PYTHONQT_INCLUDE_DIRS) OR (NOT DEFINED PYTHONQT_LIBRARIES))
+	find_package(PythonQt)
+else()
+	set(PYTHONQT_FOUND true)
+endif()
+if((NOT DEFINED PYTHONQT_QTALL_INCLUDE_DIRS) OR (NOT DEFINED PYTHONQT_QTALL_LIBRARIES))
+	find_package(PythonQt_QtAll REQUIRED)
+else()
+	set(PYTHONQT_QTALL_FOUND true)
+endif()
+
+if(PYTHONQT_FOUND)
+	message(STATUS "Found PythonQt : ${PYTHONQT_INCLUDE_DIRS} | ${PYTHONQT_LIBRARIES}")
+else()
+	message(STATUS "PythonQt not found.")
+endif()
+if(PYTHONQT_QTALL_FOUND)
+	message(STATUS "Found PythonQt_All : ${PYTHONQT_QTALL_INCLUDE_DIRS} | ${PYTHONQT_QTALL_LIBRARIES}")
+else()
+	message(STATUS "PythonQt_All not found.")
+endif()
+
+#Python
+if((PYTHONQT_FOUND) OR (PYTHONQT_QTALL_FOUND))
+	find_package(PythonLibs)
+endif()
+
+#Additional
 include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Dependencies.cmake)
 
 #INCLUDE
 
-set(EXTERNAL_LIBS_INCLUDE_DIRS ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR} ${PROJECT_INCLUDE_DIRS})
+set(EXTERNAL_LIBS_INCLUDE_DIRS ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Test_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR} ${PROJECT_INCLUDE_DIRS})
 if(LEAPMOTION_FOUND)
 	add_definitions(-DLEAP_MOTION)
 	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${LEAPMOTION_INCLUDE_DIR})
 endif()
+if(PYTHONQT_FOUND)
+	add_definitions(-DPYTHONQT)
+	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${PYTHONQT_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
+endif()
+if(PYTHONQT_QTALL_FOUND)
+	add_definitions(-DPYTHONQT_QTALL)
+	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${PYTHONQT_QTALL_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
+endif()
 
-include_directories(${COMMON_INCLUDES} ${PROJECT_INCLUDES} SYSTEM ${EXTERNAL_LIBS_INCLUDE_DIRS})
+include_directories(${COMMON_INCLUDES} ${PROJECT_INCLUDES} ${TEST_INCLUDES} SYSTEM ${EXTERNAL_LIBS_INCLUDE_DIRS})
 
 #LINKING SETUP
-	set(LD_LIBS Qt5::Widgets ${OPENVR_LIBRARY} ${PROJECT_LIBRARIES})
+	set(LD_LIBS Qt5::Widgets Qt5::Test ${OPENVR_LIBRARY} ${PROJECT_LIBRARIES})
 if(LEAPMOTION_FOUND)
-	set(LD_LIBS Qt5::Widgets ${LD_LIBS} ${LEAPMOTION_LIBRARY})
+	set(LD_LIBS ${LD_LIBS} ${LEAPMOTION_LIBRARY})
+endif()
+if(PYTHONQT_FOUND)
+	set(LD_LIBS ${LD_LIBS} ${PYTHONQT_LIBRARIES} ${PYTHON_LIBRARIES})
+endif()
+if(PYTHONQT_QTALL_FOUND)
+	set(LD_LIBS ${LD_LIBS} ${PYTHONQT_QTALL_LIBRARIES} ${PYTHON_LIBRARIES})
 endif()
 
 #Find .so in working directory
@@ -118,9 +189,17 @@ ENDIF()
 
 #RUN MOC (FOR QT5)
 qt5_wrap_cpp(MOC_FILES ${HPP_FILES})
+qt5_wrap_cpp(TEST_MOC_FILES ${TEST_HPP_FILES})
+
+#COMMON OBJECTS
+add_library(objects OBJECT ${SRC_FILES} ${MOC_FILES})
+
+#TESTS
+add_executable(tests ${TEST_SRC_FILES} ${TEST_MOC_FILES} $<TARGET_OBJECTS:objects>)
+target_link_libraries(tests ${LD_LIBS})
 
 #EXECUTABLE : PROJECT_NAME
-add_executable(${PROJECT_NAME} ${SRC_FILES} ${MOC_FILES})
+add_executable(${PROJECT_NAME} ${MAIN_FILE} $<TARGET_OBJECTS:objects>)
 target_link_libraries(${PROJECT_NAME} ${LD_LIBS})
 
 
@@ -130,6 +209,12 @@ if(NOT WIN32)
 	INSTALL(FILES ${OPENVR_LIBRARY} DESTINATION lib)
 	if(LEAPMOTION_FOUND)
 		INSTALL(FILES ${LEAPMOTION_LIBRARY} DESTINATION lib)
+	endif()
+	if(PYTHONQT_FOUND)
+		INSTALL(FILES ${PYTHONQT_LIBRARIES} DESTINATION lib)
+	endif()
+	if(PYTHONQT_QTALL_FOUND)
+		INSTALL(FILES ${PYTHONQT_QTALL_LIBRARIES} DESTINATION lib)
 	endif()
 	INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/core DESTINATION share/${PROJECT_NAME}/data)
 	INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/${PROJECT_DIRECTORY} DESTINATION share/${PROJECT_NAME}/data)
@@ -143,35 +228,66 @@ if(NOT WIN32)
 	endif()
 
 	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5:amd64,\
+	libpythonqt-qt5-python3-3:amd64,\
+	libpythonqt-qtall-qt5-python3-3:amd64,\
 	libqt5gui5:amd64,\
 	libqt5core5a:amd64,\
 	libstdc++6:amd64,\
 	libc6:amd64,\
 	libgcc1:amd64,\
-	libc6:amd64,\
-	libc6:amd64,\
-	libc6:amd64,\
-	libc6:amd64,\
+	libpython3.6:amd64,\
+	libqt5svg5:amd64,\
+	libqt5opengl5:amd64,\
+	libqt5printsupport5:amd64,\
+	libqt5multimediawidgets5:amd64,\
+	libqt5quickwidgets5:amd64,\
+	libqt5multimedia5:amd64,\
+	libqt5quick5:amd64,\
+	libqt5sql5:amd64,\
+	libqt5xmlpatterns5,\
+	libqt5qml5:amd64,\
+	libqt5network5:amd64,\
+	libqt5xml5:amd64,\
 	libgl1:amd64,\
 	libpng16-16:amd64,\
 	libharfbuzz0b:amd64,\
 	zlib1g:amd64,\
 	libicu60:amd64,\
-	libicu60:amd64,\
 	libdouble-conversion1:amd64,\
 	libglib2.0-0:amd64,\
+	libexpat1:amd64,\
+	libpulse0:amd64,\
 	libglx0:amd64,\
 	libglvnd0:amd64,\
 	libfreetype6:amd64,\
 	libgraphite2-3:amd64,\
 	libicu60:amd64,\
 	libpcre3:amd64,\
+	libpulse0:amd64,\
+	libdbus-1-3:amd64,\
 	libx11-6:amd64,\
 	libxcb1:amd64,\
+	libsystemd0:amd64,\
+	libwrap0:amd64,\
+	libsndfile1:amd64,\
+	libasyncns0:amd64,\
 	libxau6:amd64,\
 	libxdmcp6:amd64,\
-	libbsd0:amd64,\
-	${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
+	liblzma5:amd64,\
+	liblz4-1:amd64,\
+	libgcrypt20:amd64,\
+	libflac8:amd64,\
+	libogg0:amd64,\
+	libvorbis0a:amd64,\
+	libvorbisenc2:amd64,\
+	libgpg-error0:amd64,\
+	libbsd0:amd64")
+
+	if(NOT "${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}" STREQUAL "")
+		message(STATUS "${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
+		set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
+		message(STATUS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
+	endif()
 
 	INCLUDE(CPack)
 
@@ -183,3 +299,5 @@ if(NOT WIN32)
 			VERBATIM)
 endif()
 
+# Including extra cmake rules
+include(cmake/ClangDevTools.cmake)

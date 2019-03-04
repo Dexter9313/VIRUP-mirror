@@ -7,7 +7,7 @@ class MainWin : public AbstractMainWin
 {
 	Q_OBJECT
   public:
-	MainWin();
+	MainWin() = default;
 	~MainWin();
 
   protected:
@@ -24,7 +24,8 @@ class MainWin : public AbstractMainWin
 	// (no controllers or hands)
 	virtual void renderScene(BasicCamera const& camera) override;
 
-	virtual void applyPostProcShaderParams(QString const& id, GLHandler::ShaderProgram shader) const override;
+	virtual void applyPostProcShaderParams(
+	    QString const& id, GLHandler::ShaderProgram shader) const override;
 
   private:
 	GLHandler::Mesh mesh;

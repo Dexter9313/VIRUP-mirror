@@ -31,12 +31,12 @@ class BaseLauncher : public QDialog
 {
 	Q_OBJECT
   public:
-	BaseLauncher();
+	BaseLauncher() = default;
 	void init();
 
   protected:
 	virtual SettingsWidget* newSettingsWidget();
-	QVBoxLayout* mainLayout;
+	QVBoxLayout* mainLayout = nullptr;
 };
 
 #endif // BASELAUNCHER_H

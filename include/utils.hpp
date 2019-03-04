@@ -12,6 +12,22 @@ enum class Side
 	RIGHT
 };
 
+// To use Side with <PythonQt>
+class PySide : public QObject
+{
+	Q_OBJECT
+  public:
+	enum Side
+	{
+		NONE,
+		LEFT,
+		RIGHT
+	};
+	Q_ENUM(Side);
+};
+Q_DECLARE_METATYPE(int)
+// </PythonQt>
+
 template <typename T>
 inline void append(std::vector<T>& v1, std::vector<T> const& v2);
 
@@ -27,7 +43,7 @@ void append(std::vector<T>& v1, std::vector<T> const& v2)
  *   returns data/core/relativeDataPath
  * else,
  *   returns relativeDataPath
-*/
+ */
 QString getAbsoluteDataPath(QString const& relativeDataPath);
 
 #endif // UTILS_H

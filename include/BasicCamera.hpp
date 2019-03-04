@@ -1,6 +1,8 @@
 #ifndef BASICCAMERA_H
 #define BASICCAMERA_H
 
+#include <QApplication>
+#include <QDesktopWidget>
 #include <QMatrix4x4>
 #include <QVector3D>
 #include <QVector4D>
@@ -9,8 +11,9 @@
 
 class VRHandler;
 
-class BasicCamera
+class BasicCamera : public QObject
 {
+	Q_OBJECT
   protected: // protected typedefs
 	enum ClippingPlane
 	{
@@ -24,6 +27,9 @@ class BasicCamera
 	typedef QVector4D Plane; // Ax+By+Cz+D=0 => [A,B,C,D]
   public:
 	BasicCamera(VRHandler const* vrHandler);
+	virtual ~BasicCamera(){};
+
+  public slots:
 	QMatrix4x4 getView() const { return view; };
 	void setView(QMatrix4x4 const& view) { this->view = view; };
 	void setView(QVector3D const& position, QVector3D const& lookDirection,
@@ -35,23 +41,26 @@ class BasicCamera
 	void setPerspectiveProj(float fov, float aspectratio, float nearPlan = 0.1f,
 	                        float farPlan = 10000.f);
 	float getEyeDistanceFactor() const { return eyeDistanceFactor; };
-	void setEyeDistanceFactor(float EyeDistanceFactor);
+	void setEyeDistanceFactor(float eyeDistanceFactor);
 	QVector4D project(QVector3D const& vertex) const;
 	QVector4D project(QVector4D const& vertex) const;
-	virtual void update(bool force2D = false);
-	void uploadMatrices() const;
 	QMatrix4x4 cameraSpaceToWorldTransform() const;
 	QMatrix4x4 trackedSpaceToWorldTransform() const;
 	QMatrix4x4 hmdSpaceToWorldTransform() const;
 	QMatrix4x4 hmdScaledSpaceToWorldTransform() const;
 	QMatrix4x4 screenToWorldTransform() const;
 	QMatrix4x4 hmdScreenToWorldTransform(Side side) const;
-	virtual ~BasicCamera(){};
+
+  public:
+	virtual void update();
+	virtual void update2D();
+	void uploadMatrices() const;
 
   protected:
-
 	VRHandler const* vrHandler;
 	float eyeDistanceFactor;
+
+	void updateClippingPlanes();
 
 	// See TRANSFORMS beyond here
 	static QMatrix4x4 eyeDist(QMatrix4x4 const& matrix,

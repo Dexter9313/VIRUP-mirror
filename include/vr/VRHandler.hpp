@@ -5,10 +5,12 @@
 #include <Leap.h>
 #endif
 
+#include <array>
 #include <iostream>
 #include <openvr.h>
 
 #include "../GLHandler.hpp"
+#include "../PythonQtHandler.hpp"
 #include "Controller.hpp"
 #include "Hand.hpp"
 
@@ -16,8 +18,9 @@ class BasicCamera;
 class Controller;
 class Hand;
 
-class VRHandler
+class VRHandler : public QObject
 {
+	Q_OBJECT
   public: // public types
 	enum class EventType
 	{
@@ -25,6 +28,7 @@ class VRHandler
 		BUTTON_PRESSED,
 		BUTTON_UNPRESSED
 	};
+	Q_ENUM(EventType)
 
 	enum class Button
 	{
@@ -35,6 +39,7 @@ class VRHandler
 		MENU,
 		SYSTEM
 	};
+	Q_ENUM(Button)
 
 	struct Event
 	{
@@ -47,35 +52,45 @@ class VRHandler
 	VRHandler() = default;
 	explicit operator bool() const { return vr_pointer != nullptr; }
 	bool init();
-	std::pair<unsigned int, unsigned int> getEyeDims() const;
-	QMatrix4x4 getEyeViewMatrix(Side eye) const;
-	QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan = 0.1f,
-	                               float farPlan = 100.0f) const;
-	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
 	const Controller* getController(Side side) const;
 	const Hand* getHand(Side side) const;
-	void resetPos();
 	void prepareRendering();
 	void beginRendering(Side eye, bool postProcessed);
-	Side getCurrentRenderingEye() const { return currentRenderingEye; };
 	void renderControllers() const;
 	void renderHands();
-	GLHandler::RenderTarget& getEyeTarget(Side side) { return side == Side::LEFT ? leftTarget : rightTarget; };
-	GLHandler::RenderTarget& getPostProcessingTarget(unsigned int i) { return postProcessingTargets[i]; };
+	GLHandler::RenderTarget& getEyeTarget(Side side)
+	{
+		return side == Side::LEFT ? leftTarget : rightTarget;
+	};
+	GLHandler::RenderTarget& getPostProcessingTarget(unsigned int i)
+	{
+		return postProcessingTargets[i];
+	};
 	void reloadPostProcessingTargets();
 	void submitRendering(Side eye);
 	void displayOnCompanion(unsigned int companionWidth,
 	                        unsigned int companionHeight) const;
-	float getFrameTiming() const;
 	bool pollEvent(Event* e);
 	void close();
 	~VRHandler();
 
+  public slots:
+	QSize getEyeRenderTargetSize() const;
+	QMatrix4x4 getEyeViewMatrix(Side eye) const;
+	QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan = 0.1f,
+	                               float farPlan = 100.0f) const;
+	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
+	void resetPos();
+	Side getCurrentRenderingEye() const { return currentRenderingEye; };
+	float getFrameTiming() const;
+
   private:
 	vr::IVRSystem* vr_pointer        = nullptr;
 	vr::IVRCompositor* vr_compositor = nullptr;
-	vr::TrackedDevicePose_t tracked_device_pose[vr::k_unMaxTrackedDeviceCount];
-	QMatrix4x4 tracked_device_pose_matrix[vr::k_unMaxTrackedDeviceCount];
+	std::array<vr::TrackedDevicePose_t, vr::k_unMaxTrackedDeviceCount>
+	    tracked_device_pose;
+	std::array<QMatrix4x4, vr::k_unMaxTrackedDeviceCount>
+	    tracked_device_pose_matrix;
 	vr::IVRRenderModels* vr_render_models;
 
 	Controller* leftController  = nullptr;
@@ -102,8 +117,8 @@ class VRHandler
 	{
 		return (eye == Side::LEFT) ? vr::Eye_Left : vr::Eye_Right;
 	};
-	static QMatrix4x4 toQt(const vr::HmdMatrix34_t& matPose);
-	static QMatrix4x4 toQt(const vr::HmdMatrix44_t& matPose);
+	static QMatrix4x4 toQt(const vr::HmdMatrix34_t& matrix);
+	static QMatrix4x4 toQt(const vr::HmdMatrix44_t& matrix);
 	std::string sideToStr(Side side) const
 	{
 		return (side == Side::LEFT) ? "left" : "right";

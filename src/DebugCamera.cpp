@@ -23,7 +23,8 @@ DebugCamera::DebugCamera(VRHandler const* vrHandler)
     , camMesh(GLHandler::newMesh())
     , camMeshShader(GLHandler::newShader("default"))
 {
-	GLHandler::setShaderParam(camMeshShader, "color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+	GLHandler::setShaderParam(camMeshShader, "color",
+	                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 
 	std::vector<float> vertices = {
 	    -1.0f, -1.0f, -1.0f, // 0
@@ -52,31 +53,84 @@ DebugCamera::DebugCamera(VRHandler const* vrHandler)
 	                       elements);
 }
 
-void DebugCamera::update(bool force2D)
+void DebugCamera::update()
 {
 	// act as a 2D camera if we debug from screen only
-	BasicCamera::update(
-	    force2D || !QSettings().value("debugcamera/debuginheadset").toBool());
+	if(!QSettings().value("debugcamera/debuginheadset").toBool())
+	{
+		BasicCamera::update2D();
+	}
+	else
+	{
+		BasicCamera::update();
+	}
 }
 
 void DebugCamera::renderCamera(BasicCamera const* cam)
 {
-	bool followHMD(QSettings().value("debugcamera/followhmd").toBool());
-	if(*vrHandler && followHMD)
+	if(*vrHandler && followHMD())
 	{
-		GLHandler::setShaderParam(camMeshShader, "color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+		GLHandler::setShaderParam(camMeshShader, "color",
+		                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader,
 		                       cam->hmdScreenToWorldTransform(Side::LEFT));
 		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
-		GLHandler::setShaderParam(camMeshShader, "color", QColor::fromRgbF(0.0f, 1.0f, 0.0f));
+		GLHandler::setShaderParam(camMeshShader, "color",
+		                          QColor::fromRgbF(0.0f, 1.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader,
 		                       cam->hmdScreenToWorldTransform(Side::RIGHT));
 		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
 	}
 	else
 	{
-		GLHandler::setShaderParam(camMeshShader, "color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+		GLHandler::setShaderParam(camMeshShader, "color",
+		                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader, cam->screenToWorldTransform());
 		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
 	}
+}
+
+bool DebugCamera::isEnabled() const
+{
+	return QSettings().value("debugcamera/enabled").toBool();
+}
+
+void DebugCamera::setEnabled(bool enabled)
+{
+	QSettings().setValue("debugcamera/enabled", enabled);
+}
+
+void DebugCamera::toggle()
+{
+	setEnabled(!isEnabled());
+}
+
+bool DebugCamera::debugInHeadset() const
+{
+	return QSettings().value("debugcamera/debuginheadset").toBool();
+}
+
+void DebugCamera::setDebugInHeadset(bool debuginheadset)
+{
+	QSettings().setValue("debugcamera/debuginheadset", debuginheadset);
+}
+
+void DebugCamera::toggleDebugInHeadset()
+{
+	setDebugInHeadset(!debugInHeadset());
+}
+
+bool DebugCamera::followHMD() const
+{
+	return QSettings().value("debugcamera/followhmd").toBool();
+}
+
+void DebugCamera::setFollowHMD(bool followhmd)
+{
+	QSettings().setValue("debugcamera/followhmd", followhmd);
+}
+
+void DebugCamera::toggleFollowHMD()
+{
+	setFollowHMD(!followHMD());
 }
