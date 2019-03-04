@@ -31,7 +31,7 @@ int getAxisId(vr::IVRSystem* vr_pointer, unsigned int deviceId, int axis)
 	for(int i = 0; i < static_cast<int>(vr::k_unControllerStateAxisCount); i++)
 	{
 		int prop = vr_pointer->GetInt32TrackedDeviceProperty(
-		    // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+		    // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
 		    deviceId, static_cast<vr::ETrackedDeviceProperty>(
 		                  vr::Prop_Axis0Type_Int32 + i));
 

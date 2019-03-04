@@ -459,7 +459,8 @@ AbstractMainWin::~AbstractMainWin()
 {
 	PythonQtHandler::evalScript(
 	    "if \"cleanUpScene\" in dir():\n\tcleanUpScene()");
-	for(QPair<QString, GLHandler::ShaderProgram> p : postProcessingPipeline_)
+	for(const QPair<QString, GLHandler::ShaderProgram>& p :
+	    postProcessingPipeline_)
 	{
 		GLHandler::deleteShader(p.second);
 	}

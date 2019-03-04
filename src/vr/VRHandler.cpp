@@ -499,6 +499,8 @@ VRHandler::Button VRHandler::getButton(int openvrButton)
 			return Button::MENU;
 		case vr::k_EButton_System:
 			return Button::SYSTEM;
+		default:
+			return Button::NONE;
 	}
 	return Button::NONE;
 }

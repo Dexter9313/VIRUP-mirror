@@ -17,11 +17,11 @@ std::vector<float> cubeVertices(uint64_t dt)
 
 	for(unsigned int i(0); i < 24; i += 3)
 	{
-		result[i] *= cos(dtf);
+		result[i] *= cosf(dtf);
 	}
 	for(unsigned int i(1); i < 24; i += 3)
 	{
-		result[i] *= sin(dtf);
+		result[i] *= sinf(dtf);
 	}
 
 	return result;

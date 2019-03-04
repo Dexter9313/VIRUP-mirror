@@ -1,6 +1,6 @@
 #Based on clang-tidy 7
 ---
-Checks:          'abseil-string-find-startswith, \
+Checks:          "abseil-string-find-startswith, \
     android-cloexec-accept, \
     android-cloexec-accept4, \
     android-cloexec-creat, \
@@ -338,7 +338,7 @@ Checks:          'abseil-string-find-startswith, \
     readability-static-definition-in-anonymous-namespace, \
     readability-string-compare, \
     readability-uniqueptr-delete-release, \
-    zircon-temporary-objects'
+    zircon-temporary-objects"
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
