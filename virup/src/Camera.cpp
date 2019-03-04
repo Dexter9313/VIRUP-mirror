@@ -27,7 +27,7 @@ void Camera::updateView()
 	                2.0f * distance * sinf(angleAroundZ) * cosf(angleAboveXY),
 	                2.0f * distance * sinf(angleAboveXY));
 	lookDirection = (-1.0f * getPosition()).normalized();
-	position += QSettings().value("misc/focuspoint").value<QVector3D>();
+	position += getFocusPoint();
 	setView(position, lookDirection, up);
 	if(*vrHandler)
 	{
@@ -115,6 +115,16 @@ bool Camera::shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const
 		}
 	}
 	return result;
+}
+
+QVector3D Camera::getFocusPoint() const
+{
+	return QSettings().value("misc/focuspoint").value<QVector3D>();
+}
+
+void Camera::setFocusPoint(QVector3D const& focusPoint)
+{
+	QSettings().setValue("misc/focuspoint", focusPoint);
 }
 
 /* Not useful anymore

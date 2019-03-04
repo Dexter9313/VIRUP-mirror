@@ -74,6 +74,8 @@ class Camera : public BasicCamera
 	float getTargetFPS() const { return targetFPS; };
 	void setTargetFPS(float targetFPS) { this->targetFPS = targetFPS; };
 	float getCurrentFrameTiming() const { return currentFrameTiming; };
+	QVector3D getFocusPoint() const;
+	void setFocusPoint(QVector3D const& focusPoint);
 
   private:
 	QVector3D position      = {1.f, 0.f, 0.f};

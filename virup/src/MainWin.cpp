@@ -1,5 +1,16 @@
 #include "MainWin.hpp"
 
+QColor MainWin::getCubeColor() const
+{
+	return QSettings().value("misc/cubecolor").value<QColor>();
+}
+
+void MainWin::setCubeColor(QColor const& color)
+{
+	QSettings().setValue("misc/cubecolor", color);
+	GLHandler::setShaderParam(cubeShader, "color", color);
+}
+
 void MainWin::keyPressEvent(QKeyEvent* e)
 {
 	auto cam(dynamic_cast<Camera*>(&getCamera()));
@@ -239,6 +250,11 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 	}
 
 	AbstractMainWin::vrEvent(e);
+}
+
+void MainWin::setupPythonAPI()
+{
+	PythonQtHandler::addObject("VIRUP", this);
 }
 
 void MainWin::initScene()

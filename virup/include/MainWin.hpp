@@ -17,6 +17,13 @@ class MainWin : public AbstractMainWin
 	MainWin() = default;
 	~MainWin();
 
+  public slots:
+	bool cubeEnabled() const { return showCube; };
+	void setCubeEnabled(bool enabled) { showCube = enabled; };
+	void toggleCube() { setCubeEnabled(!cubeEnabled()); };
+	QColor getCubeColor() const;
+	void setCubeColor(QColor const& color);
+
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
 	virtual void mousePressEvent(QMouseEvent* e) override;
@@ -24,6 +31,8 @@ class MainWin : public AbstractMainWin
 	virtual void mouseMoveEvent(QMouseEvent* e) override;
 	virtual void wheelEvent(QWheelEvent* e) override;
 	virtual void vrEvent(VRHandler::Event const& e) override;
+
+	virtual void setupPythonAPI() override;
 
 	// declare drawn resources
 	virtual void initScene() override;
