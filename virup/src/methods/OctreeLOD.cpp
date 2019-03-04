@@ -61,8 +61,12 @@ void OctreeLOD::unload()
 		dataSize = 0;
 		GLHandler::deleteMesh(mesh);
 		for(Octree* oct : children)
+		{
 			if(oct)
+			{
 				static_cast<OctreeLOD*>(oct)->unload();
+			}
+		}
 		isLoaded = false;
 	}
 }
@@ -71,16 +75,24 @@ void OctreeLOD::setFile(std::istream* file)
 {
 	this->file = file;
 	for(Octree* oct : children)
+	{
 		if(oct)
+		{
 			static_cast<OctreeLOD*>(oct)->setFile(file);
+		}
+	}
 }
 
 bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 {
 	if(usedMem >= memLimit)
+	{
 		return false;
+	}
 	if(lvlToLoad == 0)
+	{
 		readOwnData(*file);
+	}
 	else
 	{
 		for(Octree* oct : children)
@@ -88,7 +100,9 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 			if(oct)
 			{
 				if(!static_cast<OctreeLOD*>(oct)->preloadLevel(lvlToLoad - 1))
+				{
 					return false;
+				}
 			}
 		}
 	}
@@ -123,8 +137,10 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		for(Octree* oct : children)
 		{
 			if(oct)
+			{
 				remaining -= static_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
 				    tanAngle, camera, model, remaining);
+			}
 		}
 		return maxPoints - remaining;
 	}
@@ -138,11 +154,17 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		    GLHandler::setShaderParam(*shaderProgram, "color",
 		                              glm::vec3(1.0f, 1.0f, 1.0f));*/
 		if(!isLeaf() && sqrt(getTotalDataSize() / dataSize) <= 4)
+		{
 			GLHandler::setPointSize(sqrt(getTotalDataSize() / dataSize));
+		}
 		else if(!isLeaf())
+		{
 			GLHandler::setPointSize(4);
+		}
 		else
+		{
 			GLHandler::setPointSize(1);
+		}
 		GLHandler::render(mesh);
 		return dataSize / 3;
 		//}
@@ -171,7 +193,9 @@ float OctreeLOD::currentTanAngle(Camera const& camera,
                                  QMatrix4x4 const& model) const
 {
 	if(camera.shouldBeCulled(bbox, model))
+	{
 		return 0.f;
+	}
 
 	return bbox.diameter * model.constData()[0]
 	       / (model * bbox.mid)

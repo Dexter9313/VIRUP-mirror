@@ -9,13 +9,21 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 {
 	Camera& cam(static_cast<Camera&>(getCamera()));
 	if(e->key() == Qt::Key_Up)
+	{
 		cam.distance /= 1.2;
+	}
 	else if(e->key() == Qt::Key_Down)
+	{
 		cam.distance *= 1.2;
+	}
 	else if(e->key() == Qt::Key_PageUp)
+	{
 		method->setAlpha(method->getAlpha() * 10 / 8);
+	}
 	else if(e->key() == Qt::Key_PageDown)
+	{
 		method->setAlpha(method->getAlpha() * 8 / 10);
+	}
 	else if(e->key() == Qt::Key_Home)
 	{
 		// integralDt    = 0;
@@ -23,14 +31,22 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 		cam.angleAboveXY = 0.f;
 		cam.distance     = 0.01f;
 		if(vrHandler)
+		{
 			vrHandler.resetPos();
+		}
 	}
 	else if(e->key() == Qt::Key_D)
+	{
 		method->showdm = !method->showdm;
+	}
 	else if(e->key() == Qt::Key_C)
+	{
 		showCube = !showCube;
+	}
 	else if(e->key() == Qt::Key_H)
+	{
 		setHDR(!getHDR());
+	}
 
 	AbstractMainWin::keyPressEvent(e);
 }
@@ -38,7 +54,9 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 void MainWin::mousePressEvent(QMouseEvent* e)
 {
 	if(e->button() != Qt::MouseButton::RightButton)
+	{
 		return;
+	}
 
 	lastCursorPos = QCursor::pos();
 	QCursor::setPos(width() / 2, height() / 2);
@@ -51,7 +69,9 @@ void MainWin::mousePressEvent(QMouseEvent* e)
 void MainWin::mouseReleaseEvent(QMouseEvent* e)
 {
 	if(e->button() != Qt::MouseButton::RightButton)
+	{
 		return;
+	}
 
 	trackballEnabled = false;
 	QCursor c(cursor());
@@ -63,7 +83,9 @@ void MainWin::mouseReleaseEvent(QMouseEvent* e)
 void MainWin::mouseMoveEvent(QMouseEvent* e)
 {
 	if(!trackballEnabled)
+	{
 		return;
+	}
 	Camera& cam(static_cast<Camera&>(getCamera()));
 	float dx = static_cast<float>((width() / 2) - e->globalX()) / width();
 	float dy = static_cast<float>((height() / 2) - e->globalY()) / height();
@@ -108,7 +130,9 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						      - cubeTranslation;
 					}
 					else
+					{
 						break;
+					}
 					if(leftGripPressed && rightGripPressed && left && right)
 					{
 						initControllersDistance
@@ -133,7 +157,9 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						   || controllersMidPointInCube.y() > 1
 						   || controllersMidPointInCube.z() < -1
 						   || controllersMidPointInCube.z() > 1)
+						{
 							scaleCenter = cubeTranslation;
+						}
 					}
 					break;
 				}
@@ -153,9 +179,13 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						                              // RIGHT
 						{
 							if(padCoords[0] < 0.0f) // LEFT
+							{
 								method->setAlpha(method->getAlpha() * 8 / 10);
+							}
 							else // RIGHT
+							{
 								method->setAlpha(method->getAlpha() * 10 / 8);
+							}
 						}
 					}
 					break;
@@ -222,22 +252,34 @@ void MainWin::initScene()
 	QString methodStr("");
 
 	if(argc > 1)
+	{
 		methodStr = argv[1];
+	}
 
 	if(methodStr == "--base")
+	{
 		method = new BaseLineMethod();
+	}
 	else if(methodStr == "--basetex")
+	{
 		method = new BaseLineMethodTex();
+	}
 	else if(methodStr == "--treetex")
+	{
 		method = new TreeMethodTex();
+	}
 	else // if(methodStr == "--treelod")
+	{
 		method = new TreeMethodLOD();
+	}
 
 	std::cout << "Method : " << method->getName() << std::endl;
 	std::cout << "Seed : " << seed << std::endl;
 
 	if(argc > 3)
+	{
 		seed = argv[3].toInt();
+	}
 	if(argc > 2)
 	{
 		std::vector<float> vertices[3];
@@ -249,6 +291,7 @@ void MainWin::initScene()
 		method->init(vertices[0], vertices[1], vertices[2]);
 	}
 	else
+	{
 		method->init(
 		    QSettings().value("data/gazfile").toString().toStdString(),
 		    QSettings().value("data/starsfile").toString().toStdString(),
@@ -258,6 +301,7 @@ void MainWin::initScene()
 		              .toString()
 		              .toStdString()
 		        : "");
+	}
 
 	cubeShader = GLHandler::newShader("default");
 	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);

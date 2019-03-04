@@ -36,9 +36,13 @@ void Camera::updateView()
 	position += QSettings().value("misc/focuspoint").value<QVector3D>();
 	setView(position, lookDirection, up);
 	if(*vrHandler)
+	{
 		targetFPS = 90.f; // small margin to avoid frame drops
+	}
 	else
+	{
 		targetFPS = 60.f;
+	}
 }
 
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes/
@@ -97,16 +101,24 @@ bool Camera::shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const
 	{
 		QVector4D pVertex = QVector4D(bbox.minx, bbox.miny, bbox.minz, 1.f);
 		if(clippingPlanes[i].x() >= 0)
+		{
 			pVertex.setX(bbox.maxx);
+		}
 		if(clippingPlanes[i].y() >= 0)
+		{
 			pVertex.setY(bbox.maxy);
+		}
 		if(clippingPlanes[i].z() >= 0)
+		{
 			pVertex.setZ(bbox.maxz);
+		}
 		// p-vertex is conserved by model, because there are no rotations
 		pVertex = model * pVertex;
 		// is the p-vertex outside?
 		if(QVector4D::dotProduct(clippingPlanes[i], pVertex) < 0)
+		{
 			return true;
+		}
 	}
 	return (result);
 }

@@ -100,14 +100,26 @@ void TreeMethodLOD::init(std::string const& gazPath,
 	while(lvlToLoad == 0)
 	{
 		if(gazTree)
+		{
 			if(!gazTree->preloadLevel(lvlToLoad))
+			{
 				break;
+			}
+		}
 		if(starsTree)
+		{
 			if(!starsTree->preloadLevel(lvlToLoad))
+			{
 				break;
+			}
+		}
 		if(darkMatterTree)
+		{
 			if(!darkMatterTree->preloadLevel(lvlToLoad))
+			{
 				break;
+			}
+		}
 		++lvlToLoad;
 	}
 }
@@ -115,12 +127,18 @@ void TreeMethodLOD::init(std::string const& gazPath,
 std::pair<float, std::string> humanReadable(long int bytes)
 {
 	if(bytes < 1024)
+	{
 		return std::pair<float, std::string>(bytes, " bytes");
+	}
 	if(bytes < 1024 * 1024)
+	{
 		return std::pair<float, std::string>(bytes / (float) 1024, " Kib");
+	}
 	if(bytes < 1024 * 1024 * 1024)
+	{
 		return std::pair<float, std::string>(bytes / (float) (1024 * 1024),
 		                                     " Mib");
+	}
 	return std::pair<float, std::string>(bytes / (float) (1024 * 1024 * 1024),
 	                                     " Gib");
 }
@@ -165,20 +183,26 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 	    QSettings().value("data/gazcolor").value<QColor>());
 	unsigned int rendered = 0;
 	if(gazTree)
+	{
 		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, model,
 		                                         1000000000);
+	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
 	    QSettings().value("data/starscolor").value<QColor>());
 	if(starsTree)
+	{
 		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera,
 		                                           model, 1000000000);
+	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
 	    QSettings().value("data/darkmattercolor").value<QColor>());
 	if(darkMatterTree && showdm)
+	{
 		rendered += darkMatterTree->renderAboveTanAngle(currentTanAngle, camera,
 		                                                model, 1000000000);
+	}
 	GLHandler::endTransparent();
 
 	std::pair<float, std::string> h(humanReadable(OctreeLOD::getUsedMem()));
@@ -193,21 +217,27 @@ TreeMethodLOD::~TreeMethodLOD()
 	if(gazTree != nullptr)
 	{
 		if(gazTree->getFile())
+		{
 			delete gazTree->getFile();
+		}
 		delete gazTree;
 	}
 	gazTree = nullptr;
 	if(starsTree != nullptr)
 	{
 		if(starsTree->getFile())
+		{
 			delete starsTree->getFile();
+		}
 		delete starsTree;
 	}
 	starsTree = nullptr;
 	if(darkMatterTree != nullptr)
 	{
 		if(darkMatterTree->getFile())
+		{
 			delete darkMatterTree->getFile();
+		}
 		delete darkMatterTree;
 	}
 	darkMatterTree = nullptr;
