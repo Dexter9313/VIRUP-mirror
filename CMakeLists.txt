@@ -55,10 +55,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wsuggest-override")
 	if(DEFINED WERROR)
-		set(unusedVar "${WERROR}")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 	endif()
 endif()
+set(unusedVal "${WERROR}")
 
 #Qt options
 if(NOT WIN32)
