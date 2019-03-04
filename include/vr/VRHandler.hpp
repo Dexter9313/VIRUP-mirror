@@ -5,6 +5,7 @@
 #include <Leap.h>
 #endif
 
+#include <array>
 #include <iostream>
 #include <openvr.h>
 

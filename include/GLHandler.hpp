@@ -12,6 +12,7 @@
 #include <QVector3D>
 #include <QVector>
 #include <QtMath>
+#include <array>
 
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
