@@ -17,7 +17,6 @@ AbstractMainWin::AbstractMainWin()
 	PythonQtHandler::init();
 	PythonQtHandler::addClass<int>("Side");
 	PythonQtHandler::addObject("Side", new PySide);
-	PythonQtHandler::addObject("HydrogenVR", this);
 	PythonQtHandler::addObject("GLHandler", new GLHandler);
 }
 
@@ -188,6 +187,11 @@ void AbstractMainWin::vrEvent(VRHandler::Event const& e)
 	    + QString::number(static_cast<int>(e.button)) + ")");
 }
 
+void AbstractMainWin::setupPythonAPI()
+{
+	PythonQtHandler::addObject("HydrogenVR", this);
+}
+
 void AbstractMainWin::setCamera(BasicCamera* newCamera)
 {
 	delete camera;
@@ -263,6 +267,8 @@ void AbstractMainWin::initializeGL()
 	GLHandler::init();
 	// Init VR
 	setVR(QSettings().value("vr/enabled").toBool());
+	// Init Python API
+	setupPythonAPI();
 
 	// NOLINTNEXTLINE(hicpp-no-array-decay)
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
