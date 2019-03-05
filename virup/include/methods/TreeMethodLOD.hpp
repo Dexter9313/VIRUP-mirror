@@ -7,6 +7,7 @@
 
 class TreeMethodLOD : public Method
 {
+	Q_OBJECT
   public:
 	TreeMethodLOD();
 	TreeMethodLOD(std::string const& shadersCommonName);
@@ -19,6 +20,7 @@ class TreeMethodLOD : public Method
 	virtual void init(std::string const& gazPath, std::string const& starsPath,
 	                  std::string const& darkMatterPath) override;
 	virtual void render(Camera const& camera, QMatrix4x4 const& model) override;
+	virtual void cleanUp() override;
 	virtual ~TreeMethodLOD();
 
   protected:

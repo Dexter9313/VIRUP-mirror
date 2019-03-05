@@ -5,6 +5,7 @@
 
 class TreeMethodTex : public TreeMethodLOD
 {
+	Q_OBJECT
   public:
 	TreeMethodTex();
 	virtual std::string getName() const override { return "Tree Texture"; };

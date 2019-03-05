@@ -211,7 +211,7 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 	          << "\r" << std::fflush(stdout);
 }
 
-TreeMethodLOD::~TreeMethodLOD()
+void TreeMethodLOD::cleanUp()
 {
 	if(gazTree != nullptr)
 	{
@@ -240,4 +240,9 @@ TreeMethodLOD::~TreeMethodLOD()
 		delete darkMatterTree;
 	}
 	darkMatterTree = nullptr;
+}
+
+TreeMethodLOD::~TreeMethodLOD()
+{
+	cleanUp();
 }

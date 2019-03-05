@@ -12,7 +12,6 @@ BaseLineMethod::BaseLineMethod(std::string const& shadersCommonName)
 BaseLineMethod::BaseLineMethod(std::string const& vertexShaderPath,
                                std::string const& fragmentShaderPath)
     : Method(vertexShaderPath, fragmentShaderPath)
-    , mesh(GLHandler::newMesh())
     , pointSize(1)
 {
 	GLHandler::setShaderParam(shaderProgram, "color",
@@ -23,6 +22,8 @@ void BaseLineMethod::init(std::vector<float> const& gazVertices,
                           std::vector<float> const& starsVertices,
                           std::vector<float> const& darkMatterVertices)
 {
+	cleanUp();
+	mesh = GLHandler::newMesh();
 	std::vector<float> vertices(gazVertices);
 	vertices.insert(vertices.end(), starsVertices.begin(), starsVertices.end());
 	vertices.insert(vertices.end(), darkMatterVertices.begin(),
@@ -36,6 +37,8 @@ void BaseLineMethod::init(std::string const& gazPath,
                           std::string const& starsPath,
                           std::string const& darkMatterPath)
 {
+	cleanUp();
+	mesh = GLHandler::newMesh();
 	std::vector<float> vertices;
 	if(!gazPath.empty())
 	{
@@ -91,7 +94,12 @@ void BaseLineMethod::render(Camera const& camera, QMatrix4x4 const& model)
 	GLHandler::endTransparent();
 }
 
-BaseLineMethod::~BaseLineMethod()
+void BaseLineMethod::cleanUp()
 {
 	GLHandler::deleteMesh(mesh);
+}
+
+BaseLineMethod::~BaseLineMethod()
+{
+	cleanUp();
 }

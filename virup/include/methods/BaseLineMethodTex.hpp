@@ -5,14 +5,17 @@
 
 class BaseLineMethodTex : public BaseLineMethod
 {
+	Q_OBJECT
   public:
 	BaseLineMethodTex();
+	virtual void render(Camera const& camera, QMatrix4x4 const& model) override;
+	~BaseLineMethodTex();
+
+  public slots:
 	virtual std::string getName() const override
 	{
 		return "Base Line Texture";
 	};
-	virtual void render(Camera const& camera, QMatrix4x4 const& model) override;
-	~BaseLineMethodTex();
 
   private:
 	GLHandler::Texture tex;

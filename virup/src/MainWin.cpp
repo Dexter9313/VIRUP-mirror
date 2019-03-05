@@ -43,7 +43,7 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 	}
 	else if(e->key() == Qt::Key_D)
 	{
-		method->showdm = !method->showdm;
+		method->toggleDarkMatter();
 	}
 	else if(e->key() == Qt::Key_C)
 	{
@@ -198,7 +198,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 					break;
 				}
 				case VRHandler::Button::TRIGGER:
-					method->showdm = !method->showdm;
+					method->toggleDarkMatter();
 					break;
 				case VRHandler::Button::MENU:
 					setHDR(!getHDR());
