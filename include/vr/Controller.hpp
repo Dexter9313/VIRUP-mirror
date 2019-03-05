@@ -11,20 +11,23 @@
 class Controller : public QObject
 {
 	Q_OBJECT
+	Q_PROPERTY(Side side READ getSide)
+	Q_PROPERTY(QVector2D padcoords READ getPadCoords)
+	Q_PROPERTY(float triggervalue READ getTriggerValue)
+	Q_PROPERTY(QVector3D position READ getPosition)
+
   public:
 	Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice, Side side);
+	Side getSide() const { return side; };
+	QVector2D getPadCoords() const { return padCoords; };
+	float getTriggerValue() const { return triggerValue; };
+	QVector3D getPosition() const { return QVector3D(model.column(3)); };
 	void update(QMatrix4x4 const& model);
 	void render() const;
 	~Controller();
 
 	const Side side;
 	const unsigned int nDevice;
-
-  public slots:
-	Side getSide() const { return side; };
-	QVector2D getPadCoords() const { return padCoords; };
-	float getTriggerValue() const { return triggerValue; };
-	QVector3D getPosition() const { return QVector3D(model.column(3)); };
 
   private:
 	vr::IVRSystem* const vr_pointer;
