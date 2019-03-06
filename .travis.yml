@@ -89,7 +89,7 @@ cache:
 script:
     - mkdir build ; cd build
     - cmake .. -DTAG=$TRAVIS_TAG -DWERROR=true
-    - make -j
+    - make -j 6
     - ./tests
     - make clang-format
     - if [ "$CXX" == "clang++" ]; then make clang-tidy ; fi
