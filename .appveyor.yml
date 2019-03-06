@@ -61,9 +61,21 @@ after_build:
     - copy %QTPATH%\bin\Qt5Core.dll %RELEASE_DIR%
     - copy %QTPATH%\bin\Qt5Gui.dll %RELEASE_DIR%
     - copy %QTPATH%\bin\Qt5Widgets.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5Svg.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5OpenGL.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5PrintSupport.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5MultimediaWidgets.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5QuickWidgets.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5Multimedia.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5Quick.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5Sql.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5XmlPatterns.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5Qml.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5Network.dll %RELEASE_DIR%
+    - copy %QTPATH%\bin\Qt5Xml.dll %RELEASE_DIR%
     - copy %QTPATH%\plugins\platforms\qwindows.dll %RELEASE_DIR%\platforms
     - copy %OPENVR_SHARED% %RELEASE_DIR%
-    - copy %LEAP_SHARED% %RELEASE_DIR%
+    - copy %LEAPMOTION_SHARED% %RELEASE_DIR%
     - copy %PYTHONQT_SHARED% %RELEASE_DIR%
     - copy %PYTHONQT_QTALL_SHARED% %RELEASE_DIR%
     - mkdir %RELEASE_DIR%\data
