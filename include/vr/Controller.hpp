@@ -8,25 +8,103 @@
 #include "../BasicCamera.hpp"
 #include "../utils.hpp"
 
+/**
+ * @brief Represents a VR controller.
+ *
+ * This class should be only access as a constant reference as it should only be
+ * modified by the @ref VRHandler class.
+ */
 class Controller : public QObject
 {
 	Q_OBJECT
+	/**
+	 * @brief Side of the controller (left or right).
+	 *
+	 * @accessors getSide()
+	 */
 	Q_PROPERTY(Side side READ getSide)
+	/**
+	 * @brief Coordinates of the thumb on the pad.
+	 *
+	 * Exactly (0,0) by default (no finger touches the pad).
+	 * Coordinates range from -1 to 1.
+	 *
+	 * @accessors getPadCoords()
+	 */
 	Q_PROPERTY(QVector2D padcoords READ getPadCoords)
+	/**
+	 * @brief Value of the press on the trigger.
+	 *
+	 * Ranges from 0 (no press) to 1 (full press).
+	 *
+	 * @accessors getTriggerValue()
+	 */
 	Q_PROPERTY(float triggervalue READ getTriggerValue)
+	/**
+	 * @brief Position of the controller in tracked space coordinates.
+	 *
+	 * Multiply the transform given by BasicCamera#trackedSpaceToWorldTransform
+	 * with this position to compute the position of the controller in world
+	 * space coordinates for example.
+	 */
 	Q_PROPERTY(QVector3D position READ getPosition)
 
   public:
+	/**
+	 * @brief Constructs a @ref Controller.
+	 *
+	 * Don't construct a Controller yourself, @ref VRHandler will handle it. Use
+	 * VRHandler#getController instead.
+	 *
+	 * @param vr_pointer The main IVRSystem from OpenVR. Mainly used to get
+	 * information.
+	 * @param nDevice OpenVR's internal device id for this controller.
+	 * @param side Which side is this controller (left or right).
+	 */
 	Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice, Side side);
+	/**
+	 * @getter{side}
+	 */
 	Side getSide() const { return side; };
+	/**
+	 * @getter{padcoords}
+	 */
 	QVector2D getPadCoords() const { return padCoords; };
+	/**
+	 * @getter{triggervalue}
+	 */
 	float getTriggerValue() const { return triggerValue; };
+	/**
+	 * @getter{position}
+	 */
 	QVector3D getPosition() const { return QVector3D(model.column(3)); };
+	/**
+	 * @brief Updates every property of the controller and its internal state.
+	 *
+	 * @ref VRHandler will do it, don't use it yourself.
+	 *
+	 * @param model New model matrix of the controller.
+	 */
 	void update(QMatrix4x4 const& model);
+	/**
+	 * @brief Renders the controller.
+	 */
 	void render() const;
+	/**
+	 * @brief Destroys a @ref Controller instance, freeing its resources.
+	 *
+	 * Don't delete a controller yourself, @ref VRHandler will handle it.
+	 */
 	~Controller();
 
+	/**
+	 * @brief Read-only direct access to the @ref side property.
+	 */
 	const Side side;
+	/**
+	 * @brief Read-only direct access to the OpenVR's internal device id for
+	 * this controller.
+	 */
 	const unsigned int nDevice;
 
   private:

@@ -178,29 +178,30 @@ GLHandler::ShaderProgram GLHandler::newShader(QString const& shadersCommonName)
 	return newShader(shadersCommonName, shadersCommonName, shadersCommonName);
 }
 
-GLHandler::ShaderProgram GLHandler::newShader(QString vertex, QString fragment,
-                                              QString geometry)
+GLHandler::ShaderProgram GLHandler::newShader(QString vertexName,
+                                              QString fragmentName,
+                                              QString geometryName)
 {
 	// ignoring geometry shader for now
-	(void) geometry;
+	(void) geometryName;
 
-	if(!vertex.contains('.'))
+	if(!vertexName.contains('.'))
 	{
-		vertex = "shaders/" + vertex + ".vert";
+		vertexName = "shaders/" + vertexName + ".vert";
 	}
-	if(!fragment.contains('.'))
+	if(!fragmentName.contains('.'))
 	{
-		fragment = "shaders/" + fragment + ".frag";
+		fragmentName = "shaders/" + fragmentName + ".frag";
 	}
 
 	ShaderProgram result;
 
 	// vertex shader
 	GLuint vertexShader
-	    = loadShader(getAbsoluteDataPath(vertex), GL_VERTEX_SHADER);
+	    = loadShader(getAbsoluteDataPath(vertexName), GL_VERTEX_SHADER);
 	// fragment shader
 	GLuint fragmentShader
-	    = loadShader(getAbsoluteDataPath(fragment), GL_FRAGMENT_SHADER);
+	    = loadShader(getAbsoluteDataPath(fragmentName), GL_FRAGMENT_SHADER);
 
 	// program
 	result = glf().glCreateProgram();

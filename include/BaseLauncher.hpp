@@ -27,15 +27,40 @@
 
 #include "SettingsWidget.hpp"
 
+/**
+ * @brief Base class for the program launcher
+ *
+ * By default, will display a @ref SettingsWidget with a LAUNCH and QUIT button.
+ * Inherit from it to customize the launcher, calling your class "Launcher".
+ */
 class BaseLauncher : public QDialog
 {
 	Q_OBJECT
   public:
 	BaseLauncher() = default;
-	void init();
+	/**
+	 * @brief Main Launcher initialization. Override to customize.
+	 */
+	virtual void init();
 
   protected:
+	/**
+	 * @brief Creates a new @ref SettingsWidget.
+	 *
+	 * @warning Qt will take ownership of the returned pointer.
+	 *
+	 * If you inherited from @ref SettingsWidget to add custom settings to it
+	 * (let's say you called your class MySettingsWidget), override this method
+	 * to return <code>new MySettingsWidget(this)</code>.
+	 */
 	virtual SettingsWidget* newSettingsWidget();
+	/**
+	 * @brief Top level layout of the launcher.
+	 *
+	 * Contains first the @ref SettingsWidget, then a QHBoxLayout with both
+	 * LAUNCH and QUIT buttons. Will get initialized when @ref init() is called.
+	 * You can then add your own widgets to it if you want.
+	 */
 	QVBoxLayout* mainLayout = nullptr;
 };
 
