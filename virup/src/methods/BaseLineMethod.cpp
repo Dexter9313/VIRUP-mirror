@@ -18,16 +18,19 @@ BaseLineMethod::BaseLineMethod(std::string const& vertexShaderPath,
 	                          QVector3D(1.0f, 1.0f, 1.0f));
 }
 
-void BaseLineMethod::init(std::vector<float> const& gazVertices,
-                          std::vector<float> const& starsVertices,
-                          std::vector<float> const& darkMatterVertices)
+void BaseLineMethod::init(std::vector<float>& gazVertices,
+                          std::vector<float>& starsVertices,
+                          std::vector<float>& darkMatterVertices)
 {
 	cleanUp();
 	mesh = GLHandler::newMesh();
 	std::vector<float> vertices(gazVertices);
+	gazVertices.clear();
 	vertices.insert(vertices.end(), starsVertices.begin(), starsVertices.end());
+	starsVertices.clear();
 	vertices.insert(vertices.end(), darkMatterVertices.begin(),
 	                darkMatterVertices.end());
+	darkMatterVertices.clear();
 	GLHandler::setVertices(mesh, vertices, shaderProgram, {{"position", 3}});
 	std::cout << "VRAM Loaded with " << vertices.size() * sizeof(vertices[0])
 	          << " bytes worth of data" << std::endl;

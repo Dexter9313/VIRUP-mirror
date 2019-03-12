@@ -30,9 +30,9 @@ TreeMethodLOD::TreeMethodLOD(std::string const& vertexShaderPath,
 	showdm = false;
 }
 
-void TreeMethodLOD::init(std::vector<float> const& gazVertices,
-                         std::vector<float> const& starsVertices,
-                         std::vector<float> const& darkMatterVertices)
+void TreeMethodLOD::init(std::vector<float>& gazVertices,
+                         std::vector<float>& starsVertices,
+                         std::vector<float>& darkMatterVertices)
 {
 	if(!gazVertices.empty() && gazTree == nullptr)
 	{
@@ -62,6 +62,7 @@ void TreeMethodLOD::init(std::string const& gazPath,
 		file->open(gazPath, std::fstream::in | std::fstream::binary);
 		gazTree = new OctreeLOD(shaderProgram);
 		gazTree->init(*file);
+		std::cout << "Header Loaded" << std::endl;
 		gazTree->setFile(file);
 		/*// update bbox
 		gazTree->readBBoxes(*file);*/

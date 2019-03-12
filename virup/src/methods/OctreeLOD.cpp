@@ -27,7 +27,7 @@ OctreeLOD::OctreeLOD(GLHandler::ShaderProgram const& shaderProgram,
 {
 }
 
-void OctreeLOD::init(std::vector<float> data)
+void OctreeLOD::init(std::vector<float>& data)
 {
 	Octree::init(data);
 

@@ -22,9 +22,9 @@ class Method : public QObject
 
   public slots:
 	virtual std::string getName() const = 0;
-	virtual void init(std::vector<float> const& gazVertices,
-	                  std::vector<float> const& starsVertices,
-	                  std::vector<float> const& darkMatterVertices)
+	virtual void init(std::vector<float>& gazVertices,
+	                  std::vector<float>& starsVertices,
+	                  std::vector<float>& darkMatterVertices)
 	    = 0;
 	void init(std::string const& gazPath);
 	void init(std::string const& gazPath, std::string const& starsPath);

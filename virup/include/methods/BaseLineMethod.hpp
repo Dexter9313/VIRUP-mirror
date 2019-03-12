@@ -19,9 +19,9 @@ class BaseLineMethod : public Method
 
   public slots:
 	virtual std::string getName() const override { return "Base Line"; };
-	virtual void init(std::vector<float> const& gazVertices,
-	                  std::vector<float> const& starsVertices,
-	                  std::vector<float> const& darkMatterVertices) override;
+	virtual void init(std::vector<float>& gazVertices,
+	                  std::vector<float>& starsVertices,
+	                  std::vector<float>& darkMatterVertices) override;
 	virtual void init(std::string const& gazPath, std::string const& starsPath,
 	                  std::string const& darkMatterPath) override;
 	virtual void cleanUp() override;
