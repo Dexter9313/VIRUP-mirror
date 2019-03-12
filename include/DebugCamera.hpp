@@ -24,20 +24,24 @@
 class DebugCamera : public BasicCamera
 {
 	Q_OBJECT
+	Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
+	Q_PROPERTY(bool debuginheadset READ debugInHeadset WRITE setDebugInHeadset)
+	Q_PROPERTY(bool followhmd READ followHMD WRITE setFollowHMD)
+
   public:
 	DebugCamera(VRHandler const* vrHandler);
+	bool isEnabled() const;
+	void setEnabled(bool enabled);
+	bool debugInHeadset() const;
+	void setDebugInHeadset(bool debuginheadset);
+	bool followHMD() const;
+	void setFollowHMD(bool followhmd);
 	virtual void update() override;
 	void renderCamera(BasicCamera const* cam);
 
   public slots:
-	bool isEnabled() const;
-	void setEnabled(bool enabled);
 	void toggle();
-	bool debugInHeadset() const;
-	void setDebugInHeadset(bool debuginheadset);
 	void toggleDebugInHeadset();
-	bool followHMD() const;
-	void setFollowHMD(bool followhmd);
 	void toggleFollowHMD();
 
   private:

@@ -17,18 +17,23 @@
 class AbstractMainWin : public QOpenGLWindow
 {
 	Q_OBJECT
+	Q_PROPERTY(bool fullscreen READ isFullscreen WRITE setFullscreen)
+	Q_PROPERTY(bool hdr READ getHDR WRITE setHDR)
+	Q_PROPERTY(bool vr READ vrIsEnabled WRITE setVR)
+
   public:
 	AbstractMainWin();
-	virtual ~AbstractMainWin();
-
-  public slots:
 	bool isFullscreen() const;
 	void setFullscreen(bool fullscreen);
-	void toggleFullscreen();
 	bool getHDR() const { return hdr; };
 	void setHDR(bool hdr);
 	bool vrIsEnabled() const;
 	void setVR(bool vr);
+	virtual ~AbstractMainWin();
+
+  public slots:
+	void toggleFullscreen();
+	void toggleHDR();
 	void toggleVR();
 	void appendPostProcessingShader(QString const& id, QString const& fragment);
 	void insertPostProcessingShader(QString const& id, QString const& fragment,

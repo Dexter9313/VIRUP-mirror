@@ -15,6 +15,20 @@ class VRHandler;
 class BasicCamera : public QObject
 {
 	Q_OBJECT
+	Q_PROPERTY(QMatrix4x4 viewmatrix READ getView WRITE setView)
+	Q_PROPERTY(QMatrix4x4 projectionmatrix READ getProj WRITE setProj)
+	Q_PROPERTY(float eyedistancefactor READ getEyeDistanceFactor WRITE
+	               setEyeDistanceFactor)
+	Q_PROPERTY(
+	    QMatrix4x4 cameraspacetoworldtransform READ cameraSpaceToWorldTransform)
+	Q_PROPERTY(QMatrix4x4 trackedspacetoworldtransform READ
+	               trackedSpaceToWorldTransform)
+	Q_PROPERTY(
+	    QMatrix4x4 hmdspacetoworldtransform READ hmdSpaceToWorldTransform)
+	Q_PROPERTY(QMatrix4x4 hmdscaledspacetoworldtransform READ
+	               hmdScaledSpaceToWorldTransform)
+	Q_PROPERTY(QMatrix4x4 screentoworldtransform READ screenToWorldTransform)
+
   protected: // protected typedefs
 	enum ClippingPlane
 	{
@@ -28,29 +42,29 @@ class BasicCamera : public QObject
 	typedef QVector4D Plane; // Ax+By+Cz+D=0 => [A,B,C,D]
   public:
 	BasicCamera(VRHandler const* vrHandler);
-	virtual ~BasicCamera(){};
-
-  public slots:
 	QMatrix4x4 getView() const { return view; };
 	void setView(QMatrix4x4 const& view) { this->view = view; };
-	void setView(QVector3D const& position, QVector3D const& lookDirection,
-	             QVector3D const& up);
-	void lookAt(QVector3D const& position, QVector3D const& center,
-	            QVector3D const& up);
 	QMatrix4x4 getProj() const { return proj; };
 	void setProj(QMatrix4x4 const& proj) { this->proj = proj; };
-	void setPerspectiveProj(float fov, float aspectratio, float nearPlan = 0.1f,
-	                        float farPlan = 10000.f);
 	float getEyeDistanceFactor() const { return eyeDistanceFactor; };
 	void setEyeDistanceFactor(float eyeDistanceFactor);
-	QVector4D project(QVector3D const& vertex) const;
-	QVector4D project(QVector4D const& vertex) const;
 	QMatrix4x4 cameraSpaceToWorldTransform() const;
 	QMatrix4x4 trackedSpaceToWorldTransform() const;
 	QMatrix4x4 hmdSpaceToWorldTransform() const;
 	QMatrix4x4 hmdScaledSpaceToWorldTransform() const;
 	QMatrix4x4 screenToWorldTransform() const;
+	virtual ~BasicCamera(){};
+
+  public slots:
+	void setView(QVector3D const& position, QVector3D const& lookDirection,
+	             QVector3D const& up);
+	void lookAt(QVector3D const& position, QVector3D const& center,
+	            QVector3D const& up);
+	void setPerspectiveProj(float fov, float aspectratio, float nearPlan = 0.1f,
+	                        float farPlan = 10000.f);
 	QMatrix4x4 hmdScreenToWorldTransform(Side side) const;
+	QVector4D project(QVector3D const& vertex) const;
+	QVector4D project(QVector4D const& vertex) const;
 
   public:
 	virtual void update();

@@ -261,6 +261,11 @@ void AbstractMainWin::setHDR(bool hdr)
 	reloadPostProcessingTargets();
 }
 
+void AbstractMainWin::toggleHDR()
+{
+	setHDR(!getHDR());
+}
+
 void AbstractMainWin::initializeGL()
 {
 	// Init GL

@@ -21,6 +21,11 @@ class Hand;
 class VRHandler : public QObject
 {
 	Q_OBJECT
+	Q_PROPERTY(QSize eyerendertargetsize READ getEyeRenderTargetSize)
+	Q_PROPERTY(QMatrix4x4 hmdposmatrix READ getHMDPosMatrix)
+	Q_PROPERTY(Side currentrenderingeye READ getCurrentRenderingEye)
+	Q_PROPERTY(float frametiming READ getFrameTiming)
+
   public: // public types
 	enum class EventType
 	{
@@ -52,6 +57,10 @@ class VRHandler : public QObject
 	VRHandler() = default;
 	explicit operator bool() const { return vr_pointer != nullptr; }
 	bool init();
+	QSize getEyeRenderTargetSize() const;
+	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
+	Side getCurrentRenderingEye() const { return currentRenderingEye; };
+	float getFrameTiming() const;
 	const Controller* getController(Side side) const;
 	const Hand* getHand(Side side) const;
 	void prepareRendering();
@@ -75,14 +84,10 @@ class VRHandler : public QObject
 	~VRHandler();
 
   public slots:
-	QSize getEyeRenderTargetSize() const;
 	QMatrix4x4 getEyeViewMatrix(Side eye) const;
 	QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan = 0.1f,
 	                               float farPlan = 100.0f) const;
-	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
 	void resetPos();
-	Side getCurrentRenderingEye() const { return currentRenderingEye; };
-	float getFrameTiming() const;
 
   private:
 	vr::IVRSystem* vr_pointer        = nullptr;

@@ -28,8 +28,23 @@
 class Hand : public QObject
 {
 	Q_OBJECT
+	Q_PROPERTY(Side side READ getSide)
+	Q_PROPERTY(bool isvalid READ isValid)
+	Q_PROPERTY(bool isflat READ isFlat)
+	Q_PROPERTY(bool isclosed READ isClosed)
+	Q_PROPERTY(QVector3D palmnormal READ palmNormal)
+	Q_PROPERTY(QVector3D palmposition READ palmPosition)
+	Q_PROPERTY(QVector3D direction READ direction)
+
   public:
 	Hand(Side side);
+	Side getSide() const { return side; };
+	bool isValid() const { return _isValid; };
+	bool isFlat() const { return _isFlat; };
+	bool isClosed() const { return _isClosed; };
+	QVector3D palmNormal() const { return _palmNormal; };
+	QVector3D palmPosition() const { return _palmPosition; };
+	QVector3D direction() const { return _direction; };
 	void invalidate() { _isValid = false; };
 #ifdef LEAP_MOTION
 	void update(Leap::Hand const& hand);
@@ -38,15 +53,6 @@ class Hand : public QObject
 	~Hand();
 
 	const Side side;
-
-  public slots:
-	Side getSide() const { return side; };
-	bool isValid() const { return _isValid; };
-	bool isFlat() const { return _isFlat; };
-	bool isClosed() const { return _isClosed; };
-	QVector3D palmNormal() const { return _palmNormal; };
-	QVector3D palmPosition() const { return _palmPosition; };
-	QVector3D direction() const { return _direction; };
 
   private:
 	GLHandler::ShaderProgram shaderProgram;
