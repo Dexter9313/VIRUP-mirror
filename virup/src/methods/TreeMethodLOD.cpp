@@ -245,5 +245,31 @@ void TreeMethodLOD::cleanUp()
 
 TreeMethodLOD::~TreeMethodLOD()
 {
-	cleanUp();
+	if(gazTree != nullptr)
+	{
+		if(gazTree->getFile() != nullptr)
+		{
+			delete gazTree->getFile();
+		}
+		delete gazTree;
+	}
+	gazTree = nullptr;
+	if(starsTree != nullptr)
+	{
+		if(starsTree->getFile() != nullptr)
+		{
+			delete starsTree->getFile();
+		}
+		delete starsTree;
+	}
+	starsTree = nullptr;
+	if(darkMatterTree != nullptr)
+	{
+		if(darkMatterTree->getFile() != nullptr)
+		{
+			delete darkMatterTree->getFile();
+		}
+		delete darkMatterTree;
+	}
+	darkMatterTree = nullptr;
 }

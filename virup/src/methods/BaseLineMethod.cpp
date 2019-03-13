@@ -104,5 +104,5 @@ void BaseLineMethod::cleanUp()
 
 BaseLineMethod::~BaseLineMethod()
 {
-	cleanUp();
+	GLHandler::deleteMesh(mesh);
 }

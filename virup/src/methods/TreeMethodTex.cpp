@@ -20,6 +20,5 @@ void TreeMethodTex::render(Camera const& camera, QMatrix4x4 const& model)
 
 TreeMethodTex::~TreeMethodTex()
 {
-	cleanUp();
 	GLHandler::deleteTexture(tex);
 }
