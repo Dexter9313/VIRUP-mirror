@@ -126,7 +126,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 {
 	if(camera.shouldBeCulled(bbox, model) && lvl > 0)
 	{
-		if(usedMem() > (memLimit() * 80) / 100)
+		if(usedMem() > /*(*/ memLimit() /** 80) / 100*/)
 		{
 			unload();
 		}
@@ -135,14 +135,14 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 
 	if(!isLoaded)
 	{
-		if(usedMem() < memLimit())
-		{
-			readOwnData(*file);
-		}
+		/*if(usedMem() < memLimit())
+		{*/
+		readOwnData(*file);
+		/*}
 		else
 		{
-			return 0;
-		}
+		    return 0;
+		}*/
 	}
 
 	if(currentTanAngle(camera, model) > tanAngle && !isLeaf())
