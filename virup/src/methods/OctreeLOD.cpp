@@ -58,7 +58,8 @@ void OctreeLOD::readOwnData(std::istream& in)
 	GLHandler::setVertices(mesh, data, *shaderProgram, {{"position", 3}});
 	dataSize = data.size();
 	usedMem() += dataSize * sizeof(float);
-	this->data.clear();
+	data.resize(0);
+	data.shrink_to_fit();
 	isLoaded = true;
 }
 
@@ -125,18 +126,23 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 {
 	if(camera.shouldBeCulled(bbox, model) && lvl > 0)
 	{
-		// if(usedMem() > (memLimit() - (int64_t) (10 * 16000 * 3 *
-		// sizeof(float))))
-		// unload();
+		if(usedMem() > (memLimit() * 80) / 100)
+		{
+			unload();
+		}
 		return 0;
 	}
 
 	if(!isLoaded)
 	{
-		// if(usedMem() < memLimit())
-		readOwnData(*file);
-		// else
-		//	return 0;
+		if(usedMem() < memLimit())
+		{
+			readOwnData(*file);
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	if(currentTanAngle(camera, model) > tanAngle && !isLeaf())

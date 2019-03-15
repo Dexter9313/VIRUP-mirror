@@ -64,9 +64,9 @@ void TreeMethodLOD::init(std::string const& gazPath,
 		gazTree->init(*file);
 		std::cout << "Header Loaded" << std::endl;
 		gazTree->setFile(file);
-		/*// update bbox
-		gazTree->readBBoxes(*file);*/
-		gazTree->readData(*file);
+		// update bbox
+		gazTree->readBBoxes(*file);
+		// gazTree->readData(*file);
 		std::cout << "Gaz loaded..." << std::endl;
 	}
 	if(!starsPath.empty() && starsTree == nullptr)
@@ -77,9 +77,9 @@ void TreeMethodLOD::init(std::string const& gazPath,
 		starsTree = new OctreeLOD(shaderProgram);
 		starsTree->init(*file);
 		starsTree->setFile(file);
-		/*// update bbox
-		starsTree->readBBoxes(*file);*/
-		starsTree->readData(*file);
+		// update bbox
+		starsTree->readBBoxes(*file);
+		// starsTree->readData(*file);
 		std::cout << "Stars loaded..." << std::endl;
 	}
 	if(!darkMatterPath.empty() && darkMatterTree == nullptr)
@@ -90,15 +90,15 @@ void TreeMethodLOD::init(std::string const& gazPath,
 		darkMatterTree = new OctreeLOD(shaderProgram);
 		darkMatterTree->init(*file);
 		darkMatterTree->setFile(file);
-		/*// update bbox
-		darkMatterTree->readBBoxes(*file);*/
-		darkMatterTree->readData(*file);
+		// update bbox
+		darkMatterTree->readBBoxes(*file);
+		// darkMatterTree->readData(*file);
 		std::cout << "Dark matter loaded..." << std::endl;
 	}
 
 	// preload data to fill VRAM giving priority to top levels
 	unsigned int lvlToLoad(0);
-	while(lvlToLoad == 0)
+	while(lvlToLoad < 10)
 	{
 		if(gazTree != nullptr)
 		{
