@@ -159,7 +159,8 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		}
 		return maxPoints - remaining;
 	}
-	else if(!isLeaf() && usedMem() > (memLimit() * 80) / 100)
+
+	if(!isLeaf() && usedMem() > (memLimit() * 80) / 100)
 	{
 		// unload children
 		for(Octree* oct : children)
