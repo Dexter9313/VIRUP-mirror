@@ -126,7 +126,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 {
 	if(camera.shouldBeCulled(bbox, model) && lvl > 0)
 	{
-		if(usedMem() > /*(*/ memLimit() /** 80) / 100*/)
+		if(usedMem() > (memLimit() * 80) / 100)
 		{
 			unload();
 		}
@@ -158,6 +158,17 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 			}
 		}
 		return maxPoints - remaining;
+	}
+	else if(!isLeaf() && usedMem() > (memLimit() * 80) / 100)
+	{
+		// unload children
+		for(Octree* oct : children)
+		{
+			if(oct != nullptr)
+			{
+				dynamic_cast<OctreeLOD*>(oct)->unload();
+			}
+		}
 	}
 
 	if(dataSize / 3 <= maxPoints)
