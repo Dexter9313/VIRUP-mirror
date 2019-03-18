@@ -52,8 +52,6 @@ void OctreeLOD::readOwnData(std::istream& in)
 {
 	Octree::readOwnData(in);
 
-	computeBBox();
-
 	mesh = GLHandler::newMesh();
 	GLHandler::setVertices(mesh, data, *shaderProgram, {{"position", 3}});
 	dataSize = data.size();
@@ -61,6 +59,12 @@ void OctreeLOD::readOwnData(std::istream& in)
 	data.resize(0);
 	data.shrink_to_fit();
 	isLoaded = true;
+}
+
+void OctreeLOD::readBBox(std::istream& in)
+{
+	Octree::readBBox(in);
+	computeBBox();
 }
 
 void OctreeLOD::unload()
