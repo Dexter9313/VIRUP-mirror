@@ -185,20 +185,21 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		{
 		    GLHandler::setShaderParam(*shaderProgram, "color",
 		                              glm::vec3(1.0f, 1.0f, 1.0f));*/
-		if(!isLeaf()
-		   && sqrt(static_cast<double>(getTotalDataSize()) / dataSize) <= 4.0)
+
+		/*if(!isLeaf())
+		   //&& sqrt(static_cast<double>(getTotalDataSize()) / dataSize) <= 4.0)
 		{
-			GLHandler::setPointSize(static_cast<unsigned int>(
-			    sqrt(static_cast<double>(getTotalDataSize()) / dataSize)));
+		    GLHandler::setPointSize(static_cast<unsigned int>(
+		        sqrt(static_cast<double>(getTotalDataSize()) / dataSize)));
 		}
 		else if(!isLeaf())
 		{
-			GLHandler::setPointSize(4);
+		    GLHandler::setPointSize(4);
 		}
 		else
 		{
-			GLHandler::setPointSize(1);
-		}
+		    GLHandler::setPointSize(1);
+		}*/
 		GLHandler::render(mesh);
 		return dataSize / 3;
 		//}
