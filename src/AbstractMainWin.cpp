@@ -254,7 +254,9 @@ void AbstractMainWin::reloadPostProcessingTargets()
 	postProcessingTargets[1] = GLHandler::newRenderTarget(width(), height());
 
 	if(vrHandler)
+	{
 		vrHandler.reloadPostProcessingTargets();
+	}
 }
 
 void AbstractMainWin::setHDR(bool hdr)
