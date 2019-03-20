@@ -4,12 +4,6 @@ from PythonQt.QtCore import Qt
 import math
 from time import time
 
-global mesh
-global shader
-global angle
-global t
-global t0
-
 def initScene():
     global mesh
     global shader
