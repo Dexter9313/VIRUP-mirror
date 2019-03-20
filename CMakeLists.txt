@@ -301,3 +301,4 @@ endif()
 
 # Including extra cmake rules
 include(cmake/ClangDevTools.cmake)
+include(cmake/Doc.cmake)

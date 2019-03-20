@@ -40,7 +40,7 @@ class SettingsWidget : public QTabWidget
 {
 	Q_OBJECT
   public:
-	SettingsWidget(QWidget* parent = nullptr);
+	explicit SettingsWidget(QWidget* parent = nullptr);
 	~SettingsWidget() = default;
 
   protected:

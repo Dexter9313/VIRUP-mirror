@@ -1,6 +1,5 @@
 from PythonQt.QtGui import QVector3D
 from PythonQt.QtGui import QColor
-from PythonQt.QtGui import QKeyEvent
 from PythonQt.QtCore import Qt
 import math
 from time import time
@@ -51,8 +50,8 @@ def cleanUpScene():
     GLHandler.deleteMesh(mesh)
     GLHandler.deleteShader(shader)
 
-def applyPostProcShaderParams(id, shader):
-    if id == "py":
+def applyPostProcShaderParams(ppid, shader):
+    if ppid == "py":
         GLHandler.setShaderParam(shader, "lum", 0.5)
 
 def keyPressEvent(e):
@@ -63,7 +62,7 @@ def keyReleaseEvent(e):
     if e.key() == Qt.Key_A:
         print("A was released !")
 
-def vrEvent(type, side, button):
-    if type == VRHandler.BUTTON_PRESSED and side == Side.LEFT and button == VRHandler.MENU:
+def vrEvent(etype, side, button):
+    if etype == VRHandler.BUTTON_PRESSED and side == Side.LEFT and button == VRHandler.MENU:
         print("Left menu button was pressed ! Its position is :")
         print(leftController.getPosition())

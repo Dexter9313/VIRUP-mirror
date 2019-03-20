@@ -30,6 +30,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
+#include <QVariant>
 
 class PythonQtHandler
 {

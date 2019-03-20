@@ -2,6 +2,7 @@
 #define MAINWIN_H
 
 #include "AbstractMainWin.hpp"
+#include "Primitives.hpp"
 
 class MainWin : public AbstractMainWin
 {
@@ -37,6 +38,9 @@ class MainWin : public AbstractMainWin
 	GLHandler::Mesh cube;
 	GLHandler::ShaderProgram cubeShader;
 	QElapsedTimer cubeTimer;
+
+	GLHandler::Mesh sphere;
+	GLHandler::ShaderProgram sphereShader;
 
 	float barrelPower = 1.01f;
 };
