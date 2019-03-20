@@ -22,26 +22,25 @@ Then any time you want to update :
 
 Don't rebase anything from source if you want to be able to pull.
 
-
 For initial setup, make sure you :
 
-* Write your own README.md (see bellow for informations to put in it)
-* Change variables in build.conf
-* If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
-* Create a project directory. We will call it "projectdir" in this README but you can name it whatever you want as long as build.conf is set accordingly. All your source code should be within your project directory. Don't change anything at root level unless specified as safe here, unless you want engine update problems (see data/ and example/ directories for an example project).
-* Create a MainWin class in projectdir/include/MainWin.hpp that inherits from AbstractMainWin to draw. It can do nothing if you don't want to do anything (you only have to implement the pure virtual methods, but you can make them do nothing).
-* Create a Launcher class in projectdir/include/Launcher.hpp that inherits from BaseLauncher to instanciate a Launcher. It can do nothing if you don't want to do anything.
-* Don't write a main() function, HydrogenVR already provides one.
-* Don't remove the examples, they are light and won't be included within your project packages. This is to ensure you can update HydrogenVR without any problem.
+  * Write your own README.md (see bellow for informations to put in it)
+  * Change variables in build.conf
+  * If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
+  * Create a project directory. We will call it "projectdir" in this README but you can name it whatever you want as long as build.conf is set accordingly. All your source code should be within your project directory. Don't change anything at root level unless specified as safe here, unless you want engine update problems (see data/ and example/ directories for an example project).
+  * Create a MainWin class in projectdir/include/MainWin.hpp that inherits from AbstractMainWin to draw. It can do nothing if you don't want to do anything (you only have to implement the pure virtual methods, but you can make them do nothing).
+  * Create a Launcher class in projectdir/include/Launcher.hpp that inherits from BaseLauncher to instanciate a Launcher. It can do nothing if you don't want to do anything.
+  * Don't write a main() function, HydrogenVR already provides one.
+  * Don't remove the examples, they are light and won't be included within your project packages. This is to ensure you can update HydrogenVR without any problem.
 
 You can also :
-* Add CMake dependencies in projectdir/cmake/Dependencies.cmake
-* Add files to install with CMake install() in projectdir/cmake/Install.cmake
-* Add a custom install script for Travis CI as projectdir/ci/travis/install.sh
-* Add a custom install script for Appveyor as projectdir/ci/appveyor/install.bat
-* Add files to the final archive via a script for Appveyor as projectdir/ci/appveyor/before_archive.bat
-* Add settings to the SettingsWidget constructor.
-* Add assets to your data/projectdir directory. The working directory will always contain data/ (so you can always reach data relatively from this path; ex : "data/core/shaders/default.vert" is a valid path). The last example is what is called an "absolute data path" because you need to provide the "data/core" prefix to reach the data (if it is in data/core). The preferred way of accessing data is by using the utils.hpp:getAbsoluteDataPath() function and provide a "relative data path" to it (for last example it would have been "shaders/default.vert"). The function will figure in which data/ subdirectory is your data file and give back an "absolute data path" (for last example : "data/core/shaders/default.vert"). Your subdirectory has priority over core/, so you can override core/ data files by providing other versions in your data/projectdir. The data directory will automatically be packaged with your project releases (only the relevant subdirs).
+  * Add CMake dependencies in projectdir/cmake/Dependencies.cmake
+  * Add files to install with CMake install() in projectdir/cmake/Install.cmake
+  * Add a custom install script for Travis CI as projectdir/ci/travis/install.sh
+  * Add a custom install script for Appveyor as projectdir/ci/appveyor/install.bat
+  * Add files to the final archive via a script for Appveyor as projectdir/ci/appveyor/before_archive.bat
+  * Add settings to the SettingsWidget constructor.
+  * Add assets to your data/projectdir directory. The working directory will always contain data/ (so you can always reach data relatively from this path; ex : "data/core/shaders/default.vert" is a valid path). The last example is what is called an "absolute data path" because you need to provide the "data/core" prefix to reach the data (if it is in data/core). The preferred way of accessing data is by using the utils.hpp:getAbsoluteDataPath() function and provide a "relative data path" to it (for last example it would have been "shaders/default.vert"). The function will figure in which data/ subdirectory is your data file and give back an "absolute data path" (for last example : "data/core/shaders/default.vert"). Your subdirectory has priority over core/, so you can override core/ data files by providing other versions in your data/projectdir. The data directory will automatically be packaged with your project releases (only the relevant subdirs).
 
 The project name defined in build.conf as PROJECT_NAME is accessible in C++ code as the PROJECT_NAME macro, and so is PROJECT_DIRECTORY. They are C-style string constants.
 
@@ -51,21 +50,20 @@ All used classes starting with Q (ex: QSettings) belong to the Qt framework. The
 
 You can see releases for Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [HydrogenVR Releases](https://github.com/Dexter9313/HydrogenVR-mirror/releases).
 
-
-# Example of things that should be in your README
+## Example of things that should be in your README
 
 Put build status on top.
 
-## Installation and requirements
+### Installation and requirements
 
-### Microsoft Windows
+#### Microsoft Windows
 
 Simply run the HydrogenVR-VERSION-windows-ARCH_setup.exe setup wizard, where VERSION is the desired version and ARCH your system architecture.
 
 If you want to run HydrogenVR from a portable zip archive instead, you will need to manually install this (if you don't have it on your system already) :
-* [Microsoft Visual C++ 2015](https://www.microsoft.com/en-US/download/details.aspx?id=48145) (zip installation only; it is shipped with the setup wizard)
+  * [Microsoft Visual C++ 2015](https://www.microsoft.com/en-US/download/details.aspx?id=48145) (zip installation only; it is shipped with the setup wizard)
 
-### GNU/Linux binaries
+#### GNU/Linux binaries
 
 You will need the following requirements :
 * OpenGL
@@ -73,16 +71,15 @@ You will need the following requirements :
 
 You can then install the DEB package you want from the Releases page or use the portable zip version.
 
-### GNU/Linux building from source
+#### GNU/Linux building from source
 
 You will need the following requirements :
-* A C++ compiler (g++ for example)
-* CMake
-* OpenGL dev
-* Qt Core and Gui (qtbase5-dev packages on Ubuntu)
-* [OpenVR](https://github.com/ValveSoftware/openvr)
-* (Optional) [Leap Motion SDK 2.3.1](https://developer.leapmotion.com/sdk/v2)
-
+  * A C++ compiler (g++ for example)
+  * CMake
+  * OpenGL dev
+  * Qt Core and Gui (qtbase5-dev packages on Ubuntu)
+  * [OpenVR](https://github.com/ValveSoftware/openvr)
+  * (Optional) [Leap Motion SDK 2.3.1](https://developer.leapmotion.com/sdk/v2)
 
 Then clone this repository. We now suppose the root directory of the repository is stored in the $HydrogenVR_ROOT_DIR variable.
 
@@ -97,9 +94,9 @@ Optionally, you can generate a deb package to make installation managing easier 
         ./build-linux.sh package
         sudo dpkg -i ./build/*.deb
 
-## Usage
+### Usage
 
-## Uninstall
+### Uninstall
 
 If the deb method for installation was used :
 
