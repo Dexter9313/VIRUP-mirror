@@ -144,13 +144,13 @@ GLHandler::Mesh Primitives::newUnitSphere(
 	{
 		float lat = (static_cast<float>(i + 1) / (latDivisions + 1)) * M_PI;
 
-		float cosLat(cos(lat)), sinLat(sin(lat));
+		float cosLat(std::cos(lat)), sinLat(std::sin(lat));
 
 		for(unsigned int j(0); j < lonDivisions; ++j)
 		{
 			float lon = 2 * M_PI * static_cast<float>(j) / lonDivisions;
-			vertices.push_back(sinLat * cos(lon));
-			vertices.push_back(sinLat * sin(lon));
+			vertices.push_back(sinLat * std::cos(lon));
+			vertices.push_back(sinLat * std::sin(lon));
 			vertices.push_back(cosLat);
 
 			// elements
@@ -158,7 +158,9 @@ GLHandler::Mesh Primitives::newUnitSphere(
 			{
 				// don't do anything on first latitude
 				if(i == 0)
+				{
 					continue;
+				}
 
 				if(j != lonDivisions - 1) // if not last point
 				{
