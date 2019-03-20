@@ -456,6 +456,50 @@ GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 	return tex;
 }
 
+GLHandler::Texture GLHandler::newTexture(unsigned int width, const GLvoid* data,
+                                         bool sRGB)
+{
+	Texture tex;
+	glf().glGenTextures(1, &tex);
+	// glActiveTexture(GL_TEXTURE0);
+	glf().glBindTexture(GL_TEXTURE_1D, tex);
+	glf().glTexImage1D(GL_TEXTURE_1D, 0, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA,
+	                   width, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	// glGenerateMipmap(GL_TEXTURE_2D);
+	glf().glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glf().glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glf().glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	/*GLfloat fLargest;
+	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
+	glf().glBindTexture(GL_TEXTURE_1D, 0);
+
+	return tex;
+}
+
+GLHandler::Texture GLHandler::newTexture(unsigned int width,
+                                         const unsigned char* red,
+                                         const unsigned char* green,
+                                         const unsigned char* blue,
+                                         const unsigned char* alpha, bool sRGB)
+{
+	auto image = new GLubyte[width * 4];
+	for(unsigned int i(0); i < width; ++i)
+	{
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		image[4 * i] = red[i];
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		image[4 * i + 1] = green[i];
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		image[4 * i + 2] = blue[i];
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		image[4 * i + 3] = alpha != nullptr ? alpha[i] : 255;
+	}
+	Texture tex = newTexture(width, image, sRGB);
+	delete[] image;
+	return tex;
+}
+
 GLHandler::Texture GLHandler::newTexture(unsigned int width,
                                          unsigned int height,
                                          const GLvoid* data, bool sRGB)

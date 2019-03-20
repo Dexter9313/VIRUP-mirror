@@ -543,6 +543,13 @@ class GLHandler : public QObject
 
 	// TEXTURES
 	static Texture newTexture(const char* texturePath, bool sRGB = true);
+	static Texture newTexture(unsigned int width, const GLvoid* data,
+	                          bool sRGB = true);
+	static Texture newTexture(unsigned int width, const unsigned char* red,
+	                          const unsigned char* green,
+	                          const unsigned char* blue,
+	                          const unsigned char* alpha = nullptr,
+	                          bool sRGB                  = true);
 	static Texture newTexture(unsigned int width, unsigned int height,
 	                          const GLvoid* data, bool sRGB = true);
 	static void useTextures(std::vector<Texture> const& textures);
