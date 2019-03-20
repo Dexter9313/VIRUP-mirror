@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/Dexter9313/HydrogenVR-mirror.svg?branch=master)](https://travis-ci.org/Dexter9313/HydrogenVR-mirror)
 [![Build status](https://ci.appveyor.com/api/projects/status/i44acm08ah869xdg/branch/master?svg=true)](https://ci.appveyor.com/project/Dexter9313/hydrogenvr-mirror/branch/master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b6520a9f88a14fa3b8aa9c23ac4411c3)](https://www.codacy.com/app/Dexter9313/HydrogenVR-mirror?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Dexter9313/HydrogenVR-mirror&amp;utm_campaign=Badge_Grade)
 
 # HydrogenVR
 
