@@ -9,6 +9,7 @@
 #include <QOpenGLFunctions_4_0_Core>
 #include <QSettings>
 #include <QString>
+#include <QVector2D>
 #include <QVector3D>
 #include <QVector>
 #include <QtMath>
