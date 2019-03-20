@@ -57,6 +57,19 @@ class GLHandler : public QObject
 		unsigned int eboSize;
 	};
 	/**
+	 * @brief Opaque class that represents a Texture. Use the texture related
+	 * methods to handle it.
+	 *
+	 * A GLHandler#Texture represents a texture as it sits on the GPU and
+	 * is manipulated by OpenGL API calls, they are not CPU arrays of data.
+	 */
+	class Texture
+	{
+		friend GLHandler;
+		GLuint glTexture;
+		GLenum glTarget;
+	};
+	/**
 	 * @brief Mostly opaque class that represents a render target. Use the
 	 * render target related methods to handle it.
 	 *
@@ -111,14 +124,6 @@ class GLHandler : public QObject
 		RenderTarget& operator=(RenderTarget const&) = default;
 	};
 
-	/**
-	 * @brief Opaque type that represents a Texture. Use the texture related
-	 * methods to handle it.
-	 *
-	 * A GLHandler#Texture represents a texture as it sits on the GPU and
-	 * is manipulated by OpenGL API calls, they are not CPU arrays of data.
-	 */
-	typedef GLuint Texture;
 	/**
 	 * @brief Opaque type that represents a Shader Program. Use the shaders
 	 * related methods to handle it.
@@ -552,6 +557,7 @@ class GLHandler : public QObject
 	                          bool sRGB                  = true);
 	static Texture newTexture(unsigned int width, unsigned int height,
 	                          const GLvoid* data, bool sRGB = true);
+	static GLuint getGLTexture(Texture const& tex) { return tex.glTexture; };
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
 
@@ -576,6 +582,7 @@ class GLHandler : public QObject
 };
 
 Q_DECLARE_METATYPE(GLHandler::Mesh)
+Q_DECLARE_METATYPE(GLHandler::Texture)
 Q_DECLARE_METATYPE(GLHandler::RenderTarget)
 Q_DECLARE_METATYPE(GLuint) // for typedefs Texture and ShaderProgram
 

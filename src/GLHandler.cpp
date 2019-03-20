@@ -39,8 +39,8 @@ QMatrix4x4& GLHandler::fullHmdSpaceTransform()
 GLHandler::GLHandler()
 {
 	PythonQtHandler::addClass<Mesh>("Mesh");
-	PythonQtHandler::addClass<RenderTarget>("RenderTarget");
 	PythonQtHandler::addClass<Texture>("Texture");
+	PythonQtHandler::addClass<RenderTarget>("RenderTarget");
 	PythonQtHandler::addClass<ShaderProgram>("ShaderProgram");
 }
 
@@ -104,7 +104,10 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 GLHandler::Texture
     GLHandler::getColorAttachmentTexture(RenderTarget const& renderTarget)
 {
-	return renderTarget.texColorBuffer;
+	Texture tex   = {};
+	tex.glTexture = renderTarget.texColorBuffer;
+	tex.glTarget  = GL_TEXTURE_2D;
+	return tex;
 }
 
 void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
@@ -132,7 +135,7 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
 
 	beginRendering(to);
 	useShader(shader);
-	useTextures({from.texColorBuffer});
+	useTextures({getColorAttachmentTexture(from)});
 	render(quad, PrimitiveType::TRIANGLE_STRIP);
 
 	deleteMesh(quad);
@@ -430,20 +433,23 @@ void GLHandler::deleteMesh(Mesh const& mesh)
 
 GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 {
+	Texture tex   = {};
+	tex.glTexture = 0;
+	tex.glTarget  = GL_TEXTURE_2D;
+
 	QImage img_data;
 	if(!img_data.load(texturePath))
 	{
 		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		qWarning() << "Could not load Texture \"" << texturePath << "\""
 		           << '\n';
-		return 0;
+		return tex;
 	}
 	img_data = img_data.convertToFormat(QImage::Format_RGBA8888);
 
-	Texture tex;
-	glf().glGenTextures(1, &tex);
+	glf().glGenTextures(1, &tex.glTexture);
 	glf().glActiveTexture(GL_TEXTURE0);
-	glf().glBindTexture(GL_TEXTURE_2D, tex);
+	glf().glBindTexture(GL_TEXTURE_2D, tex.glTexture);
 	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -459,10 +465,11 @@ GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 GLHandler::Texture GLHandler::newTexture(unsigned int width, const GLvoid* data,
                                          bool sRGB)
 {
-	Texture tex;
-	glf().glGenTextures(1, &tex);
+	Texture tex  = {};
+	tex.glTarget = GL_TEXTURE_1D;
+	glf().glGenTextures(1, &tex.glTexture);
 	// glActiveTexture(GL_TEXTURE0);
-	glf().glBindTexture(GL_TEXTURE_1D, tex);
+	glf().glBindTexture(GL_TEXTURE_1D, tex.glTexture);
 	glf().glTexImage1D(GL_TEXTURE_1D, 0, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA,
 	                   width, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	// glGenerateMipmap(GL_TEXTURE_2D);
@@ -504,10 +511,11 @@ GLHandler::Texture GLHandler::newTexture(unsigned int width,
                                          unsigned int height,
                                          const GLvoid* data, bool sRGB)
 {
-	Texture tex;
-	glf().glGenTextures(1, &tex);
+	Texture tex  = {};
+	tex.glTarget = GL_TEXTURE_2D;
+	glf().glGenTextures(1, &tex.glTexture);
 	// glActiveTexture(GL_TEXTURE0);
-	glf().glBindTexture(GL_TEXTURE_2D, tex);
+	glf().glBindTexture(GL_TEXTURE_2D, tex.glTexture);
 	glf().glTexImage2D(GL_TEXTURE_2D, 0, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA,
 	                   width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	// glGenerateMipmap(GL_TEXTURE_2D);
@@ -528,13 +536,13 @@ void GLHandler::useTextures(std::vector<Texture> const& textures)
 	for(unsigned int i(0); i < textures.size(); ++i)
 	{
 		glf().glActiveTexture(i);
-		glf().glBindTexture(GL_TEXTURE_2D, textures[i]);
+		glf().glBindTexture(textures[i].glTarget, textures[i].glTexture);
 	}
 }
 
 void GLHandler::deleteTexture(Texture const& texture)
 {
-	glf().glDeleteTextures(1, &texture);
+	glf().glDeleteTextures(1, &texture.glTexture);
 }
 
 QColor GLHandler::sRGBToLinear(QColor const& srgb)

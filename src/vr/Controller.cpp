@@ -52,6 +52,7 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
     , padid(getAxisId(vr_pointer, nDevice, vr::k_eControllerAxis_TrackPad))
     , shaderProgram(GLHandler::newShader("controllers"))
     , mesh(GLHandler::newMesh())
+    , tex()
 {
 	std::string render_model_name = GetTrackedDeviceString(
 	    vr_pointer, nDevice, vr::Prop_RenderModelName_String);

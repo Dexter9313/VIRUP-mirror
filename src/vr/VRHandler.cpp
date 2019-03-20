@@ -294,10 +294,11 @@ void VRHandler::submitRendering(Side eye)
 {
 	GLHandler::RenderTarget* frame
 	    = eye == Side::LEFT ? &leftTarget : &rightTarget;
-	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-	vr::Texture_t texture = {reinterpret_cast<void*>(static_cast<uintptr_t>(
-	                             GLHandler::getColorAttachmentTexture(*frame))),
-	                         vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
+	vr::Texture_t texture = {
+	    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+	    reinterpret_cast<void*>(static_cast<uintptr_t>(GLHandler::getGLTexture(
+	        GLHandler::getColorAttachmentTexture(*frame)))),
+	    vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
 	vr::EVRCompositorError error = vr_compositor->Submit(getEye(eye), &texture);
 	if(error != vr::VRCompositorError_None)
 	{
