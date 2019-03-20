@@ -37,7 +37,7 @@ class Hand : public QObject
 	Q_PROPERTY(QVector3D direction READ direction)
 
   public:
-	Hand(Side side);
+	explicit Hand(Side side);
 	Side getSide() const { return side; };
 	bool isValid() const { return _isValid; };
 	bool isFlat() const { return _isFlat; };

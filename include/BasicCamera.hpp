@@ -122,7 +122,7 @@ class BasicCamera : public QObject
 	 * @param vrHandler The engine's @ref VRHandler, wether it is active or not.
 	 * It is mostly used to get VR transformations.
 	 */
-	BasicCamera(VRHandler const* vrHandler);
+	explicit BasicCamera(VRHandler const* vrHandler);
 	/**
 	 * @getter{viewmatrix}
 	 */

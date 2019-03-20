@@ -79,7 +79,7 @@ class DebugCamera : public BasicCamera
 	 * @param vrHandler The engine's @ref VRHandler, wether it is active or not.
 	 * It is mostly used to get VR transformations.
 	 */
-	DebugCamera(VRHandler const* vrHandler);
+	explicit DebugCamera(VRHandler const* vrHandler);
 	/**
 	 * @getter{enabled}
 	 */
