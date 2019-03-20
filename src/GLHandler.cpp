@@ -229,6 +229,14 @@ void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
 }
 
 void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
+                               QVector2D const& value)
+{
+	useShader(shader);
+	glf().glUniform2f(glf().glGetUniformLocation(shader, paramName), value.x(),
+	                  value.y());
+}
+
+void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
                                QVector3D const& value)
 {
 	useShader(shader);

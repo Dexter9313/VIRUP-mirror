@@ -371,6 +371,14 @@ class GLHandler : public QObject
 	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
 	 * value.
 	 *
+	 * The uniform must be of type vec2.
+	 */
+	static void setShaderParam(ShaderProgram shader, const char* paramName,
+	                           QVector2D const& value);
+	/**
+	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
+	 * value.
+	 *
 	 * The uniform must be of type vec3.
 	 */
 	static void setShaderParam(ShaderProgram shader, const char* paramName,
