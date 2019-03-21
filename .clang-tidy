@@ -169,7 +169,7 @@ Checks:          "abseil-string-find-startswith, \
     -cppcoreguidelines-owning-memory, \ # not planning to use GSL as of now
     cppcoreguidelines-pro-bounds-array-to-pointer-decay, \
     cppcoreguidelines-pro-bounds-constant-array-index, \
-    cppcoreguidelines-pro-bounds-pointer-arithmetic, \
+    -cppcoreguidelines-pro-bounds-pointer-arithmetic, \ # too restrictive for us
     cppcoreguidelines-pro-type-const-cast, \
     cppcoreguidelines-pro-type-cstyle-cast, \
     cppcoreguidelines-pro-type-member-init, \

@@ -75,6 +75,7 @@ after_build:
     - copy %QTPATH%\bin\Qt5Xml.dll %RELEASE_DIR%
     - copy %QTPATH%\plugins\platforms\qwindows.dll %RELEASE_DIR%\platforms
     - copy %OPENVR_SHARED% %RELEASE_DIR%
+    - copy %ASSIMP_SHARED% %RELEASE_DIR%
     - copy %LEAPMOTION_SHARED% %RELEASE_DIR%
     - copy %PYTHONQT_SHARED% %RELEASE_DIR%
     - copy %PYTHONQT_QTALL_SHARED% %RELEASE_DIR%

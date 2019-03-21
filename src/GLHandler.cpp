@@ -501,13 +501,9 @@ GLHandler::Texture GLHandler::newTexture(unsigned int width,
 	auto image = new GLubyte[width * 4];
 	for(unsigned int i(0); i < width; ++i)
 	{
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-		image[4 * i] = red[i];
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+		image[4 * i]     = red[i];
 		image[4 * i + 1] = green[i];
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		image[4 * i + 2] = blue[i];
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		image[4 * i + 3] = alpha != nullptr ? alpha[i] : 255;
 	}
 	Texture tex = newTexture(width, image, sRGB);
