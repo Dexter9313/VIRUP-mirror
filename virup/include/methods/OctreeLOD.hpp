@@ -1,10 +1,14 @@
 #ifndef OCTREELOD_H
 #define OCTREELOD_H
 
+#include <QElapsedTimer>
 #include <liboctree/Octree.hpp>
+#include <random>
 
 #include "Camera.hpp"
 #include "GLHandler.hpp"
+#include "Primitives.hpp"
+#include "blackbody.hpp"
 #include "utils.hpp"
 
 #define MAX_LEAVES_PER_NODE 16000
@@ -49,6 +53,19 @@ class OctreeLOD : public Octree
 
 	void computeBBox();
 	float currentTanAngle(Camera const& camera, QMatrix4x4 const& model) const;
+
+	/* STARS */
+
+	bool starLoaded                     = false;
+	GLHandler::ShaderProgram starShader = {};
+	GLHandler::Mesh starMesh            = {};
+	GLHandler::Texture starTex          = {};
+	QMatrix4x4 starModel;
+	static QElapsedTimer& starTimer();
+
+	void initStar(std::vector<float> const& starPosition, float radius);
+	void renderStar(QMatrix4x4 const& model);
+	void deleteStar();
 };
 
 #endif // OCTREELOD_H

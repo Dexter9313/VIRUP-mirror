@@ -2,6 +2,7 @@
 
 TreeMethodTex::TreeMethodTex()
     : TreeMethodLOD("default", "texture")
+    , tex()
 {
 	// load texture
 	tex = GLHandler::newTexture("data/virup/images/particle.png");

@@ -2,6 +2,7 @@
 
 BaseLineMethodTex::BaseLineMethodTex()
     : BaseLineMethod("default", "texture")
+    , tex()
 {
 	pointSize = 4;
 	// load texture

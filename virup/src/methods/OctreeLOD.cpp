@@ -14,6 +14,12 @@ const int64_t& OctreeLOD::memLimit()
 	return memLimit;
 }
 
+QElapsedTimer& OctreeLOD::starTimer()
+{
+	static QElapsedTimer starTimer;
+	return starTimer;
+}
+
 // TODO just draw nothing if vertices.size() == 0 (prevents nullptr tests when
 // drawing)
 
@@ -176,6 +182,52 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		}
 	}
 
+	if(isLeaf() && bbox.diameter * model(0, 0) > 100)
+	{
+		QVector3D campos = model.inverted()
+		                   * camera.hmdScaledSpaceToWorldTransform()
+		                   * QVector3D(0.f, 0.f, 0.f);
+		if(campos.x() > bbox.minx && campos.x() < bbox.maxx
+		   && campos.y() > bbox.miny && campos.y() < bbox.maxy
+		   && campos.z() > bbox.minz && campos.z() < bbox.maxz)
+		{
+			if(starLoaded)
+			{
+				renderStar(model);
+			}
+			else
+			{
+				Octree::readOwnData(*file);
+
+				QVector3D closest(FLT_MAX, FLT_MAX, FLT_MAX);
+				float dist(FLT_MAX);
+				for(unsigned int i(0); i < data.size(); i += 3)
+				{
+					QVector3D x(data[i], data[i + 1], data[i + 2]);
+					float distx(campos.distanceToPoint(x));
+					if(distx < dist)
+					{
+						closest = x;
+						dist    = distx;
+					}
+				}
+
+				initStar({closest.x(), closest.y(), closest.z()},
+				         bbox.diameter / 50000.f);
+				renderStar(model);
+			}
+			GLHandler::useShader(*shaderProgram);
+		}
+		else if(starLoaded)
+		{
+			deleteStar();
+		}
+	}
+	else if(starLoaded)
+	{
+		deleteStar();
+	}
+
 	if(dataSize / 3 <= maxPoints)
 	{
 		/*if(isLeaf)
@@ -197,9 +249,9 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		    GLHandler::setPointSize(4);
 		}
 		else
-		{
-		    GLHandler::setPointSize(1);
-		}*/
+		{*/
+		GLHandler::setPointSize(1);
+		//}
 		GLHandler::render(mesh);
 		return dataSize / 3;
 		//}
@@ -246,4 +298,60 @@ Octree* OctreeLOD::newOctree() const
 OctreeLOD::~OctreeLOD()
 {
 	unload();
+}
+
+void OctreeLOD::initStar(std::vector<float> const& starPosition, float radius)
+{
+	if(starLoaded)
+	{
+		return;
+	}
+	starLoaded = true;
+
+	std::random_device rd;
+	std::mt19937 generator(rd());
+	std::exponential_distribution<double> d(0.0005);
+
+	starShader = GLHandler::newShader("star");
+	GLHandler::setShaderParam(starShader, "temperature", 1000 + d(generator));
+	GLHandler::setShaderParam(
+	    starShader, "blackbodyBoundaries",
+	    QVector2D(blackbody_min_temp, blackbody_max_temp));
+
+	starMesh = Primitives::newUnitSphere(starShader, 50, 50);
+
+	starTex = GLHandler::newTexture(
+	    (blackbody_max_temp - blackbody_min_temp) / blackbody_temp_step + 1,
+	    // NOLINTNEXTLINE(hicpp-no-array-decay)
+	    blackbody_red, blackbody_green, blackbody_blue);
+
+	starModel = QMatrix4x4();
+	starModel.translate(
+	    QVector3D(starPosition[0], starPosition[1], starPosition[2]));
+	starModel.scale(radius);
+
+	starTimer().restart();
+}
+
+void OctreeLOD::renderStar(QMatrix4x4 const& model)
+{
+	GLHandler::endTransparent();
+	GLHandler::setShaderParam(
+	    starShader, "time", static_cast<float>(starTimer().elapsed()) / 1000.f);
+	GLHandler::setUpRender(starShader, model * starModel);
+	GLHandler::useTextures({starTex});
+	GLHandler::render(starMesh);
+	GLHandler::beginTransparent();
+}
+
+void OctreeLOD::deleteStar()
+{
+	if(!starLoaded)
+	{
+		return;
+	}
+	GLHandler::deleteTexture(starTex);
+	GLHandler::deleteMesh(starMesh);
+	GLHandler::deleteShader(starShader);
+	starLoaded = false;
 }
