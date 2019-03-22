@@ -66,3 +66,20 @@ set PYTHONQT_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\pythonqt\PythonQt3.2\lib\Python
 set PYTHONQT_QTALL_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/pythonqt/PythonQt3.2/extensions/PythonQt_QtAll
 set PYTHONQT_QTALL_LIBRARIES=%APPVEYOR_BUILD_FOLDER%/deps/pythonqt/PythonQt3.2/lib/PythonQt_QtAll-Qt5-Python373.lib
 set PYTHONQT_QTALL_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\pythonqt\PythonQt3.2\lib\PythonQt_QtAll-Qt5-Python373.dll
+
+::############################################################################
+::# Install ASSIMP 4.1
+::############################################################################
+if NOT EXIST assimp\ (
+	git clone https://github.com/assimp/assimp.git --branch=v4.1.0
+	cd assimp
+	mkdir build
+	cd build
+	cmake .. -G %GENERATOR%
+	cmake --build . --config Release
+	cd ..\..
+)
+
+set ASSIMP_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/assimp/include;%APPVEYOR_BUILD_FOLDER%/deps/assimp/build/include
+set ASSIMP_LIBRARIES=%APPVEYOR_BUILD_FOLDER%/deps/assimp/build/code/Release/assimp-vc140-mt.lib
+set ASSIMP_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\assimp\build\code\Release\assimp-vc140-mt.dll

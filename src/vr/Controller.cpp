@@ -150,27 +150,18 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 
 	for(unsigned int i(0); i < model->unVertexCount; ++i)
 	{
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vPosition.v[0]);
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vPosition.v[1]);
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vPosition.v[2]);
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vNormal.v[0]);
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vNormal.v[1]);
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].vNormal.v[2]);
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].rfTextureCoord[0]);
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		vertices.push_back(model->rVertexData[i].rfTextureCoord[1]);
 	}
 
 	for(unsigned int i(0); i < model->unTriangleCount * 3; ++i)
 	{
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 		elements.push_back(model->rIndexData[i]);
 	}
 
