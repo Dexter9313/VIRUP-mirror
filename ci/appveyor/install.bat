@@ -79,7 +79,8 @@ if NOT EXIST assimp\ (
 	cmake --build . --config Release
 	cd ..\..
 )
-
+echo LS DIR
+dir %APPVEYOR_BUILD_FOLDER%/deps/assimp/build/code/Release/
 set ASSIMP_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/assimp/include;%APPVEYOR_BUILD_FOLDER%/deps/assimp/build/include
 set ASSIMP_LIBRARIES=%APPVEYOR_BUILD_FOLDER%/deps/assimp/build/code/Release/assimp-vc140-md.lib
 set ASSIMP_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\assimp\build\code\Release\assimp-vc140-md.dll
