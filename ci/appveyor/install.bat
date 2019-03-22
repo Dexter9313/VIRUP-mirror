@@ -39,7 +39,8 @@ set LEAPMOTION_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\leap\Leap\LeapSDK\lib\%ARCH%\
 ::############################################################################
 ::# Install PythonQt3.2
 ::############################################################################
-if NOT EXIST pythonqt\ (
+::if NOT EXIST pythonqt\ (
+if "true" == "false" (
 	mkdir pythonqt
 	cd pythonqt
 	appveyor DownloadFile https://sourceforge.net/projects/pythonqt/files/pythonqt/PythonQt-3.2/PythonQt3.2.zip/download -FileName pythonqt.zip
@@ -80,7 +81,7 @@ if NOT EXIST assimp\ (
 	cd ..\..
 )
 echo LS DIR
-dir %APPVEYOR_BUILD_FOLDER%/deps/assimp/build/code/Release/
+dir %APPVEYOR_BUILD_FOLDER%\deps\assimp\build\code\Release\
 set ASSIMP_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/assimp/include;%APPVEYOR_BUILD_FOLDER%/deps/assimp/build/include
 set ASSIMP_LIBRARIES=%APPVEYOR_BUILD_FOLDER%/deps/assimp/build/code/Release/assimp-vc140-md.lib
 set ASSIMP_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\assimp\build\code\Release\assimp-vc140-md.dll
