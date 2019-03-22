@@ -62,9 +62,10 @@ void BasicCamera::update()
 		            * eyeDist(vrHandler->getEyeViewMatrix(Side::RIGHT),
 		                      eyeDistanceFactor);
 
+		Side currentRenderingEye(vrHandler->getCurrentRenderingEye());
+
 		QMatrix4x4* projEye
-		    = (vrHandler->getCurrentRenderingEye() == Side::LEFT) ? &projLeft
-		                                                          : &projRight;
+		    = (currentRenderingEye == Side::LEFT) ? &projLeft : &projRight;
 
 		// prog * view
 		QMatrix4x4 hmdMat(vrHandler->getHMDPosMatrix().inverted());
@@ -81,6 +82,12 @@ void BasicCamera::update()
 
 		fullCameraSpaceTransform = *projEye * hmdMat;
 
+		fullSkyboxSpaceTransform
+		    = vrHandler->getProjectionMatrix(currentRenderingEye, 0.1f, 10000.f)
+		      * noTrans(vrHandler->getEyeViewMatrix(currentRenderingEye))
+		      * noTrans(vrHandler->getHMDPosMatrix().inverted())
+		      * noTrans(view);
+
 		updateClippingPlanes();
 
 		return;
@@ -95,6 +102,7 @@ void BasicCamera::update2D()
 	fullCameraSpaceTransform  = proj;
 	fullTrackedSpaceTransform = proj * eyeDistanceCorrection;
 	fullHmdSpaceTransform     = fullTrackedSpaceTransform;
+	fullSkyboxSpaceTransform  = proj * noTrans(view);
 
 	updateClippingPlanes();
 }
@@ -102,8 +110,8 @@ void BasicCamera::update2D()
 void BasicCamera::uploadMatrices() const
 {
 	GLHandler::setUpTransforms(fullTransform, fullCameraSpaceTransform,
-	                           fullTrackedSpaceTransform,
-	                           fullHmdSpaceTransform);
+	                           fullTrackedSpaceTransform, fullHmdSpaceTransform,
+	                           fullSkyboxSpaceTransform);
 }
 
 void BasicCamera::updateClippingPlanes()
@@ -161,6 +169,14 @@ QMatrix4x4 BasicCamera::hmdScreenToWorldTransform(Side side) const
 		return hmdScaledToWorld * projLeft.inverted();
 	}
 	return hmdScaledToWorld * projRight.inverted();
+}
+
+QMatrix4x4 BasicCamera::noTrans(QMatrix4x4 const& matrix)
+{
+	QMatrix4x4 result(matrix);
+	result.setColumn(3, QVector4D(0.f, 0.f, 0.f, 1.f));
+
+	return result;
 }
 
 QMatrix4x4 BasicCamera::eyeDist(QMatrix4x4 const& matrix,

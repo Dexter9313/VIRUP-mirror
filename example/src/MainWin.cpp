@@ -154,6 +154,13 @@ void MainWin::updateScene(BasicCamera& camera)
 void MainWin::renderScene(BasicCamera const& camera)
 {
 	Q_UNUSED(camera);
+	QMatrix4x4 model;
+	model.translate(-1.5, 0, 0);
+	GLHandler::setUpRender(sphereShader, model,
+	                       GLHandler::GeometricSpace::SKYBOX);
+	GLHandler::render(sphere);
+	GLHandler::clearDepthBuffer();
+
 	GLHandler::setUpRender(cubeShader);
 	GLHandler::render(cube, GLHandler::PrimitiveType::LINES);
 	GLHandler::setUpRender(shaderProgram);
@@ -162,11 +169,6 @@ void MainWin::renderScene(BasicCamera const& camera)
 	GLHandler::setPointSize(8);
 	GLHandler::render(pointsMesh);
 	GLHandler::setPointSize(1);
-	QMatrix4x4 model;
-	model.translate(0, 0, 0.5);
-	model.scale(0.1);
-	GLHandler::setUpRender(sphereShader, model);
-	GLHandler::render(sphere);
 }
 
 void MainWin::applyPostProcShaderParams(QString const& id,

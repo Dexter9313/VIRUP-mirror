@@ -36,6 +36,12 @@ QMatrix4x4& GLHandler::fullHmdSpaceTransform()
 	return fullHmdSpaceTransform;
 }
 
+QMatrix4x4& GLHandler::fullSkyboxSpaceTransform()
+{
+	static QMatrix4x4 fullSkyboxSpaceTransform;
+	return fullSkyboxSpaceTransform;
+}
+
 GLHandler::GLHandler()
 {
 	PythonQtHandler::addClass<Mesh>("Mesh");
@@ -165,15 +171,22 @@ void GLHandler::endTransparent()
 	glf().glDisable(GL_BLEND);
 }
 
+void GLHandler::clearDepthBuffer()
+{
+	glf().glClear(GL_DEPTH_BUFFER_BIT);
+}
+
 void GLHandler::setUpTransforms(QMatrix4x4 const& fullTransform,
                                 QMatrix4x4 const& fullCameraSpaceTransform,
                                 QMatrix4x4 const& fullTrackedSpaceTransform,
-                                QMatrix4x4 const& fullHmdSpaceTransform)
+                                QMatrix4x4 const& fullHmdSpaceTransform,
+                                QMatrix4x4 const& fullSkyboxSpaceTransform)
 {
 	GLHandler::fullTransform()             = fullTransform;
 	GLHandler::fullCameraSpaceTransform()  = fullCameraSpaceTransform;
 	GLHandler::fullTrackedSpaceTransform() = fullTrackedSpaceTransform;
 	GLHandler::fullHmdSpaceTransform()     = fullHmdSpaceTransform;
+	GLHandler::fullSkyboxSpaceTransform()  = fullSkyboxSpaceTransform;
 }
 
 GLHandler::ShaderProgram GLHandler::newShader(QString const& shadersCommonName)
@@ -405,6 +418,10 @@ void GLHandler::setUpRender(ShaderProgram shader, QMatrix4x4 const& model,
 			break;
 		case GeometricSpace::HMD:
 			setShaderParam(shader, "camera", fullHmdSpaceTransform() * model);
+			break;
+		case GeometricSpace::SKYBOX:
+			setShaderParam(shader, "camera",
+			               fullSkyboxSpaceTransform() * model);
 			break;
 		default:
 			break;
