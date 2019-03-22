@@ -284,6 +284,13 @@ class BasicCamera : public QObject
 	static QMatrix4x4 eyeDist(QMatrix4x4 const& matrix,
 	                          float eyeDistanceFactor);
 	/**
+	 * @brief Applies noTrans on a copy of a matrix.
+	 *
+	 * The three first components of the fourth column of a copy of @p matrix
+	 * will be set to zero then returned.
+	 */
+	static QMatrix4x4 noTrans(QMatrix4x4 const& matrix);
+	/**
 	 * @brief Direct access to the @ref viewmatrix property.
 	 */
 	QMatrix4x4 view;
@@ -366,6 +373,17 @@ class BasicCamera : public QObject
 	 * parameter.
 	 */
 	QMatrix4x4 fullHmdSpaceTransform;
+	/**
+	 * @brief Transformation matrix from skybox space to screen space (or clip
+	 * space).
+	 *
+	 * One of the four matrices that transform from one space to screen space
+	 * (or clip space).
+	 *
+	 * See GLHandler#setUpTransforms and GLHandler::setUpRender's space
+	 * parameter.
+	 */
+	QMatrix4x4 fullSkyboxSpaceTransform;
 
 	// For culling. Normals point Inside i.e. clippingPlanes[i]*v >= 0 <=>
 	// v is at the inner side of clippingPlanes[i]

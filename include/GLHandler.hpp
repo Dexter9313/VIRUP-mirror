@@ -166,7 +166,8 @@ class GLHandler : public QObject
 		WORLD,
 		CAMERA,
 		TRACKED,
-		HMD
+		HMD,
+		SKYBOX
 	};
 	Q_ENUM(GeometricSpace)
 
@@ -308,6 +309,12 @@ class GLHandler : public QObject
 	 */
 	static void endTransparent();
 	/**
+	 * @brief Clears depth buffer
+	 *
+	 * Useful to render successive levels of depth, as skyboxes for example.
+	 */
+	static void clearDepthBuffer();
+	/**
 	 * @brief Used mostly by cameras to upload their matrices to send to vertex
 	 * shaders as their <code>in mat4 camera</code> input.
 	 *
@@ -319,7 +326,8 @@ class GLHandler : public QObject
 	static void setUpTransforms(QMatrix4x4 const& fullTransform,
 	                            QMatrix4x4 const& fullCameraSpaceTransform,
 	                            QMatrix4x4 const& fullTrackedSpaceTransform,
-	                            QMatrix4x4 const& fullHmdSpaceTransform);
+	                            QMatrix4x4 const& fullHmdSpaceTransform,
+	                            QMatrix4x4 const& fullSkyboxSpaceTransform);
 
 	// SHADERS
 	/**
@@ -513,6 +521,7 @@ class GLHandler : public QObject
 	 * * CAMERA : fullCameraSpaceTransform : from camera space to clip space
 	 * * TRACKED : fullTrackedSpaceTransform : from tracked space to clip space
 	 * * HMD : fullHmdSpaceTransform : from hmd space (not world-scaled) to clip
+	 * * SKYBOX : fullSkyboxSpaceTransform : from skybox space to clip
 	 * space
 	 *
 	 * The @p model matrix (identity by default) will be multiplied to the
@@ -588,6 +597,9 @@ class GLHandler : public QObject
 	static QMatrix4x4& fullTrackedSpaceTransform();
 	// transform for any HMD space object (follows HMD)
 	static QMatrix4x4& fullHmdSpaceTransform();
+	// transform for any Skybox space object (follows HMD translations + no
+	// stereo)
+	static QMatrix4x4& fullSkyboxSpaceTransform();
 };
 
 Q_DECLARE_METATYPE(GLHandler::Mesh)
