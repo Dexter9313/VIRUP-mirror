@@ -202,6 +202,14 @@ class GLHandler : public QObject
 	 */
 	static GLint& defaultRenderTargetFormat();
 
+	/**
+	 * @brief Returns a reference to the OpenGL functions retrieved by Qt.
+	 *
+	 * You can call OpenGL directly through that reference, but be careful !
+	 * Make sure you keep a clean OpenGL state.
+	 */
+	static QOpenGLFunctions_4_0_Core& glf();
+
   public slots:
 	/**
 	 * @brief Sets the point size when rendering of @ref PrimitiveType POINTS.
@@ -585,8 +593,6 @@ class GLHandler : public QObject
 
   private:
 	static GLuint loadShader(QString const& path, GLenum shaderType);
-
-	static QOpenGLFunctions_4_0_Core& glf();
 
 	// object to screen transforms
 	// transform for any world object
