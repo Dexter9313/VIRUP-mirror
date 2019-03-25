@@ -45,7 +45,8 @@ class Camera : public BasicCamera
 	Camera(VRHandler const* vrHandler);
 	virtual void update() override;
 	virtual void update2D() override;
-	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model) const;
+	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model,
+	                    bool depthClamp = false) const;
 
 	float angleAroundZ = 0.f;
 	float angleAboveXY = 0.f;

@@ -391,6 +391,8 @@ void MainWin::renderScene(BasicCamera const& camera)
 {
 	auto cam(dynamic_cast<Camera const*>(&camera));
 
+	GLHandler::glf().glDepthFunc(GL_LEQUAL);
+	GLHandler::glf().glEnable(GL_DEPTH_CLAMP);
 	QMatrix4x4 model(computeCubeModel());
 	if(showCube)
 	{
@@ -398,6 +400,7 @@ void MainWin::renderScene(BasicCamera const& camera)
 		GLHandler::render(cube, GLHandler::PrimitiveType::LINES);
 	}
 	method->render(*cam, model);
+	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
 }
 
 QMatrix4x4 MainWin::computeCubeModel() const

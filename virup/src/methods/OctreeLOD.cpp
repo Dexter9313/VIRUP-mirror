@@ -134,7 +134,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
                                             QMatrix4x4 const& model,
                                             unsigned int maxPoints)
 {
-	if(camera.shouldBeCulled(bbox, model) && lvl > 0)
+	if(camera.shouldBeCulled(bbox, model, true) && lvl > 0)
 	{
 		if(usedMem() > (memLimit() * 80) / 100)
 		{
@@ -279,7 +279,7 @@ void OctreeLOD::computeBBox()
 float OctreeLOD::currentTanAngle(Camera const& camera,
                                  QMatrix4x4 const& model) const
 {
-	if(camera.shouldBeCulled(bbox, model))
+	if(camera.shouldBeCulled(bbox, model, true))
 	{
 		return 0.f;
 	}
