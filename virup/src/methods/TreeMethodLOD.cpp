@@ -61,8 +61,27 @@ void TreeMethodLOD::init(std::string const& gazPath,
 		auto file = new std::ifstream();
 		file->open(gazPath, std::fstream::in | std::fstream::binary);
 		gazTree = new OctreeLOD(shaderProgram);
-		gazTree->init(*file);
-		std::cout << "Header Loaded" << std::endl;
+
+		// Init tree with progress bar
+		int64_t cursor(file->tellg());
+		uint64_t size;
+		brw::read(*file, size);
+		file->seekg(cursor);
+
+		QProgressDialog progress(tr("Loading gaz tree structure..."), QString(),
+		                         0, size);
+		progress.setMinimumDuration(0);
+		progress.setValue(0);
+
+		auto future = std::async(&initOctree, gazTree, file);
+
+		while(future.wait_for(std::chrono::duration<int, std::milli>(100))
+		      != std::future_status::ready)
+		{
+			QCoreApplication::processEvents();
+			progress.setValue(file->tellg());
+		}
+
 		gazTree->setFile(file);
 		// update bbox
 		gazTree->readBBoxes(*file);
@@ -75,7 +94,27 @@ void TreeMethodLOD::init(std::string const& gazPath,
 		auto file = new std::ifstream();
 		file->open(starsPath, std::fstream::in | std::fstream::binary);
 		starsTree = new OctreeLOD(shaderProgram);
-		starsTree->init(*file);
+
+		// Init tree with progress bar
+		int64_t cursor(file->tellg());
+		uint64_t size;
+		brw::read(*file, size);
+		file->seekg(cursor);
+
+		QProgressDialog progress(tr("Loading stars tree structure..."),
+		                         QString(), 0, size);
+		progress.setMinimumDuration(0);
+		progress.setValue(0);
+
+		auto future = std::async(&initOctree, starsTree, file);
+
+		while(future.wait_for(std::chrono::duration<int, std::milli>(100))
+		      != std::future_status::ready)
+		{
+			QCoreApplication::processEvents();
+			progress.setValue(file->tellg());
+		}
+
 		starsTree->setFile(file);
 		// update bbox
 		starsTree->readBBoxes(*file);
@@ -88,7 +127,27 @@ void TreeMethodLOD::init(std::string const& gazPath,
 		auto file = new std::ifstream();
 		file->open(darkMatterPath, std::fstream::in | std::fstream::binary);
 		darkMatterTree = new OctreeLOD(shaderProgram);
-		darkMatterTree->init(*file);
+
+		// Init tree with progress bar
+		int64_t cursor(file->tellg());
+		uint64_t size;
+		brw::read(*file, size);
+		file->seekg(cursor);
+
+		QProgressDialog progress(tr("Loading dark matter tree structure..."),
+		                         QString(), 0, size);
+		progress.setMinimumDuration(0);
+		progress.setValue(0);
+
+		auto future = std::async(&initOctree, darkMatterTree, file);
+
+		while(future.wait_for(std::chrono::duration<int, std::milli>(100))
+		      != std::future_status::ready)
+		{
+			QCoreApplication::processEvents();
+			progress.setValue(file->tellg());
+		}
+
 		darkMatterTree->setFile(file);
 		// update bbox
 		darkMatterTree->readBBoxes(*file);
@@ -97,6 +156,18 @@ void TreeMethodLOD::init(std::string const& gazPath,
 	}
 
 	// preload data to fill VRAM giving priority to top levels
+	uint64_t max(OctreeLOD::getMemLimit());
+
+	uint64_t wholeData(gazTree->getTotalDataSize()
+	                   + starsTree->getTotalDataSize()
+	                   + darkMatterTree->getTotalDataSize());
+	wholeData *= sizeof(float);
+
+	QProgressDialog progress(tr("Preloading trees data..."), QString(), 0,
+	                         max < wholeData ? max : wholeData);
+	progress.setMinimumDuration(0);
+	progress.setValue(0);
+
 	unsigned int lvlToLoad(0);
 	while(lvlToLoad < 10)
 	{
@@ -106,6 +177,8 @@ void TreeMethodLOD::init(std::string const& gazPath,
 			{
 				break;
 			}
+			QCoreApplication::processEvents();
+			progress.setValue(OctreeLOD::getUsedMem());
 		}
 		if(starsTree != nullptr)
 		{
@@ -113,6 +186,8 @@ void TreeMethodLOD::init(std::string const& gazPath,
 			{
 				break;
 			}
+			QCoreApplication::processEvents();
+			progress.setValue(OctreeLOD::getUsedMem());
 		}
 		if(darkMatterTree != nullptr)
 		{
@@ -120,6 +195,8 @@ void TreeMethodLOD::init(std::string const& gazPath,
 			{
 				break;
 			}
+			QCoreApplication::processEvents();
+			progress.setValue(OctreeLOD::getUsedMem());
 		}
 		++lvlToLoad;
 	}
@@ -241,6 +318,11 @@ void TreeMethodLOD::cleanUp()
 		delete darkMatterTree;
 	}
 	darkMatterTree = nullptr;
+}
+
+void TreeMethodLOD::initOctree(OctreeLOD* octree, std::istream* in)
+{
+	octree->init(*in);
 }
 
 TreeMethodLOD::~TreeMethodLOD()

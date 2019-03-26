@@ -33,6 +33,7 @@ class OctreeLOD : public Octree
 	~OctreeLOD();
 
 	static int64_t getUsedMem() { return usedMem(); };
+	static int64_t getMemLimit() { return memLimit(); };
 
   protected:
 	virtual Octree* newOctree() const override;

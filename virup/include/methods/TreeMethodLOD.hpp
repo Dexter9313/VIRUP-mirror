@@ -1,6 +1,11 @@
 #ifndef TREEMETHODLOD_H
 #define TREEMETHODLOD_H
 
+#include <QProgressDialog>
+#include <chrono>
+#include <future>
+#include <thread>
+
 #include "Method.hpp"
 #include "OctreeLOD.hpp"
 #include "PIDController.hpp"
@@ -30,6 +35,8 @@ class TreeMethodLOD : public Method
 	// struct timeval t0;
 	float currentTanAngle;
 	PIDController ctrl;
+
+	static void initOctree(OctreeLOD* octree, std::istream* in);
 };
 
 #endif // TREEMETHOD_H

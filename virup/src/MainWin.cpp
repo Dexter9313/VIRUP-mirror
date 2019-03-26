@@ -259,6 +259,20 @@ void MainWin::setupPythonAPI()
 
 void MainWin::initScene()
 {
+	cubeShader = GLHandler::newShader("default");
+	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
+	GLHandler::setShaderParam(
+	    cubeShader, "color",
+	    QSettings().value("misc/cubecolor").value<QColor>());
+	cube = createCube(cubeShader);
+
+	auto cam = new Camera(&vrHandler);
+	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
+	                                   / static_cast<float>(height()));
+	cam->distance = 0.5;
+	setCamera(cam);
+
+	// METHOD LOADING
 	QStringList argv = QCoreApplication::arguments();
 	int argc         = argv.size();
 	unsigned int numberOfVertices(500000), seed(time(nullptr));
@@ -315,24 +329,15 @@ void MainWin::initScene()
 		              .toStdString()
 		        : "");
 	}
-
-	cubeShader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
-	GLHandler::setShaderParam(
-	    cubeShader, "color",
-	    QSettings().value("misc/cubecolor").value<QColor>());
-	cube = createCube(cubeShader);
-
-	auto cam = new Camera(&vrHandler);
-	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                   / static_cast<float>(height()));
-	cam->distance = 0.5;
-
-	setCamera(cam);
+	loaded = true;
 }
 
 void MainWin::updateScene(BasicCamera& camera)
 {
+	if(!loaded)
+	{
+		return;
+	}
 	auto cam(dynamic_cast<Camera*>(&camera));
 	cam->currentFrameTiming = frameTiming;
 
@@ -389,6 +394,10 @@ void MainWin::updateScene(BasicCamera& camera)
 
 void MainWin::renderScene(BasicCamera const& camera)
 {
+	if(!loaded)
+	{
+		return;
+	}
 	auto cam(dynamic_cast<Camera const*>(&camera));
 
 	GLHandler::glf().glDepthFunc(GL_LEQUAL);

@@ -54,6 +54,8 @@ class MainWin : public AbstractMainWin
 	static void deleteCube(GLHandler::Mesh mesh,
 	                       GLHandler::ShaderProgram shader);
 
+	bool loaded = false;
+
 	GLHandler::Mesh cube                = {};
 	GLHandler::ShaderProgram cubeShader = {};
 	Method* method                      = nullptr;
