@@ -231,8 +231,12 @@ std::pair<float, std::string> humanReadable(int64_t bytes)
 	return std::pair<float, std::string>(fbytes / (1024 * 1024 * 1024), " Gib");
 }
 
-void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
+void TreeMethodLOD::render(Camera const& camera, double scale,
+                           std::array<double, 3> const& translation)
 {
+	QMatrix4x4 model;
+	model.translate(QVector3D(translation[0], translation[1], translation[2]));
+	model.scale(scale);
 	/*struct timeval tf;
 	gettimeofday(&tf, NULL);
 	uint64_t dt = (tf.tv_sec * 1000000) + tf.tv_usec - t0.tv_usec
@@ -272,24 +276,24 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model)
 	unsigned int rendered = 0;
 	if(gazTree != nullptr)
 	{
-		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, model,
-		                                         1000000000);
+		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, scale,
+		                                         translation, 1000000000);
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
 	    QSettings().value("data/starscolor").value<QColor>());
 	if(starsTree != nullptr)
 	{
-		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera,
-		                                           model, 1000000000);
+		rendered += starsTree->renderAboveTanAngle(
+		    currentTanAngle, camera, scale, translation, 1000000000);
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
 	    QSettings().value("data/darkmattercolor").value<QColor>());
 	if(darkMatterTree != nullptr && showdm)
 	{
-		rendered += darkMatterTree->renderAboveTanAngle(currentTanAngle, camera,
-		                                                model, 1000000000);
+		rendered += darkMatterTree->renderAboveTanAngle(
+		    currentTanAngle, camera, scale, translation, 1000000000);
 	}
 	GLHandler::endTransparent();
 

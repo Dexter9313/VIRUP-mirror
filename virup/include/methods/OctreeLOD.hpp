@@ -28,7 +28,8 @@ class OctreeLOD : public Octree
 	std::istream* getFile() { return file; };
 	bool preloadLevel(unsigned int lvlToLoad);
 	unsigned int renderAboveTanAngle(float tanAngle, Camera const& camera,
-	                                 QMatrix4x4 const& model,
+	                                 double scale,
+	                                 std::array<double, 3> const& translation,
 	                                 unsigned int maxPoints);
 	~OctreeLOD();
 
@@ -64,9 +65,13 @@ class OctreeLOD : public Octree
 	QMatrix4x4 starModel;
 	static QElapsedTimer& starTimer();
 
-	void initStar(std::vector<float> const& starPosition, float radius);
+	void initStar(float radius);
 	void renderStar(QMatrix4x4 const& model);
 	void deleteStar();
+
+	/* PRECISION ENHANCEMENT */
+	double localScale                      = 1.f;
+	std::array<double, 3> localTranslation = {{0.f, 0.f, 0.f}};
 };
 
 #endif // OCTREELOD_H

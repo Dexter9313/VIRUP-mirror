@@ -9,10 +9,11 @@ BaseLineMethodTex::BaseLineMethodTex()
 	tex = GLHandler::newTexture("data/virup/images/particle.png");
 }
 
-void BaseLineMethodTex::render(Camera const& camera, QMatrix4x4 const& model)
+void BaseLineMethodTex::render(Camera const& camera, double scale,
+                               std::array<double, 3> const& translation)
 {
 	GLHandler::useTextures({tex});
-	BaseLineMethod::render(camera, model);
+	BaseLineMethod::render(camera, scale, translation);
 }
 
 BaseLineMethodTex::~BaseLineMethodTex()

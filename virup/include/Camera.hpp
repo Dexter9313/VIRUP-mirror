@@ -48,47 +48,17 @@ class Camera : public BasicCamera
 	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model,
 	                    bool depthClamp = false) const;
 
-	float angleAroundZ = 0.f;
-	float angleAboveXY = 0.f;
-	float distance     = 1.f;
-	float targetFPS    = 60.f;
+	float targetFPS = 60.f;
 
 	float currentFrameTiming = 0;
 
   public slots:
-	QVector3D getPosition() const { return position; };
-	QVector3D getLookDirection() const { return lookDirection; };
-	QVector3D getUp() const { return up; };
-
-	float getAngleAroundZ() const { return angleAroundZ; };
-	void setAngleAroundZ(float angleAroundZ)
-	{
-		this->angleAroundZ = angleAroundZ;
-	};
-	float getAngleAboveXY() const { return angleAboveXY; };
-	void setAngleAboveXY(float angleAboveXY)
-	{
-		this->angleAboveXY = angleAboveXY;
-	};
-	float getDistance() const { return distance; };
-	void setDistance(float distance) { this->distance = distance; };
 	float getTargetFPS() const { return targetFPS; };
 	void setTargetFPS(float targetFPS) { this->targetFPS = targetFPS; };
 	float getCurrentFrameTiming() const { return currentFrameTiming; };
-	QVector3D getFocusPoint() const;
-	void setFocusPoint(QVector3D const& focusPoint);
 
   private:
-	QVector3D position      = {1.f, 0.f, 0.f};
-	QVector3D lookDirection = {-1.f, 0.f, 0.f};
-	QVector3D up            = {0.f, 0.f, 1.f};
-
-	void updateView();
-
-	/* Not useful anymore
-	static QVector4D getCorner(BBox const& bBox, unsigned int i);
-	static bool inFrustum(QVector3D const& projected);
-	*/
+	void updateTargetFPS();
 };
 
 #endif // CAMERA_H

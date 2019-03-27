@@ -58,6 +58,16 @@ void OctreeLOD::readOwnData(std::istream& in)
 {
 	Octree::readOwnData(in);
 
+	for(unsigned int i(0); i < data.size(); i += 3)
+	{
+		data[i] -= bbox.minx;
+		data[i] /= localScale;
+		data[i + 1] -= bbox.miny;
+		data[i + 1] /= localScale;
+		data[i + 2] -= bbox.minz;
+		data[i + 2] /= localScale;
+	}
+
 	mesh = GLHandler::newMesh();
 	GLHandler::setVertices(mesh, data, *shaderProgram, {{"position", 3}});
 	dataSize = data.size();
@@ -129,11 +139,13 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 	return true;
 }
 
-unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
-                                            Camera const& camera,
-                                            QMatrix4x4 const& model,
-                                            unsigned int maxPoints)
+unsigned int OctreeLOD::renderAboveTanAngle(
+    float tanAngle, Camera const& camera, double scale,
+    std::array<double, 3> const& translation, unsigned int maxPoints)
 {
+	QMatrix4x4 model;
+	model.translate(QVector3D(translation[0], translation[1], translation[2]));
+	model.scale(scale);
 	if(camera.shouldBeCulled(bbox, model, true) && lvl > 0)
 	{
 		if(usedMem() > (memLimit() * 80) / 100)
@@ -142,6 +154,19 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		}
 		return 0;
 	}
+
+	std::array<double, 3> totalTranslation = {};
+	for(unsigned int i(0); i < 3; ++i)
+	{
+		totalTranslation.at(i)
+		    = translation.at(i) + scale * localTranslation.at(i);
+	}
+	double totalScale(scale * localScale);
+
+	QMatrix4x4 totalModel;
+	totalModel.translate(QVector3D(totalTranslation[0], totalTranslation[1],
+	                               totalTranslation[2]));
+	totalModel.scale(totalScale);
 
 	if(!isLoaded)
 	{
@@ -164,7 +189,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 			if(oct != nullptr)
 			{
 				remaining -= dynamic_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
-				    tanAngle, camera, model, remaining);
+				    tanAngle, camera, scale, translation, remaining);
 			}
 		}
 		return maxPoints - remaining;
@@ -182,7 +207,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		}
 	}
 
-	if(isLeaf() && bbox.diameter * model(0, 0) > 100)
+	if(isLeaf() && totalScale > 1000)
 	{
 		QVector3D campos = model.inverted()
 		                   * camera.hmdScaledSpaceToWorldTransform()
@@ -191,30 +216,44 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		   && campos.y() > bbox.miny && campos.y() < bbox.maxy
 		   && campos.z() > bbox.minz && campos.z() < bbox.maxz)
 		{
+			// Maybe don't do all this every frame...
+			Octree::readOwnData(*file);
+			QVector3D closest(FLT_MAX, FLT_MAX, FLT_MAX);
+			float dist(FLT_MAX);
+			for(unsigned int i(0); i < data.size(); i += 3)
+			{
+				QVector3D x(data[i], data[i + 1], data[i + 2]);
+				float distx(campos.distanceToPoint(x));
+				if(distx < dist)
+				{
+					closest = x;
+					dist    = distx;
+				}
+			}
+			localTranslation[0] = closest.x();
+			localTranslation[1] = closest.y();
+			localTranslation[2] = closest.z();
+			for(unsigned int i(0); i < data.size(); i += 3)
+			{
+				data[i] -= closest.x();
+				data[i] /= localScale;
+				data[i + 1] -= closest.y();
+				data[i + 1] /= localScale;
+				data[i + 2] -= closest.z();
+				data[i + 2] /= localScale;
+			}
+			GLHandler::updateVertices(mesh, data);
+			data.resize(0);
+			data.shrink_to_fit();
+
 			if(starLoaded)
 			{
-				renderStar(model);
+				renderStar(totalModel);
 			}
 			else
 			{
-				Octree::readOwnData(*file);
-
-				QVector3D closest(FLT_MAX, FLT_MAX, FLT_MAX);
-				float dist(FLT_MAX);
-				for(unsigned int i(0); i < data.size(); i += 3)
-				{
-					QVector3D x(data[i], data[i + 1], data[i + 2]);
-					float distx(campos.distanceToPoint(x));
-					if(distx < dist)
-					{
-						closest = x;
-						dist    = distx;
-					}
-				}
-
-				initStar({closest.x(), closest.y(), closest.z()},
-				         bbox.diameter / 50000.f);
-				renderStar(model);
+				initStar(1.f / 500000.f);
+				renderStar(totalModel);
 			}
 			GLHandler::useShader(*shaderProgram);
 		}
@@ -230,31 +269,14 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 
 	if(dataSize / 3 <= maxPoints)
 	{
-		/*if(isLeaf)
-		    GLHandler::setShaderParam(*shaderProgram, "color",
-		                              glm::vec3(0.0f, 1.0f, 1.0f));
-		else
-		{
-		    GLHandler::setShaderParam(*shaderProgram, "color",
-		                              glm::vec3(1.0f, 1.0f, 1.0f));*/
-
-		/*if(!isLeaf())
-		   //&& sqrt(static_cast<double>(getTotalDataSize()) / dataSize) <= 4.0)
-		{
-		    GLHandler::setPointSize(static_cast<unsigned int>(
-		        sqrt(static_cast<double>(getTotalDataSize()) / dataSize)));
-		}
-		else if(!isLeaf())
-		{
-		    GLHandler::setPointSize(4);
-		}
-		else
-		{*/
 		GLHandler::setPointSize(1);
-		//}
+
+		GLHandler::setShaderParam(
+		    *shaderProgram, "view",
+		    camera.hmdScaledSpaceToWorldTransform().inverted() * totalModel);
+		GLHandler::setUpRender(*shaderProgram, totalModel);
 		GLHandler::render(mesh);
 		return dataSize / 3;
-		//}
 	}
 	return 0;
 }
@@ -274,6 +296,23 @@ void OctreeLOD::computeBBox()
 	bbox.mid.setX((bbox.maxx + bbox.minx) / 2.0f);
 	bbox.mid.setY((bbox.maxy + bbox.miny) / 2.0f);
 	bbox.mid.setZ((bbox.maxz + bbox.minz) / 2.0f);
+
+	localTranslation[0] = bbox.minx;
+	localTranslation[1] = bbox.miny;
+	localTranslation[2] = bbox.minz;
+	if((bbox.maxx - bbox.minx >= bbox.maxy - bbox.miny)
+	   && (bbox.maxx - bbox.minx >= bbox.maxz - bbox.minz))
+	{
+		localScale = bbox.maxx - bbox.minx;
+	}
+	else if(bbox.maxy - bbox.miny >= bbox.maxz - bbox.minz)
+	{
+		localScale = bbox.maxy - bbox.miny;
+	}
+	else
+	{
+		localScale = bbox.maxz - bbox.minz;
+	}
 }
 
 float OctreeLOD::currentTanAngle(Camera const& camera,
@@ -300,7 +339,7 @@ OctreeLOD::~OctreeLOD()
 	unload();
 }
 
-void OctreeLOD::initStar(std::vector<float> const& starPosition, float radius)
+void OctreeLOD::initStar(float radius)
 {
 	if(starLoaded)
 	{
@@ -326,8 +365,6 @@ void OctreeLOD::initStar(std::vector<float> const& starPosition, float radius)
 	    blackbody_red, blackbody_green, blackbody_blue);
 
 	starModel = QMatrix4x4();
-	starModel.translate(
-	    QVector3D(starPosition[0], starPosition[1], starPosition[2]));
 	starModel.scale(radius);
 
 	starTimer().restart();

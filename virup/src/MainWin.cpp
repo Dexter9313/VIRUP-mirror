@@ -13,16 +13,7 @@ void MainWin::setCubeColor(QColor const& color)
 
 void MainWin::keyPressEvent(QKeyEvent* e)
 {
-	auto cam(dynamic_cast<Camera*>(&getCamera()));
-	if(e->key() == Qt::Key_Up)
-	{
-		cam->distance /= 1.2;
-	}
-	else if(e->key() == Qt::Key_Down)
-	{
-		cam->distance *= 1.2;
-	}
-	else if(e->key() == Qt::Key_PageUp)
+	if(e->key() == Qt::Key_PageUp)
 	{
 		method->setAlpha(method->getAlpha() * 10 / 8);
 	}
@@ -33,9 +24,6 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 	else if(e->key() == Qt::Key_Home)
 	{
 		// integralDt    = 0;
-		cam->angleAroundZ = 0.f;
-		cam->angleAboveXY = 0.f;
-		cam->distance     = 0.01f;
 		if(vrHandler)
 		{
 			vrHandler.resetPos();
@@ -56,56 +44,56 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 
 	AbstractMainWin::keyPressEvent(e);
 }
-
+/*
 void MainWin::mousePressEvent(QMouseEvent* e)
 {
-	if(e->button() != Qt::MouseButton::RightButton)
-	{
-		return;
-	}
+    if(e->button() != Qt::MouseButton::RightButton)
+    {
+        return;
+    }
 
-	lastCursorPos = QCursor::pos();
-	QCursor::setPos(width() / 2, height() / 2);
-	QCursor c(cursor());
-	c.setShape(Qt::CursorShape::BlankCursor);
-	setCursor(c);
-	trackballEnabled = true;
+    lastCursorPos = QCursor::pos();
+    QCursor::setPos(width() / 2, height() / 2);
+    QCursor c(cursor());
+    c.setShape(Qt::CursorShape::BlankCursor);
+    setCursor(c);
+    trackballEnabled = true;
 }
 
 void MainWin::mouseReleaseEvent(QMouseEvent* e)
 {
-	if(e->button() != Qt::MouseButton::RightButton)
-	{
-		return;
-	}
+    if(e->button() != Qt::MouseButton::RightButton)
+    {
+        return;
+    }
 
-	trackballEnabled = false;
-	QCursor c(cursor());
-	c.setShape(Qt::CursorShape::ArrowCursor);
-	setCursor(c);
-	QCursor::setPos(lastCursorPos);
+    trackballEnabled = false;
+    QCursor c(cursor());
+    c.setShape(Qt::CursorShape::ArrowCursor);
+    setCursor(c);
+    QCursor::setPos(lastCursorPos);
 }
 
 void MainWin::mouseMoveEvent(QMouseEvent* e)
 {
-	if(!trackballEnabled)
-	{
-		return;
-	}
-	auto cam(dynamic_cast<Camera*>(&getCamera()));
-	float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
-	float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
-	cam->angleAroundZ += dx * 3.14f / 3.f;
-	cam->angleAboveXY += dy * 3.14f / 3.f;
-	QCursor::setPos(width() / 2, height() / 2);
+    if(!trackballEnabled)
+    {
+        return;
+    }
+    auto cam(dynamic_cast<Camera*>(&getCamera()));
+    float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
+    float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
+    cam->angleAroundZ += dx * 3.14f / 3.f;
+    cam->angleAboveXY += dy * 3.14f / 3.f;
+    QCursor::setPos(width() / 2, height() / 2);
 }
 
 void MainWin::wheelEvent(QWheelEvent* e)
 {
-	cubeScale += cubeScale * e->angleDelta().y() / 1000.f;
-	AbstractMainWin::wheelEvent(e);
+    cubeScale += cubeScale * e->angleDelta().y() / 1000.f;
+    AbstractMainWin::wheelEvent(e);
 }
-
+*/
 void MainWin::vrEvent(VRHandler::Event const& e)
 {
 	auto cam(dynamic_cast<Camera*>(&getCamera()));
@@ -122,18 +110,24 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 					if(e.side == Side::LEFT && left != nullptr)
 					{
 						leftGripPressed = true;
-						initControllerPosInCube
-						    = getCamera().trackedSpaceToWorldTransform()
-						          * left->getPosition()
-						      - cubeTranslation;
+						for(unsigned int i(0); i < 3; ++i)
+						{
+							initControllerPosInCube.at(i)
+							    = (getCamera().trackedSpaceToWorldTransform()
+							       * left->getPosition())[i]
+							      - cubeTranslation.at(i);
+						}
 					}
 					else if(e.side == Side::RIGHT && right != nullptr)
 					{
 						rightGripPressed = true;
-						initControllerPosInCube
-						    = getCamera().trackedSpaceToWorldTransform()
-						          * right->getPosition()
-						      - cubeTranslation;
+						for(unsigned int i(0); i < 3; ++i)
+						{
+							initControllerPosInCube.at(i)
+							    = (getCamera().trackedSpaceToWorldTransform()
+							       * right->getPosition())[i]
+							      - cubeTranslation.at(i);
+						}
 					}
 					else
 					{
@@ -145,27 +139,47 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						initControllersDistance
 						    = left->getPosition().distanceToPoint(
 						        right->getPosition());
-						initScale = cubeScale;
-						QVector3D controllersMidPoint
-						    = left->getPosition() + right->getPosition();
-						controllersMidPoint /= 2.f;
-						controllersMidPoint
-						    = getCamera().trackedSpaceToWorldTransform()
-						      * controllersMidPoint;
-						scaleCenter = controllersMidPoint;
-
-						QVector3D controllersMidPointInCube(
-						    computeCubeModel().inverted()
-						    * controllersMidPoint);
-
-						if(controllersMidPointInCube.x() < -1
-						   || controllersMidPointInCube.x() > 1
-						   || controllersMidPointInCube.y() < -1
-						   || controllersMidPointInCube.y() > 1
-						   || controllersMidPointInCube.z() < -1
-						   || controllersMidPointInCube.z() > 1)
+						initScale                                 = cubeScale;
+						std::array<double, 3> controllersMidPoint = {};
+						for(unsigned int i(0); i < 3; ++i)
 						{
-							scaleCenter = cubeTranslation;
+							controllersMidPoint.at(i)
+							    = left->getPosition()[i]
+							      + right->getPosition()[i];
+							controllersMidPoint.at(i) /= 2.f;
+						}
+						QVector3D controllersMidPointFloat(
+						    controllersMidPoint[0], controllersMidPoint[1],
+						    controllersMidPoint[2]);
+						for(unsigned int i(0); i < 3; ++i)
+						{
+							controllersMidPoint.at(i)
+							    = (getCamera().trackedSpaceToWorldTransform()
+							       * controllersMidPointFloat)[i];
+							scaleCenter.at(i) = controllersMidPoint.at(i);
+						}
+
+						std::array<double, 3> controllersMidPointInCube = {};
+
+						for(unsigned int i(0); i < 3; ++i)
+						{
+							controllersMidPointInCube.at(i)
+							    = (controllersMidPoint.at(i)
+							       - cubeTranslation.at(i))
+							      / cubeScale;
+						}
+
+						if(controllersMidPointInCube[0] < -1
+						   || controllersMidPointInCube[0] > 1
+						   || controllersMidPointInCube[1] < -1
+						   || controllersMidPointInCube[1] > 1
+						   || controllersMidPointInCube[2] < -1
+						   || controllersMidPointInCube[2] > 1)
+						{
+							for(unsigned int i(0); i < 3; ++i)
+							{
+								scaleCenter.at(i) = cubeTranslation.at(i);
+							}
 						}
 					}
 					break;
@@ -222,10 +236,14 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						leftGripPressed = false;
 						if(right != nullptr && rightGripPressed)
 						{
-							initControllerPosInCube
-							    = getCamera().trackedSpaceToWorldTransform()
-							          * right->getPosition()
-							      - cubeTranslation;
+							for(unsigned int i(0); i < 3; ++i)
+							{
+								initControllerPosInCube.at(i)
+								    = (getCamera()
+								           .trackedSpaceToWorldTransform()
+								       * right->getPosition())[i]
+								      - cubeTranslation.at(i);
+							}
 						}
 					}
 					else if(e.side == Side::RIGHT)
@@ -233,10 +251,14 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						rightGripPressed = false;
 						if(left != nullptr && leftGripPressed)
 						{
-							initControllerPosInCube
-							    = getCamera().trackedSpaceToWorldTransform()
-							          * left->getPosition()
-							      - cubeTranslation;
+							for(unsigned int i(0); i < 3; ++i)
+							{
+								initControllerPosInCube.at(i)
+								    = (getCamera()
+								           .trackedSpaceToWorldTransform()
+								       * left->getPosition())[i]
+								      - cubeTranslation.at(i);
+							}
 						}
 					}
 					break;
@@ -269,7 +291,6 @@ void MainWin::initScene()
 	auto cam = new Camera(&vrHandler);
 	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
 	                                   / static_cast<float>(height()));
-	cam->distance = 0.5;
 	setCamera(cam);
 
 	// METHOD LOADING
@@ -347,20 +368,32 @@ void MainWin::updateScene(BasicCamera& camera)
 	// single grip = translation
 	if(leftGripPressed != rightGripPressed)
 	{
-		QVector3D controllerPosInCube;
+		std::array<double, 3> controllerPosInCube = {};
 		if(leftGripPressed && left != nullptr)
 		{
-			controllerPosInCube = getCamera().trackedSpaceToWorldTransform()
-			                          * left->getPosition()
-			                      - cubeTranslation;
+			for(unsigned int i(0); i < 3; ++i)
+			{
+				controllerPosInCube.at(i)
+				    = (getCamera().trackedSpaceToWorldTransform()
+				       * left->getPosition())[i]
+				      - cubeTranslation.at(i);
+			}
 		}
 		else if(rightGripPressed && right != nullptr)
 		{
-			controllerPosInCube = getCamera().trackedSpaceToWorldTransform()
-			                          * right->getPosition()
-			                      - cubeTranslation;
+			for(unsigned int i(0); i < 3; ++i)
+			{
+				controllerPosInCube.at(i)
+				    = (getCamera().trackedSpaceToWorldTransform()
+				       * right->getPosition())[i]
+				      - cubeTranslation.at(i);
+			}
 		}
-		cubeTranslation += controllerPosInCube - initControllerPosInCube;
+		for(unsigned int i(0); i < 3; ++i)
+		{
+			cubeTranslation.at(i)
+			    += controllerPosInCube.at(i) - initControllerPosInCube.at(i);
+		}
 	}
 	// double grip = scale
 	if(leftGripPressed && rightGripPressed && left != nullptr
@@ -402,30 +435,30 @@ void MainWin::renderScene(BasicCamera const& camera)
 
 	GLHandler::glf().glDepthFunc(GL_LEQUAL);
 	GLHandler::glf().glEnable(GL_DEPTH_CLAMP);
-	QMatrix4x4 model(computeCubeModel());
+	QMatrix4x4 model;
+	model.translate(
+	    QVector3D(cubeTranslation[0], cubeTranslation[1], cubeTranslation[2]));
+	model.scale(cubeScale);
 	if(showCube)
 	{
 		GLHandler::setUpRender(cubeShader, model);
 		GLHandler::render(cube, GLHandler::PrimitiveType::LINES);
 	}
-	method->render(*cam, model);
+	method->render(*cam, cubeScale, cubeTranslation);
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
 }
 
-QMatrix4x4 MainWin::computeCubeModel() const
+void MainWin::rescaleCube(double newScale,
+                          std::array<double, 3> const& scaleCenter)
 {
-	QMatrix4x4 result;
-	result.translate(cubeTranslation);
-	result.scale(cubeScale);
-	return result;
-}
-
-void MainWin::rescaleCube(float newScale, QVector3D const& scaleCenter)
-{
-	QVector3D scaleCenterPosInCube = scaleCenter - cubeTranslation;
-	scaleCenterPosInCube *= newScale / cubeScale;
-	cubeTranslation = scaleCenter - scaleCenterPosInCube;
-	cubeScale       = newScale;
+	std::array<double, 3> scaleCenterPosInCube = {};
+	for(unsigned int i(0); i < 3; ++i)
+	{
+		scaleCenterPosInCube.at(i) = scaleCenter.at(i) - cubeTranslation.at(i);
+		scaleCenterPosInCube.at(i) *= newScale / cubeScale;
+		cubeTranslation.at(i) = scaleCenter.at(i) - scaleCenterPosInCube.at(i);
+	}
+	cubeScale = newScale;
 }
 
 std::vector<float> MainWin::generateVertices(unsigned int number,

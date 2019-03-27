@@ -9,7 +9,8 @@ class TreeMethodTex : public TreeMethodLOD
   public:
 	TreeMethodTex();
 	virtual std::string getName() const override { return "Tree Texture"; };
-	virtual void render(Camera const& camera, QMatrix4x4 const& model) override;
+	virtual void render(Camera const& camera, double scale,
+	                    std::array<double, 3> const& translation) override;
 	virtual ~TreeMethodTex();
 
   private:

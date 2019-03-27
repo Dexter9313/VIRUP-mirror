@@ -13,10 +13,11 @@ TreeMethodTex::TreeMethodTex()
 	// gettimeofday(&t0, NULL);
 }
 
-void TreeMethodTex::render(Camera const& camera, QMatrix4x4 const& model)
+void TreeMethodTex::render(Camera const& camera, double scale,
+                           std::array<double, 3> const& translation)
 {
 	GLHandler::useTextures({tex});
-	TreeMethodLOD::render(camera, model);
+	TreeMethodLOD::render(camera, scale, translation);
 }
 
 TreeMethodTex::~TreeMethodTex()

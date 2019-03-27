@@ -26,10 +26,10 @@ class MainWin : public AbstractMainWin
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
-	virtual void mousePressEvent(QMouseEvent* e) override;
-	virtual void mouseReleaseEvent(QMouseEvent* e) override;
-	virtual void mouseMoveEvent(QMouseEvent* e) override;
-	virtual void wheelEvent(QWheelEvent* e) override;
+	// virtual void mousePressEvent(QMouseEvent* e) override;
+	// virtual void mouseReleaseEvent(QMouseEvent* e) override;
+	// virtual void mouseMoveEvent(QMouseEvent* e) override;
+	// virtual void wheelEvent(QWheelEvent* e) override;
 	virtual void vrEvent(VRHandler::Event const& e) override;
 
 	virtual void setupPythonAPI() override;
@@ -46,8 +46,7 @@ class MainWin : public AbstractMainWin
 	virtual void renderScene(BasicCamera const& camera) override;
 
   private:
-	QMatrix4x4 computeCubeModel() const;
-	void rescaleCube(float newScale, QVector3D const& scaleCenter);
+	void rescaleCube(double newScale, std::array<double, 3> const& scaleCenter);
 	static std::vector<float> generateVertices(unsigned int number,
 	                                           unsigned int seed);
 	static GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
@@ -61,8 +60,8 @@ class MainWin : public AbstractMainWin
 	Method* method                      = nullptr;
 	bool showCube = QSettings().value("misc/showcube").toBool();
 
-	float cubeScale           = 1.f;
-	QVector3D cubeTranslation = QVector3D(0.f, 0.f, 0.f);
+	double cubeScale                      = 1.f;
+	std::array<double, 3> cubeTranslation = {{0.f, 0.f, 0.f}};
 
 	QPoint lastCursorPos;
 	bool trackballEnabled = false;
@@ -71,9 +70,9 @@ class MainWin : public AbstractMainWin
 	bool leftGripPressed  = false;
 	bool rightGripPressed = false;
 	float initControllersDistance;
-	QVector3D scaleCenter;
-	QVector3D initControllerPosInCube;
-	float initScale;
+	std::array<double, 3> scaleCenter;
+	std::array<double, 3> initControllerPosInCube;
+	double initScale;
 };
 
 #endif // MAINWIN_H

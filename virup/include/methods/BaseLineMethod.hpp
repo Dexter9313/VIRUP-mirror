@@ -14,7 +14,8 @@ class BaseLineMethod : public Method
 	BaseLineMethod(std::string const& shadersCommonName);
 	BaseLineMethod(std::string const& vertexShaderPath,
 	               std::string const& fragmentShaderPath);
-	virtual void render(Camera const& camera, QMatrix4x4 const& model) override;
+	virtual void render(Camera const& camera, double scale,
+	                    std::array<double, 3> const& translation) override;
 	~BaseLineMethod();
 
   public slots:

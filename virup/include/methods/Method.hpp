@@ -15,7 +15,9 @@ class Method : public QObject
 	Method(std::string const& shadersCommonName);
 	Method(std::string const& vertexShaderPath,
 	       std::string const& fragmentShaderPath);
-	virtual void render(Camera const& camera, QMatrix4x4 const& model) = 0;
+	virtual void render(Camera const& camera, double scale,
+	                    std::array<double, 3> const& translation)
+	    = 0;
 	virtual ~Method();
 
 	GLHandler::ShaderProgram shaderProgram;
