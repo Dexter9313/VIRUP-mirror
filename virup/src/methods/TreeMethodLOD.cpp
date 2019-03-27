@@ -266,7 +266,8 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	GLHandler::setShaderParam(shaderProgram, "color",
 	                          QVector3D(1.0f, 1.0f, 1.0f));
 	GLHandler::setUpRender(shaderProgram, model);
-	GLHandler::setShaderParam(shaderProgram, "alpha", model(0, 0) * getAlpha());
+	GLHandler::setShaderParam(shaderProgram, "alpha",
+	                          scale * scale * getAlpha());
 	GLHandler::setShaderParam(shaderProgram, "view",
 	                          camera.hmdScaledSpaceToWorldTransform().inverted()
 	                              * model);

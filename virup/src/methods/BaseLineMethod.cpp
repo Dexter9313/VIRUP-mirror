@@ -91,6 +91,8 @@ void BaseLineMethod::render(Camera const& camera, double scale,
 	model.translate(QVector3D(translation[0], translation[1], translation[2]));
 	model.scale(scale);
 
+	GLHandler::setShaderParam(shaderProgram, "alpha",
+	                          scale * scale * getAlpha());
 	GLHandler::setShaderParam(shaderProgram, "view",
 	                          camera.hmdScaledSpaceToWorldTransform().inverted()
 	                              * model);
