@@ -158,9 +158,20 @@ void TreeMethodLOD::init(std::string const& gazPath,
 	// preload data to fill VRAM giving priority to top levels
 	uint64_t max(OctreeLOD::getMemLimit());
 
-	uint64_t wholeData(gazTree->getTotalDataSize()
-	                   + starsTree->getTotalDataSize()
-	                   + darkMatterTree->getTotalDataSize());
+	uint64_t wholeData(0);
+	if(gazTree != nullptr)
+	{
+		wholeData += gazTree->getTotalDataSize();
+	}
+	if(starsTree != nullptr)
+	{
+		wholeData += starsTree->getTotalDataSize();
+	}
+	if(darkMatterTree != nullptr)
+	{
+		wholeData += darkMatterTree->getTotalDataSize();
+	}
+
 	wholeData *= sizeof(float);
 
 	QProgressDialog progress(tr("Preloading trees data..."), QString(), 0,
