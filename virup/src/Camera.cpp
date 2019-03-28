@@ -22,7 +22,7 @@ void Camera::updateTargetFPS()
 {
 	if(*vrHandler)
 	{
-		targetFPS = 90.f; // small margin to avoid frame drops
+		targetFPS = 100.f; // small margin to avoid frame drops
 	}
 	else
 	{
