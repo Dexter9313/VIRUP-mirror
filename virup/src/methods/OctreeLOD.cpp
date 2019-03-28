@@ -269,8 +269,6 @@ unsigned int OctreeLOD::renderAboveTanAngle(
 
 	if(dataSize / 3 <= maxPoints)
 	{
-		GLHandler::setPointSize(1);
-
 		GLHandler::setShaderParam(
 		    *shaderProgram, "view",
 		    camera.hmdScaledSpaceToWorldTransform().inverted() * totalModel);
