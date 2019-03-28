@@ -29,7 +29,7 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 			vrHandler.resetPos();
 		}
 	}
-	else if(e->key() == Qt::Key_D)
+	else if(e->key() == Qt::Key_M)
 	{
 		method->toggleDarkMatter();
 	}
@@ -40,6 +40,46 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 	else if(e->key() == Qt::Key_H)
 	{
 		setHDR(!getHDR());
+	}
+	// CONTROLS
+	else if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
+	{
+		cubePositiveVelocity.setZ(1);
+	}
+	else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
+	{
+		cubePositiveVelocity.setX(1);
+	}
+	else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
+	{
+		cubeNegativeVelocity.setZ(-1);
+	}
+	else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
+	{
+		cubeNegativeVelocity.setX(-1);
+	}
+
+	AbstractMainWin::keyPressEvent(e);
+}
+
+void MainWin::keyReleaseEvent(QKeyEvent* e)
+{
+	// CONTROLS
+	if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
+	{
+		cubePositiveVelocity.setZ(0);
+	}
+	else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
+	{
+		cubePositiveVelocity.setX(0);
+	}
+	else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
+	{
+		cubeNegativeVelocity.setZ(0);
+	}
+	else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
+	{
+		cubeNegativeVelocity.setX(0);
 	}
 
 	AbstractMainWin::keyPressEvent(e);
@@ -73,27 +113,27 @@ void MainWin::mouseReleaseEvent(QMouseEvent* e)
     setCursor(c);
     QCursor::setPos(lastCursorPos);
 }
-
+*/
 void MainWin::mouseMoveEvent(QMouseEvent* e)
 {
-    if(!trackballEnabled)
-    {
-        return;
-    }
-    auto cam(dynamic_cast<Camera*>(&getCamera()));
-    float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
-    float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
-    cam->angleAroundZ += dx * 3.14f / 3.f;
-    cam->angleAboveXY += dy * 3.14f / 3.f;
-    QCursor::setPos(width() / 2, height() / 2);
+	/*if(!trackballEnabled)
+	{
+	    return;
+	}*/
+	auto cam(dynamic_cast<Camera*>(&getCamera()));
+	float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
+	float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
+	cam->yaw += dx * 3.14f / 3.f;
+	cam->pitch += dy * 3.14f / 3.f;
+	QCursor::setPos(width() / 2, height() / 2);
 }
 
 void MainWin::wheelEvent(QWheelEvent* e)
 {
-    cubeScale += cubeScale * e->angleDelta().y() / 1000.f;
-    AbstractMainWin::wheelEvent(e);
+	rescaleCube(cubeScale * (1.f + e->angleDelta().y() / 1000.f));
+	AbstractMainWin::wheelEvent(e);
 }
-*/
+
 void MainWin::vrEvent(VRHandler::Event const& e)
 {
 	auto cam(dynamic_cast<Camera*>(&getCamera()));
@@ -281,6 +321,10 @@ void MainWin::setupPythonAPI()
 
 void MainWin::initScene()
 {
+	QCursor c(cursor());
+	c.setShape(Qt::CursorShape::BlankCursor);
+	setCursor(c);
+
 	cubeShader = GLHandler::newShader("default");
 	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
 	GLHandler::setShaderParam(
@@ -404,6 +448,18 @@ void MainWin::updateScene(BasicCamera& camera)
 		        * left->getPosition().distanceToPoint(right->getPosition())
 		        / initControllersDistance,
 		    scaleCenter);
+	}
+
+	// apply keyboard controls
+	if(vrHandler)
+	{
+		for(unsigned int i(0); i < 3; ++i)
+		{
+			cubeTranslation.at(i)
+			    += frameTiming
+			       * (cam->getView().inverted()
+			          * (cubePositiveVelocity + cubeNegativeVelocity))[i];
+		}
 	}
 
 	/*float distPeriod = 60.f, anglePeriod = 10.f;

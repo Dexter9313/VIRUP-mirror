@@ -50,9 +50,13 @@ class Camera : public BasicCamera
 
 	float targetFPS = 60.f;
 
+	float pitch = 0.f;
+	float yaw   = 0.f;
+
 	float currentFrameTiming = 0;
 
   public slots:
+	QVector3D getLookDirection() const;
 	float getTargetFPS() const { return targetFPS; };
 	void setTargetFPS(float targetFPS) { this->targetFPS = targetFPS; };
 	float getCurrentFrameTiming() const { return currentFrameTiming; };

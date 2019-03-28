@@ -26,10 +26,11 @@ class MainWin : public AbstractMainWin
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
+	virtual void keyReleaseEvent(QKeyEvent* e) override;
 	// virtual void mousePressEvent(QMouseEvent* e) override;
 	// virtual void mouseReleaseEvent(QMouseEvent* e) override;
-	// virtual void mouseMoveEvent(QMouseEvent* e) override;
-	// virtual void wheelEvent(QWheelEvent* e) override;
+	virtual void mouseMoveEvent(QMouseEvent* e) override;
+	virtual void wheelEvent(QWheelEvent* e) override;
 	virtual void vrEvent(VRHandler::Event const& e) override;
 
 	virtual void setupPythonAPI() override;
@@ -46,7 +47,8 @@ class MainWin : public AbstractMainWin
 	virtual void renderScene(BasicCamera const& camera) override;
 
   private:
-	void rescaleCube(double newScale, std::array<double, 3> const& scaleCenter);
+	void rescaleCube(double newScale, std::array<double, 3> const& scaleCenter
+	                                  = {{0.0, 0.0, 0.0}});
 	static std::vector<float> generateVertices(unsigned int number,
 	                                           unsigned int seed);
 	static GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
@@ -73,6 +75,10 @@ class MainWin : public AbstractMainWin
 	std::array<double, 3> scaleCenter;
 	std::array<double, 3> initControllerPosInCube;
 	double initScale;
+
+	// keyboard controls variables
+	QVector3D cubePositiveVelocity;
+	QVector3D cubeNegativeVelocity;
 };
 
 #endif // MAINWIN_H

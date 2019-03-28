@@ -3,7 +3,6 @@
 Camera::Camera(VRHandler const* vrHandler)
     : BasicCamera(vrHandler)
 {
-	setView(QMatrix4x4());
 }
 
 void Camera::update()
@@ -20,6 +19,32 @@ void Camera::update2D()
 
 void Camera::updateTargetFPS()
 {
+	if(!*vrHandler)
+	{
+		while(yaw < 0.f)
+		{
+			yaw += 2.f * M_PI;
+		}
+		while(yaw >= 2.f * M_PI)
+		{
+			yaw -= 2.f * M_PI;
+		}
+		if(pitch > M_PI_2 - 0.01)
+		{
+			pitch = M_PI_2 - 0.01;
+		}
+		if(pitch < -1.f * M_PI_2 + 0.01)
+		{
+			pitch = -1.f * M_PI_2 + 0.01;
+		}
+		setView(QVector3D(0.f, 0.f, 0.f), getLookDirection(),
+		        QVector3D(0.f, 0.f, 1.f));
+	}
+	else
+	{
+		setView(QMatrix4x4());
+	}
+
 	if(*vrHandler)
 	{
 		targetFPS = 100.f; // small margin to avoid frame drops
@@ -65,4 +90,9 @@ bool Camera::shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model,
 		}
 	}
 	return result;
+}
+
+QVector3D Camera::getLookDirection() const
+{
+	return {-cosf(yaw) * cosf(pitch), -sinf(yaw) * cosf(pitch), sinf(pitch)};
 }
