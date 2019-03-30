@@ -18,6 +18,44 @@
 
 #include "Primitives.hpp"
 
+GLHandler::Mesh Primitives::newQuad(GLHandler::ShaderProgram shader,
+                                    GLHandler::PrimitiveType primitiveType)
+{
+	std::vector<float> vertices = {
+	    -0.5f, -0.5f, // 0
+	    -0.5f, 0.5f,  // 1
+	    0.5f,  -0.5f, // 2
+	    0.5f,  0.5f,  // 3
+	};
+
+	GLHandler::Mesh result(GLHandler::newMesh());
+
+	if(primitiveType == GLHandler::PrimitiveType::POINTS)
+	{
+		GLHandler::setVertices(result, vertices, shader, {{"position", 3}});
+		return result;
+	}
+
+	std::vector<unsigned int> elements;
+
+	if(primitiveType == GLHandler::PrimitiveType::LINES)
+	{
+		elements = {0, 1, 1, 3, 3, 2, 2, 0};
+	}
+	else if(primitiveType == GLHandler::PrimitiveType::TRIANGLES)
+	{
+		elements = {0, 2, 1, 1, 2, 3};
+	}
+	else if(primitiveType == GLHandler::PrimitiveType::TRIANGLE_STRIP
+	        || primitiveType == GLHandler::PrimitiveType::AUTO)
+	{
+		elements = {0, 2, 1, 3};
+	}
+	GLHandler::setVertices(result, vertices, shader, {{"position", 2}},
+	                       elements);
+	return result;
+}
+
 GLHandler::Mesh Primitives::newUnitCube(GLHandler::ShaderProgram shader,
                                         GLHandler::PrimitiveType primitiveType)
 {

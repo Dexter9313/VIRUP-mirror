@@ -25,6 +25,11 @@ class Primitives
 {
   public:
 	Primitives() = delete;
+
+	static GLHandler::Mesh newQuad(GLHandler::ShaderProgram shader,
+	                               GLHandler::PrimitiveType primitiveType
+	                               = GLHandler::PrimitiveType::TRIANGLE_STRIP);
+
 	static GLHandler::Mesh
 	    newUnitCube(GLHandler::ShaderProgram shader,
 	                GLHandler::PrimitiveType primitiveType
