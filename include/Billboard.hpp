@@ -26,7 +26,7 @@
 class Billboard
 {
   public:
-	Billboard(const char* texPath);
+	explicit Billboard(const char* texPath);
 	void render(BasicCamera const& camera);
 	~Billboard();
 
