@@ -32,9 +32,11 @@ void Billboard::render(BasicCamera const& camera)
 	QMatrix4x4 model;
 	model.translate(hmdPos);
 	model.scale(width / camera.getEyeDistanceFactor());
+	GLHandler::beginTransparent();
 	GLHandler::useTextures({tex});
 	GLHandler::setUpRender(shader, model, GLHandler::GeometricSpace::HMD);
 	GLHandler::render(quad, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	GLHandler::endTransparent();
 }
 
 Billboard::~Billboard()
