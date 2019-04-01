@@ -8,6 +8,5 @@ uniform sampler2D tex;
 void main()
 {
 	outColor = texture(tex, texCoord);
-	if(outColor.a == 0.0)
-		discard;
+	outColor.rgb *= outColor.a;
 }
