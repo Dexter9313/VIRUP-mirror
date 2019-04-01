@@ -23,9 +23,10 @@ QElapsedTimer& OctreeLOD::starTimer()
 // TODO just draw nothing if vertices.size() == 0 (prevents nullptr tests when
 // drawing)
 
-OctreeLOD::OctreeLOD(GLHandler::ShaderProgram const& shaderProgram,
+OctreeLOD::OctreeLOD(GLHandler::ShaderProgram const& shaderProgram, Flags flags,
                      unsigned int lvl)
-    : lvl(lvl)
+    : Octree(flags)
+    , lvl(lvl)
     , file(nullptr)
     , isLoaded(false)
     , dataSize(0)
@@ -58,16 +59,18 @@ void OctreeLOD::readOwnData(std::istream& in)
 {
 	Octree::readOwnData(in);
 
-	for(unsigned int i(0); i < data.size(); i += 3)
+	if((getFlags() & Flags::NORMALIZED_NODES) == Flags::NONE)
 	{
-		data[i] -= bbox.minx;
-		data[i] /= localScale;
-		data[i + 1] -= bbox.miny;
-		data[i + 1] /= localScale;
-		data[i + 2] -= bbox.minz;
-		data[i + 2] /= localScale;
+		for(unsigned int i(0); i < data.size(); i += 3)
+		{
+			data[i] -= bbox.minx;
+			data[i] /= localScale;
+			data[i + 1] -= bbox.miny;
+			data[i + 1] /= localScale;
+			data[i + 2] -= bbox.minz;
+			data[i + 2] /= localScale;
+		}
 	}
-
 	mesh = GLHandler::newMesh();
 	GLHandler::setVertices(mesh, data, *shaderProgram, {{"position", 3}});
 	dataSize = data.size();
@@ -327,9 +330,9 @@ float OctreeLOD::currentTanAngle(Camera const& camera,
 	                              * QVector3D(0.f, 0.f, 0.f));
 }
 
-Octree* OctreeLOD::newOctree() const
+Octree* OctreeLOD::newOctree(Flags flags) const
 {
-	return new OctreeLOD(*shaderProgram, lvl + 1);
+	return new OctreeLOD(*shaderProgram, flags, lvl + 1);
 }
 
 OctreeLOD::~OctreeLOD()

@@ -17,7 +17,7 @@ class OctreeLOD : public Octree
 {
   public:
 	OctreeLOD(GLHandler::ShaderProgram const& shaderProgram,
-	          unsigned int lvl = 0);
+	          Flags flags = Flags::NONE, unsigned int lvl = 0);
 	virtual void init(std::vector<float>& data) override;
 	virtual void init(std::istream& in) override;
 	virtual void init(int64_t file_addr, std::istream& in) override;
@@ -37,7 +37,7 @@ class OctreeLOD : public Octree
 	static int64_t getMemLimit() { return memLimit(); };
 
   protected:
-	virtual Octree* newOctree() const override;
+	virtual Octree* newOctree(Flags flags) const override;
 
   private:
 	unsigned int lvl;
