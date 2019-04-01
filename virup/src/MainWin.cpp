@@ -451,7 +451,7 @@ void MainWin::updateScene(BasicCamera& camera)
 	}
 
 	// apply keyboard controls
-	if(vrHandler)
+	if(!vrHandler)
 	{
 		for(unsigned int i(0); i < 3; ++i)
 		{
