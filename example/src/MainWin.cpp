@@ -62,19 +62,22 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 
 void MainWin::initScene()
 {
-	shaderProgram = GLHandler::newShader("default");
+	shaderProgram = GLHandler::newShader("colorpervert");
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
-	GLHandler::setShaderParam(shaderProgram, "alpha", 1.0f);
-	GLHandler::setShaderParam(shaderProgram, "color",
-	                          QColor::fromRgbF(1.0f, 0.4f, 0.3f));
 
 	std::vector<float> vertices = {
 	    0.5f,  0.5f,  0.0f, // top right
 	    0.5f,  -0.5f, 0.0f, // bottom right
 	    -0.5f, -0.5f, 0.0f, // bottom left
-	    -0.5f, 0.5f,  0.0f  // top left
+	    -0.5f, 0.5f,  0.0f, // top left
 	};
+	/*std::vector<float> vertices = {
+	    0.5f,  0.5f,  0.0f, 1.f, 0.f, 0.f, // top right
+	    0.5f,  -0.5f, 0.0f, 0.f, 1.f, 0.f, // bottom right
+	    -0.5f, -0.5f, 0.0f, 0.f, 0.f, 1.f, // bottom left
+	    -0.5f, 0.5f,  0.0f, 0.f, 0.f, 0.f, // top left
+	};*/
 	std::vector<unsigned int> indices = {
 	    // note that we start from 0!
 	    0, 1, 3, // first Triangle
@@ -83,6 +86,8 @@ void MainWin::initScene()
 	mesh = GLHandler::newMesh();
 	GLHandler::setVertices(mesh, vertices, shaderProgram, {{"position", 3}},
 	                       indices);
+	GLHandler::setShaderUnusedAttributesValues(shaderProgram,
+	                                           {{"color", {1.0, 1.0, 0.0}}});
 
 	// create cube
 	cubeShader = GLHandler::newShader("default");
