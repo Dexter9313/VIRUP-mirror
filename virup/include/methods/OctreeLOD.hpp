@@ -55,6 +55,7 @@ class OctreeLOD : public Octree
 
 	void computeBBox();
 	float currentTanAngle(Camera const& camera, QMatrix4x4 const& model) const;
+	void ramToVideo();
 
 	/* STARS */
 

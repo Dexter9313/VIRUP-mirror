@@ -37,12 +37,8 @@ OctreeLOD::OctreeLOD(GLHandler::ShaderProgram const& shaderProgram, Flags flags,
 void OctreeLOD::init(std::vector<float>& data)
 {
 	Octree::init(data);
-
 	computeBBox();
-
-	GLHandler::setVertices(mesh, data, *shaderProgram, {{"position", 3}});
-	dataSize = data.size();
-	this->data.clear();
+	ramToVideo();
 }
 
 void OctreeLOD::init(std::istream& in)
@@ -71,13 +67,7 @@ void OctreeLOD::readOwnData(std::istream& in)
 			data[i + 2] /= localScale;
 		}
 	}
-	mesh = GLHandler::newMesh();
-	GLHandler::setVertices(mesh, data, *shaderProgram, {{"position", 3}});
-	dataSize = data.size();
-	usedMem() += dataSize * sizeof(float);
-	data.resize(0);
-	data.shrink_to_fit();
-	isLoaded = true;
+	ramToVideo();
 }
 
 void OctreeLOD::readBBox(std::istream& in)
@@ -328,6 +318,27 @@ float OctreeLOD::currentTanAngle(Camera const& camera,
 	       / (model * bbox.mid)
 	             .distanceToPoint(camera.hmdScaledSpaceToWorldTransform()
 	                              * QVector3D(0.f, 0.f, 0.f));
+}
+
+void OctreeLOD::ramToVideo()
+{
+	mesh = GLHandler::newMesh();
+	std::vector<QPair<const char*, unsigned int>> mapping = {{"position", 3}};
+	if((getFlags() & Flags::STORE_RADIUS) != Flags::NONE)
+	{
+		mapping.emplace_back("radius", 1);
+	}
+	if((getFlags() & Flags::STORE_LUMINOSITY) != Flags::NONE)
+	{
+		mapping.emplace_back("luminosity", 1);
+	}
+
+	GLHandler::setVertices(mesh, data, *shaderProgram, mapping);
+	dataSize = data.size();
+	usedMem() += dataSize * sizeof(float);
+	data.resize(0);
+	data.shrink_to_fit();
+	isLoaded = true;
 }
 
 Octree* OctreeLOD::newOctree(Flags flags) const
