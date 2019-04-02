@@ -2,6 +2,7 @@
 #define MAINWIN_H
 
 #include "AbstractMainWin.hpp"
+#include "Billboard.hpp"
 #include "Primitives.hpp"
 
 class MainWin : public AbstractMainWin
@@ -41,6 +42,8 @@ class MainWin : public AbstractMainWin
 
 	GLHandler::Mesh sphere;
 	GLHandler::ShaderProgram sphereShader;
+
+	Billboard* bill;
 
 	float barrelPower = 1.01f;
 };

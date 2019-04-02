@@ -107,6 +107,9 @@ void MainWin::initScene()
 	                          QColor::fromRgbF(0.5f, 0.5f, 1.0f));
 	sphere = Primitives::newUnitSphere(sphereShader, 100, 100);
 
+	bill           = new Billboard("data/example/images/cc.png");
+	bill->position = QVector3D(0.f, 0.f, 0.5f);
+
 	getCamera().setEyeDistanceFactor(5.0f);
 
 	appendPostProcessingShader("distort", "distort");
@@ -169,6 +172,8 @@ void MainWin::renderScene(BasicCamera const& camera)
 	GLHandler::setPointSize(8);
 	GLHandler::render(pointsMesh);
 	GLHandler::setPointSize(1);
+
+	bill->render(camera);
 }
 
 void MainWin::applyPostProcShaderParams(QString const& id,
@@ -190,4 +195,6 @@ MainWin::~MainWin()
 
 	GLHandler::deleteMesh(cube);
 	GLHandler::deleteShader(cubeShader);
+
+	delete bill;
 }
