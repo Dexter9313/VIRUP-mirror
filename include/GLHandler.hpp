@@ -6,7 +6,9 @@
 #include <QFile>
 #include <QImage>
 #include <QMatrix4x4>
-#include <QOpenGLFunctions_4_0_Core>
+// see
+// https://bugreports.qt.io/browse/QTBUG-40090?jql=text%20~%20%22glvertexattrib%22
+#include <QOpenGLFunctions_4_0_Compatibility>
 #include <QSettings>
 #include <QString>
 #include <QVector2D>
@@ -208,7 +210,7 @@ class GLHandler : public QObject
 	 * You can call OpenGL directly through that reference, but be careful !
 	 * Make sure you keep a clean OpenGL state.
 	 */
-	static QOpenGLFunctions_4_0_Core& glf();
+	static QOpenGLFunctions_4_0_Compatibility& glf();
 
   public slots:
 	/**
@@ -376,6 +378,46 @@ class GLHandler : public QObject
 	 */
 	static ShaderProgram newShader(QString vertexName, QString fragmentName,
 	                               QString geometryName = "");
+
+  public: // doesn't work in PythonQt
+	/** @brief Sets values for vertex attributes that aren't provided by a
+	 * vertex array.
+	 *
+	 * Useful if one shader is used for different rendering methods that
+	 * don't provide the same level of information.
+	 *
+	 * For example, if your shader takes "in float luminosity;" as input but
+	 * your vertex buffer only contains vertex positions, you have to use this
+	 * method to set luminosity to 1.f for example. It will disable the vertex
+	 * attribute array for "luminosity" and use 1.f instead.
+	 *
+	 * @param shader Shader for which to set values.
+	 * @param defaultValues List of pairs of attribute name + default value (ex:
+	 * ("luminosity", {1.f}) or ("normal", {1.f, 0.f, 0.f})). First element of
+	 * the pair is the name of the attribute, and second element is the
+	 * multidimensional value. The size of the given vector will determine the
+	 * type (1 = float, 2 = vec2, 3 = vec3 and 4 = vec4).
+	 */
+	static void setShaderUnusedAttributesValues(
+	    ShaderProgram shader,
+	    std::vector<QPair<const char*, std::vector<float>>> const&
+	        defaultValues);
+  public slots:
+	/**
+	 * @brief Convenient version of the @ref
+	 * setShaderUnusedAttributesValues(ShaderProgram, std::vector<QPair<const
+	 * char*, std::vector<float>>>const&) method to be used in Python.
+	 *
+	 * Behaves the same way as its other version, but the attribute mapping is
+	 * specified differently, as it is harder to construct a QVector<QPair>
+	 * object in Python. Instead of an array of pairs (name, values), the
+	 * mapping is specified by all the ordered names in the @p names
+	 * parameter and all their corresponding values in the same order in the @p
+	 * values parameter.
+	 */
+	static void setShaderUnusedAttributesValues(
+	    ShaderProgram shader, QStringList const& names,
+	    std::vector<std::vector<float>> const& values);
 	/**
 	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
 	 * value.

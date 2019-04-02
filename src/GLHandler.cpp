@@ -1,8 +1,8 @@
 #include "GLHandler.hpp"
 
-QOpenGLFunctions_4_0_Core& GLHandler::glf()
+QOpenGLFunctions_4_0_Compatibility& GLHandler::glf()
 {
-	static QOpenGLFunctions_4_0_Core glf;
+	static QOpenGLFunctions_4_0_Compatibility glf;
 	return glf;
 }
 
@@ -232,6 +232,49 @@ GLHandler::ShaderProgram GLHandler::newShader(QString vertexName,
 	glf().glValidateProgram(result);
 
 	return result;
+}
+
+void GLHandler::setShaderUnusedAttributesValues(
+    ShaderProgram shader,
+    std::vector<QPair<const char*, std::vector<float>>> const& defaultValues)
+{
+	for(auto attribute : defaultValues)
+	{
+		GLint posAttrib = glf().glGetAttribLocation(shader, attribute.first);
+		if(posAttrib != -1)
+		{
+			glf().glDisableVertexAttribArray(posAttrib);
+			switch(attribute.second.size())
+			{
+				case 1:
+					glf().glVertexAttrib1fv(posAttrib, &attribute.second[0]);
+					break;
+				case 2:
+					glf().glVertexAttrib2fv(posAttrib, &attribute.second[0]);
+					break;
+				case 3:
+					glf().glVertexAttrib3fv(posAttrib, &attribute.second[0]);
+					break;
+				case 4:
+					glf().glVertexAttrib4fv(posAttrib, &attribute.second[0]);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+}
+
+void GLHandler::setShaderUnusedAttributesValues(
+    ShaderProgram shader, QStringList const& names,
+    std::vector<std::vector<float>> const& values)
+{
+	std::vector<QPair<const char*, std::vector<float>>> defaultValues;
+	for(unsigned int i(0); i < values.size(); ++i)
+	{
+		defaultValues.emplace_back(names[i].toLatin1().constData(), values[i]);
+	}
+	setShaderUnusedAttributesValues(shader, defaultValues);
 }
 
 void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
