@@ -28,7 +28,9 @@ class BaseLineMethod : public Method
 	virtual void cleanUp() override;
 
   private:
-	GLHandler::Mesh mesh = {};
+	GLHandler::Mesh gazMesh        = {};
+	GLHandler::Mesh starsMesh      = {};
+	GLHandler::Mesh darkMatterMesh = {};
 
   protected:
 	unsigned int pointSize;
