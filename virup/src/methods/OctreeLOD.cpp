@@ -66,7 +66,6 @@ void OctreeLOD::readOwnData(std::istream& in)
 			}
 		}
 	}
-	ramToVideo();
 }
 
 void OctreeLOD::readBBox(std::istream& in)
@@ -129,6 +128,7 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 	if(lvlToLoad == 0)
 	{
 		readOwnData(*file);
+		ramToVideo();
 	}
 	else
 	{
@@ -180,6 +180,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(
 		/*if(usedMem() < memLimit())
 		{*/
 		readOwnData(*file);
+		ramToVideo();
 		/*}
 		else
 		{
@@ -224,12 +225,16 @@ unsigned int OctreeLOD::renderAboveTanAngle(
 		   && campos.z() > bbox.minz && campos.z() < bbox.maxz)
 		{
 			// Maybe don't do all this every frame...
-			Octree::readOwnData(*file);
+			readOwnData(*file);
+			std::vector<float> absoluteData(getOwnData());
+			data.resize(0);
+			data.shrink_to_fit();
 			QVector3D closest(FLT_MAX, FLT_MAX, FLT_MAX);
 			float dist(FLT_MAX);
-			for(unsigned int i(0); i < data.size(); i += 3)
+			for(unsigned int i(0); i < absoluteData.size(); i += dimPerVertex)
 			{
-				QVector3D x(data[i], data[i + 1], data[i + 2]);
+				QVector3D x(absoluteData[i], absoluteData[i + 1],
+				            absoluteData[i + 2]);
 				float distx(campos.distanceToPoint(x));
 				if(distx < dist)
 				{
@@ -240,18 +245,16 @@ unsigned int OctreeLOD::renderAboveTanAngle(
 			localTranslation[0] = closest.x();
 			localTranslation[1] = closest.y();
 			localTranslation[2] = closest.z();
-			for(unsigned int i(0); i < data.size(); i += 3)
+			for(unsigned int i(0); i < absoluteData.size(); i += dimPerVertex)
 			{
-				data[i] -= closest.x();
-				data[i] /= localScale;
-				data[i + 1] -= closest.y();
-				data[i + 1] /= localScale;
-				data[i + 2] -= closest.z();
-				data[i + 2] /= localScale;
+				absoluteData[i] -= closest.x();
+				absoluteData[i] /= localScale;
+				absoluteData[i + 1] -= closest.y();
+				absoluteData[i + 1] /= localScale;
+				absoluteData[i + 2] -= closest.z();
+				absoluteData[i + 2] /= localScale;
 			}
-			GLHandler::updateVertices(mesh, data);
-			data.resize(0);
-			data.shrink_to_fit();
+			GLHandler::updateVertices(mesh, absoluteData);
 
 			if(starLoaded)
 			{
