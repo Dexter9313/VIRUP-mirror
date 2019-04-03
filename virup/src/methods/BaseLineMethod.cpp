@@ -12,7 +12,6 @@ BaseLineMethod::BaseLineMethod(std::string const& shadersCommonName)
 BaseLineMethod::BaseLineMethod(std::string const& vertexShaderPath,
                                std::string const& fragmentShaderPath)
     : Method(vertexShaderPath, fragmentShaderPath)
-    , pointSize(1)
 {
 }
 

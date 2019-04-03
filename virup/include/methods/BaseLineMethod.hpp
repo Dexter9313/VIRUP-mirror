@@ -31,9 +31,6 @@ class BaseLineMethod : public Method
 	GLHandler::Mesh gazMesh        = {};
 	GLHandler::Mesh starsMesh      = {};
 	GLHandler::Mesh darkMatterMesh = {};
-
-  protected:
-	unsigned int pointSize;
 };
 
 #endif // BASELINEMETHOD_H

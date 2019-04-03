@@ -1,10 +1,11 @@
 #include "methods/TreeMethodTex.hpp"
 
 TreeMethodTex::TreeMethodTex()
-    : TreeMethodLOD("default", "texture")
+    : TreeMethodLOD("gaz")
     , tex()
 {
 	GLHandler::glf().glEnable(GL_POINT_SPRITE);
+	GLHandler::glf().glEnable(GL_PROGRAM_POINT_SIZE);
 	// load texture
 	tex = GLHandler::newTexture("data/virup/images/particle.png");
 }
@@ -12,10 +13,9 @@ TreeMethodTex::TreeMethodTex()
 void TreeMethodTex::render(Camera const& camera, double scale,
                            std::array<double, 3> const& translation)
 {
-	GLHandler::setPointSize(8);
+	GLHandler::setShaderParam(shaderProgram, "scale", scale);
 	GLHandler::useTextures({tex});
 	TreeMethodLOD::render(camera, scale, translation);
-	GLHandler::setPointSize(1);
 }
 
 TreeMethodTex::~TreeMethodTex()
