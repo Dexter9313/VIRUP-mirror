@@ -51,7 +51,7 @@ void BaseLineMethod::init(std::string const& gazPath,
 		file.seekg(0);
 		tree.init(file);
 		tree.readData(file);
-		std::vector<float> tData(tree.getAllData());
+		std::vector<float> tData(tree.getData());
 		vertices.insert(vertices.end(), tData.begin(), tData.end());
 		file.close();
 	}
@@ -63,7 +63,7 @@ void BaseLineMethod::init(std::string const& gazPath,
 		file.seekg(0);
 		tree.init(file);
 		tree.readData(file);
-		std::vector<float> tData(tree.getAllData());
+		std::vector<float> tData(tree.getData());
 		vertices.insert(vertices.end(), tData.begin(), tData.end());
 		file.close();
 	}
@@ -75,7 +75,7 @@ void BaseLineMethod::init(std::string const& gazPath,
 		file.seekg(0);
 		tree.init(file);
 		tree.readData(file);
-		std::vector<float> tData(tree.getAllData());
+		std::vector<float> tData(tree.getData());
 		vertices.insert(vertices.end(), tData.begin(), tData.end());
 		file.close();
 	}

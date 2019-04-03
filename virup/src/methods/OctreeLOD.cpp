@@ -57,14 +57,13 @@ void OctreeLOD::readOwnData(std::istream& in)
 
 	if((getFlags() & Flags::NORMALIZED_NODES) == Flags::NONE)
 	{
-		for(unsigned int i(0); i < data.size(); i += 3)
+		for(size_t i(0); i < data.size(); i += dimPerVertex)
 		{
-			data[i] -= bbox.minx;
-			data[i] /= localScale;
-			data[i + 1] -= bbox.miny;
-			data[i + 1] /= localScale;
-			data[i + 2] -= bbox.minz;
-			data[i + 2] /= localScale;
+			for(unsigned int j(0); j < 3; ++j)
+			{
+				data[i + j] -= localTranslation.at(j);
+				data[i + j] /= localScale;
+			}
 		}
 	}
 	ramToVideo();
@@ -74,6 +73,21 @@ void OctreeLOD::readBBox(std::istream& in)
 {
 	Octree::readBBox(in);
 	computeBBox();
+}
+
+std::vector<float> OctreeLOD::getOwnData() const
+{
+	std::vector<float> result(data);
+	for(size_t i(0); i < result.size(); i += dimPerVertex)
+	{
+		for(unsigned int j(0); j < 3; ++j)
+		{
+			result[i + j] *= localScale;
+			result[i + j] += localTranslation.at(j);
+		}
+	}
+
+	return result;
 }
 
 void OctreeLOD::unload()
@@ -260,14 +274,14 @@ unsigned int OctreeLOD::renderAboveTanAngle(
 		deleteStar();
 	}
 
-	if(dataSize / 3 <= maxPoints)
+	if(dataSize / dimPerVertex <= maxPoints)
 	{
 		GLHandler::setShaderParam(
 		    *shaderProgram, "view",
 		    camera.hmdScaledSpaceToWorldTransform().inverted() * totalModel);
 		GLHandler::setUpRender(*shaderProgram, totalModel);
 		GLHandler::render(mesh);
-		return dataSize / 3;
+		return dataSize / dimPerVertex;
 	}
 	return 0;
 }
@@ -324,15 +338,25 @@ void OctreeLOD::ramToVideo()
 {
 	mesh = GLHandler::newMesh();
 	std::vector<QPair<const char*, unsigned int>> mapping = {{"position", 3}};
+	std::vector<QPair<const char*, std::vector<float>>> unused;
 	if((getFlags() & Flags::STORE_RADIUS) != Flags::NONE)
 	{
 		mapping.emplace_back("radius", 1);
+	}
+	else
+	{
+		unused.emplace_back("radius", std::vector<float>{1.f});
 	}
 	if((getFlags() & Flags::STORE_LUMINOSITY) != Flags::NONE)
 	{
 		mapping.emplace_back("luminosity", 1);
 	}
+	else
+	{
+		unused.emplace_back("luminosity", std::vector<float>{1.f});
+	}
 
+	GLHandler::setShaderUnusedAttributesValues(*shaderProgram, unused);
 	GLHandler::setVertices(mesh, data, *shaderProgram, mapping);
 	dataSize = data.size();
 	usedMem() += dataSize * sizeof(float);
