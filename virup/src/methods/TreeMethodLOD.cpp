@@ -28,6 +28,8 @@ TreeMethodLOD::TreeMethodLOD(std::string const& vertexShaderPath,
 	ctrl.tol = 500;
 
 	showdm = false;
+
+	GLHandler::setPointSize(1);
 }
 
 void TreeMethodLOD::init(std::vector<float>& gazVertices,
