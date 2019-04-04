@@ -213,6 +213,24 @@ void TreeMethodLOD::init(std::string const& gazPath,
 	}
 }
 
+BBox TreeMethodLOD::getDataBoundingBox() const
+{
+	std::vector<BBox> bboxes;
+	if(gazTree != nullptr)
+	{
+		bboxes.push_back(gazTree->getBoundingBox());
+	}
+	if(starsTree != nullptr)
+	{
+		bboxes.push_back(starsTree->getBoundingBox());
+	}
+	if(darkMatterTree != nullptr)
+	{
+		bboxes.push_back(darkMatterTree->getBoundingBox());
+	}
+	return globalBBox(bboxes);
+}
+
 std::pair<float, std::string> humanReadable(int64_t bytes)
 {
 	float fbytes(bytes);

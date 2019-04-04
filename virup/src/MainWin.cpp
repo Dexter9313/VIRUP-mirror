@@ -394,6 +394,27 @@ void MainWin::initScene()
 		              .toStdString()
 		        : "");
 	}
+
+	BBox dataBBox = method->getDataBoundingBox();
+	if((dataBBox.maxx - dataBBox.minx >= dataBBox.maxy - dataBBox.miny)
+	   && (dataBBox.maxx - dataBBox.minx >= dataBBox.maxz - dataBBox.minz))
+	{
+		cubeScale = 1.f / (dataBBox.maxx - dataBBox.minx);
+	}
+	else if(dataBBox.maxy - dataBBox.miny >= dataBBox.maxz - dataBBox.minz)
+	{
+		cubeScale = 1.f / (dataBBox.maxy - dataBBox.miny);
+	}
+	else
+	{
+		cubeScale = 1.f / (dataBBox.maxz - dataBBox.minz);
+	}
+	cubeTranslation[0] = -1 * dataBBox.mid.x() * cubeScale;
+	cubeTranslation[1] = -1 * dataBBox.mid.y() * cubeScale;
+	cubeTranslation[2] = -1 * dataBBox.mid.z() * cubeScale;
+
+	method->setAlpha(method->getAlpha() / (cubeScale * cubeScale));
+
 	loaded = true;
 }
 

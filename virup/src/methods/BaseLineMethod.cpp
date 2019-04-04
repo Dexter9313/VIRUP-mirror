@@ -52,14 +52,16 @@ void BaseLineMethod::init(std::string const& gazPath,
 	starsMesh      = GLHandler::newMesh();
 	darkMatterMesh = GLHandler::newMesh();
 	size_t totalSize(0);
+	std::vector<BBox> bboxes;
 	if(!gazPath.empty())
 	{
 		std::ifstream file;
 		file.open(gazPath, std::fstream::in | std::fstream::binary);
-		Octree tree;
+		OctreeLOD tree(shaderProgram);
 		file.seekg(0);
 		tree.init(file);
 		tree.readData(file);
+		bboxes.push_back(tree.getBoundingBox());
 		std::vector<float> data(tree.getData());
 		GLHandler::setVertices(gazMesh, data, shaderProgram,
 		                       {{"position", 3}, {"radius", 1}});
@@ -70,10 +72,11 @@ void BaseLineMethod::init(std::string const& gazPath,
 	{
 		std::ifstream file;
 		file.open(starsPath, std::fstream::in | std::fstream::binary);
-		Octree tree;
+		OctreeLOD tree(shaderProgram);
 		file.seekg(0);
 		tree.init(file);
 		tree.readData(file);
+		bboxes.push_back(tree.getBoundingBox());
 		std::vector<float> data(tree.getData());
 		GLHandler::setVertices(starsMesh, data, shaderProgram,
 		                       {{"position", 3}});
@@ -84,16 +87,18 @@ void BaseLineMethod::init(std::string const& gazPath,
 	{
 		std::ifstream file;
 		file.open(darkMatterPath, std::fstream::in | std::fstream::binary);
-		Octree tree;
+		OctreeLOD tree(shaderProgram);
 		file.seekg(0);
 		tree.init(file);
 		tree.readData(file);
+		bboxes.push_back(tree.getBoundingBox());
 		std::vector<float> data(tree.getData());
 		GLHandler::setVertices(darkMatterMesh, data, shaderProgram,
 		                       {{"position", 3}});
 		totalSize += data.size();
 		file.close();
 	}
+	dataBBox = globalBBox(bboxes);
 	std::cout << "VRAM Loaded with " << totalSize * sizeof(float)
 	          << " bytes worth of data" << std::endl;
 }

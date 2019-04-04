@@ -17,5 +17,5 @@ void main()
 
 	float camdist = length(vec3(view * vec4(position, 1.0)));
 	fragAlpha     = min(10.0, luminosity * alpha / (radius * radius * camdist * camdist));
-	gl_PointSize = 6.0*scale*radius/camdist;
+	gl_PointSize = 1500.0*scale*radius/camdist;
 }

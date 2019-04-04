@@ -21,6 +21,7 @@ class OctreeLOD : public Octree
 	virtual void init(std::vector<float>& data) override;
 	virtual void init(std::istream& in) override;
 	virtual void init(int64_t file_addr, std::istream& in) override;
+	BBox getBoundingBox() const { return bbox; };
 	virtual void readOwnData(std::istream& in) override;
 	virtual void readBBox(std::istream& in) override;
 	virtual std::vector<float> getOwnData() const override;

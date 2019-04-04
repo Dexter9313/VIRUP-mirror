@@ -1,10 +1,9 @@
 #ifndef BASELINEMETHOD_H
 #define BASELINEMETHOD_H
 
-#include <liboctree/Octree.hpp>
-
 #include "GLHandler.hpp"
 #include "Method.hpp"
+#include "methods/OctreeLOD.hpp"
 
 class BaseLineMethod : public Method
 {
@@ -14,6 +13,7 @@ class BaseLineMethod : public Method
 	BaseLineMethod(std::string const& shadersCommonName);
 	BaseLineMethod(std::string const& vertexShaderPath,
 	               std::string const& fragmentShaderPath);
+	virtual BBox getDataBoundingBox() const override { return dataBBox; };
 	virtual void render(Camera const& camera, double scale,
 	                    std::array<double, 3> const& translation) override;
 	~BaseLineMethod();
@@ -31,6 +31,8 @@ class BaseLineMethod : public Method
 	GLHandler::Mesh gazMesh        = {};
 	GLHandler::Mesh starsMesh      = {};
 	GLHandler::Mesh darkMatterMesh = {};
+
+	BBox dataBBox = {};
 };
 
 #endif // BASELINEMETHOD_H

@@ -1,6 +1,7 @@
 #ifndef METHOD_H
 #define METHOD_H
 
+#include <cfloat>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@ class Method : public QObject
 	Method(std::string const& shadersCommonName);
 	Method(std::string const& vertexShaderPath,
 	       std::string const& fragmentShaderPath);
+	virtual BBox getDataBoundingBox() const = 0;
 	virtual void render(Camera const& camera, double scale,
 	                    std::array<double, 3> const& translation)
 	    = 0;
@@ -42,6 +44,8 @@ class Method : public QObject
 	virtual void cleanUp(){};
 
   protected:
+	static BBox globalBBox(std::vector<BBox> const& bboxes);
+
 	float alpha = 0.011;
 	bool showdm = false;
 };
