@@ -82,7 +82,7 @@ void MainWin::keyReleaseEvent(QKeyEvent* e)
 		cubeNegativeVelocity.setX(0);
 	}
 
-	AbstractMainWin::keyPressEvent(e);
+	AbstractMainWin::keyReleaseEvent(e);
 }
 /*
 void MainWin::mousePressEvent(QMouseEvent* e)
