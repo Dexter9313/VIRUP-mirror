@@ -1,8 +1,8 @@
 #include "GLHandler.hpp"
 
-QOpenGLFunctions_4_0_Compatibility& GLHandler::glf()
+QOpenGLFunctions_4_0_Core& GLHandler::glf()
 {
-	static QOpenGLFunctions_4_0_Compatibility glf;
+	static QOpenGLFunctions_4_0_Core glf;
 	return glf;
 }
 
@@ -244,19 +244,23 @@ void GLHandler::setShaderUnusedAttributesValues(
 		if(posAttrib != -1)
 		{
 			glf().glDisableVertexAttribArray(posAttrib);
+			// special case where we have to do it, see :
+			// https://bugreports.qt.io/browse/QTBUG-40090?jql=text%20~%20%22glvertexattrib%22
+			QOpenGLFunctions glf_base;
+			glf_base.initializeOpenGLFunctions();
 			switch(attribute.second.size())
 			{
 				case 1:
-					glf().glVertexAttrib1fv(posAttrib, &attribute.second[0]);
+					glf_base.glVertexAttrib1fv(posAttrib, &attribute.second[0]);
 					break;
 				case 2:
-					glf().glVertexAttrib2fv(posAttrib, &attribute.second[0]);
+					glf_base.glVertexAttrib2fv(posAttrib, &attribute.second[0]);
 					break;
 				case 3:
-					glf().glVertexAttrib3fv(posAttrib, &attribute.second[0]);
+					glf_base.glVertexAttrib3fv(posAttrib, &attribute.second[0]);
 					break;
 				case 4:
-					glf().glVertexAttrib4fv(posAttrib, &attribute.second[0]);
+					glf_base.glVertexAttrib4fv(posAttrib, &attribute.second[0]);
 					break;
 				default:
 					break;

@@ -6,9 +6,8 @@
 #include <QFile>
 #include <QImage>
 #include <QMatrix4x4>
-// see
-// https://bugreports.qt.io/browse/QTBUG-40090?jql=text%20~%20%22glvertexattrib%22
-#include <QOpenGLFunctions_4_0_Compatibility>
+#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_4_0_Core>
 #include <QSettings>
 #include <QString>
 #include <QVector2D>
@@ -210,7 +209,7 @@ class GLHandler : public QObject
 	 * You can call OpenGL directly through that reference, but be careful !
 	 * Make sure you keep a clean OpenGL state.
 	 */
-	static QOpenGLFunctions_4_0_Compatibility& glf();
+	static QOpenGLFunctions_4_0_Core& glf();
 
   public slots:
 	/**
