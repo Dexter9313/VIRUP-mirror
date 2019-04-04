@@ -189,9 +189,9 @@ if(NOT WIN32)
 endif()
 
 #prevent console from popping on Windows
-#IF( WIN32 )
-#  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /entry:mainCRTStartup")
-#ENDIF()
+IF( WIN32 )
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /entry:mainCRTStartup")
+ENDIF()
 
 
 #RUN MOC (FOR QT5)
