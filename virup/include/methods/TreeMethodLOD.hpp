@@ -38,6 +38,9 @@ class TreeMethodLOD : public Method
 	float currentTanAngle;
 	PIDController ctrl;
 
+	// ugly fix for pointSize problems
+	bool setPointSize = true;
+
 	static void initOctree(OctreeLOD* octree, std::istream* in);
 };
 

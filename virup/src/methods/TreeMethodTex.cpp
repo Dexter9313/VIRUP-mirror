@@ -8,6 +8,8 @@ TreeMethodTex::TreeMethodTex()
 	GLHandler::glf().glEnable(GL_PROGRAM_POINT_SIZE);
 	// load texture
 	tex = GLHandler::newTexture("data/virup/images/particle.png");
+
+	setPointSize = false;
 }
 
 void TreeMethodTex::render(Camera const& camera, double scale,

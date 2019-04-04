@@ -254,6 +254,10 @@ std::pair<float, std::string> humanReadable(int64_t bytes)
 void TreeMethodLOD::render(Camera const& camera, double scale,
                            std::array<double, 3> const& translation)
 {
+	if(setPointSize)
+	{
+		GLHandler::setPointSize(1);
+	}
 	QMatrix4x4 model;
 	model.translate(QVector3D(translation[0], translation[1], translation[2]));
 	model.scale(scale);
