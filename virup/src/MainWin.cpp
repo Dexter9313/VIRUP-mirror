@@ -209,12 +209,12 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 							      / cubeScale;
 						}
 
-						if(controllersMidPointInCube[0] < -1
-						   || controllersMidPointInCube[0] > 1
-						   || controllersMidPointInCube[1] < -1
-						   || controllersMidPointInCube[1] > 1
-						   || controllersMidPointInCube[2] < -1
-						   || controllersMidPointInCube[2] > 1)
+						if(controllersMidPointInCube[0] < dataBBox.minx
+						   || controllersMidPointInCube[0] > dataBBox.maxx
+						   || controllersMidPointInCube[1] < dataBBox.miny
+						   || controllersMidPointInCube[1] > dataBBox.maxy
+						   || controllersMidPointInCube[2] < dataBBox.minz
+						   || controllersMidPointInCube[2] > dataBBox.maxz)
 						{
 							for(unsigned int i(0); i < 3; ++i)
 							{
@@ -395,7 +395,7 @@ void MainWin::initScene()
 		        : "");
 	}
 
-	BBox dataBBox = method->getDataBoundingBox();
+	dataBBox = method->getDataBoundingBox();
 	if((dataBBox.maxx - dataBBox.minx >= dataBBox.maxy - dataBBox.miny)
 	   && (dataBBox.maxx - dataBBox.minx >= dataBBox.maxz - dataBBox.minz))
 	{
