@@ -41,6 +41,10 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 	{
 		setHDR(!getHDR());
 	}
+	else if(e->key() == Qt::Key_P)
+	{
+		printPositionInDataSpace();
+	}
 	// CONTROLS
 	else if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
 	{
@@ -255,7 +259,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 					method->toggleDarkMatter();
 					break;
 				case VRHandler::Button::MENU:
-					setHDR(!getHDR());
+					printPositionInDataSpace(e.side);
 					break;
 				default:
 					std::cout << "Button (?) Pressed on controller "
@@ -536,6 +540,57 @@ void MainWin::rescaleCube(double newScale,
 		cubeTranslation.at(i) = scaleCenter.at(i) - scaleCenterPosInCube.at(i);
 	}
 	cubeScale = newScale;
+}
+
+QVector3D MainWin::dataToWorldPosition(QVector3D const& data) const
+{
+	QVector3D result(data);
+	result *= cubeScale;
+	for(unsigned int i(0); i < 3; ++i)
+	{
+		result[i] += cubeTranslation.at(i);
+	}
+	return result;
+}
+
+QVector3D MainWin::worldToDataPosition(QVector3D const& world) const
+{
+	QVector3D result(world);
+	for(unsigned int i(0); i < 3; ++i)
+	{
+		result[i] -= cubeTranslation.at(i);
+	}
+	result /= cubeScale;
+	return result;
+}
+
+void MainWin::printPositionInDataSpace(Side controller) const
+{
+	QVector3D position(0.f, 0.f, 0.f);
+	Controller const* cont(vrHandler.getController(controller));
+	// world space first
+	if(cont != nullptr)
+	{
+		position
+		    = getCamera().trackedSpaceToWorldTransform() * cont->getPosition();
+	}
+	else
+	{
+		position = getCamera().hmdScaledSpaceToWorldTransform() * position;
+	}
+
+	// then data space
+	position = worldToDataPosition(position);
+	QString posstr;
+	&posstr << position;
+
+	auto msgBox = new QMessageBox;
+	msgBox->setAttribute(Qt::WA_DeleteOnClose);
+	msgBox->setStandardButtons(QMessageBox::Ok);
+	msgBox->setWindowTitle(tr("Position selected"));
+	msgBox->setText(posstr);
+	msgBox->setModal(false);
+	msgBox->show();
 }
 
 std::vector<float> MainWin::generateVertices(unsigned int number,

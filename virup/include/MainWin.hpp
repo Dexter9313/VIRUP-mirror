@@ -2,6 +2,7 @@
 #define MAINWIN_H
 
 #include <QCoreApplication>
+#include <QMessageBox>
 
 #include "AbstractMainWin.hpp"
 
@@ -49,6 +50,9 @@ class MainWin : public AbstractMainWin
   private:
 	void rescaleCube(double newScale, std::array<double, 3> const& scaleCenter
 	                                  = {{0.0, 0.0, 0.0}});
+	QVector3D dataToWorldPosition(QVector3D const& data) const;
+	QVector3D worldToDataPosition(QVector3D const& world) const;
+	void printPositionInDataSpace(Side controller = Side::NONE) const;
 	static std::vector<float> generateVertices(unsigned int number,
 	                                           unsigned int seed);
 	static GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
