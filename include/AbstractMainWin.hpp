@@ -268,6 +268,13 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	virtual void renderScene(BasicCamera const& camera) = 0;
 	/**
+	 * @brief Returns a constant reference to the @ref BasicCamera used for
+	 * rendering.
+	 *
+	 * Can be of polymorphic type if you use @ref setCamera.
+	 */
+	BasicCamera const& getCamera() const { return *camera; };
+	/**
 	 * @brief Returns a reference to the @ref BasicCamera used for rendering.
 	 *
 	 * Can be of polymorphic type if you use @ref setCamera.
