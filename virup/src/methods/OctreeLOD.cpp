@@ -417,7 +417,7 @@ void OctreeLOD::renderStar(QMatrix4x4 const& model)
 	GLHandler::setUpRender(starShader, model * starModel);
 	GLHandler::useTextures({starTex});
 	GLHandler::render(starMesh);
-	GLHandler::beginTransparent();
+	GLHandler::beginTransparent(GL_SRC_ALPHA, GL_ONE);
 }
 
 void OctreeLOD::deleteStar()

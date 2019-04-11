@@ -115,7 +115,7 @@ void BaseLineMethod::render(Camera const& camera, double scale,
 	GLHandler::setShaderParam(shaderProgram, "view",
 	                          camera.hmdScaledSpaceToWorldTransform().inverted()
 	                              * model);
-	GLHandler::beginTransparent();
+	GLHandler::beginTransparent(GL_SRC_ALPHA, GL_ONE);
 	GLHandler::setUpRender(shaderProgram, model);
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",

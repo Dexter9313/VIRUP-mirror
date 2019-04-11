@@ -286,7 +286,7 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	currentTanAngle = currentTanAngle > 1.2f ? 1.2f : currentTanAngle;
 	currentTanAngle = currentTanAngle < 0.05f ? 0.05f : currentTanAngle;
 
-	GLHandler::beginTransparent();
+	GLHandler::beginTransparent(GL_SRC_ALPHA, GL_ONE);
 	GLHandler::setShaderParam(shaderProgram, "color",
 	                          QVector3D(1.0f, 1.0f, 1.0f));
 	GLHandler::setUpRender(shaderProgram, model);
