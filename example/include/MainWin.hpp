@@ -4,6 +4,7 @@
 #include "AbstractMainWin.hpp"
 #include "Billboard.hpp"
 #include "Primitives.hpp"
+#include "Text3D.hpp"
 
 class MainWin : public AbstractMainWin
 {
@@ -44,6 +45,7 @@ class MainWin : public AbstractMainWin
 	GLHandler::ShaderProgram sphereShader;
 
 	Billboard* bill;
+	Text3D* text;
 
 	float barrelPower = 1.01f;
 };

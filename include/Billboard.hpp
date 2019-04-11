@@ -27,6 +27,7 @@ class Billboard
 {
   public:
 	explicit Billboard(const char* texPath);
+	explicit Billboard(QImage const& image);
 	void render(BasicCamera const& camera);
 	~Billboard();
 

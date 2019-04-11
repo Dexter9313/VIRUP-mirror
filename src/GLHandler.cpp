@@ -157,12 +157,13 @@ void GLHandler::showOnScreen(RenderTarget const& renderTarget, int screenx0,
 	                        GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
-void GLHandler::beginTransparent()
+void GLHandler::beginTransparent(GLenum blendfuncSfactor,
+                                 GLenum blendfuncDfactor)
 {
 	glf().glDepthMask(GL_FALSE);
 	// enable transparency
 	glf().glEnable(GL_BLEND);
-	glf().glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glf().glBlendFunc(blendfuncSfactor, blendfuncDfactor);
 }
 
 void GLHandler::endTransparent()
@@ -505,19 +506,24 @@ void GLHandler::deleteMesh(Mesh const& mesh)
 
 GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 {
-	Texture tex   = {};
-	tex.glTexture = 0;
-	tex.glTarget  = GL_TEXTURE_2D;
-
 	QImage img_data;
 	if(!img_data.load(texturePath))
 	{
 		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		qWarning() << "Could not load Texture \"" << texturePath << "\""
 		           << '\n';
-		return tex;
+		return {};
 	}
-	img_data = img_data.convertToFormat(QImage::Format_RGBA8888);
+	return newTexture(img_data, sRGB);
+}
+
+GLHandler::Texture GLHandler::newTexture(QImage const& image, bool sRGB)
+{
+	Texture tex   = {};
+	tex.glTexture = 0;
+	tex.glTarget  = GL_TEXTURE_2D;
+
+	QImage img_data = image.convertToFormat(QImage::Format_RGBA8888);
 
 	glf().glGenTextures(1, &tex.glTexture);
 	glf().glActiveTexture(GL_TEXTURE0);

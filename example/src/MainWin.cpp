@@ -113,7 +113,19 @@ void MainWin::initScene()
 	sphere = Primitives::newUnitSphere(sphereShader, 100, 100);
 
 	bill           = new Billboard("data/example/images/cc.png");
-	bill->position = QVector3D(0.f, 0.f, 0.5f);
+	bill->position = QVector3D(0.f, 0.f, 0.8f);
+
+	text = new Text3D(200, 40);
+	text->setText("Hello World !\nLet's draw some text !");
+	text->setColor(QColor(0, 0, 0, 255));
+	text->setBackgroundColor(QColor(255, 0, 0, 127));
+	text->setRectangle(QRect(50, 0, 150, 40));
+	text->setSuperSampling(2.f);
+	text->setFlags(Qt::AlignRight);
+
+	text->getModel().rotate(135.f, 0.f, 0.f, 1.f);
+	text->getModel().rotate(45.f, 1.f, 0.f);
+	text->getModel().translate(0.f, 0.f, 0.5f);
 
 	getCamera().setEyeDistanceFactor(5.0f);
 
@@ -179,6 +191,7 @@ void MainWin::renderScene(BasicCamera const& camera)
 	GLHandler::setPointSize(1);
 
 	bill->render(camera);
+	text->render();
 }
 
 void MainWin::applyPostProcShaderParams(QString const& id,
@@ -202,4 +215,5 @@ MainWin::~MainWin()
 	GLHandler::deleteShader(cubeShader);
 
 	delete bill;
+	delete text;
 }

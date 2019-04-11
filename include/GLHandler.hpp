@@ -304,10 +304,11 @@ class GLHandler : public QObject
 	 *
 	 * @attention Therefore, it is advised to render transparent meshes last.
 	 *
-	 * As of now, it is not very customizable. The blend function is
-	 * GL_SRC_ALPHA, GL_ONE. More customization will be available in the future.
+	 * Parameters are passed to the glBlendFunc function as is.
 	 */
-	static void beginTransparent();
+	static void beginTransparent(GLenum blendfuncSfactor = GL_SRC_ALPHA,
+	                             GLenum blendfuncDfactor
+	                             = GL_ONE_MINUS_SRC_ALPHA);
 	/**
 	 * @brief Ends transparent meshes rendering.
 	 *
@@ -615,6 +616,7 @@ class GLHandler : public QObject
 
 	// TEXTURES
 	static Texture newTexture(const char* texturePath, bool sRGB = true);
+	static Texture newTexture(QImage const& image, bool sRGB = true);
 	static Texture newTexture(unsigned int width, const GLvoid* data,
 	                          bool sRGB = true);
 	static Texture newTexture(unsigned int width, const unsigned char* red,

@@ -26,6 +26,14 @@ Billboard::Billboard(const char* texPath)
 	    = Primitives::newQuad(shader, GLHandler::PrimitiveType::TRIANGLE_STRIP);
 }
 
+Billboard::Billboard(QImage const& image)
+    : tex(GLHandler::newTexture(image))
+    , shader(GLHandler::newShader("billboard"))
+{
+	quad
+	    = Primitives::newQuad(shader, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+}
+
 void Billboard::render(BasicCamera const& camera)
 {
 	QVector3D hmdPos = camera.hmdSpaceToWorldTransform().inverted() * position;
