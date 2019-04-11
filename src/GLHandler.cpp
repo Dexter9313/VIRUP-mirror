@@ -157,12 +157,13 @@ void GLHandler::showOnScreen(RenderTarget const& renderTarget, int screenx0,
 	                        GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
-void GLHandler::beginTransparent()
+void GLHandler::beginTransparent(GLenum blendfuncSfactor,
+                                 GLenum blendfuncDfactor)
 {
 	glf().glDepthMask(GL_FALSE);
 	// enable transparency
 	glf().glEnable(GL_BLEND);
-	glf().glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glf().glBlendFunc(blendfuncSfactor, blendfuncDfactor);
 }
 
 void GLHandler::endTransparent()
