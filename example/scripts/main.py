@@ -1,5 +1,6 @@
 from PythonQt.QtGui import QVector3D
 from PythonQt.QtGui import QColor
+from PythonQt.QtGui import QKeyEvent
 from PythonQt.QtCore import Qt
 import math
 from time import time
