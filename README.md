@@ -9,11 +9,6 @@ The VIrtual Reality Universe Project uses astrophysical data to propose a virtua
 
 You can download releases for GNU/Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [VIRUP Releases](https://github.com/Dexter9313/VIRUP-mirror/releases).
 
-## Known Bugs
-
-* Textures don't work
-* Tree based methods won't accept random points (only files)
-
 ## Installation and requirements
 
 ### Microsoft Windows
