@@ -87,6 +87,8 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	                   GL_UNSIGNED_BYTE, nullptr);
 	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	glf().glBindTexture(GL_TEXTURE_2D, 0);
 
 	// attach it to currently bound framebuffer object
@@ -280,6 +282,13 @@ void GLHandler::setShaderUnusedAttributesValues(
 		defaultValues.emplace_back(names[i].toLatin1().constData(), values[i]);
 	}
 	setShaderUnusedAttributesValues(shader, defaultValues);
+}
+
+void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
+                               int value)
+{
+	useShader(shader);
+	glf().glUniform1i(glf().glGetUniformLocation(shader, paramName), value);
 }
 
 void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
@@ -609,7 +618,7 @@ void GLHandler::useTextures(std::vector<Texture> const& textures)
 {
 	for(unsigned int i(0); i < textures.size(); ++i)
 	{
-		glf().glActiveTexture(i);
+		glf().glActiveTexture(GL_TEXTURE0 + i);
 		glf().glBindTexture(textures[i].glTarget, textures[i].glTexture);
 	}
 }
