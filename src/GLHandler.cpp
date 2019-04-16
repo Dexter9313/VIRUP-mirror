@@ -75,25 +75,15 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
                                                    unsigned int height,
                                                    GLint format)
 {
-	RenderTarget result = {0, 0, 0, width, height};
+	RenderTarget result = {width, height};
 
 	glf().glGenFramebuffers(1, &result.frameBuffer);
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
 
 	// generate texture
-	glf().glGenTextures(1, &result.texColorBuffer);
-	glf().glBindTexture(GL_TEXTURE_2D, result.texColorBuffer);
-	glf().glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA,
-	                   GL_UNSIGNED_BYTE, nullptr);
-	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-	glf().glBindTexture(GL_TEXTURE_2D, 0);
-
-	// attach it to currently bound framebuffer object
-	glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-	                             GL_TEXTURE_2D, result.texColorBuffer, 0);
+	result.texColorBuffer
+	    = newTexture2D(width, height, nullptr, format, GL_RGBA, GL_TEXTURE_2D,
+	                   GL_LINEAR, GL_MIRRORED_REPEAT);
 
 	// render buffer for depth and stencil
 	glf().glGenRenderbuffers(1, &result.renderBuffer);
@@ -112,16 +102,13 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 GLHandler::Texture
     GLHandler::getColorAttachmentTexture(RenderTarget const& renderTarget)
 {
-	Texture tex   = {};
-	tex.glTexture = renderTarget.texColorBuffer;
-	tex.glTarget  = GL_TEXTURE_2D;
-	return tex;
+	return renderTarget.texColorBuffer;
 }
 
 void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
 {
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glf().glDeleteTextures(1, &renderTarget.texColorBuffer);
+	GLHandler::deleteTexture(renderTarget.texColorBuffer);
 	glf().glDeleteBuffers(1, &renderTarget.renderBuffer);
 	glf().glDeleteFramebuffers(1, &renderTarget.frameBuffer);
 }
@@ -129,6 +116,9 @@ void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
 void GLHandler::beginRendering(RenderTarget const& renderTarget)
 {
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, renderTarget.frameBuffer);
+	glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+	                             renderTarget.texColorBuffer.glTarget,
+	                             renderTarget.texColorBuffer.glTexture, 0);
 	glf().glClear(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
 	              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT));
 	glf().glViewport(0, 0, renderTarget.width, renderTarget.height);

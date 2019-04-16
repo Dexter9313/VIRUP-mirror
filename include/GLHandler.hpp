@@ -92,16 +92,19 @@ class GLHandler : public QObject
 	class RenderTarget
 	{
 		friend GLHandler;
-		RenderTarget(GLuint _0, GLuint _1, GLuint _2, unsigned int _3,
+		RenderTarget(unsigned int width, unsigned int height)
+		    : width(width)
+		    , height(height){};
+		RenderTarget(GLuint _0, Texture _1, GLuint _2, unsigned int _3,
 		             unsigned int _4)
 		    : frameBuffer(_0)
 		    , texColorBuffer(_1)
 		    , renderBuffer(_2)
 		    , width(_3)
 		    , height(_4){};
-		GLuint frameBuffer;
-		GLuint texColorBuffer;
-		GLuint renderBuffer;
+		GLuint frameBuffer     = 0;
+		Texture texColorBuffer = {};
+		GLuint renderBuffer    = 0;
 		unsigned int width;
 		unsigned int height;
 
@@ -273,8 +276,7 @@ class GLHandler : public QObject
 	 * screen will be used.
 	 */
 	static void beginRendering(GLHandler::RenderTarget const& renderTarget
-	                           = {0, 0, 0,
-	                              QSettings().value("window/width").toUInt(),
+	                           = {QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()});
 	/**
 	 * @brief Renders @p from's color attachment onto a quad using a
@@ -293,11 +295,11 @@ class GLHandler : public QObject
 	 * color attachment texture into. First sampler2D found in the fragment
 	 * shader will be used.
 	 */
-	static void
-	    postProcess(ShaderProgram shader, GLHandler::RenderTarget const& from,
-	                RenderTarget const& to
-	                = {0, 0, 0, QSettings().value("window/width").toUInt(),
-	                   QSettings().value("window/height").toUInt()});
+	static void postProcess(ShaderProgram shader,
+	                        GLHandler::RenderTarget const& from,
+	                        RenderTarget const& to
+	                        = {QSettings().value("window/width").toUInt(),
+	                           QSettings().value("window/height").toUInt()});
 	/**
 	 * @brief Shows a @p renderTarget content on screen
 	 *
