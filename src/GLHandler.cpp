@@ -565,6 +565,38 @@ GLHandler::Texture GLHandler::newTexture(unsigned int width,
 	return newTexture2D(width, height, data, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA);
 }
 
+GLHandler::Texture
+    GLHandler::newTexture(std::array<const char*, 6> const& texturesPaths,
+                          bool sRGB)
+{
+	std::array<QImage, 6> images;
+	for(unsigned int i(0); i < 6; ++i)
+	{
+		if(!images.at(i).load(texturesPaths.at(i)))
+		{
+			// NOLINTNEXTLINE(hicpp-no-array-decay)
+			qWarning() << "Could not load Texture \"" << texturesPaths.at(i)
+			           << "\"" << '\n';
+			return {};
+		}
+	}
+
+	return newTexture(images, sRGB);
+}
+
+GLHandler::Texture GLHandler::newTexture(std::array<QImage, 6> const& images,
+                                         bool sRGB)
+{
+	std::array<GLvoid const*, 6> data = {};
+	for(unsigned int i(0); i < 6; ++i)
+	{
+		data.at(i) = images.at(i).bits();
+	}
+
+	return newTextureCubemap(images.at(0).width(), data,
+	                         sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA);
+}
+
 GLHandler::Texture GLHandler::newTexture1D(unsigned int width,
                                            GLvoid const* data,
                                            GLint internalFormat, GLenum format,

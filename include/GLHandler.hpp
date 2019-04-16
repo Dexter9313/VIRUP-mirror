@@ -647,6 +647,10 @@ class GLHandler : public QObject
 	static Texture newTexture(QImage const& image, bool sRGB = true);
 	static Texture newTexture(unsigned int width, unsigned int height,
 	                          const GLvoid* data, bool sRGB = true);
+	static Texture newTexture(std::array<const char*, 6> const& texturesPaths,
+	                          bool sRGB = true);
+	static Texture newTexture(std::array<QImage, 6> const& images,
+	                          bool sRGB = true);
 	static Texture
 	    newTexture1D(unsigned int width, GLvoid const* data = nullptr,
 	                 GLint internalFormat = GL_SRGB8_ALPHA8,
