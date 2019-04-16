@@ -513,26 +513,6 @@ void GLHandler::deleteMesh(Mesh const& mesh)
 	glf().glDeleteVertexArrays(1, &mesh.vao);
 }
 
-GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
-{
-	QImage img_data;
-	if(!img_data.load(texturePath))
-	{
-		// NOLINTNEXTLINE(hicpp-no-array-decay)
-		qWarning() << "Could not load Texture \"" << texturePath << "\""
-		           << '\n';
-		return {};
-	}
-	return newTexture(img_data, sRGB);
-}
-
-GLHandler::Texture GLHandler::newTexture(QImage const& image, bool sRGB)
-{
-	QImage img_data = image.convertToFormat(QImage::Format_RGBA8888);
-	return newTexture2D(img_data.width(), img_data.height(), img_data.bits(),
-	                    sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA);
-}
-
 GLHandler::Texture GLHandler::newTexture(unsigned int width, const GLvoid* data,
                                          bool sRGB)
 {
@@ -556,6 +536,26 @@ GLHandler::Texture GLHandler::newTexture(unsigned int width,
 	Texture tex = newTexture(width, image, sRGB);
 	delete[] image;
 	return tex;
+}
+
+GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
+{
+	QImage img_data;
+	if(!img_data.load(texturePath))
+	{
+		// NOLINTNEXTLINE(hicpp-no-array-decay)
+		qWarning() << "Could not load Texture \"" << texturePath << "\""
+		           << '\n';
+		return {};
+	}
+	return newTexture(img_data, sRGB);
+}
+
+GLHandler::Texture GLHandler::newTexture(QImage const& image, bool sRGB)
+{
+	QImage img_data = image.convertToFormat(QImage::Format_RGBA8888);
+	return newTexture2D(img_data.width(), img_data.height(), img_data.bits(),
+	                    sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA);
 }
 
 GLHandler::Texture GLHandler::newTexture(unsigned int width,
@@ -609,6 +609,35 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
 	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
 	glf().glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
 	glf().glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
+	/*GLfloat fLargest;
+	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
+	glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
+	glf().glBindTexture(target, 0);
+
+	return tex;
+}
+
+GLHandler::Texture GLHandler::newTextureCubemap(
+    unsigned int side, std::array<GLvoid const*, 6> data, GLint internalFormat,
+    GLenum format, GLenum target, GLint filter, GLint wrap)
+{
+	Texture tex  = {};
+	tex.glTarget = target;
+	glf().glGenTextures(1, &tex.glTexture);
+	// glActiveTexture(GL_TEXTURE0);
+	glf().glBindTexture(target, tex.glTexture);
+	for(unsigned int i(0); i < 6; ++i)
+	{
+		glf().glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
+		                   internalFormat, side, side, 0, format,
+		                   GL_UNSIGNED_BYTE, data.at(i));
+	}
+	// glGenerateMipmap(target);
+	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
+	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
+	glf().glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
+	glf().glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
+	glf().glTexParameteri(target, GL_TEXTURE_WRAP_R, wrap);
 	/*GLfloat fLargest;
 	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
 	glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/

@@ -172,6 +172,19 @@ class GLHandler : public QObject
 	};
 	Q_ENUM(GeometricSpace)
 
+	/**
+	 * @brief Representing a cube face (used mostly for cubemaps).
+	 */
+	enum class CubeFace
+	{
+		RIGHT  = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		LEFT   = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		TOP    = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		BOTTOM = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		BACK   = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		FRONT  = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+	};
+
   public:
 	/**
 	 * @brief Default constructor.
@@ -623,8 +636,6 @@ class GLHandler : public QObject
 	static void deleteMesh(GLHandler::Mesh const& mesh);
 
 	// TEXTURES
-	static Texture newTexture(const char* texturePath, bool sRGB = true);
-	static Texture newTexture(QImage const& image, bool sRGB = true);
 	static Texture newTexture(unsigned int width, const GLvoid* data,
 	                          bool sRGB = true);
 	static Texture newTexture(unsigned int width, const unsigned char* red,
@@ -632,6 +643,8 @@ class GLHandler : public QObject
 	                          const unsigned char* blue,
 	                          const unsigned char* alpha = nullptr,
 	                          bool sRGB                  = true);
+	static Texture newTexture(const char* texturePath, bool sRGB = true);
+	static Texture newTexture(QImage const& image, bool sRGB = true);
 	static Texture newTexture(unsigned int width, unsigned int height,
 	                          const GLvoid* data, bool sRGB = true);
 	static Texture
@@ -646,6 +659,13 @@ class GLHandler : public QObject
 	                            GLenum target        = GL_TEXTURE_2D,
 	                            GLint filter         = GL_LINEAR,
 	                            GLint wrap           = GL_CLAMP_TO_EDGE);
+	static Texture newTextureCubemap(
+	    unsigned int side,
+	    std::array<GLvoid const*, 6> data
+	    = {{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}},
+	    GLint internalFormat = GL_SRGB8_ALPHA8, GLenum format = GL_RGBA,
+	    GLenum target = GL_TEXTURE_CUBE_MAP, GLint filter = GL_LINEAR,
+	    GLint wrap = GL_CLAMP_TO_EDGE);
 	static GLuint getGLTexture(Texture const& tex) { return tex.glTexture; };
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
