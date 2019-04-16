@@ -634,6 +634,18 @@ class GLHandler : public QObject
 	                          bool sRGB                  = true);
 	static Texture newTexture(unsigned int width, unsigned int height,
 	                          const GLvoid* data, bool sRGB = true);
+	static Texture
+	    newTexture1D(unsigned int width, GLvoid const* data = nullptr,
+	                 GLint internalFormat = GL_SRGB8_ALPHA8,
+	                 GLenum format = GL_RGBA, GLenum target = GL_TEXTURE_1D,
+	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE);
+	static Texture newTexture2D(unsigned int width, unsigned int height,
+	                            GLvoid const* data   = nullptr,
+	                            GLint internalFormat = GL_SRGB8_ALPHA8,
+	                            GLenum format        = GL_RGBA,
+	                            GLenum target        = GL_TEXTURE_2D,
+	                            GLint filter         = GL_LINEAR,
+	                            GLint wrap           = GL_CLAMP_TO_EDGE);
 	static GLuint getGLTexture(Texture const& tex) { return tex.glTexture; };
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
