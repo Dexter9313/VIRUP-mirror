@@ -588,9 +588,16 @@ GLHandler::Texture GLHandler::newTexture(std::array<QImage, 6> const& images,
                                          bool sRGB)
 {
 	std::array<GLvoid const*, 6> data = {};
+
+	std::array<QImage, 6> img_data = {};
+
 	for(unsigned int i(0); i < 6; ++i)
 	{
-		data.at(i) = images.at(i).bits();
+		img_data.at(i) = images.at(i).convertToFormat(QImage::Format_RGBA8888);
+	}
+	for(unsigned int i(0); i < 6; ++i)
+	{
+		data.at(i) = img_data.at(i).bits();
 	}
 
 	return newTextureCubemap(images.at(0).width(), data,
