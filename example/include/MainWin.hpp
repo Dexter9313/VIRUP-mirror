@@ -31,6 +31,10 @@ class MainWin : public AbstractMainWin
 	    QString const& id, GLHandler::ShaderProgram shader) const override;
 
   private:
+	GLHandler::ShaderProgram sbShader;
+	GLHandler::Mesh skybox;
+	GLHandler::Texture sbTexture;
+
 	GLHandler::Mesh mesh;
 	GLHandler::ShaderProgram shaderProgram;
 
