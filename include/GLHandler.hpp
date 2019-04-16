@@ -242,8 +242,8 @@ class GLHandler : public QObject
 	 * @brief Calls @ref newRenderTarget(@p width, @p height, @ref
 	 * defaultRenderTargetFormat()).
 	 */
-	static RenderTarget newRenderTarget(unsigned int width,
-	                                    unsigned int height);
+	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
+	                                    bool cubemap = false);
 	/**
 	 * @brief Allocates a new @ref RenderTarget.
 	 * @param width Width of all buffers of the render target.
@@ -255,7 +255,7 @@ class GLHandler : public QObject
 	 * textures.
 	 */
 	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
-	                                    GLint format);
+	                                    GLint format, bool cubemap = false);
 	/**
 	 * @brief Returns the color attachment of a @p renderTarget.
 	 *
@@ -277,7 +277,8 @@ class GLHandler : public QObject
 	 */
 	static void beginRendering(GLHandler::RenderTarget const& renderTarget
 	                           = {QSettings().value("window/width").toUInt(),
-	                              QSettings().value("window/height").toUInt()});
+	                              QSettings().value("window/height").toUInt()},
+	                           CubeFace face = CubeFace::FRONT);
 	/**
 	 * @brief Renders @p from's color attachment onto a quad using a
 	 * post-processing @p shader. The final rendering gets stored on the @p to

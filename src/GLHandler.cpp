@@ -66,14 +66,15 @@ void GLHandler::setPointSize(unsigned int size)
 }
 
 GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
-                                                   unsigned int height)
+                                                   unsigned int height,
+                                                   bool cubemap)
 {
-	return newRenderTarget(width, height, defaultRenderTargetFormat());
+	return newRenderTarget(width, height, defaultRenderTargetFormat(), cubemap);
 }
 
 GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
                                                    unsigned int height,
-                                                   GLint format)
+                                                   GLint format, bool cubemap)
 {
 	RenderTarget result = {width, height};
 
@@ -81,9 +82,19 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
 
 	// generate texture
-	result.texColorBuffer
-	    = newTexture2D(width, height, nullptr, format, GL_RGBA, GL_TEXTURE_2D,
-	                   GL_LINEAR, GL_MIRRORED_REPEAT);
+	if(!cubemap)
+	{
+		result.texColorBuffer
+		    = newTexture2D(width, height, nullptr, format, GL_RGBA,
+		                   GL_TEXTURE_2D, GL_LINEAR, GL_MIRRORED_REPEAT);
+	}
+	else
+	{
+		result.texColorBuffer = newTextureCubemap(
+		    width, {{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}},
+		    format, GL_RGBA, GL_TEXTURE_CUBE_MAP, GL_LINEAR,
+		    GL_MIRRORED_REPEAT);
+	}
 
 	// render buffer for depth and stencil
 	glf().glGenRenderbuffers(1, &result.renderBuffer);
@@ -113,12 +124,27 @@ void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
 	glf().glDeleteFramebuffers(1, &renderTarget.frameBuffer);
 }
 
-void GLHandler::beginRendering(RenderTarget const& renderTarget)
+void GLHandler::beginRendering(RenderTarget const& renderTarget, CubeFace face)
 {
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, renderTarget.frameBuffer);
-	glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-	                             renderTarget.texColorBuffer.glTarget,
-	                             renderTarget.texColorBuffer.glTexture, 0);
+	if(renderTarget.frameBuffer != 0)
+	{
+		if(renderTarget.texColorBuffer.glTarget == GL_TEXTURE_CUBE_MAP)
+		{
+			glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			                             static_cast<unsigned int>(face)
+			                                 + GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+			                             renderTarget.texColorBuffer.glTexture,
+			                             0);
+		}
+		else
+		{
+			glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			                             renderTarget.texColorBuffer.glTarget,
+			                             renderTarget.texColorBuffer.glTexture,
+			                             0);
+		}
+	}
 	glf().glClear(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
 	              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT));
 	glf().glViewport(0, 0, renderTarget.width, renderTarget.height);
