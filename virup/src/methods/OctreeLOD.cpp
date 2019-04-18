@@ -391,7 +391,8 @@ void OctreeLOD::initStar(float radius)
 	std::exponential_distribution<double> d(0.0005);
 
 	starShader = GLHandler::newShader("star");
-	GLHandler::setShaderParam(starShader, "temperature", 1000 + d(generator));
+	GLHandler::setShaderParam(starShader, "temperature",
+	                          static_cast<float>(1000 + d(generator)));
 	GLHandler::setShaderParam(
 	    starShader, "blackbodyBoundaries",
 	    QVector2D(blackbody_min_temp, blackbody_max_temp));

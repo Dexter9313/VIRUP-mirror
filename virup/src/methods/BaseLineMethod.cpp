@@ -111,7 +111,7 @@ void BaseLineMethod::render(Camera const& camera, double scale,
 	model.scale(scale);
 
 	GLHandler::setShaderParam(shaderProgram, "alpha",
-	                          scale * scale * getAlpha());
+	                          static_cast<float>(scale * scale * getAlpha()));
 	GLHandler::setShaderParam(shaderProgram, "view",
 	                          camera.hmdScaledSpaceToWorldTransform().inverted()
 	                              * model);

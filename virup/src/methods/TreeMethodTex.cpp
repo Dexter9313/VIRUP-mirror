@@ -15,7 +15,8 @@ TreeMethodTex::TreeMethodTex()
 void TreeMethodTex::render(Camera const& camera, double scale,
                            std::array<double, 3> const& translation)
 {
-	GLHandler::setShaderParam(shaderProgram, "scale", scale);
+	GLHandler::setShaderParam(shaderProgram, "scale",
+	                          static_cast<float>(scale));
 	GLHandler::useTextures({tex});
 	TreeMethodLOD::render(camera, scale, translation);
 }
