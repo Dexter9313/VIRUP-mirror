@@ -92,16 +92,19 @@ class GLHandler : public QObject
 	class RenderTarget
 	{
 		friend GLHandler;
-		RenderTarget(GLuint _0, GLuint _1, GLuint _2, unsigned int _3,
+		RenderTarget(unsigned int width, unsigned int height)
+		    : width(width)
+		    , height(height){};
+		RenderTarget(GLuint _0, Texture _1, GLuint _2, unsigned int _3,
 		             unsigned int _4)
 		    : frameBuffer(_0)
 		    , texColorBuffer(_1)
 		    , renderBuffer(_2)
 		    , width(_3)
 		    , height(_4){};
-		GLuint frameBuffer;
-		GLuint texColorBuffer;
-		GLuint renderBuffer;
+		GLuint frameBuffer     = 0;
+		Texture texColorBuffer = {};
+		GLuint renderBuffer    = 0;
 		unsigned int width;
 		unsigned int height;
 
@@ -172,6 +175,20 @@ class GLHandler : public QObject
 	};
 	Q_ENUM(GeometricSpace)
 
+	/**
+	 * @brief Representing a cube face (used mostly for cubemaps).
+	 */
+	enum class CubeFace
+	{
+		RIGHT = GL_TEXTURE_CUBE_MAP_POSITIVE_X - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		LEFT  = GL_TEXTURE_CUBE_MAP_NEGATIVE_X - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		TOP   = GL_TEXTURE_CUBE_MAP_POSITIVE_Y - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		BOTTOM
+		= GL_TEXTURE_CUBE_MAP_NEGATIVE_Y - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		BACK  = GL_TEXTURE_CUBE_MAP_POSITIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		FRONT = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+	};
+
   public:
 	/**
 	 * @brief Default constructor.
@@ -225,8 +242,8 @@ class GLHandler : public QObject
 	 * @brief Calls @ref newRenderTarget(@p width, @p height, @ref
 	 * defaultRenderTargetFormat()).
 	 */
-	static RenderTarget newRenderTarget(unsigned int width,
-	                                    unsigned int height);
+	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
+	                                    bool cubemap = false);
 	/**
 	 * @brief Allocates a new @ref RenderTarget.
 	 * @param width Width of all buffers of the render target.
@@ -238,7 +255,7 @@ class GLHandler : public QObject
 	 * textures.
 	 */
 	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
-	                                    GLint format);
+	                                    GLint format, bool cubemap = false);
 	/**
 	 * @brief Returns the color attachment of a @p renderTarget.
 	 *
@@ -259,9 +276,9 @@ class GLHandler : public QObject
 	 * screen will be used.
 	 */
 	static void beginRendering(GLHandler::RenderTarget const& renderTarget
-	                           = {0, 0, 0,
-	                              QSettings().value("window/width").toUInt(),
-	                              QSettings().value("window/height").toUInt()});
+	                           = {QSettings().value("window/width").toUInt(),
+	                              QSettings().value("window/height").toUInt()},
+	                           CubeFace face = CubeFace::FRONT);
 	/**
 	 * @brief Renders @p from's color attachment onto a quad using a
 	 * post-processing @p shader. The final rendering gets stored on the @p to
@@ -279,11 +296,11 @@ class GLHandler : public QObject
 	 * color attachment texture into. First sampler2D found in the fragment
 	 * shader will be used.
 	 */
-	static void
-	    postProcess(ShaderProgram shader, GLHandler::RenderTarget const& from,
-	                RenderTarget const& to
-	                = {0, 0, 0, QSettings().value("window/width").toUInt(),
-	                   QSettings().value("window/height").toUInt()});
+	static void postProcess(ShaderProgram shader,
+	                        GLHandler::RenderTarget const& from,
+	                        RenderTarget const& to
+	                        = {QSettings().value("window/width").toUInt(),
+	                           QSettings().value("window/height").toUInt()});
 	/**
 	 * @brief Shows a @p renderTarget content on screen
 	 *
@@ -418,6 +435,14 @@ class GLHandler : public QObject
 	static void setShaderUnusedAttributesValues(
 	    ShaderProgram shader, QStringList const& names,
 	    std::vector<std::vector<float>> const& values);
+	/**
+	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
+	 * value.
+	 *
+	 * The uniform must be of type int.
+	 */
+	static void setShaderParam(ShaderProgram shader, const char* paramName,
+	                           int value);
 	/**
 	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
 	 * value.
@@ -615,8 +640,6 @@ class GLHandler : public QObject
 	static void deleteMesh(GLHandler::Mesh const& mesh);
 
 	// TEXTURES
-	static Texture newTexture(const char* texturePath, bool sRGB = true);
-	static Texture newTexture(QImage const& image, bool sRGB = true);
 	static Texture newTexture(unsigned int width, const GLvoid* data,
 	                          bool sRGB = true);
 	static Texture newTexture(unsigned int width, const unsigned char* red,
@@ -624,8 +647,33 @@ class GLHandler : public QObject
 	                          const unsigned char* blue,
 	                          const unsigned char* alpha = nullptr,
 	                          bool sRGB                  = true);
+	static Texture newTexture(const char* texturePath, bool sRGB = true);
+	static Texture newTexture(QImage const& image, bool sRGB = true);
 	static Texture newTexture(unsigned int width, unsigned int height,
 	                          const GLvoid* data, bool sRGB = true);
+	static Texture newTexture(std::array<const char*, 6> const& texturesPaths,
+	                          bool sRGB = true);
+	static Texture newTexture(std::array<QImage, 6> const& images,
+	                          bool sRGB = true);
+	static Texture
+	    newTexture1D(unsigned int width, GLvoid const* data = nullptr,
+	                 GLint internalFormat = GL_SRGB8_ALPHA8,
+	                 GLenum format = GL_RGBA, GLenum target = GL_TEXTURE_1D,
+	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE);
+	static Texture newTexture2D(unsigned int width, unsigned int height,
+	                            GLvoid const* data   = nullptr,
+	                            GLint internalFormat = GL_SRGB8_ALPHA8,
+	                            GLenum format        = GL_RGBA,
+	                            GLenum target        = GL_TEXTURE_2D,
+	                            GLint filter         = GL_LINEAR,
+	                            GLint wrap           = GL_CLAMP_TO_EDGE);
+	static Texture newTextureCubemap(
+	    unsigned int side,
+	    std::array<GLvoid const*, 6> data
+	    = {{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}},
+	    GLint internalFormat = GL_SRGB8_ALPHA8, GLenum format = GL_RGBA,
+	    GLenum target = GL_TEXTURE_CUBE_MAP, GLint filter = GL_LINEAR,
+	    GLint wrap = GL_CLAMP_TO_EDGE);
 	static GLuint getGLTexture(Texture const& tex) { return tex.glTexture; };
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);

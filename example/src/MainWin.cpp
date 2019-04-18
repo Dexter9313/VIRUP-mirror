@@ -62,6 +62,25 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 
 void MainWin::initScene()
 {
+	// SKYBOX
+	sbShader = GLHandler::newShader("skybox");
+	skybox   = Primitives::newUnitCube(sbShader);
+
+	std::array<const char*, 6> paths = {};
+	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::BACK))
+	    = "data/example/images/ame_ash/ashcanyon_bk.tga";
+	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::BOTTOM))
+	    = "data/example/images/ame_ash/ashcanyon_dn.tga";
+	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::FRONT))
+	    = "data/example/images/ame_ash/ashcanyon_ft.tga";
+	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::LEFT))
+	    = "data/example/images/ame_ash/ashcanyon_lf.tga";
+	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::RIGHT))
+	    = "data/example/images/ame_ash/ashcanyon_rt.tga";
+	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::TOP))
+	    = "data/example/images/ame_ash/ashcanyon_up.tga";
+	sbTexture = GLHandler::newTexture(paths);
+
 	shaderProgram = GLHandler::newShader("colorpervert");
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -173,7 +192,12 @@ void MainWin::updateScene(BasicCamera& camera)
 
 void MainWin::renderScene(BasicCamera const& camera)
 {
-	Q_UNUSED(camera);
+	GLHandler::useTextures({sbTexture});
+	GLHandler::setUpRender(sbShader, QMatrix4x4(),
+	                       GLHandler::GeometricSpace::SKYBOX);
+	GLHandler::render(skybox, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	GLHandler::clearDepthBuffer();
+
 	QMatrix4x4 model;
 	model.translate(-1.5, 0, 0);
 	GLHandler::setUpRender(sphereShader, model,
@@ -206,6 +230,10 @@ void MainWin::applyPostProcShaderParams(QString const& id,
 
 MainWin::~MainWin()
 {
+	GLHandler::deleteTexture(sbTexture);
+	GLHandler::deleteMesh(skybox);
+	GLHandler::deleteShader(sbShader);
+
 	GLHandler::deleteMesh(mesh);
 
 	GLHandler::deleteMesh(pointsMesh);
