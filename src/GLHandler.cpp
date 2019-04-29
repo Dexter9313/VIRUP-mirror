@@ -609,7 +609,50 @@ GLHandler::Texture GLHandler::newTexture(std::array<QImage, 6> const& images,
 
 	for(unsigned int i(0); i < 6; ++i)
 	{
-		img_data.at(i) = images.at(i).convertToFormat(QImage::Format_RGBA8888);
+		switch(i)
+		{
+			case static_cast<int>(CubeFace::FRONT):
+			case static_cast<int>(CubeFace::TOP):
+			case static_cast<int>(CubeFace::BOTTOM):
+			{
+				QImage im(images.at(i).height(), images.at(i).width(),
+				          QImage::Format_RGBA8888);
+				for(int j(0); j < im.height(); ++j)
+				{
+					for(int k(0); k < im.width(); ++k)
+					{
+						im.setPixel(k, j, images.at(i).pixel(j, k));
+					}
+				}
+				img_data.at(i) = im;
+			}
+			break;
+			case static_cast<int>(CubeFace::BACK):
+			{
+				QImage im(images.at(i).height(), images.at(i).width(),
+				          QImage::Format_RGBA8888);
+				for(int j(0); j < im.height(); ++j)
+				{
+					for(int k(0); k < im.width(); ++k)
+					{
+						im.setPixel(im.width() - k - 1, im.height() - j - 1,
+						            images.at(i).pixel(j, k));
+					}
+				}
+				img_data.at(i) = im;
+			}
+			break;
+			case static_cast<int>(CubeFace::LEFT):
+				img_data.at(i) = images.at(i)
+				                     .mirrored(false, true)
+				                     .convertToFormat(QImage::Format_RGBA8888);
+				break;
+			case static_cast<int>(CubeFace::RIGHT):
+				img_data.at(i) = images.at(i)
+				                     .mirrored(true, false)
+				                     .convertToFormat(QImage::Format_RGBA8888);
+				break;
+		}
 	}
 	for(unsigned int i(0); i < 6; ++i)
 	{
