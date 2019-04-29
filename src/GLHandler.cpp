@@ -652,6 +652,8 @@ GLHandler::Texture GLHandler::newTexture(std::array<QImage, 6> const& images,
 				                     .mirrored(true, false)
 				                     .convertToFormat(QImage::Format_RGBA8888);
 				break;
+			default:
+				break;
 		}
 	}
 	for(unsigned int i(0); i < 6; ++i)
