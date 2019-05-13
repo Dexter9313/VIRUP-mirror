@@ -296,3 +296,28 @@ void SettingsWidget::addColorSetting(QString const& name,
 
 	currentForm->addRow(label + " :", button);
 }
+
+void SettingsWidget::addDateTimeSetting(QString const& name,
+                                        QDateTime const& defaultVal,
+                                        QString const& label)
+{
+	QString fullName(currentGroup + '/' + name);
+
+	if(!settings.contains(fullName))
+	{
+		settings.setValue(fullName, defaultVal);
+	}
+
+	QDateTime stored(settings.value(fullName).value<QDateTime>().toTimeSpec(
+	    Qt::OffsetFromUTC));
+
+	auto dtEdit = new QDateTimeEdit(stored, this);
+	dtEdit->setCalendarPopup(true);
+
+	connect(dtEdit, &QDateTimeEdit::dateTimeChanged, this,
+	        [this, fullName](QDateTime dt) {
+		        updateValue(fullName, dt);
+	        });
+
+	currentForm->addRow(label + " :", dtEdit);
+}
