@@ -315,9 +315,7 @@ void SettingsWidget::addDateTimeSetting(QString const& name,
 	dtEdit->setCalendarPopup(true);
 
 	connect(dtEdit, &QDateTimeEdit::dateTimeChanged, this,
-	        [this, fullName](QDateTime dt) {
-		        updateValue(fullName, dt);
-	        });
+	        [this, fullName](QDateTime dt) { updateValue(fullName, dt); });
 
 	currentForm->addRow(label + " :", dtEdit);
 }
