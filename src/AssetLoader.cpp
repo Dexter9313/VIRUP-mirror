@@ -37,7 +37,7 @@ void AssetLoader::loadModel(QString modelName,
 	const aiScene* scene = importer.ReadFile(
 	    path, static_cast<unsigned int>(aiProcess_Triangulate)
 	              | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
-	              | aiProcess_OptimizeMeshes);
+	              | aiProcess_OptimizeMeshes | aiProcess_GenSmoothNormals);
 
 	if(scene == nullptr
 	   // NOLINTNEXTLINE(readability-implicit-bool-conversion)
