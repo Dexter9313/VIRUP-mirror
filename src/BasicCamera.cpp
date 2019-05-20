@@ -120,14 +120,20 @@ void BasicCamera::updateClippingPlanes()
 	// Gribb, G., & Hartmann, K. (2001). Fast extraction of viewing frustum
 	// planes from the world-view-projection matrix.
 	// http://www.cs.otago.ac.nz/postgrads/alexis/planeExtraction.pdf
-	clippingPlanes[LEFT_PLANE]  = fullTransform.row(3) + fullTransform.row(0);
-	clippingPlanes[RIGHT_PLANE] = fullTransform.row(3) - fullTransform.row(0);
+	clippingPlanes[LEFT_PLANE]
+	    = (fullTransform.row(3) + fullTransform.row(0)).normalized();
+	clippingPlanes[RIGHT_PLANE]
+	    = (fullTransform.row(3) - fullTransform.row(0)).normalized();
 
-	clippingPlanes[BOTTOM_PLANE] = fullTransform.row(3) + fullTransform.row(1);
-	clippingPlanes[TOP_PLANE]    = fullTransform.row(3) - fullTransform.row(1);
+	clippingPlanes[BOTTOM_PLANE]
+	    = (fullTransform.row(3) + fullTransform.row(1)).normalized();
+	clippingPlanes[TOP_PLANE]
+	    = (fullTransform.row(3) - fullTransform.row(1)).normalized();
 
-	clippingPlanes[NEAR_PLANE] = fullTransform.row(3) + fullTransform.row(2);
-	clippingPlanes[FAR_PLANE]  = fullTransform.row(3) - fullTransform.row(2);
+	clippingPlanes[NEAR_PLANE]
+	    = (fullTransform.row(3) + fullTransform.row(2)).normalized();
+	clippingPlanes[FAR_PLANE]
+	    = (fullTransform.row(3) - fullTransform.row(2)).normalized();
 }
 
 QMatrix4x4 BasicCamera::cameraSpaceToWorldTransform() const
