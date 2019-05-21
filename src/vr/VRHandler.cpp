@@ -20,7 +20,12 @@ bool VRHandler::init()
 		std::cout << "Starting SteamVR..." << std::endl;
 		std::cout << "Runtime path : " << vr::VR_RuntimePath() << std::endl;
 		QProcess vrstartup;
-		cmd = QString(vr::VR_RuntimePath()) + "bin/vrstartup.sh";
+		cmd = QString(vr::VR_RuntimePath());
+		if(cmd.at(cmd.length() - 1) != '/')
+		{
+			cmd += '/';
+		}
+		cmd += "bin/vrstartup.sh";
 		vrstartup.start(cmd);
 		QThread::sleep(7);
 	}
