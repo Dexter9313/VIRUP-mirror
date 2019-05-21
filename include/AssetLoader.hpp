@@ -30,10 +30,11 @@
 class AssetLoader
 {
   public:
-	static void loadModel(QString modelName,
-	                      std::vector<GLHandler::Mesh>& meshes,
-	                      std::vector<GLHandler::Texture>& textures,
-	                      GLHandler::ShaderProgram const& shader);
+	// returns model bounding sphere radius
+	static float loadModel(QString modelName,
+	                       std::vector<GLHandler::Mesh>& meshes,
+	                       std::vector<GLHandler::Texture>& textures,
+	                       GLHandler::ShaderProgram const& shader);
 };
 
 #endif // ASSETLOADER_H

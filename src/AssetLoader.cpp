@@ -18,10 +18,10 @@
 
 #include "AssetLoader.hpp"
 
-void AssetLoader::loadModel(QString modelName,
-                            std::vector<GLHandler::Mesh>& meshes,
-                            std::vector<GLHandler::Texture>& textures,
-                            GLHandler::ShaderProgram const& shader)
+float AssetLoader::loadModel(QString modelName,
+                             std::vector<GLHandler::Mesh>& meshes,
+                             std::vector<GLHandler::Texture>& textures,
+                             GLHandler::ShaderProgram const& shader)
 {
 	if(!modelName.contains('/'))
 	{
@@ -48,8 +48,11 @@ void AssetLoader::loadModel(QString modelName,
 	{
 		std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString()
 		          << std::endl;
-		return;
+		return 0.f;
 	}
+
+	float boundingSphereRadius = 0.f;
+
 	for(unsigned int i(0); i < scene->mNumMeshes; ++i)
 	{
 		std::vector<float> vertices;
@@ -57,9 +60,15 @@ void AssetLoader::loadModel(QString modelName,
 		aiMesh* mesh = scene->mMeshes[i];
 		for(unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
-			vertices.push_back(mesh->mVertices[i].x);
-			vertices.push_back(mesh->mVertices[i].y);
-			vertices.push_back(mesh->mVertices[i].z);
+			QVector3D vertice(mesh->mVertices[i].x, mesh->mVertices[i].y,
+			                  mesh->mVertices[i].z);
+			if(boundingSphereRadius < vertice.length())
+			{
+				boundingSphereRadius = vertice.length();
+			}
+			vertices.push_back(vertice.x());
+			vertices.push_back(vertice.y());
+			vertices.push_back(vertice.z());
 			vertices.push_back(mesh->mNormals[i].x);
 			vertices.push_back(mesh->mNormals[i].y);
 			vertices.push_back(mesh->mNormals[i].z);
@@ -102,4 +111,6 @@ void AssetLoader::loadModel(QString modelName,
 		    texpath.substr(pos, texpath.size() - 1));
 		textures.push_back(GLHandler::newTexture(texpath.c_str()));
 	}
+
+	return boundingSphereRadius;
 }
