@@ -331,6 +331,30 @@ void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
 }
 
 void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
+                               QVector4D const& value)
+{
+	useShader(shader);
+	glf().glUniform4f(glf().glGetUniformLocation(shader, paramName), value.x(),
+	                  value.y(), value.z(), value.w());
+}
+
+void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
+                               unsigned int size, QVector4D const* values)
+{
+	useShader(shader);
+	auto data = new GLfloat[4 * size];
+	for(unsigned int i(0); i < size; ++i)
+	{
+		for(unsigned int j(0); j < 4; ++j)
+		{
+			data[i * 4 + j] = values[i][j];
+		}
+	}
+	glf().glUniform4fv(glf().glGetUniformLocation(shader, paramName), size,
+	                   &(data[0]));
+}
+
+void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
                                QMatrix4x4 const& value)
 {
 	useShader(shader);
