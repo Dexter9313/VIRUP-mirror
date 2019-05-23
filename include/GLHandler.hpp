@@ -71,6 +71,23 @@ class GLHandler : public QObject
 		GLuint glTexture;
 		GLenum glTarget;
 	};
+
+	class PixelBufferObject
+	{
+		friend GLHandler;
+		GLuint id;
+
+	  public:
+		unsigned int width;
+		unsigned int height;
+		unsigned char* mappedData;
+
+		PixelBufferObject()                         = default;
+		PixelBufferObject(PixelBufferObject const&) = default;
+		PixelBufferObject(PixelBufferObject&&)      = default;
+		PixelBufferObject& operator=(PixelBufferObject const&) = default;
+	};
+
 	/**
 	 * @brief Mostly opaque class that represents a render target. Use the
 	 * render target related methods to handle it.
@@ -705,6 +722,12 @@ class GLHandler : public QObject
 	static GLuint getGLTexture(Texture const& tex) { return tex.glTexture; };
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
+
+	// PBOs
+	static PixelBufferObject newPixelBufferObject(unsigned int width,
+	                                              unsigned int height);
+	static Texture copyPBOToTex(PixelBufferObject const& pbo, bool sRGB = true);
+	static void deletePixelBufferObject(PixelBufferObject const& pbo);
 
 	// http://entropymine.com/imageworsener/srgbformula/
 	static QColor sRGBToLinear(QColor const& srgb);

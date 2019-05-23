@@ -728,6 +728,7 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
 	glf().glBindTexture(target, tex.glTexture);
 	glf().glTexImage2D(target, 0, internalFormat, width, height, 0, format,
 	                   GL_UNSIGNED_BYTE, data);
+	// GL_UNSIGNED_BYTE, data);
 	// glGenerateMipmap(target);
 	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
 	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
@@ -782,6 +783,43 @@ void GLHandler::useTextures(std::vector<Texture> const& textures)
 void GLHandler::deleteTexture(Texture const& texture)
 {
 	glf().glDeleteTextures(1, &texture.glTexture);
+}
+
+GLHandler::PixelBufferObject
+    GLHandler::newPixelBufferObject(unsigned int width, unsigned int height)
+{
+	PixelBufferObject result = {};
+	result.width             = width;
+	result.height            = height;
+
+	glf().glGenBuffers(1, &result.id);
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, result.id);
+	glf().glBufferData(GL_PIXEL_UNPACK_BUFFER, width * height * 4, nullptr,
+	                   GL_STREAM_DRAW);
+	result.mappedData = static_cast<unsigned char*>(
+	    glf().glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY));
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	return result;
+}
+
+GLHandler::Texture GLHandler::copyPBOToTex(PixelBufferObject const& pbo,
+                                           bool sRGB)
+{
+	Texture result = {};
+
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo.id);
+	glf().glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	// NOLINTNEXTLINE(hicpp-use-nullptr, modernize-use-nullptr)
+	result = newTexture(pbo.width, pbo.height, static_cast<GLvoid*>(0), sRGB);
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	return result;
+}
+
+void GLHandler::deletePixelBufferObject(PixelBufferObject const& pbo)
+{
+	glf().glDeleteBuffers(1, &pbo.id);
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 QColor GLHandler::sRGBToLinear(QColor const& srgb)
