@@ -313,6 +313,7 @@ void SettingsWidget::addDateTimeSetting(QString const& name,
 
 	auto dtEdit = new QDateTimeEdit(stored, this);
 	dtEdit->setCalendarPopup(true);
+	dtEdit->setDisplayFormat("dd.MM.yyyy hh:mm");
 
 	connect(dtEdit, &QDateTimeEdit::dateTimeChanged, this,
 	        [this, fullName](QDateTime dt) { updateValue(fullName, dt); });
