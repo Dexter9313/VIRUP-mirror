@@ -57,6 +57,9 @@ bool GLHandler::init()
 	// enable depth test
 	glf().glEnable(GL_DEPTH_TEST);
 
+	// enable backface culling for optimization
+	setBackfaceCulling(true);
+
 	return true;
 }
 
@@ -154,13 +157,15 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
                             RenderTarget const& to)
 {
 	Mesh quad(newMesh());
-	setVertices(quad, {-1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, 1.f}, shader,
+	setVertices(quad, {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
 	            {{"position", 2}});
 
 	beginRendering(to);
 	useShader(shader);
 	useTextures({getColorAttachmentTexture(from)});
+	setBackfaceCulling(false);
 	render(quad, PrimitiveType::TRIANGLE_STRIP);
+	setBackfaceCulling(true);
 
 	deleteMesh(quad);
 }
@@ -221,6 +226,21 @@ void GLHandler::endTransparent()
 {
 	glf().glDepthMask(GL_TRUE);
 	glf().glDisable(GL_BLEND);
+}
+
+void GLHandler::setBackfaceCulling(bool on, GLenum faceToCull,
+                                   GLenum frontFaceWindingOrder)
+{
+	if(on)
+	{
+		glf().glEnable(GL_CULL_FACE);
+		glf().glCullFace(faceToCull);
+		glf().glFrontFace(frontFaceWindingOrder);
+	}
+	else
+	{
+		glf().glDisable(GL_CULL_FACE);
+	}
 }
 
 void GLHandler::clearDepthBuffer()

@@ -371,6 +371,8 @@ class GLHandler : public QObject
 	 * next frame render in transparent mode.
 	 */
 	static void endTransparent();
+	static void setBackfaceCulling(bool on, GLenum faceToCull = GL_BACK,
+	                               GLenum frontFaceWindingOrder = GL_CCW);
 	/**
 	 * @brief Clears depth buffer
 	 *
