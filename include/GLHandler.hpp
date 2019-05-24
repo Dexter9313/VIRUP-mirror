@@ -15,6 +15,7 @@
 #include <QVector>
 #include <QtMath>
 #include <array>
+#include <functional>
 
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
