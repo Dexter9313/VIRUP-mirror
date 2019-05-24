@@ -330,6 +330,12 @@ class GLHandler : public QObject
 	                        RenderTarget const& to
 	                        = {QSettings().value("window/width").toUInt(),
 	                           QSettings().value("window/height").toUInt()});
+
+	static void
+	    generateEnvironmentMap(GLHandler::RenderTarget const& renderTarget,
+	                           std::function<void()> const& renderFunction,
+	                           QVector3D const& position
+	                           = QVector3D(0.f, 0.f, 0.f));
 	/**
 	 * @brief Shows a @p renderTarget content on screen
 	 *
