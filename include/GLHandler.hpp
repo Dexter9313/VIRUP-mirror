@@ -505,6 +505,14 @@ class GLHandler : public QObject
 	                           QVector3D const& value);
 	/**
 	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
+	 * array of values of size @size.
+	 *
+	 * The uniform must be an array of type vec3.
+	 */
+	static void setShaderParam(ShaderProgram shader, const char* paramName,
+	                           unsigned int size, QVector3D const* values);
+	/**
+	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
 	 * value.
 	 *
 	 * The uniform must be of type vec4.
