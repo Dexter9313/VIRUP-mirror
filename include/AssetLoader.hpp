@@ -31,6 +31,18 @@ class AssetLoader
 {
   public:
 	// returns model bounding sphere radius
+	static float loadFile(QString modelName,
+	                      std::vector<std::vector<float>>& vertices,
+	                      std::vector<std::vector<unsigned int>>& indices,
+	                      std::vector<std::string>& texturesPaths);
+
+	static void loadModel(std::vector<std::vector<float>> const& vertices,
+	                      std::vector<std::vector<unsigned int>> const& indices,
+	                      std::vector<std::string> const& texturesPaths,
+	                      std::vector<GLHandler::Mesh>& meshes,
+	                      std::vector<GLHandler::Texture>& textures,
+	                      GLHandler::ShaderProgram const& shader);
+
 	static float loadModel(QString modelName,
 	                       std::vector<GLHandler::Mesh>& meshes,
 	                       std::vector<GLHandler::Texture>& textures,
