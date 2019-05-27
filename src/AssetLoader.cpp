@@ -128,7 +128,7 @@ void AssetLoader::loadModel(
 		    {{"position", 3}, {"normal", 3}, {"texcoord", 2}}, indices[i]);
 		meshes.push_back(result);
 	}
-	for(auto texPath : texturesPaths)
+	for(auto const& texPath : texturesPaths)
 	{
 		textures.push_back(GLHandler::newTexture(texPath.c_str()));
 	}
