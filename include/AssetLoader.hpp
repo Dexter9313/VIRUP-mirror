@@ -43,7 +43,7 @@ class AssetLoader
 	                      std::vector<GLHandler::Texture>& textures,
 	                      GLHandler::ShaderProgram const& shader);
 
-	static float loadModel(QString modelName,
+	static float loadModel(QString const& modelName,
 	                       std::vector<GLHandler::Mesh>& meshes,
 	                       std::vector<GLHandler::Texture>& textures,
 	                       GLHandler::ShaderProgram const& shader);

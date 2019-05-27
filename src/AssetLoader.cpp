@@ -128,13 +128,13 @@ void AssetLoader::loadModel(
 		    {{"position", 3}, {"normal", 3}, {"texcoord", 2}}, indices[i]);
 		meshes.push_back(result);
 	}
-	for(unsigned int i(0); i < texturesPaths.size(); ++i)
+	for(auto texPath : texturesPaths)
 	{
-		textures.push_back(GLHandler::newTexture(texturesPaths[i].c_str()));
+		textures.push_back(GLHandler::newTexture(texPath.c_str()));
 	}
 }
 
-float AssetLoader::loadModel(QString modelName,
+float AssetLoader::loadModel(QString const& modelName,
                              std::vector<GLHandler::Mesh>& meshes,
                              std::vector<GLHandler::Texture>& textures,
                              GLHandler::ShaderProgram const& shader)
