@@ -37,6 +37,11 @@ class GLHandler : public QObject
 {
 	Q_OBJECT
   public: // useful types
+	static unsigned int& renderTargetCount();
+	static unsigned int& shaderCount();
+	static unsigned int& meshCount();
+	static unsigned int& texCount();
+	static unsigned int& PBOCount();
 	/**
 	 * @brief Opaque class that represents a mesh. Use the mesh related methods
 	 * to handle it.

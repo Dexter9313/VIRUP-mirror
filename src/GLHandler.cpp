@@ -1,5 +1,35 @@
 #include "GLHandler.hpp"
 
+unsigned int& GLHandler::renderTargetCount()
+{
+	static unsigned int renderTargetCount = 0;
+	return renderTargetCount;
+}
+
+unsigned int& GLHandler::shaderCount()
+{
+	static unsigned int shaderCount = 0;
+	return shaderCount;
+}
+
+unsigned int& GLHandler::meshCount()
+{
+	static unsigned int meshCount = 0;
+	return meshCount;
+}
+
+unsigned int& GLHandler::texCount()
+{
+	static unsigned int texCount = 0;
+	return texCount;
+}
+
+unsigned int& GLHandler::PBOCount()
+{
+	static unsigned int PBOCount = 0;
+	return PBOCount;
+}
+
 QOpenGLFunctions_4_0_Core& GLHandler::glf()
 {
 	static QOpenGLFunctions_4_0_Core glf;
@@ -79,6 +109,7 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
                                                    unsigned int height,
                                                    GLint format, bool cubemap)
 {
+	++renderTargetCount();
 	RenderTarget result = {width, height};
 
 	glf().glGenFramebuffers(1, &result.frameBuffer);
@@ -121,9 +152,10 @@ GLHandler::Texture
 
 void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
 {
+	--renderTargetCount();
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	GLHandler::deleteTexture(renderTarget.texColorBuffer);
-	glf().glDeleteBuffers(1, &renderTarget.renderBuffer);
+	glf().glDeleteRenderbuffers(1, &renderTarget.renderBuffer);
 	glf().glDeleteFramebuffers(1, &renderTarget.frameBuffer);
 }
 
@@ -270,6 +302,7 @@ GLHandler::ShaderProgram GLHandler::newShader(QString vertexName,
                                               QString fragmentName,
                                               QString geometryName)
 {
+	++shaderCount();
 	// ignoring geometry shader for now
 	(void) geometryName;
 
@@ -397,6 +430,7 @@ void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
 	}
 	glf().glUniform3fv(glf().glGetUniformLocation(shader, paramName), size,
 	                   &(data[0]));
+	delete[] data;
 }
 
 void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
@@ -421,6 +455,7 @@ void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
 	}
 	glf().glUniform4fv(glf().glGetUniformLocation(shader, paramName), size,
 	                   &(data[0]));
+	delete[] data;
 }
 
 void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
@@ -445,6 +480,7 @@ void GLHandler::useShader(ShaderProgram shader)
 
 void GLHandler::deleteShader(ShaderProgram shader)
 {
+	--shaderCount();
 	glf().glUseProgram(0);
 
 	glf().glDeleteProgram(shader);
@@ -469,7 +505,8 @@ GLuint GLHandler::loadShader(QString const& path, GLenum shaderType)
 	if(status != GL_TRUE)
 	{
 		// NOLINTNEXTLINE(hicpp-no-array-decay)
-		qWarning() << "SHADER ERROR : " << &buffer[0] << '\n';
+		qWarning() << "SHADER ERROR (" << path << "-" << shader
+		           << ") :" << &buffer[0] << '\n';
 	}
 
 	return shader;
@@ -477,6 +514,7 @@ GLuint GLHandler::loadShader(QString const& path, GLenum shaderType)
 
 GLHandler::Mesh GLHandler::newMesh()
 {
+	++meshCount();
 	Mesh mesh = {};
 	glf().glGenVertexArrays(1, &mesh.vao);
 	glf().glGenBuffers(1, &mesh.vbo);
@@ -617,6 +655,7 @@ void GLHandler::render(Mesh const& mesh, PrimitiveType primitiveType)
 
 void GLHandler::deleteMesh(Mesh const& mesh)
 {
+	--meshCount();
 	glf().glDeleteBuffers(1, &mesh.vbo);
 	glf().glDeleteBuffers(1, &mesh.ebo);
 	glf().glDeleteVertexArrays(1, &mesh.vao);
@@ -764,6 +803,7 @@ GLHandler::Texture GLHandler::newTexture1D(unsigned int width,
                                            GLenum target, GLint filter,
                                            GLint wrap)
 {
+	++texCount();
 	Texture tex  = {};
 	tex.glTarget = target;
 	glf().glGenTextures(1, &tex.glTexture);
@@ -790,6 +830,7 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
                                            GLenum target, GLint filter,
                                            GLint wrap)
 {
+	++texCount();
 	Texture tex  = {};
 	tex.glTarget = target;
 	glf().glGenTextures(1, &tex.glTexture);
@@ -815,6 +856,7 @@ GLHandler::Texture GLHandler::newTextureCubemap(
     unsigned int side, std::array<GLvoid const*, 6> data, GLint internalFormat,
     GLenum format, GLenum target, GLint filter, GLint wrap)
 {
+	++texCount();
 	Texture tex  = {};
 	tex.glTarget = target;
 	glf().glGenTextures(1, &tex.glTexture);
@@ -851,12 +893,14 @@ void GLHandler::useTextures(std::vector<Texture> const& textures)
 
 void GLHandler::deleteTexture(Texture const& texture)
 {
+	--texCount();
 	glf().glDeleteTextures(1, &texture.glTexture);
 }
 
 GLHandler::PixelBufferObject
     GLHandler::newPixelBufferObject(unsigned int width, unsigned int height)
 {
+	++PBOCount();
 	PixelBufferObject result = {};
 	result.width             = width;
 	result.height            = height;
@@ -887,6 +931,7 @@ GLHandler::Texture GLHandler::copyPBOToTex(PixelBufferObject const& pbo,
 
 void GLHandler::deletePixelBufferObject(PixelBufferObject const& pbo)
 {
+	--PBOCount();
 	glf().glDeleteBuffers(1, &pbo.id);
 	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
