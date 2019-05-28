@@ -23,6 +23,9 @@ float AssetLoader::loadFile(QString modelName,
                             std::vector<std::vector<unsigned int>>& indices,
                             std::vector<std::string>& texturesPaths)
 {
+	vertices.resize(0);
+	indices.resize(0);
+	texturesPaths.resize(0);
 	if(!modelName.contains('/'))
 	{
 		modelName = "models/" + modelName;
@@ -104,9 +107,12 @@ float AssetLoader::loadFile(QString modelName,
 			pos--;
 		}
 		pos++;
-		texpath.append(directory).append("/").append(
-		    texpath.substr(pos, texpath.size() - 1));
-		texturesPaths.push_back(texpath);
+		if(texpath.size() != 0)
+		{
+			texpath.append(directory).append("/").append(
+			    texpath.substr(pos, texpath.size() - 1));
+			texturesPaths.push_back(texpath);
+		}
 	}
 
 	return boundingSphereRadius;
