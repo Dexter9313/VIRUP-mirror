@@ -107,7 +107,7 @@ float AssetLoader::loadFile(QString modelName,
 			pos--;
 		}
 		pos++;
-		if(texpath.size() != 0)
+		if(!texpath.empty())
 		{
 			texpath.append(directory).append("/").append(
 			    texpath.substr(pos, texpath.size() - 1));
