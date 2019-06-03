@@ -404,7 +404,8 @@ class GLHandler : public QObject
 	 * @brief Convenient shortcut for newShader(@p shadersCommonName, @p
 	 * shadersCommonName, @p shadersCommonName).
 	 */
-	static ShaderProgram newShader(QString const& shadersCommonName);
+	static ShaderProgram newShader(QString const& shadersCommonName,
+	                               QMap<QString, QString> const& defines = {});
 	/**
 	 * @brief Allocates an OpenGL shader program consisting of a vertex shader
 	 * and a fragment shader.
@@ -437,7 +438,8 @@ class GLHandler : public QObject
 	 * called another time with the same parameters.
 	 */
 	static ShaderProgram newShader(QString vertexName, QString fragmentName,
-	                               QString geometryName = "");
+	                               QMap<QString, QString> const& defines = {},
+	                               QString geometryName                  = "");
 
   public: // doesn't work in PythonQt
 	/** @brief Sets values for vertex attributes that aren't provided by a
@@ -756,7 +758,11 @@ class GLHandler : public QObject
 	static QColor linearTosRGB(QColor const& linear);
 
   private:
-	static GLuint loadShader(QString const& path, GLenum shaderType);
+	static QString
+	    getFullPreprocessedSource(QString const& path,
+	                              QMap<QString, QString> const& defines);
+	static GLuint loadShader(QString const& path, GLenum shaderType,
+	                         QMap<QString, QString> const& defines);
 
 	// object to screen transforms
 	// transform for any world object

@@ -293,14 +293,18 @@ void GLHandler::setUpTransforms(QMatrix4x4 const& fullTransform,
 	GLHandler::fullSkyboxSpaceTransform()  = fullSkyboxSpaceTransform;
 }
 
-GLHandler::ShaderProgram GLHandler::newShader(QString const& shadersCommonName)
+GLHandler::ShaderProgram
+    GLHandler::newShader(QString const& shadersCommonName,
+                         QMap<QString, QString> const& defines)
 {
-	return newShader(shadersCommonName, shadersCommonName, shadersCommonName);
+	return newShader(shadersCommonName, shadersCommonName, defines,
+	                 shadersCommonName);
 }
 
-GLHandler::ShaderProgram GLHandler::newShader(QString vertexName,
-                                              QString fragmentName,
-                                              QString geometryName)
+GLHandler::ShaderProgram
+    GLHandler::newShader(QString vertexName, QString fragmentName,
+                         QMap<QString, QString> const& defines,
+                         QString geometryName)
 {
 	++shaderCount();
 	// ignoring geometry shader for now
@@ -318,11 +322,10 @@ GLHandler::ShaderProgram GLHandler::newShader(QString vertexName,
 	ShaderProgram result;
 
 	// vertex shader
-	GLuint vertexShader
-	    = loadShader(getAbsoluteDataPath(vertexName), GL_VERTEX_SHADER);
+	GLuint vertexShader = loadShader(vertexName, GL_VERTEX_SHADER, defines);
 	// fragment shader
 	GLuint fragmentShader
-	    = loadShader(getAbsoluteDataPath(fragmentName), GL_FRAGMENT_SHADER);
+	    = loadShader(fragmentName, GL_FRAGMENT_SHADER, defines);
 
 	// program
 	result = glf().glCreateProgram();
@@ -486,16 +489,73 @@ void GLHandler::deleteShader(ShaderProgram shader)
 	glf().glDeleteProgram(shader);
 }
 
-GLuint GLHandler::loadShader(QString const& path, GLenum shaderType)
+QString
+    GLHandler::getFullPreprocessedSource(QString const& path,
+                                         QMap<QString, QString> const& defines)
 {
-	QFile f(path);
+	// Read source
+	QFile f(getAbsoluteDataPath(path));
+	if(!f.exists())
+	{
+		f.setFileName(getAbsoluteDataPath("shaders/" + path));
+	}
 	f.open(QFile::ReadOnly | QFile::Text);
 	QTextStream in(&f);
-	QByteArray bytes(in.readAll().toLocal8Bit());
-	const char* source = bytes.data();
+	QString source(in.readAll().toLocal8Bit());
+
+	// Strip comments
+	// One-liners
+	int commentPos(source.indexOf("//"));
+	while(commentPos != -1)
+	{
+		int endOfComment(source.indexOf('\n', commentPos));
+		source.replace(commentPos, endOfComment - commentPos, "");
+		commentPos = source.indexOf("//", commentPos);
+	}
+	// Blocks
+	commentPos = source.indexOf("/*");
+	while(commentPos != -1)
+	{
+		int endOfComment(source.indexOf("*/", commentPos));
+		source.replace(commentPos, endOfComment - commentPos + 2, "");
+		commentPos = source.indexOf("/*", commentPos);
+	}
+
+	// include other preprocessed sources within source
+	int includePos(source.indexOf("#include"));
+	while(includePos != -1)
+	{
+		int beginPath(source.indexOf('<', includePos));
+		int endPath(source.indexOf('>', includePos));
+		int endOfLine(source.indexOf('\n', includePos));
+
+		QString includedSrc(getFullPreprocessedSource(
+		    source.mid(beginPath + 1, endPath - beginPath - 1), defines));
+		source.replace(includePos, endOfLine - includePos, includedSrc);
+
+		includePos = source.indexOf("#include", includePos);
+	}
+
+	// add defines after #version
+	int definesInsertPoint(source.indexOf("#version"));
+	definesInsertPoint = source.indexOf('\n', definesInsertPoint) + 1;
+	for(auto const& key : defines.keys())
+	{
+		source.insert(definesInsertPoint, QString("#define ") + key + " "
+		                                      + defines.value(key) + "\n");
+	}
+
+	return source;
+}
+
+GLuint GLHandler::loadShader(QString const& path, GLenum shaderType,
+                             QMap<QString, QString> const& defines)
+{
+	QString source(getFullPreprocessedSource(path, defines));
+	const char* bytes = source.toLatin1().data();
 
 	GLuint shader = glf().glCreateShader(shaderType);
-	glf().glShaderSource(shader, 1, &source, nullptr);
+	glf().glShaderSource(shader, 1, &bytes, nullptr);
 	glf().glCompileShader(shader);
 	// checks
 	GLint status;
