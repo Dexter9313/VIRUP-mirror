@@ -552,7 +552,8 @@ GLuint GLHandler::loadShader(QString const& path, GLenum shaderType,
                              QMap<QString, QString> const& defines)
 {
 	QString source(getFullPreprocessedSource(path, defines));
-	const char* bytes = source.toLatin1().data();
+	QByteArray ba     = source.toLatin1();
+	const char* bytes = ba.data();
 
 	GLuint shader = glf().glCreateShader(shaderType);
 	glf().glShaderSource(shader, 1, &bytes, nullptr);
