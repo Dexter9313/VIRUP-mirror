@@ -20,6 +20,10 @@ install:
     - set BINDIR=%APPVEYOR_BUILD_FOLDER%\build\Release\
     - set CLPATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\bin\Hostx64\x64"
     - set Path=%QTPATH%;%QTPATH%/bin;%INNOSETUPPATH%;%PATH%
+    
+    # Install OpenGL
+    - "git clone --depth 1 git://github.com/vtkiorg/gl-ci-helpers.git"
+    - "powershell gl-ci-helpers/appveyor/install_opengl.ps1"
 
     - cd %APPVEYOR_BUILD_FOLDER%
     - for /f "delims=" %%x in (build.conf) do (set "%%x")
