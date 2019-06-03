@@ -17,22 +17,23 @@ bool VRHandler::init()
 	pgrep.waitForReadyRead();
 	if(pgrep.readAllStandardOutput().isEmpty())
 	{
-	    char rtPath[1024];
-	    uint32_t unRequiredSize;
-	    if(vr::VR_GetRuntimePath(rtPath, sizeof(rtPath), &unRequiredSize) && unRequiredSize < sizeof(rtPath))
-	    {
-    		std::cout << "Starting SteamVR..." << std::endl;
-    		std::cout << "Runtime path : " << rtPath << std::endl;
-    		QProcess vrstartup;
-    		cmd = QString(rtPath);
-    		if(cmd.at(cmd.length() - 1) != '/')
-    		{
-    			cmd += '/';
-    		}
-    		cmd += "bin/vrstartup.sh";
-    		vrstartup.start(cmd);
-    		QThread::sleep(7);
-	    }
+		char rtPath[1024];
+		uint32_t unRequiredSize;
+		if(vr::VR_GetRuntimePath(rtPath, sizeof(rtPath), &unRequiredSize)
+		   && unRequiredSize < sizeof(rtPath))
+		{
+			std::cout << "Starting SteamVR..." << std::endl;
+			std::cout << "Runtime path : " << rtPath << std::endl;
+			QProcess vrstartup;
+			cmd = QString(rtPath);
+			if(cmd.at(cmd.length() - 1) != '/')
+			{
+				cmd += '/';
+			}
+			cmd += "bin/vrstartup.sh";
+			vrstartup.start(cmd);
+			QThread::sleep(7);
+		}
 	}
 #endif
 
