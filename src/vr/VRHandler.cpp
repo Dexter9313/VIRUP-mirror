@@ -19,7 +19,7 @@ bool VRHandler::init()
 	{
 	    char rtPath[1024];
 	    uint32_t unRequiredSize;
-	    if(VR_GetRuntimePath(rtPath, sizeof(rtPath), &unRequiredSize) && unRequiredSize < sizeof(rtPath))
+	    if(vr::VR_GetRuntimePath(rtPath, sizeof(rtPath), &unRequiredSize) && unRequiredSize < sizeof(rtPath))
 	    {
     		std::cout << "Starting SteamVR..." << std::endl;
     		std::cout << "Runtime path : " << rtPath << std::endl;
