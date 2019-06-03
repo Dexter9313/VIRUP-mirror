@@ -31,7 +31,7 @@ install:
     - if [ ! -d ./deps ]; then
           mkdir deps ;
       elif [ -f ./deps/libopenvr_api.so ]; then
-          CACHED=true ;
+          CACHED=false ;
       fi
     - echo $CACHED
     - cd deps
