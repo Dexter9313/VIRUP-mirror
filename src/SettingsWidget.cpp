@@ -311,12 +311,22 @@ void SettingsWidget::addDateTimeSetting(QString const& name,
 	QDateTime stored(settings.value(fullName).value<QDateTime>().toTimeSpec(
 	    Qt::OffsetFromUTC));
 
+	auto w      = new QWidget(this);
+	auto layout = new QHBoxLayout(w);
+
 	auto dtEdit = new QDateTimeEdit(stored, this);
 	dtEdit->setCalendarPopup(true);
-	dtEdit->setDisplayFormat("dd.MM.yyyy hh:mm");
+	dtEdit->setDisplayFormat("dd.MM.yyyy hh:mm:ss");
 
 	connect(dtEdit, &QDateTimeEdit::dateTimeChanged, this,
 	        [this, fullName](QDateTime dt) { updateValue(fullName, dt); });
 
-	currentForm->addRow(label + " :", dtEdit);
+	auto now = new QPushButton(tr("Now"), this);
+	connect(now, &QPushButton::clicked, this, [dtEdit]() {
+		dtEdit->setDateTime(QDateTime::currentDateTimeUtc());
+	});
+
+	layout->addWidget(dtEdit);
+	layout->addWidget(now);
+	currentForm->addRow(label + " :", w);
 }
