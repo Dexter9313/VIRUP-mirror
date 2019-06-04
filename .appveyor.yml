@@ -56,6 +56,7 @@ after_build:
     - mkdir %RELEASE_DIR_NAME%
     - cd %RELEASE_DIR_NAME%
     - mkdir platforms
+    - mkdir imageformats
     - cd ..
     - copy %PROJECT_NAME%.exe %RELEASE_DIR%
     - copy %QTPATH%\bin\Qt5Core.dll %RELEASE_DIR%
@@ -74,6 +75,7 @@ after_build:
     - copy %QTPATH%\bin\Qt5Network.dll %RELEASE_DIR%
     - copy %QTPATH%\bin\Qt5Xml.dll %RELEASE_DIR%
     - copy %QTPATH%\plugins\platforms\qwindows.dll %RELEASE_DIR%\platforms
+    - copy %QTPATH%\plugins\imageformats\*.dll %RELEASE_DIR%\imageformats
     - copy %OPENVR_SHARED% %RELEASE_DIR%
     - copy %ASSIMP_SHARED% %RELEASE_DIR%
     - copy %LEAPMOTION_SHARED% %RELEASE_DIR%
