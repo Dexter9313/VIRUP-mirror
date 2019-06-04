@@ -193,9 +193,11 @@ void MainWin::updateScene(BasicCamera& camera)
 void MainWin::renderScene(BasicCamera const& camera)
 {
 	GLHandler::useTextures({sbTexture});
+	GLHandler::setBackfaceCulling(false);
 	GLHandler::setUpRender(sbShader, QMatrix4x4(),
 	                       GLHandler::GeometricSpace::SKYBOX);
 	GLHandler::render(skybox, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	GLHandler::setBackfaceCulling(true);
 	GLHandler::clearDepthBuffer();
 
 	QMatrix4x4 model;
