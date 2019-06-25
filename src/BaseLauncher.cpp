@@ -35,6 +35,7 @@ void BaseLauncher::init()
 	auto pbl = new QPushButton(this);
 	l->addWidget(pbl);
 	pbl->setText(tr("LAUNCH"));
+	pbl->setDefault(true);
 	connect(pbl, SIGNAL(pressed()), this, SLOT(accept()));
 	auto pbq = new QPushButton(this);
 	l->addWidget(pbq);
