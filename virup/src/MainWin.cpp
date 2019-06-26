@@ -120,10 +120,10 @@ void MainWin::mouseReleaseEvent(QMouseEvent* e)
 */
 void MainWin::mouseMoveEvent(QMouseEvent* e)
 {
-	/*if(!trackballEnabled)
+	if(!isActive())
 	{
-	    return;
-	}*/
+		return;
+	}
 	auto cam(dynamic_cast<Camera*>(&getCamera()));
 	float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
 	float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();

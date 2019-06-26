@@ -62,9 +62,10 @@ class MainWin : public AbstractMainWin
 	bool loaded   = false;
 	BBox dataBBox = {};
 
+	Method* method = nullptr;
+
 	GLHandler::Mesh cube                = {};
 	GLHandler::ShaderProgram cubeShader = {};
-	Method* method                      = nullptr;
 	bool showCube = QSettings().value("misc/showcube").toBool();
 
 	double cubeScale                      = 1.f;
