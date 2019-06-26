@@ -15,6 +15,7 @@
 #include <QVector>
 #include <QtMath>
 #include <array>
+#include <functional>
 
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
@@ -36,6 +37,11 @@ class GLHandler : public QObject
 {
 	Q_OBJECT
   public: // useful types
+	static unsigned int& renderTargetCount();
+	static unsigned int& shaderCount();
+	static unsigned int& meshCount();
+	static unsigned int& texCount();
+	static unsigned int& PBOCount();
 	/**
 	 * @brief Opaque class that represents a mesh. Use the mesh related methods
 	 * to handle it.
@@ -71,6 +77,23 @@ class GLHandler : public QObject
 		GLuint glTexture;
 		GLenum glTarget;
 	};
+
+	class PixelBufferObject
+	{
+		friend GLHandler;
+		GLuint id;
+
+	  public:
+		unsigned int width;
+		unsigned int height;
+		unsigned char* mappedData;
+
+		PixelBufferObject()                         = default;
+		PixelBufferObject(PixelBufferObject const&) = default;
+		PixelBufferObject(PixelBufferObject&&)      = default;
+		PixelBufferObject& operator=(PixelBufferObject const&) = default;
+	};
+
 	/**
 	 * @brief Mostly opaque class that represents a render target. Use the
 	 * render target related methods to handle it.
@@ -177,16 +200,28 @@ class GLHandler : public QObject
 
 	/**
 	 * @brief Representing a cube face (used mostly for cubemaps).
+	 *
+	 * Front : X+
+	 *
+	 * Back : X-
+	 *
+	 * Left : Y+
+	 *
+	 * Right : Y-
+	 *
+	 * Top : Z+
+	 *
+	 * Bottom : Z-
 	 */
 	enum class CubeFace
 	{
-		RIGHT = GL_TEXTURE_CUBE_MAP_POSITIVE_X - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		LEFT  = GL_TEXTURE_CUBE_MAP_NEGATIVE_X - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		TOP   = GL_TEXTURE_CUBE_MAP_POSITIVE_Y - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		FRONT = GL_TEXTURE_CUBE_MAP_POSITIVE_X - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		BACK  = GL_TEXTURE_CUBE_MAP_NEGATIVE_X - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		LEFT  = GL_TEXTURE_CUBE_MAP_POSITIVE_Y - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		RIGHT = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		TOP   = GL_TEXTURE_CUBE_MAP_POSITIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
 		BOTTOM
-		= GL_TEXTURE_CUBE_MAP_NEGATIVE_Y - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		BACK  = GL_TEXTURE_CUBE_MAP_POSITIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		FRONT = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
 	};
 
   public:
@@ -301,6 +336,12 @@ class GLHandler : public QObject
 	                        RenderTarget const& to
 	                        = {QSettings().value("window/width").toUInt(),
 	                           QSettings().value("window/height").toUInt()});
+
+	static void
+	    generateEnvironmentMap(GLHandler::RenderTarget const& renderTarget,
+	                           std::function<void()> const& renderFunction,
+	                           QVector3D const& position
+	                           = QVector3D(0.f, 0.f, 0.f));
 	/**
 	 * @brief Shows a @p renderTarget content on screen
 	 *
@@ -335,6 +376,8 @@ class GLHandler : public QObject
 	 * next frame render in transparent mode.
 	 */
 	static void endTransparent();
+	static void setBackfaceCulling(bool on, GLenum faceToCull = GL_BACK,
+	                               GLenum frontFaceWindingOrder = GL_CCW);
 	/**
 	 * @brief Clears depth buffer
 	 *
@@ -361,7 +404,8 @@ class GLHandler : public QObject
 	 * @brief Convenient shortcut for newShader(@p shadersCommonName, @p
 	 * shadersCommonName, @p shadersCommonName).
 	 */
-	static ShaderProgram newShader(QString const& shadersCommonName);
+	static ShaderProgram newShader(QString const& shadersCommonName,
+	                               QMap<QString, QString> const& defines = {});
 	/**
 	 * @brief Allocates an OpenGL shader program consisting of a vertex shader
 	 * and a fragment shader.
@@ -394,7 +438,8 @@ class GLHandler : public QObject
 	 * called another time with the same parameters.
 	 */
 	static ShaderProgram newShader(QString vertexName, QString fragmentName,
-	                               QString geometryName = "");
+	                               QMap<QString, QString> const& defines = {},
+	                               QString geometryName                  = "");
 
   public: // doesn't work in PythonQt
 	/** @brief Sets values for vertex attributes that aren't provided by a
@@ -467,6 +512,30 @@ class GLHandler : public QObject
 	 */
 	static void setShaderParam(ShaderProgram shader, const char* paramName,
 	                           QVector3D const& value);
+	/**
+	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
+	 * array of values of size @size.
+	 *
+	 * The uniform must be an array of type vec3.
+	 */
+	static void setShaderParam(ShaderProgram shader, const char* paramName,
+	                           unsigned int size, QVector3D const* values);
+	/**
+	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
+	 * value.
+	 *
+	 * The uniform must be of type vec4.
+	 */
+	static void setShaderParam(ShaderProgram shader, const char* paramName,
+	                           QVector4D const& value);
+	/**
+	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
+	 * array of values of size @size.
+	 *
+	 * The uniform must be an array of type vec4.
+	 */
+	static void setShaderParam(ShaderProgram shader, const char* paramName,
+	                           unsigned int size, QVector4D const* values);
 	/**
 	 * @brief Sets the @p shader program's uniform @p paramName to a certain @p
 	 * value.
@@ -678,12 +747,22 @@ class GLHandler : public QObject
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
 
+	// PBOs
+	static PixelBufferObject newPixelBufferObject(unsigned int width,
+	                                              unsigned int height);
+	static Texture copyPBOToTex(PixelBufferObject const& pbo, bool sRGB = true);
+	static void deletePixelBufferObject(PixelBufferObject const& pbo);
+
 	// http://entropymine.com/imageworsener/srgbformula/
 	static QColor sRGBToLinear(QColor const& srgb);
 	static QColor linearTosRGB(QColor const& linear);
 
   private:
-	static GLuint loadShader(QString const& path, GLenum shaderType);
+	static QString
+	    getFullPreprocessedSource(QString const& path,
+	                              QMap<QString, QString> const& defines);
+	static GLuint loadShader(QString const& path, GLenum shaderType,
+	                         QMap<QString, QString> const& defines);
 
 	// object to screen transforms
 	// transform for any world object

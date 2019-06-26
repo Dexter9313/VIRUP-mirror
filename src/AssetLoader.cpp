@@ -18,11 +18,14 @@
 
 #include "AssetLoader.hpp"
 
-void AssetLoader::loadModel(QString modelName,
-                            std::vector<GLHandler::Mesh>& meshes,
-                            std::vector<GLHandler::Texture>& textures,
-                            GLHandler::ShaderProgram const& shader)
+float AssetLoader::loadFile(QString modelName,
+                            std::vector<std::vector<float>>& vertices,
+                            std::vector<std::vector<unsigned int>>& indices,
+                            std::vector<std::string>& texturesPaths)
 {
+	vertices.resize(0);
+	indices.resize(0);
+	texturesPaths.resize(0);
 	if(!modelName.contains('/'))
 	{
 		modelName = "models/" + modelName;
@@ -37,7 +40,7 @@ void AssetLoader::loadModel(QString modelName,
 	const aiScene* scene = importer.ReadFile(
 	    path, static_cast<unsigned int>(aiProcess_Triangulate)
 	              | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
-	              | aiProcess_OptimizeMeshes);
+	              | aiProcess_OptimizeMeshes | aiProcess_GenSmoothNormals);
 
 	if(scene == nullptr
 	   // NOLINTNEXTLINE(readability-implicit-bool-conversion)
@@ -48,30 +51,39 @@ void AssetLoader::loadModel(QString modelName,
 	{
 		std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString()
 		          << std::endl;
-		return;
+		return 0.f;
 	}
+
+	float boundingSphereRadius = 0.f;
+
 	for(unsigned int i(0); i < scene->mNumMeshes; ++i)
 	{
-		std::vector<float> vertices;
-		std::vector<unsigned int> indices;
+		std::vector<float> v;
+		std::vector<unsigned int> ind;
 		aiMesh* mesh = scene->mMeshes[i];
 		for(unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
-			vertices.push_back(mesh->mVertices[i].x);
-			vertices.push_back(mesh->mVertices[i].y);
-			vertices.push_back(mesh->mVertices[i].z);
-			vertices.push_back(mesh->mNormals[i].x);
-			vertices.push_back(mesh->mNormals[i].y);
-			vertices.push_back(mesh->mNormals[i].z);
+			QVector3D vertice(mesh->mVertices[i].x, mesh->mVertices[i].y,
+			                  mesh->mVertices[i].z);
+			if(boundingSphereRadius < vertice.length())
+			{
+				boundingSphereRadius = vertice.length();
+			}
+			v.push_back(vertice.x());
+			v.push_back(vertice.y());
+			v.push_back(vertice.z());
+			v.push_back(mesh->mNormals[i].x);
+			v.push_back(mesh->mNormals[i].y);
+			v.push_back(mesh->mNormals[i].z);
 			if(mesh->mTextureCoords[0] != nullptr)
 			{
-				vertices.push_back(mesh->mTextureCoords[0][i].x);
-				vertices.push_back(mesh->mTextureCoords[0][i].y);
+				v.push_back(mesh->mTextureCoords[0][i].x);
+				v.push_back(mesh->mTextureCoords[0][i].y);
 			}
 			else
 			{
-				vertices.push_back(0.f);
-				vertices.push_back(0.f);
+				v.push_back(0.f);
+				v.push_back(0.f);
 			}
 		}
 		for(unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -79,14 +91,11 @@ void AssetLoader::loadModel(QString modelName,
 			aiFace face = mesh->mFaces[i];
 			for(unsigned int j = 0; j < face.mNumIndices; j++)
 			{
-				indices.push_back(face.mIndices[j]);
+				ind.push_back(face.mIndices[j]);
 			}
 		}
-		GLHandler::Mesh result(GLHandler::newMesh());
-		GLHandler::setVertices(
-		    result, vertices, shader,
-		    {{"position", 3}, {"normal", 3}, {"texcoord", 2}}, indices);
-		meshes.push_back(result);
+		vertices.push_back(v);
+		indices.push_back(ind);
 
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		aiString str;
@@ -98,8 +107,54 @@ void AssetLoader::loadModel(QString modelName,
 			pos--;
 		}
 		pos++;
-		texpath.append(directory).append("/").append(
-		    texpath.substr(pos, texpath.size() - 1));
-		textures.push_back(GLHandler::newTexture(texpath.c_str()));
+		if(!texpath.empty())
+		{
+			texpath.append(directory).append("/").append(
+			    texpath.substr(pos, texpath.size() - 1));
+			texturesPaths.push_back(texpath);
+		}
 	}
+
+	return boundingSphereRadius;
+}
+
+void AssetLoader::loadModel(
+    std::vector<std::vector<float>> const& vertices,
+    std::vector<std::vector<unsigned int>> const& indices,
+    std::vector<std::string> const& texturesPaths,
+    std::vector<GLHandler::Mesh>& meshes,
+    std::vector<GLHandler::Texture>& textures,
+    GLHandler::ShaderProgram const& shader)
+{
+	for(unsigned int i(0); i < vertices.size(); ++i)
+	{
+		GLHandler::Mesh result(GLHandler::newMesh());
+		GLHandler::setVertices(
+		    result, vertices[i], shader,
+		    {{"position", 3}, {"normal", 3}, {"texcoord", 2}}, indices[i]);
+		meshes.push_back(result);
+	}
+	for(auto const& texPath : texturesPaths)
+	{
+		textures.push_back(GLHandler::newTexture(texPath.c_str()));
+	}
+}
+
+float AssetLoader::loadModel(QString const& modelName,
+                             std::vector<GLHandler::Mesh>& meshes,
+                             std::vector<GLHandler::Texture>& textures,
+                             GLHandler::ShaderProgram const& shader)
+{
+	std::vector<std::vector<float>> v;
+	std::vector<std::vector<unsigned int>> ind;
+	std::vector<std::string> tPaths;
+
+	float bsRad(loadFile(modelName, v, ind, tPaths));
+	if(bsRad == 0.f)
+	{
+		return 0.f;
+	}
+
+	loadModel(v, ind, tPaths, meshes, textures, shader);
+	return bsRad;
 }

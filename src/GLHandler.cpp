@@ -1,5 +1,35 @@
 #include "GLHandler.hpp"
 
+unsigned int& GLHandler::renderTargetCount()
+{
+	static unsigned int renderTargetCount = 0;
+	return renderTargetCount;
+}
+
+unsigned int& GLHandler::shaderCount()
+{
+	static unsigned int shaderCount = 0;
+	return shaderCount;
+}
+
+unsigned int& GLHandler::meshCount()
+{
+	static unsigned int meshCount = 0;
+	return meshCount;
+}
+
+unsigned int& GLHandler::texCount()
+{
+	static unsigned int texCount = 0;
+	return texCount;
+}
+
+unsigned int& GLHandler::PBOCount()
+{
+	static unsigned int PBOCount = 0;
+	return PBOCount;
+}
+
 QOpenGLFunctions_4_0_Core& GLHandler::glf()
 {
 	static QOpenGLFunctions_4_0_Core glf;
@@ -57,6 +87,9 @@ bool GLHandler::init()
 	// enable depth test
 	glf().glEnable(GL_DEPTH_TEST);
 
+	// enable backface culling for optimization
+	setBackfaceCulling(true);
+
 	return true;
 }
 
@@ -76,6 +109,7 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
                                                    unsigned int height,
                                                    GLint format, bool cubemap)
 {
+	++renderTargetCount();
 	RenderTarget result = {width, height};
 
 	glf().glGenFramebuffers(1, &result.frameBuffer);
@@ -118,9 +152,10 @@ GLHandler::Texture
 
 void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
 {
+	--renderTargetCount();
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	GLHandler::deleteTexture(renderTarget.texColorBuffer);
-	glf().glDeleteBuffers(1, &renderTarget.renderBuffer);
+	glf().glDeleteRenderbuffers(1, &renderTarget.renderBuffer);
 	glf().glDeleteFramebuffers(1, &renderTarget.frameBuffer);
 }
 
@@ -154,15 +189,50 @@ void GLHandler::postProcess(ShaderProgram shader, RenderTarget const& from,
                             RenderTarget const& to)
 {
 	Mesh quad(newMesh());
-	setVertices(quad, {-1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, 1.f}, shader,
+	setVertices(quad, {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
 	            {{"position", 2}});
 
 	beginRendering(to);
 	useShader(shader);
 	useTextures({getColorAttachmentTexture(from)});
+	setBackfaceCulling(false);
 	render(quad, PrimitiveType::TRIANGLE_STRIP);
+	setBackfaceCulling(true);
 
 	deleteMesh(quad);
+}
+
+void GLHandler::generateEnvironmentMap(
+    GLHandler::RenderTarget const& renderTarget,
+    std::function<void()> const& renderFunction, QVector3D const& position)
+{
+	QMatrix4x4 translation;
+	translation.translate(-1.f * position);
+	QMatrix4x4 perspective;
+	perspective.perspective(90.f, 1.f, 0.1f, 10.f);
+
+	std::vector<QVector3D> vecs = {
+	    QVector3D(1, 0, 0),  QVector3D(0, -1, 0), QVector3D(-1, 0, 0),
+	    QVector3D(0, -1, 0), QVector3D(0, 1, 0),  QVector3D(0, 0, 1),
+	    QVector3D(0, -1, 0), QVector3D(0, 0, -1), QVector3D(0, 0, -1),
+	    QVector3D(0, -1, 0), QVector3D(0, 0, 1),  QVector3D(0, -1, 0),
+	};
+
+	std::vector<GLHandler::CubeFace> faces = {
+	    GLHandler::CubeFace::FRONT,  GLHandler::CubeFace::BACK,
+	    GLHandler::CubeFace::LEFT,   GLHandler::CubeFace::RIGHT,
+	    GLHandler::CubeFace::BOTTOM, GLHandler::CubeFace::TOP,
+	};
+
+	for(unsigned int i(0); i < 6; ++i)
+	{
+		QMatrix4x4 cubeCamera;
+		cubeCamera.lookAt(QVector3D(0, 0, 0), vecs[2 * i], vecs[(2 * i) + 1]);
+		QMatrix4x4 c = perspective * cubeCamera * translation;
+		GLHandler::setUpTransforms(c, c, c, c, c);
+		GLHandler::beginRendering(renderTarget, faces[i]);
+		renderFunction();
+	}
 }
 
 void GLHandler::showOnScreen(RenderTarget const& renderTarget, int screenx0,
@@ -190,6 +260,21 @@ void GLHandler::endTransparent()
 	glf().glDisable(GL_BLEND);
 }
 
+void GLHandler::setBackfaceCulling(bool on, GLenum faceToCull,
+                                   GLenum frontFaceWindingOrder)
+{
+	if(on)
+	{
+		glf().glEnable(GL_CULL_FACE);
+		glf().glCullFace(faceToCull);
+		glf().glFrontFace(frontFaceWindingOrder);
+	}
+	else
+	{
+		glf().glDisable(GL_CULL_FACE);
+	}
+}
+
 void GLHandler::clearDepthBuffer()
 {
 	glf().glClear(GL_DEPTH_BUFFER_BIT);
@@ -208,15 +293,20 @@ void GLHandler::setUpTransforms(QMatrix4x4 const& fullTransform,
 	GLHandler::fullSkyboxSpaceTransform()  = fullSkyboxSpaceTransform;
 }
 
-GLHandler::ShaderProgram GLHandler::newShader(QString const& shadersCommonName)
+GLHandler::ShaderProgram
+    GLHandler::newShader(QString const& shadersCommonName,
+                         QMap<QString, QString> const& defines)
 {
-	return newShader(shadersCommonName, shadersCommonName, shadersCommonName);
+	return newShader(shadersCommonName, shadersCommonName, defines,
+	                 shadersCommonName);
 }
 
-GLHandler::ShaderProgram GLHandler::newShader(QString vertexName,
-                                              QString fragmentName,
-                                              QString geometryName)
+GLHandler::ShaderProgram
+    GLHandler::newShader(QString vertexName, QString fragmentName,
+                         QMap<QString, QString> const& defines,
+                         QString geometryName)
 {
+	++shaderCount();
 	// ignoring geometry shader for now
 	(void) geometryName;
 
@@ -232,11 +322,10 @@ GLHandler::ShaderProgram GLHandler::newShader(QString vertexName,
 	ShaderProgram result;
 
 	// vertex shader
-	GLuint vertexShader
-	    = loadShader(getAbsoluteDataPath(vertexName), GL_VERTEX_SHADER);
+	GLuint vertexShader = loadShader(vertexName, GL_VERTEX_SHADER, defines);
 	// fragment shader
 	GLuint fragmentShader
-	    = loadShader(getAbsoluteDataPath(fragmentName), GL_FRAGMENT_SHADER);
+	    = loadShader(fragmentName, GL_FRAGMENT_SHADER, defines);
 
 	// program
 	result = glf().glCreateProgram();
@@ -331,6 +420,48 @@ void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
 }
 
 void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
+                               unsigned int size, QVector3D const* values)
+{
+	useShader(shader);
+	auto data = new GLfloat[3 * size];
+	for(unsigned int i(0); i < size; ++i)
+	{
+		for(unsigned int j(0); j < 3; ++j)
+		{
+			data[i * 3 + j] = values[i][j];
+		}
+	}
+	glf().glUniform3fv(glf().glGetUniformLocation(shader, paramName), size,
+	                   &(data[0]));
+	delete[] data;
+}
+
+void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
+                               QVector4D const& value)
+{
+	useShader(shader);
+	glf().glUniform4f(glf().glGetUniformLocation(shader, paramName), value.x(),
+	                  value.y(), value.z(), value.w());
+}
+
+void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
+                               unsigned int size, QVector4D const* values)
+{
+	useShader(shader);
+	auto data = new GLfloat[4 * size];
+	for(unsigned int i(0); i < size; ++i)
+	{
+		for(unsigned int j(0); j < 4; ++j)
+		{
+			data[i * 4 + j] = values[i][j];
+		}
+	}
+	glf().glUniform4fv(glf().glGetUniformLocation(shader, paramName), size,
+	                   &(data[0]));
+	delete[] data;
+}
+
+void GLHandler::setShaderParam(ShaderProgram shader, const char* paramName,
                                QMatrix4x4 const& value)
 {
 	useShader(shader);
@@ -352,21 +483,80 @@ void GLHandler::useShader(ShaderProgram shader)
 
 void GLHandler::deleteShader(ShaderProgram shader)
 {
+	--shaderCount();
 	glf().glUseProgram(0);
 
 	glf().glDeleteProgram(shader);
 }
 
-GLuint GLHandler::loadShader(QString const& path, GLenum shaderType)
+QString
+    GLHandler::getFullPreprocessedSource(QString const& path,
+                                         QMap<QString, QString> const& defines)
 {
-	QFile f(path);
+	// Read source
+	QFile f(getAbsoluteDataPath(path));
+	if(!f.exists())
+	{
+		f.setFileName(getAbsoluteDataPath("shaders/" + path));
+	}
 	f.open(QFile::ReadOnly | QFile::Text);
 	QTextStream in(&f);
-	QByteArray bytes(in.readAll().toLocal8Bit());
-	const char* source = bytes.data();
+	QString source(in.readAll().toLocal8Bit());
+
+	// Strip comments
+	// One-liners
+	int commentPos(source.indexOf("//"));
+	while(commentPos != -1)
+	{
+		int endOfComment(source.indexOf('\n', commentPos));
+		source.replace(commentPos, endOfComment - commentPos, "");
+		commentPos = source.indexOf("//", commentPos);
+	}
+	// Blocks
+	commentPos = source.indexOf("/*");
+	while(commentPos != -1)
+	{
+		int endOfComment(source.indexOf("*/", commentPos));
+		source.replace(commentPos, endOfComment - commentPos + 2, "");
+		commentPos = source.indexOf("/*", commentPos);
+	}
+
+	// include other preprocessed sources within source
+	int includePos(source.indexOf("#include"));
+	while(includePos != -1)
+	{
+		int beginPath(source.indexOf('<', includePos));
+		int endPath(source.indexOf('>', includePos));
+		int endOfLine(source.indexOf('\n', includePos));
+
+		QString includedSrc(getFullPreprocessedSource(
+		    source.mid(beginPath + 1, endPath - beginPath - 1), defines));
+		source.replace(includePos, endOfLine - includePos, includedSrc);
+
+		includePos = source.indexOf("#include", includePos);
+	}
+
+	// add defines after #version
+	int definesInsertPoint(source.indexOf("#version"));
+	definesInsertPoint = source.indexOf('\n', definesInsertPoint) + 1;
+	for(auto const& key : defines.keys())
+	{
+		source.insert(definesInsertPoint, QString("#define ") + key + " "
+		                                      + defines.value(key) + "\n");
+	}
+
+	return source;
+}
+
+GLuint GLHandler::loadShader(QString const& path, GLenum shaderType,
+                             QMap<QString, QString> const& defines)
+{
+	QString source(getFullPreprocessedSource(path, defines));
+	QByteArray ba     = source.toLatin1();
+	const char* bytes = ba.data();
 
 	GLuint shader = glf().glCreateShader(shaderType);
-	glf().glShaderSource(shader, 1, &source, nullptr);
+	glf().glShaderSource(shader, 1, &bytes, nullptr);
 	glf().glCompileShader(shader);
 	// checks
 	GLint status;
@@ -376,7 +566,8 @@ GLuint GLHandler::loadShader(QString const& path, GLenum shaderType)
 	if(status != GL_TRUE)
 	{
 		// NOLINTNEXTLINE(hicpp-no-array-decay)
-		qWarning() << "SHADER ERROR : " << &buffer[0] << '\n';
+		qWarning() << "SHADER ERROR (" << path << "-" << shader
+		           << ") :" << &buffer[0] << '\n';
 	}
 
 	return shader;
@@ -384,6 +575,7 @@ GLuint GLHandler::loadShader(QString const& path, GLenum shaderType)
 
 GLHandler::Mesh GLHandler::newMesh()
 {
+	++meshCount();
 	Mesh mesh = {};
 	glf().glGenVertexArrays(1, &mesh.vao);
 	glf().glGenBuffers(1, &mesh.vbo);
@@ -524,6 +716,7 @@ void GLHandler::render(Mesh const& mesh, PrimitiveType primitiveType)
 
 void GLHandler::deleteMesh(Mesh const& mesh)
 {
+	--meshCount();
 	glf().glDeleteBuffers(1, &mesh.vbo);
 	glf().glDeleteBuffers(1, &mesh.ebo);
 	glf().glDeleteVertexArrays(1, &mesh.vao);
@@ -609,7 +802,52 @@ GLHandler::Texture GLHandler::newTexture(std::array<QImage, 6> const& images,
 
 	for(unsigned int i(0); i < 6; ++i)
 	{
-		img_data.at(i) = images.at(i).convertToFormat(QImage::Format_RGBA8888);
+		switch(i)
+		{
+			case static_cast<int>(CubeFace::FRONT):
+			case static_cast<int>(CubeFace::TOP):
+			case static_cast<int>(CubeFace::BOTTOM):
+			{
+				QImage im(images.at(i).height(), images.at(i).width(),
+				          QImage::Format_RGBA8888);
+				for(int j(0); j < im.height(); ++j)
+				{
+					for(int k(0); k < im.width(); ++k)
+					{
+						im.setPixel(k, j, images.at(i).pixel(j, k));
+					}
+				}
+				img_data.at(i) = im;
+			}
+			break;
+			case static_cast<int>(CubeFace::BACK):
+			{
+				QImage im(images.at(i).height(), images.at(i).width(),
+				          QImage::Format_RGBA8888);
+				for(int j(0); j < im.height(); ++j)
+				{
+					for(int k(0); k < im.width(); ++k)
+					{
+						im.setPixel(im.width() - k - 1, im.height() - j - 1,
+						            images.at(i).pixel(j, k));
+					}
+				}
+				img_data.at(i) = im;
+			}
+			break;
+			case static_cast<int>(CubeFace::LEFT):
+				img_data.at(i) = images.at(i)
+				                     .mirrored(false, true)
+				                     .convertToFormat(QImage::Format_RGBA8888);
+				break;
+			case static_cast<int>(CubeFace::RIGHT):
+				img_data.at(i) = images.at(i)
+				                     .mirrored(true, false)
+				                     .convertToFormat(QImage::Format_RGBA8888);
+				break;
+			default:
+				break;
+		}
 	}
 	for(unsigned int i(0); i < 6; ++i)
 	{
@@ -626,6 +864,7 @@ GLHandler::Texture GLHandler::newTexture1D(unsigned int width,
                                            GLenum target, GLint filter,
                                            GLint wrap)
 {
+	++texCount();
 	Texture tex  = {};
 	tex.glTarget = target;
 	glf().glGenTextures(1, &tex.glTexture);
@@ -652,6 +891,7 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
                                            GLenum target, GLint filter,
                                            GLint wrap)
 {
+	++texCount();
 	Texture tex  = {};
 	tex.glTarget = target;
 	glf().glGenTextures(1, &tex.glTexture);
@@ -659,6 +899,7 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
 	glf().glBindTexture(target, tex.glTexture);
 	glf().glTexImage2D(target, 0, internalFormat, width, height, 0, format,
 	                   GL_UNSIGNED_BYTE, data);
+	// GL_UNSIGNED_BYTE, data);
 	// glGenerateMipmap(target);
 	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
 	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
@@ -676,6 +917,7 @@ GLHandler::Texture GLHandler::newTextureCubemap(
     unsigned int side, std::array<GLvoid const*, 6> data, GLint internalFormat,
     GLenum format, GLenum target, GLint filter, GLint wrap)
 {
+	++texCount();
 	Texture tex  = {};
 	tex.glTarget = target;
 	glf().glGenTextures(1, &tex.glTexture);
@@ -712,7 +954,47 @@ void GLHandler::useTextures(std::vector<Texture> const& textures)
 
 void GLHandler::deleteTexture(Texture const& texture)
 {
+	--texCount();
 	glf().glDeleteTextures(1, &texture.glTexture);
+}
+
+GLHandler::PixelBufferObject
+    GLHandler::newPixelBufferObject(unsigned int width, unsigned int height)
+{
+	++PBOCount();
+	PixelBufferObject result = {};
+	result.width             = width;
+	result.height            = height;
+
+	glf().glGenBuffers(1, &result.id);
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, result.id);
+	glf().glBufferData(GL_PIXEL_UNPACK_BUFFER, width * height * 4, nullptr,
+	                   GL_STREAM_DRAW);
+	result.mappedData = static_cast<unsigned char*>(
+	    glf().glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY));
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	return result;
+}
+
+GLHandler::Texture GLHandler::copyPBOToTex(PixelBufferObject const& pbo,
+                                           bool sRGB)
+{
+	Texture result = {};
+
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo.id);
+	glf().glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	// NOLINTNEXTLINE(hicpp-use-nullptr, modernize-use-nullptr)
+	result = newTexture(pbo.width, pbo.height, static_cast<GLvoid*>(0), sRGB);
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	return result;
+}
+
+void GLHandler::deletePixelBufferObject(PixelBufferObject const& pbo)
+{
+	--PBOCount();
+	glf().glDeleteBuffers(1, &pbo.id);
+	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 QColor GLHandler::sRGBToLinear(QColor const& srgb)

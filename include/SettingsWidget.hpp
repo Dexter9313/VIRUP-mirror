@@ -22,6 +22,8 @@
 #include <QCheckBox>
 #include <QColorDialog>
 #include <QCompleter>
+#include <QDateTime>
+#include <QDateTimeEdit>
 #include <QFileDialog>
 #include <QFileSystemModel>
 #include <QFormLayout>
@@ -63,6 +65,8 @@ class SettingsWidget : public QTabWidget
 	                        float minVal = 0.f, float maxVal = 1.f);
 	void addColorSetting(QString const& name, QColor const& defaultVal,
 	                     QString const& label);
+	void addDateTimeSetting(QString const& name, QDateTime const& defaultVal,
+	                        QString const& label);
 
   private:
 	QFormLayout* currentForm = nullptr;
