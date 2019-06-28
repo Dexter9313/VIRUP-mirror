@@ -32,7 +32,7 @@ class MovingCube
 	~MovingCube();
 
   private:
-	GLHandler::Mesh cube;
+	GLHandler::Mesh cube = {};
 	GLHandler::ShaderProgram cubeShader;
 	QElapsedTimer cubeTimer;
 
