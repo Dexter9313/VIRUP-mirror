@@ -1,52 +1,5 @@
 #include "MainWin.hpp"
 
-std::vector<float> cubeVertices(uint64_t dt)
-{
-	float dtf = dt / 2000.f;
-
-	std::vector<float> result = {
-	    -1.0f, -1.0f, -1.0f, // 0
-	    -1.0f, -1.0f, 1.0f,  // 1
-	    -1.0f, 1.0f,  -1.0f, // 2
-	    -1.0f, 1.0f,  1.0f,  // 3
-	    1.0f,  -1.0f, -1.0f, // 4
-	    1.0f,  -1.0f, 1.0f,  // 5
-	    1.0f,  1.0f,  -1.0f, // 6
-	    1.0f,  1.0f,  1.0f,  // 7
-	};
-
-	for(unsigned int i(0); i < 24; i += 3)
-	{
-		result[i] *= cosf(dtf);
-	}
-	for(unsigned int i(1); i < 24; i += 3)
-	{
-		result[i] *= sinf(dtf);
-	}
-
-	return result;
-}
-
-GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader)
-{
-	GLHandler::Mesh mesh(GLHandler::newMesh());
-	std::vector<float> vertices = cubeVertices(0);
-
-	std::vector<unsigned int> elements = {
-	    0, 1, 0, 2, 0, 4,
-
-	    7, 6, 7, 5, 7, 3,
-
-	    1, 3, 1, 5,
-
-	    2, 6, 2, 3,
-
-	    4, 6, 4, 5,
-	};
-	GLHandler::setVertices(mesh, vertices, shader, {{"position", 3}}, elements);
-	return mesh;
-}
-
 void MainWin::keyPressEvent(QKeyEvent* e)
 {
 	AbstractMainWin::keyPressEvent(e);
@@ -109,11 +62,7 @@ void MainWin::initScene()
 	                                           {{"color", {1.0, 1.0, 0.0}}});
 
 	// create cube
-	cubeShader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
-	GLHandler::setShaderParam(cubeShader, "color",
-	                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
-	cube = createCube(cubeShader);
+	movingCube = new MovingCube;
 
 	// create points
 	pointsMesh   = GLHandler::newMesh();
@@ -123,7 +72,6 @@ void MainWin::initScene()
 	                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	std::vector<float> points = {0, 0, 0};
 	GLHandler::setVertices(pointsMesh, points, pointsShader, {{"position", 3}});
-	cubeTimer.start();
 
 	sphereShader = GLHandler::newShader("default");
 	GLHandler::setShaderParam(sphereShader, "alpha", 1.0f);
@@ -187,7 +135,7 @@ void MainWin::updateScene(BasicCamera& camera)
 		}
 	}
 
-	GLHandler::updateVertices(cube, cubeVertices(cubeTimer.elapsed()));
+	movingCube->update();
 }
 
 void MainWin::renderScene(BasicCamera const& camera)
@@ -207,8 +155,8 @@ void MainWin::renderScene(BasicCamera const& camera)
 	GLHandler::render(sphere);
 	GLHandler::clearDepthBuffer();
 
-	GLHandler::setUpRender(cubeShader);
-	GLHandler::render(cube, GLHandler::PrimitiveType::LINES);
+	movingCube->render();
+
 	GLHandler::setUpRender(shaderProgram);
 	GLHandler::render(mesh);
 	GLHandler::setUpRender(pointsShader);
@@ -241,8 +189,7 @@ MainWin::~MainWin()
 	GLHandler::deleteMesh(pointsMesh);
 	GLHandler::deleteShader(pointsShader);
 
-	GLHandler::deleteMesh(cube);
-	GLHandler::deleteShader(cubeShader);
+	delete movingCube;
 
 	delete bill;
 	delete text;
