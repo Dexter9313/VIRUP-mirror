@@ -20,7 +20,7 @@
 
 MovementControls::MovementControls(VRHandler const& vrHandler, BBox dataBBox)
     : vrHandler(vrHandler)
-    , dataBBox(std::move(dataBBox))
+    , dataBBox(dataBBox)
 {
 	if((dataBBox.maxx - dataBBox.minx >= dataBBox.maxy - dataBBox.miny)
 	   && (dataBBox.maxx - dataBBox.minx >= dataBBox.maxz - dataBBox.minz))
