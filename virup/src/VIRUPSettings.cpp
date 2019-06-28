@@ -34,7 +34,24 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	addColorSetting("darkmattercolor", QColor::fromRgbF(1.f, 0.5f, 0.15f),
 	                tr("Dark Matter Color"));
 
-	insertGroup("misc", tr("Miscellaneous"), 1);
+	insertGroup("simulation", tr("Simulation"), 1);
+	addDateTimeSetting("starttime", QDateTime().currentDateTimeUtc(),
+	                   tr("Start time (UTC)"));
+	addBoolSetting("lockedrealtime", false, tr("Lock to Real Time"));
+
+	addDirPathSetting(
+	    "planetsystemdir",
+	    QFileInfo(QSettings().fileName()).absoluteDir().absolutePath()
+	        + "/systems/",
+	    tr("Planetary System Root Directory"));
+
+	addBoolSetting("randomsystem", false,
+	               tr("Random Planetary System (from subdir)"));
+
+	insertGroup("quality", tr("Quality"), 2);
+	addUIntSetting("texmaxsize", 16, tr("Textures max size (x512)"), 1, 32);
+
+	insertGroup("misc", tr("Miscellaneous"), 3);
 	addBoolSetting("showcube", false, tr("Show Cube"));
 	addColorSetting("cubecolor", QColor(255, 255, 255), tr("Cube Color"));
 	addVector3DSetting("focuspoint", QVector3D(), tr("Focus Point"),

@@ -5,10 +5,12 @@
 #include <liboctree/Octree.hpp>
 #include <random>
 
+#include "graphics/renderers/OrbitalSystemRenderer.hpp"
+
 #include "Camera.hpp"
 #include "GLHandler.hpp"
 #include "Primitives.hpp"
-#include "blackbody.hpp"
+#include "physics/blackbody.hpp"
 #include "utils.hpp"
 
 #define MAX_LEAVES_PER_NODE 16000

@@ -395,14 +395,14 @@ void OctreeLOD::initStar(float radius)
 	                          static_cast<float>(1000 + d(generator)));
 	GLHandler::setShaderParam(
 	    starShader, "blackbodyBoundaries",
-	    QVector2D(blackbody_min_temp, blackbody_max_temp));
+	    QVector2D(blackbody::min_temp, blackbody::max_temp));
 
 	starMesh = Primitives::newUnitSphere(starShader, 50, 50);
 
 	starTex = GLHandler::newTexture(
-	    (blackbody_max_temp - blackbody_min_temp) / blackbody_temp_step + 1,
+	    (blackbody::max_temp - blackbody::min_temp) / blackbody::temp_step + 1,
 	    // NOLINTNEXTLINE(hicpp-no-array-decay)
-	    blackbody_red, blackbody_green, blackbody_blue);
+	    blackbody::red, blackbody::green, blackbody::blue);
 
 	starModel = QMatrix4x4();
 	starModel.scale(radius);
