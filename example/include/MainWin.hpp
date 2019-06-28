@@ -5,6 +5,7 @@
 #include "Billboard.hpp"
 #include "Primitives.hpp"
 #include "Text3D.hpp"
+#include "movingcube/MovingCube.hpp"
 
 class MainWin : public AbstractMainWin
 {
@@ -41,9 +42,7 @@ class MainWin : public AbstractMainWin
 	GLHandler::Mesh pointsMesh;
 	GLHandler::ShaderProgram pointsShader;
 
-	GLHandler::Mesh cube;
-	GLHandler::ShaderProgram cubeShader;
-	QElapsedTimer cubeTimer;
+	MovingCube* movingCube;
 
 	GLHandler::Mesh sphere;
 	GLHandler::ShaderProgram sphereShader;

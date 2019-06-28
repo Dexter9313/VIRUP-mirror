@@ -46,6 +46,10 @@ The project name defined in build.conf as PROJECT_NAME is accessible in C++ code
 
 All used classes starting with Q (ex: QSettings) belong to the Qt framework. The engine didn't wrap anything from Qt, so you will have to use Qt a least a little.
 
+## Libraries
+
+You can add HydrogenVR libraries to your project. Add them in projectdir/thirdparty. For example, you will have the following : projectdir/thirdparty/mylib/include and projecteddir/thirdparty/mylib/src. How you add them is up to you (submodules, subtrees, hard copy). For now, include files are not prefixed, be careful of file name collisions ! A good practice would be to add subfolders in your include directories to avoid that. The content of libraries directories is structured the same way as projects and will soon be able to have the same type of content (install scripts, cmake scripts, etc...). For now only the include and src directories are used.
+
 ## Example releases
 
 You can see releases for Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [HydrogenVR Releases](https://github.com/Dexter9313/HydrogenVR-mirror/releases).
