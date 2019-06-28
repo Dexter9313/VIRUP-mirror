@@ -3,9 +3,9 @@
 
 #include "AbstractMainWin.hpp"
 #include "Billboard.hpp"
-#include "MovingCube.hpp"
 #include "Primitives.hpp"
 #include "Text3D.hpp"
+#include "movingcube/MovingCube.hpp"
 
 class MainWin : public AbstractMainWin
 {

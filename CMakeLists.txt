@@ -1,18 +1,18 @@
-#    Copyright (C) 2018 Florian Cabot <florian.cabot@hotmail.fr>
+#Copyright(C) 2018 Florian Cabot < florian.cabot @hotmail.fr >
 #
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; either version 3 of the License, or
-#    (at your option) any later version.
+#This program is free software; you can redistribute it and / or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 3 of the License, or
+#(at your option) any later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#    GNU General Public License for more details.
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+#GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License along
-#    with this program; if not, write to the Free Software Foundation, Inc.,
-#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#You should have received a copy of the GNU General Public License along
+#with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301 USA.
 
 #INIT
 cmake_minimum_required(VERSION 3.0.0)
@@ -20,23 +20,22 @@ cmake_minimum_required(VERSION 3.0.0)
 #READ CONFIG FILE AND SET VARIABLES
 file(STRINGS "build.conf" ConfigContents)
 foreach(NameAndValue ${ConfigContents})
-  # Strip leading spaces
+#Strip leading spaces
   string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
-  # Find variable name
+#Find variable name
   string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
-  # Find the value
+#Find the value
   string(REPLACE "${Name}=" "" Value ${NameAndValue})
-  # Remove quotes
+#Remove quotes
   string(REPLACE "\"" "" Value ${Value})
-  # Set the variable
+#Set the variable
   set(${Name} ${Value})
 endforeach()
 
 project(${PROJECT_NAME} CXX)
 set(CMAKE_PROJECT_DESCRIPTION ${PROJECT_DESCRIPTION})
 
-
-#C++11
+#C++ 11
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
@@ -48,7 +47,7 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
-#For clang-tidy to use (clang-tidy -p)
+#For clang - tidy to use(clang - tidy - p)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #WARNINGS
@@ -69,17 +68,24 @@ endif()
 add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
 add_definitions(-DPROJECT_DIRECTORY="${PROJECT_DIRECTORY}")
 
+#FILES / DIRECTORIES
 
-#FILES/DIRECTORIES
+file(GLOB THIRDPARTY_INCLUDES_FILES ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/thirdparty/**/include/* LIST_DIRECTORIES true)
+list(GET THIRDPARTY_INCLUDES_FILES 0 THIRDPARTY_INCLUDES_FILE)
+get_filename_component(RESULT ${THIRDPARTY_INCLUDES_FILE} DIRECTORY)
 
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
+set(THIRDPARTY_INCLUDES ${RESULT})
 set(PROJECT_INCLUDES ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/include)
 set(TEST_INCLUDES ${PROJECT_SOURCE_DIR}/test ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/test)
 
 file(GLOB_RECURSE ENGINE_HPP_FILES ${COMMON_INCLUDES}/*.hpp)
-file(GLOB_RECURSE HPP_FILES ${ENGINE_HPP_FILES} ${PROJECT_INCLUDES}/*.hpp)
+file(GLOB_RECURSE THIRDPARTY_HPP_FILES ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/thirdparty/**/include/*.hpp)
+file(GLOB_RECURSE HPP_FILES ${ENGINE_HPP_FILES} ${THIRDPARTY_HPP_FILES} ${PROJECT_INCLUDES}/*.hpp)
+
 file(GLOB_RECURSE ENGINE_SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-file(GLOB_RECURSE SRC_FILES ${ENGINE_SRC_FILES} ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/src/*.cpp)
+file(GLOB_RECURSE THIRDPARTY_SRC_FILES ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/thirdparty/**/src/*.cpp)
+file(GLOB_RECURSE SRC_FILES ${ENGINE_SRC_FILES} ${THIRDPARTY_SRC_FILES} ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/src/*.cpp)
 file(GLOB_RECURSE MAIN_FILE ${PROJECT_SOURCE_DIR}/src/main.cpp)
 list(REMOVE_ITEM SRC_FILES ${MAIN_FILE})
 
@@ -169,7 +175,7 @@ if(PYTHONQT_QTALL_FOUND)
 	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${PYTHONQT_QTALL_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
 endif()
 
-include_directories(${COMMON_INCLUDES} ${PROJECT_INCLUDES} ${TEST_INCLUDES} SYSTEM ${EXTERNAL_LIBS_INCLUDE_DIRS})
+include_directories(${COMMON_INCLUDES} ${THIRDPARTY_INCLUDES} ${PROJECT_INCLUDES} ${TEST_INCLUDES} SYSTEM ${EXTERNAL_LIBS_INCLUDE_DIRS})
 
 #LINKING SETUP
 set(LD_LIBS ${CMAKE_DL_LIBS} Qt5::Widgets Qt5::Test ${ASSIMP_LIBRARIES} ${OPENVR_LIBRARY} ${PROJECT_LIBRARIES})
