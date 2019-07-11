@@ -94,12 +94,12 @@ void MainWin::initScene()
 	text->getModel().rotate(45.f, 1.f, 0.f);
 	text->getModel().translate(0.f, 0.f, 0.5f);
 
-	getCamera().setEyeDistanceFactor(5.0f);
+	getCamera("default").setEyeDistanceFactor(5.0f);
 
 	appendPostProcessingShader("distort", "distort");
 }
 
-void MainWin::updateScene(BasicCamera& camera)
+void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 {
 	Controller const* cont(vrHandler.getController(Side::LEFT));
 	if(cont == nullptr)
@@ -138,7 +138,7 @@ void MainWin::updateScene(BasicCamera& camera)
 	movingCube->update();
 }
 
-void MainWin::renderScene(BasicCamera const& camera)
+void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 {
 	GLHandler::useTextures({sbTexture});
 	GLHandler::setBackfaceCulling(false);

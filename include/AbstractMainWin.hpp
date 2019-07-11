@@ -105,6 +105,18 @@ class AbstractMainWin : public QOpenGLWindow
 	Q_PROPERTY(float gamma MEMBER gamma)
 
   public:
+	struct RenderPath
+	{
+		RenderPath(BasicCamera* camera)
+		    : camera(camera){};
+		RenderPath(GLbitfield clearMask, BasicCamera* camera)
+		    : clearMask(clearMask)
+		    , camera(camera){};
+
+		GLbitfield clearMask = 0x0; // don't clear anything by default
+		BasicCamera* camera;
+	};
+
 	/**
 	 * @brief Constructs an @ref AbstractMainWin.
 	 *
@@ -158,6 +170,12 @@ class AbstractMainWin : public QOpenGLWindow
 	 * @toggle{vr}
 	 */
 	void toggleVR();
+	// /!\ ownership of path.camera
+	void appendSceneRenderPath(QString const& id, RenderPath path);
+	// /!\ ownership of path.camera
+	void insertSceneRenderPath(QString const& id, RenderPath path,
+	                           unsigned int pos);
+	void removeSceneRenderPath(QString const& id);
 	/**
 	 * @brief Appends a post-processing shader to the post-processing pipeline.
 	 *
@@ -256,7 +274,7 @@ class AbstractMainWin : public QOpenGLWindow
 	 *
 	 * @param camera The camera used for rendering.
 	 */
-	virtual void updateScene(BasicCamera& camera) = 0;
+	virtual void updateScene(BasicCamera& camera, QString const& pathId) = 0;
 	/**
 	 * @brief Gets called in the main loop during each rendering.
 	 *
@@ -266,37 +284,27 @@ class AbstractMainWin : public QOpenGLWindow
 	 *
 	 * @param camera The camera used for rendering.
 	 */
-	virtual void renderScene(BasicCamera const& camera) = 0;
+	virtual void renderScene(BasicCamera const& camera, QString const& pathId)
+	    = 0;
 	/**
 	 * @brief Returns a constant reference to the @ref BasicCamera used for
-	 * rendering.
+	 * rendering during specific scene rendering path.
 	 *
-	 * Can be of polymorphic type if you use @ref setCamera.
+	 * Can be of polymorphic type if you have your own cameras registered.
 	 */
-	BasicCamera const& getCamera() const { return *camera; };
+	BasicCamera const& getCamera(QString const& pathId) const;
 	/**
-	 * @brief Returns a reference to the @ref BasicCamera used for rendering.
+	 * @brief Returns a constant reference to the @ref BasicCamera used for
+	 * rendering during specific scene rendering path.
 	 *
-	 * Can be of polymorphic type if you use @ref setCamera.
+	 * Can be of polymorphic type if you have your own cameras registered.
 	 */
-	BasicCamera& getCamera() { return *camera; };
+	BasicCamera& getCamera(QString const& pathId);
 	/**
 	 * @brief Returns a reference to the @ref DebugCamera of the engine.
 	 */
 	DebugCamera& getDebugCamera() { return *dbgCamera; };
-	/**
-	 * @brief Sets a the camera to be used for rendering.
-	 *
-	 * @warning This method will take ownership of the pointer passed. It will
-	 * be deleted by @ref AbstractMainWin later.
-	 *
-	 * A good way to use this method is to inherit from BasicCamera to implement
-	 * your own camera behavior and pass a new object from your own camera class
-	 * to this method. <code>setCamera(new MyCamera);</code> should be the
-	 * safest way to use it.
-	 *
-	 */
-	void setCamera(BasicCamera* newCamera);
+
 	/**
 	 * @brief Gets called before applying a specific post-processing shader.
 	 *
@@ -329,9 +337,23 @@ class AbstractMainWin : public QOpenGLWindow
 	 * This member is read-only.
 	 */
 	float const& frameTiming = frameTiming_;
+
+	/**
+	 * @brief Ordered list of render passes to apply as scene rendering.
+	 *
+	 * This member is read-only.
+	 *
+	 * For each QPair p :
+	 *
+	 * * p.first is the path identifier set when adding or inserting it in the
+	 * pipeline using the corresponding methods.
+	 * * p.second is the render path itself.
+	 */
+	QList<QPair<QString, RenderPath>> const& sceneRenderPipeline
+	    = sceneRenderPipeline_;
 	/**
 	 * @brief Ordered list of post-processing shaders to apply at the end of
-	 * frame rendering.
+	 * scene rendering.
 	 *
 	 * This member is read-only.
 	 *
@@ -351,15 +373,17 @@ class AbstractMainWin : public QOpenGLWindow
 
   private:
 	void initializeGL() override;
-	void vrRender(Side side, BasicCamera* renderingCam, bool debug,
-	              bool debugInHeadset);
+	void vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
+	                        bool debug, bool debugInHeadset,
+	                        bool renderControllers);
+	void vrRender(Side side, bool debug, bool debugInHeadset);
 	void paintGL() override;
 	void resizeGL(int w, int h) override;
 
 	float frameTiming_ = 0.f;
 	QElapsedTimer frameTimer;
 
-	BasicCamera* camera    = nullptr;
+	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;
 	DebugCamera* dbgCamera = nullptr;
 
 	bool hdr = QSettings().value("window/hdr").toBool();

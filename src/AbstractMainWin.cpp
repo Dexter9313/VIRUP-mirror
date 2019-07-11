@@ -192,11 +192,54 @@ void AbstractMainWin::setupPythonAPI()
 	PythonQtHandler::addObject("HydrogenVR", this);
 }
 
-void AbstractMainWin::setCamera(BasicCamera* newCamera)
+BasicCamera const& AbstractMainWin::getCamera(QString const& pathId) const
 {
-	delete camera;
-	camera = newCamera;
-	PythonQtHandler::addObject("camera", camera);
+	for(auto const& pair : sceneRenderPipeline)
+	{
+		if(pair.first == pathId)
+		{
+			return *(pair.second.camera);
+		}
+	}
+	throw(std::domain_error(std::string("Path id doesn't exist.")
+	                        + pathId.toStdString()));
+}
+
+BasicCamera& AbstractMainWin::getCamera(QString const& pathId)
+{
+	for(auto const& pair : sceneRenderPipeline)
+	{
+		if(pair.first == pathId)
+		{
+			return *(pair.second.camera);
+		}
+	}
+	throw(std::domain_error(std::string("Path id doesn't exist.")
+	                        + pathId.toStdString()));
+}
+
+void AbstractMainWin::appendSceneRenderPath(QString const& id, RenderPath path)
+{
+	sceneRenderPipeline_.append(QPair<QString, RenderPath>(id, path));
+}
+
+void AbstractMainWin::insertSceneRenderPath(QString const& id, RenderPath path,
+                                            unsigned int pos)
+{
+	sceneRenderPipeline_.insert(pos, QPair<QString, RenderPath>(id, path));
+}
+
+void AbstractMainWin::removeSceneRenderPath(QString const& id)
+{
+	for(int i(0); i < sceneRenderPipeline_.size(); ++i)
+	{
+		if(sceneRenderPipeline_[i].first == id)
+		{
+			delete sceneRenderPipeline_[i].second.camera;
+			sceneRenderPipeline_.removeAt(i);
+			break;
+		}
+	}
 }
 
 void AbstractMainWin::appendPostProcessingShader(QString const& id,
@@ -289,12 +332,13 @@ void AbstractMainWin::initializeGL()
 	dbgCamera->setPerspectiveProj(70.0f, static_cast<float>(width())
 	                                         / static_cast<float>(height()));
 
-	camera = new BasicCamera(&vrHandler);
-	camera->lookAt({1, 1, 1}, {0, 0, 0}, {0, 0, 1});
-	camera->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                      / static_cast<float>(height()));
+	auto defaultCam = new BasicCamera(&vrHandler);
+	defaultCam->lookAt({1, 1, 1}, {0, 0, 0}, {0, 0, 1});
+	defaultCam->setPerspectiveProj(70.0f, static_cast<float>(width())
+	                                          / static_cast<float>(height()));
+	appendSceneRenderPath("default", {defaultCam});
 
-	PythonQtHandler::addObject("camera", camera);
+	PythonQtHandler::addObject("camera", defaultCam);
 	PythonQtHandler::addObject("dbgcamera", dbgCamera);
 
 	if(vrHandler)
@@ -323,22 +367,49 @@ void AbstractMainWin::initializeGL()
 	frameTimer.start();
 }
 
-void AbstractMainWin::vrRender(Side side, BasicCamera* renderingCam, bool debug,
-                               bool debugInHeadset)
+void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
+                                         QString const& pathId, bool debug,
+                                         bool debugInHeadset,
+                                         bool renderControllers)
 {
-	vrHandler.beginRendering(side, !postProcessingPipeline_.empty());
-	camera->update();
+	GLHandler::glf().glClear(renderPath.clearMask);
+	renderPath.camera->update();
 	dbgCamera->update();
-	renderingCam->uploadMatrices();
-	vrHandler.renderControllers();
-	vrHandler.renderHands();
+
+	if(debug && debugInHeadset)
+	{
+		dbgCamera->uploadMatrices();
+	}
+	else
+	{
+		renderPath.camera->uploadMatrices();
+	}
+	if(renderControllers)
+	{
+		vrHandler.renderControllers();
+		vrHandler.renderHands();
+	}
 	// render scene
-	renderScene(*camera);
+	renderScene(*renderPath.camera, pathId);
 	PythonQtHandler::evalScript(
 	    "if \"renderScene\" in dir():\n\trenderScene()");
 	if(debug && debugInHeadset)
 	{
-		dbgCamera->renderCamera(camera);
+		dbgCamera->renderCamera(renderPath.camera);
+	}
+}
+
+void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
+{
+	vrHandler.beginRendering(side, !postProcessingPipeline_.empty());
+
+	// TEMP : use RenderPath instead !
+	bool renderControllers(true);
+	for(auto pair : sceneRenderPipeline_)
+	{
+		vrRenderSinglePath(pair.second, pair.first, debug, debugInHeadset,
+		                   renderControllers);
+		renderControllers = false;
 	}
 
 	// do all postprocesses except last one
@@ -387,23 +458,25 @@ void AbstractMainWin::paintGL()
 		delete e;
 	}
 	// let user update before rendering
-	updateScene(*camera);
+	for(auto const& pair : sceneRenderPipeline_)
+	{
+		updateScene(*pair.second.camera, pair.first);
+	}
 	PythonQtHandler::evalScript(
 	    "if \"updateScene\" in dir():\n\tupdateScene()");
 
 	bool debug(dbgCamera->isEnabled());
 	bool debugInHeadset(dbgCamera->debugInHeadset());
-	BasicCamera* renderingCam(
-	    debug && ((debugInHeadset && vrHandler) || !vrHandler) ? dbgCamera
-	                                                           : camera);
+	bool renderingCamIsDebug(debug
+	                         && ((debugInHeadset && vrHandler) || !vrHandler));
 
 	// main render logic
 	if(vrHandler)
 	{
 		vrHandler.prepareRendering();
 
-		vrRender(Side::LEFT, renderingCam, debug, debugInHeadset);
-		vrRender(Side::RIGHT, renderingCam, debug, debugInHeadset);
+		vrRender(Side::LEFT, debug, debugInHeadset);
+		vrRender(Side::RIGHT, debug, debugInHeadset);
 
 		if(!debug || debugInHeadset)
 		{
@@ -411,7 +484,7 @@ void AbstractMainWin::paintGL()
 		}
 		else
 		{
-			renderingCam = dbgCamera;
+			renderingCamIsDebug = true;
 		}
 	}
 	// if no VR or debug not in headset, render 2D
@@ -425,16 +498,27 @@ void AbstractMainWin::paintGL()
 		{
 			GLHandler::beginRendering(postProcessingTargets[0]);
 		}
-		camera->update();
-		dbgCamera->update();
-		renderingCam->uploadMatrices();
-		// render scene
-		renderScene(*camera);
-		PythonQtHandler::evalScript(
-		    "if \"renderScene\" in dir():\n\trenderScene()");
-		if(debug)
+
+		for(auto pair : sceneRenderPipeline_)
 		{
-			dbgCamera->renderCamera(camera);
+			pair.second.camera->update();
+			dbgCamera->update();
+			if(renderingCamIsDebug)
+			{
+				dbgCamera->uploadMatrices();
+			}
+			else
+			{
+				pair.second.camera->uploadMatrices();
+			}
+			// render scene
+			renderScene(*pair.second.camera, pair.first);
+			PythonQtHandler::evalScript(
+			    "if \"renderScene\" in dir():\n\trenderScene()");
+			if(debug)
+			{
+				dbgCamera->renderCamera(pair.second.camera);
+			}
 		}
 
 		// do all postprocesses except last one
@@ -465,8 +549,11 @@ void AbstractMainWin::resizeGL(int w, int h)
 {
 	QSettings().setValue("window/width", w);
 	QSettings().setValue("window/height", h);
-	camera->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                      / static_cast<float>(height()));
+	for(auto pair : sceneRenderPipeline_)
+	{
+		pair.second.camera->setPerspectiveProj(
+		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
+	}
 	dbgCamera->setPerspectiveProj(70.0f, static_cast<float>(width())
 	                                         / static_cast<float>(height()));
 }
@@ -480,7 +567,10 @@ AbstractMainWin::~AbstractMainWin()
 	{
 		GLHandler::deleteShader(p.second);
 	}
-	delete camera;
+	for(auto const& pair : sceneRenderPipeline_)
+	{
+		delete pair.second.camera;
+	}
 	delete dbgCamera;
 
 	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
