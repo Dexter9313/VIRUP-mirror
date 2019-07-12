@@ -35,7 +35,7 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	                tr("Dark Matter Color"));
 
 	insertGroup("simulation", tr("Simulation"), 1);
-	addDateTimeSetting("starttime", QDateTime().currentDateTimeUtc(),
+	addDateTimeSetting("starttime", QDateTime::currentDateTimeUtc(),
 	                   tr("Start time (UTC)"));
 	addBoolSetting("lockedrealtime", false, tr("Lock to Real Time"));
 

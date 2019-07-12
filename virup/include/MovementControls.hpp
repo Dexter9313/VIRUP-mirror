@@ -48,12 +48,12 @@ class MovementControls
 	std::array<double, 3> cubeTranslation = {{0.f, 0.f, 0.f}};
 
 	// scaling/translation controls variables
-	bool leftGripPressed  = false;
-	bool rightGripPressed = false;
-	float initControllersDistance;
-	std::array<double, 3> scaleCenter;
-	std::array<double, 3> initControllerPosInCube;
-	double initScale;
+	bool leftGripPressed                          = false;
+	bool rightGripPressed                         = false;
+	float initControllersDistance                 = 1.f;
+	std::array<double, 3> scaleCenter             = {{}};
+	std::array<double, 3> initControllerPosInCube = {{}};
+	double initScale                              = 1.0;
 
 	// keyboard controls variables
 	QVector3D cubePositiveVelocity;
