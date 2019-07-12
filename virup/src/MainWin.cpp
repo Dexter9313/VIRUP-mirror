@@ -57,7 +57,7 @@ void MainWin::keyReleaseEvent(QKeyEvent* e)
 
 void MainWin::mouseMoveEvent(QMouseEvent* e)
 {
-	if(!isActive())
+	if(!isActive() || vrHandler)
 	{
 		return;
 	}

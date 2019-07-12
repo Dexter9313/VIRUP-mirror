@@ -19,31 +19,24 @@ void Camera::update2D()
 
 void Camera::updateTargetFPS()
 {
-	if(!*vrHandler)
+	while(yaw < 0.f)
 	{
-		while(yaw < 0.f)
-		{
-			yaw += 2.f * M_PI;
-		}
-		while(yaw >= 2.f * M_PI)
-		{
-			yaw -= 2.f * M_PI;
-		}
-		if(pitch > M_PI_2 - 0.01)
-		{
-			pitch = M_PI_2 - 0.01;
-		}
-		if(pitch < -1.f * M_PI_2 + 0.01)
-		{
-			pitch = -1.f * M_PI_2 + 0.01;
-		}
-		setView(QVector3D(0.f, 0.f, 0.f), getLookDirection(),
-		        QVector3D(0.f, 0.f, 1.f));
+		yaw += 2.f * M_PI;
 	}
-	else
+	while(yaw >= 2.f * M_PI)
 	{
-		setView(QMatrix4x4());
+		yaw -= 2.f * M_PI;
 	}
+	if(pitch > M_PI_2 - 0.01)
+	{
+		pitch = M_PI_2 - 0.01;
+	}
+	if(pitch < -1.f * M_PI_2 + 0.01)
+	{
+		pitch = -1.f * M_PI_2 + 0.01;
+	}
+	setView(QVector3D(0.f, 0.f, 0.f), getLookDirection(),
+	        QVector3D(0.f, 0.f, 1.f));
 
 	if(*vrHandler)
 	{
