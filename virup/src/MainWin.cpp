@@ -61,7 +61,7 @@ void MainWin::mouseMoveEvent(QMouseEvent* e)
 	{
 		return;
 	}
-	auto cam(dynamic_cast<Camera*>(&getCamera()));
+	auto cam(dynamic_cast<Camera*>(&getCamera("default")));
 	float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
 	float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
 	cam->yaw += dx * 3.14f / 3.f;
@@ -77,7 +77,7 @@ void MainWin::wheelEvent(QWheelEvent* e)
 
 void MainWin::vrEvent(VRHandler::Event const& e)
 {
-	auto cam(dynamic_cast<Camera*>(&getCamera()));
+	auto cam(dynamic_cast<Camera*>(&getCamera("default")));
 	switch(e.type)
 	{
 		case VRHandler::EventType::BUTTON_PRESSED:
@@ -124,7 +124,8 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 			break;
 	}
 
-	movementControls->vrEvent(e, getCamera().trackedSpaceToWorldTransform());
+	movementControls->vrEvent(
+	    e, getCamera("default").trackedSpaceToWorldTransform());
 	AbstractMainWin::vrEvent(e);
 }
 
@@ -149,7 +150,8 @@ void MainWin::initScene()
 	auto cam = new Camera(&vrHandler);
 	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
 	                                   / static_cast<float>(height()));
-	setCamera(cam);
+	removeSceneRenderPath("default");
+	appendSceneRenderPath("default", RenderPath(cam));
 
 	// METHOD LOADING
 	QStringList argv = QCoreApplication::arguments();
@@ -219,7 +221,7 @@ void MainWin::initScene()
 	loaded = true;
 }
 
-void MainWin::updateScene(BasicCamera& camera)
+void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 {
 	if(!loaded)
 	{
@@ -249,7 +251,7 @@ void MainWin::updateScene(BasicCamera& camera)
 	movementControls->update(cam, frameTiming);
 }
 
-void MainWin::renderScene(BasicCamera const& camera)
+void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 {
 	if(!loaded)
 	{
@@ -311,12 +313,13 @@ void MainWin::printPositionInDataSpace(Side controller) const
 	// world space first
 	if(cont != nullptr)
 	{
-		position
-		    = getCamera().trackedSpaceToWorldTransform() * cont->getPosition();
+		position = getCamera("default").trackedSpaceToWorldTransform()
+		           * cont->getPosition();
 	}
 	else
 	{
-		position = getCamera().hmdScaledSpaceToWorldTransform() * position;
+		position
+		    = getCamera("default").hmdScaledSpaceToWorldTransform() * position;
 	}
 
 	// then data space
