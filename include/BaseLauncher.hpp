@@ -22,6 +22,7 @@
 #include <QDebug>
 #include <QDialog>
 #include <QHBoxLayout>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -62,6 +63,12 @@ class BaseLauncher : public QDialog
 	 * You can then add your own widgets to it if you want.
 	 */
 	QVBoxLayout* mainLayout = nullptr;
+
+  protected slots:
+	void resetSettings();
+
+  private:
+	SettingsWidget* settingsWidget;
 };
 
 #endif // BASELAUNCHER_H
