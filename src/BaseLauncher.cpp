@@ -25,7 +25,7 @@ void BaseLauncher::init()
 	mainLayout = new QVBoxLayout(this);
 
 	// SETTINGS TAB WIDGET
-	SettingsWidget* settingsWidget = newSettingsWidget();
+	settingsWidget = newSettingsWidget();
 	mainLayout->addWidget(settingsWidget);
 
 	// LAUNCH AND QUIT BUTTONS
@@ -37,6 +37,12 @@ void BaseLauncher::init()
 	pbl->setText(tr("LAUNCH"));
 	pbl->setDefault(true);
 	connect(pbl, SIGNAL(pressed()), this, SLOT(accept()));
+
+	auto pbr = new QPushButton(this);
+	l->addWidget(pbr);
+	pbr->setText(tr("RESET TO DEFAULT"));
+	connect(pbr, SIGNAL(pressed()), this, SLOT(resetSettings()));
+
 	auto pbq = new QPushButton(this);
 	l->addWidget(pbq);
 	pbq->setText(tr("QUIT"));
@@ -46,4 +52,21 @@ void BaseLauncher::init()
 SettingsWidget* BaseLauncher::newSettingsWidget()
 {
 	return new SettingsWidget(this);
+}
+
+void BaseLauncher::resetSettings()
+{
+	if(QMessageBox::warning(
+	       this, tr("Resetting to default"),
+	       tr("Are you sure you want to reset your settings to default ?"),
+	       QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel)
+	   == QMessageBox::Cancel)
+	{
+		return;
+	}
+	QSettings().clear();
+	SettingsWidget* oldWidget(settingsWidget);
+	settingsWidget = newSettingsWidget();
+	mainLayout->replaceWidget(oldWidget, settingsWidget);
+	delete oldWidget;
 }

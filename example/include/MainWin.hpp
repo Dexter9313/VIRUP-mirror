@@ -22,11 +22,13 @@ class MainWin : public AbstractMainWin
 
 	// update physics/controls/meshes, etc...
 	// prepare for rendering
-	virtual void updateScene(BasicCamera& camera) override;
+	virtual void updateScene(BasicCamera& camera,
+	                         QString const& pathId) override;
 
 	// render user scene on camera
 	// (no controllers or hands)
-	virtual void renderScene(BasicCamera const& camera) override;
+	virtual void renderScene(BasicCamera const& camera,
+	                         QString const& pathId) override;
 
 	virtual void applyPostProcShaderParams(
 	    QString const& id, GLHandler::ShaderProgram shader) const override;

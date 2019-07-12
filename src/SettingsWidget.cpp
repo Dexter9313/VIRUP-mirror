@@ -29,6 +29,9 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 
 	addGroup("vr", tr("Virtual Reality"));
 	addBoolSetting("enabled", true, tr("Enable VR"));
+	addBoolSetting(
+	    "thirdrender", false,
+	    tr("Force 2D render on screen\n(will decrease performance !)"));
 
 	addGroup("scripting", tr("Scripting"));
 	addDirPathSetting(
