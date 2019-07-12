@@ -469,6 +469,7 @@ void AbstractMainWin::paintGL()
 	bool debugInHeadset(dbgCamera->debugInHeadset());
 	bool renderingCamIsDebug(debug
 	                         && ((debugInHeadset && vrHandler) || !vrHandler));
+	bool thirdRender(QSettings().value("vr/thirdrender").toBool());
 
 	// main render logic
 	if(vrHandler)
@@ -478,17 +479,17 @@ void AbstractMainWin::paintGL()
 		vrRender(Side::LEFT, debug, debugInHeadset);
 		vrRender(Side::RIGHT, debug, debugInHeadset);
 
-		if(!debug || debugInHeadset)
+		if(!thirdRender && (!debug || debugInHeadset))
 		{
 			vrHandler.displayOnCompanion(width(), height());
 		}
-		else
+		else if(debug && !debugInHeadset)
 		{
 			renderingCamIsDebug = true;
 		}
 	}
 	// if no VR or debug not in headset, render 2D
-	if(!vrHandler || (debug && !debugInHeadset))
+	if((!vrHandler || thirdRender) || (debug && !debugInHeadset))
 	{
 		if(postProcessingPipeline_.empty())
 		{
@@ -501,7 +502,7 @@ void AbstractMainWin::paintGL()
 
 		for(auto pair : sceneRenderPipeline_)
 		{
-			pair.second.camera->update();
+			pair.second.camera->update2D();
 			dbgCamera->update();
 			if(renderingCamIsDebug)
 			{
