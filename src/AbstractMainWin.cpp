@@ -336,7 +336,7 @@ void AbstractMainWin::initializeGL()
 	defaultCam->lookAt({1, 1, 1}, {0, 0, 0}, {0, 0, 1});
 	defaultCam->setPerspectiveProj(70.0f, static_cast<float>(width())
 	                                          / static_cast<float>(height()));
-	appendSceneRenderPath("default", {defaultCam});
+	appendSceneRenderPath("default", RenderPath(defaultCam));
 
 	PythonQtHandler::addObject("camera", defaultCam);
 	PythonQtHandler::addObject("dbgcamera", dbgCamera);

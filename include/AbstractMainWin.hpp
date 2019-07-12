@@ -107,7 +107,7 @@ class AbstractMainWin : public QOpenGLWindow
   public:
 	struct RenderPath
 	{
-		RenderPath(BasicCamera* camera)
+		explicit RenderPath(BasicCamera* camera)
 		    : camera(camera){};
 		RenderPath(GLbitfield clearMask, BasicCamera* camera)
 		    : clearMask(clearMask)
