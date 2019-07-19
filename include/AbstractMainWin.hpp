@@ -286,6 +286,8 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	virtual void renderScene(BasicCamera const& camera, QString const& pathId)
 	    = 0;
+
+	void renderVRControls() const;
 	/**
 	 * @brief Returns a constant reference to the @ref BasicCamera used for
 	 * rendering during specific scene rendering path.
@@ -371,11 +373,13 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	float gamma = 2.2f;
 
+	bool renderControllersBeforeScene  = true;
+	QString pathIdRenderingControllers = "default";
+
   private:
 	void initializeGL() override;
 	void vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
-	                        bool debug, bool debugInHeadset,
-	                        bool renderControllers);
+	                        bool debug, bool debugInHeadset);
 	void vrRender(Side side, bool debug, bool debugInHeadset);
 	void paintGL() override;
 	void resizeGL(int w, int h) override;

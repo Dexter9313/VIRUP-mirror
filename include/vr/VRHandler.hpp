@@ -66,7 +66,7 @@ class VRHandler : public QObject
 	void prepareRendering();
 	void beginRendering(Side eye, bool postProcessed);
 	void renderControllers() const;
-	void renderHands();
+	void renderHands() const;
 	GLHandler::RenderTarget& getEyeTarget(Side side)
 	{
 		return side == Side::LEFT ? leftTarget : rightTarget;

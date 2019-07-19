@@ -63,6 +63,10 @@ class Controller : public QObject
 	 */
 	Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice, Side side);
 	/**
+	 * @brief OpenVR's internal device id for this controller.
+	 */
+	unsigned int getNDevice() const { return nDevice; };
+	/**
 	 * @getter{side}
 	 */
 	Side getSide() const { return side; };
@@ -85,7 +89,7 @@ class Controller : public QObject
 	 *
 	 * @param model New model matrix of the controller.
 	 */
-	void update(QMatrix4x4 const& model);
+	void update(QMatrix4x4 const& model, unsigned int nDevice);
 	/**
 	 * @brief Renders the controller.
 	 */
@@ -101,13 +105,10 @@ class Controller : public QObject
 	 * @brief Read-only direct access to the @ref side property.
 	 */
 	const Side side;
-	/**
-	 * @brief Read-only direct access to the OpenVR's internal device id for
-	 * this controller.
-	 */
-	const unsigned int nDevice;
 
   private:
+	unsigned int nDevice;
+
 	vr::IVRSystem* const vr_pointer;
 	const int triggerid;
 	const int padid;
