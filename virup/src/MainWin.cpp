@@ -639,18 +639,21 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 
 	if(pathId == "planet")
 	{
-		if(timeSinceTextUpdate < 5.f)
-		{
-			debugText->render();
-		}
 		if(!OctreeLOD::renderPlanetarySystem)
 		{
+			if(timeSinceTextUpdate < 5.f)
+			{
+				debugText->render();
+			}
 			return;
 		}
 		systemRenderer->render(camera);
 		renderVRControls();
 		systemRenderer->renderTransparent(camera);
-
+		if(timeSinceTextUpdate < 5.f)
+		{
+			debugText->render();
+		}
 		return;
 	}
 
