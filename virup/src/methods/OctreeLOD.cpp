@@ -146,9 +146,11 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 	return true;
 }
 
-unsigned int OctreeLOD::renderAboveTanAngle(
-    float tanAngle, Camera const& camera, double scale,
-    std::array<double, 3> const& translation, unsigned int maxPoints)
+unsigned int
+    OctreeLOD::renderAboveTanAngle(float tanAngle, Camera const& camera,
+                                   double scale,
+                                   std::array<double, 3> const& translation,
+                                   unsigned int maxPoints, bool isStarField)
 {
 	QMatrix4x4 model;
 	model.translate(QVector3D(translation[0], translation[1], translation[2]));
@@ -197,7 +199,8 @@ unsigned int OctreeLOD::renderAboveTanAngle(
 			if(oct != nullptr)
 			{
 				remaining -= dynamic_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
-				    tanAngle, camera, scale, translation, remaining);
+				    tanAngle, camera, scale, translation, remaining,
+				    isStarField);
 			}
 		}
 		return maxPoints - remaining;

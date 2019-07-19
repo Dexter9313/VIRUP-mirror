@@ -301,8 +301,8 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	unsigned int rendered = 0;
 	if(gazTree != nullptr)
 	{
-		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, scale,
-		                                         translation, 1000000000);
+		rendered += gazTree->renderAboveTanAngle(
+		    currentTanAngle, camera, scale, translation, 1000000000, false);
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
@@ -310,7 +310,7 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	if(starsTree != nullptr)
 	{
 		rendered += starsTree->renderAboveTanAngle(
-		    currentTanAngle, camera, scale, translation, 1000000000);
+		    currentTanAngle, camera, scale, translation, 1000000000, true);
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
@@ -318,15 +318,17 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	if(darkMatterTree != nullptr && showdm)
 	{
 		rendered += darkMatterTree->renderAboveTanAngle(
-		    currentTanAngle, camera, scale, translation, 1000000000);
+		    currentTanAngle, camera, scale, translation, 1000000000, false);
 	}
 	GLHandler::endTransparent();
 
-	std::pair<float, std::string> h(humanReadable(OctreeLOD::getUsedMem()));
+	(void) rendered;
+
+	/*std::pair<float, std::string> h(humanReadable(OctreeLOD::getUsedMem()));
 	std::cout.precision(4);
 	std::cout << "VRAM : " << h.first << h.second << " used... " << rendered
 	          << " points rendered..."
-	          << "\r" << std::fflush(stdout);
+	          << "\r" << std::fflush(stdout);*/
 }
 
 void TreeMethodLOD::cleanUp()

@@ -39,7 +39,7 @@ class OctreeLOD : public Octree
 	unsigned int renderAboveTanAngle(float tanAngle, Camera const& camera,
 	                                 double scale,
 	                                 std::array<double, 3> const& translation,
-	                                 unsigned int maxPoints);
+	                                 unsigned int maxPoints, bool isStarField);
 	~OctreeLOD();
 
 	static int64_t getUsedMem() { return usedMem(); };
