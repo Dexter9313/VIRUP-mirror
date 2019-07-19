@@ -1,0 +1,3 @@
+[submodule "virup/thirdparty/libplanet"]
+	path = virup/thirdparty/libplanet
+	url = https://gitlab.com/Dexter9313/libplanet.git
