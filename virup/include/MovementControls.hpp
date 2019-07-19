@@ -24,43 +24,76 @@
 #include "Camera.hpp"
 #include "vr/VRHandler.hpp"
 
+#include "methods/OctreeLOD.hpp"
+
+#include "graphics/OrbitalSystemCamera.hpp"
+#include "graphics/renderers/CelestialBodyRenderer.hpp"
+#include "graphics/renderers/OrbitalSystemRenderer.hpp"
+#include "math/Vector3.hpp"
+
 class MovementControls
 {
   public:
-	MovementControls(VRHandler const& vrHandler, BBox dataBBox);
+	MovementControls(VRHandler const& vrHandler, BBox dataBBox,
+	                 OrbitalSystemCamera* cam);
 	double getCubeScale() const { return cubeScale; };
-	std::array<double, 3> getCubeTranslation() const
-	{
-		return cubeTranslation;
-	};
+	Vector3 getCubeTranslation() const { return cubeTranslation; };
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void wheelEvent(QWheelEvent* e);
 	void vrEvent(VRHandler::Event const& e,
-	             QMatrix4x4 trackedSpaceToWorldTransform);
+	             QMatrix4x4 const& trackedSpaceToWorldTransform);
 	void update(Camera const& camera, double frameTiming);
 
   private:
+	void keyPressEventCube(QKeyEvent* e);
+	void keyPressEventOrbitalSystem(QKeyEvent* e);
+	void keyReleaseEventCube(QKeyEvent* e);
+	void keyReleaseEventOrbitalSystem(QKeyEvent* e);
+
+	void vrEventCube(VRHandler::Event const& e,
+	                 QMatrix4x4 const& trackedSpaceToWorldTransform);
+	void vrEventOrbitalSystem(VRHandler::Event const& e);
+	void updateCube(Camera const& camera, double frameTiming);
+	void updateOrbitalSystem(double frameTiming);
+
 	VRHandler const& vrHandler;
 
-	BBox dataBBox                         = {};
-	double cubeScale                      = 1.f;
-	std::array<double, 3> cubeTranslation = {{0.f, 0.f, 0.f}};
+	BBox dataBBox           = {};
+	double cubeScale        = 1.f;
+	Vector3 cubeTranslation = Vector3();
 
+	/* CUBE */
 	// scaling/translation controls variables
-	bool leftGripPressed                          = false;
-	bool rightGripPressed                         = false;
-	float initControllersDistance                 = 1.f;
-	std::array<double, 3> scaleCenter             = {{}};
-	std::array<double, 3> initControllerPosInCube = {{}};
-	double initScale                              = 1.0;
+	bool leftGripPressedCube        = false;
+	bool rightGripPressedCube       = false;
+	float initControllersDistance   = 1.f;
+	Vector3 scaleCenterCube         = Vector3();
+	Vector3 initControllerPosInCube = Vector3();
+	double initScaleCube            = 1.0;
 
 	// keyboard controls variables
 	QVector3D cubePositiveVelocity;
 	QVector3D cubeNegativeVelocity;
 
-	void rescaleCube(double newScale, std::array<double, 3> const& scaleCenter
-	                                  = {{0.0, 0.0, 0.0}});
+	void rescaleCube(double newScale, Vector3 const& scaleCenter = Vector3());
+
+	/* ORBITAL SYSTEM */
+
+	OrbitalSystemCamera* cam;
+
+	// scaling/translation controls variables
+	bool leftGripPressedOrb      = false;
+	bool rightGripPressedOrb     = false;
+	Vector3 initControllerRelPos = Vector3();
+	Vector3 scaleCenterOrb       = Vector3();
+	double initScaleOrb          = 0.0;
+
+	// keyboard+mouse controls variables
+	QVector3D positiveVelocity;
+	QVector3D negativeVelocity;
+
+	void rescale(double newScale, Vector3 const& scaleCenter);
 };
 
 #endif // MOVEMENTCONTROLS_H

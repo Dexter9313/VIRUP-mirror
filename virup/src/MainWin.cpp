@@ -449,11 +449,12 @@ void MainWin::initScene()
 		        : "");
 	}
 
-	movementControls
-	    = new MovementControls(vrHandler, method->getDataBoundingBox());
 	// PLANETS LOADING
 	loadSolarSystem();
 	loadNewSystem();
+
+	movementControls = new MovementControls(
+	    vrHandler, method->getDataBoundingBox(), camPlanet);
 
 	double cubeScale(movementControls->getCubeScale());
 
