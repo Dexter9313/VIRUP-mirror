@@ -192,6 +192,15 @@ void AbstractMainWin::setupPythonAPI()
 	PythonQtHandler::addObject("HydrogenVR", this);
 }
 
+void AbstractMainWin::renderVRControls() const
+{
+	if(vrHandler)
+	{
+		vrHandler.renderControllers();
+		vrHandler.renderHands();
+	}
+}
+
 BasicCamera const& AbstractMainWin::getCamera(QString const& pathId) const
 {
 	for(auto const& pair : sceneRenderPipeline)
@@ -369,8 +378,7 @@ void AbstractMainWin::initializeGL()
 
 void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
                                          QString const& pathId, bool debug,
-                                         bool debugInHeadset,
-                                         bool renderControllers)
+                                         bool debugInHeadset)
 {
 	GLHandler::glf().glClear(renderPath.clearMask);
 	renderPath.camera->update();
@@ -384,13 +392,16 @@ void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
 	{
 		renderPath.camera->uploadMatrices();
 	}
-	if(renderControllers)
+	if(pathIdRenderingControllers == pathId && renderControllersBeforeScene)
 	{
-		vrHandler.renderControllers();
-		vrHandler.renderHands();
+		renderVRControls();
 	}
 	// render scene
 	renderScene(*renderPath.camera, pathId);
+	if(pathIdRenderingControllers == pathId && !renderControllersBeforeScene)
+	{
+		renderVRControls();
+	}
 	PythonQtHandler::evalScript(
 	    "if \"renderScene\" in dir():\n\trenderScene()");
 	if(debug && debugInHeadset)
@@ -403,13 +414,9 @@ void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
 {
 	vrHandler.beginRendering(side, !postProcessingPipeline_.empty());
 
-	// TEMP : use RenderPath instead !
-	bool renderControllers(true);
 	for(auto pair : sceneRenderPipeline_)
 	{
-		vrRenderSinglePath(pair.second, pair.first, debug, debugInHeadset,
-		                   renderControllers);
-		renderControllers = false;
+		vrRenderSinglePath(pair.second, pair.first, debug, debugInHeadset);
 	}
 
 	// do all postprocesses except last one
