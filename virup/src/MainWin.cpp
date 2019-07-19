@@ -574,7 +574,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		if(vrHandler)
 		{
 			debugText->getModel() = cam.hmdSpaceToWorldTransform();
-			debugText->getModel().translate(QVector3D(0.0f, -0.15f, -0.4f));
+			debugText->getModel().translate(QVector3D(0.0f, -0.075f, -0.20f));
 			debugText->getModel().scale(
 			    1.5 * static_cast<float>(textWidth) / width(),
 			    1.5 * static_cast<float>(textHeight) / height());
