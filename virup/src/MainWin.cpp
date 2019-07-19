@@ -515,30 +515,22 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
 }
 
-QVector3D MainWin::dataToWorldPosition(QVector3D const& data) const
+Vector3 MainWin::dataToWorldPosition(Vector3 const& data) const
 {
-	std::array<double, 3> cubeTranslation(
-	    movementControls->getCubeTranslation());
+	Vector3 cubeTranslation(movementControls->getCubeTranslation());
 	double cubeScale(movementControls->getCubeScale());
-	QVector3D result(data);
+	Vector3 result(data);
 	result *= cubeScale;
-	for(unsigned int i(0); i < 3; ++i)
-	{
-		result[i] += cubeTranslation.at(i);
-	}
+	result += cubeTranslation;
 	return result;
 }
 
-QVector3D MainWin::worldToDataPosition(QVector3D const& world) const
+Vector3 MainWin::worldToDataPosition(Vector3 const& world) const
 {
-	std::array<double, 3> cubeTranslation(
-	    movementControls->getCubeTranslation());
+	Vector3 cubeTranslation(movementControls->getCubeTranslation());
 	double cubeScale(movementControls->getCubeScale());
-	QVector3D result(world);
-	for(unsigned int i(0); i < 3; ++i)
-	{
-		result[i] -= cubeTranslation.at(i);
-	}
+	Vector3 result(world);
+	result -= cubeTranslation;
 	result /= cubeScale;
 	return result;
 }
@@ -560,7 +552,7 @@ void MainWin::printPositionInDataSpace(Side controller) const
 	}
 
 	// then data space
-	position = worldToDataPosition(position);
+	position = Utils::toQt(worldToDataPosition(Utils::fromQt(position)));
 	QString posstr;
 	&posstr << position;
 

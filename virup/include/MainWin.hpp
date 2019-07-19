@@ -60,8 +60,8 @@ class MainWin : public AbstractMainWin
 	                         QString const& pathId) override;
 
   private:
-	QVector3D dataToWorldPosition(QVector3D const& data) const;
-	QVector3D worldToDataPosition(QVector3D const& world) const;
+	Vector3 dataToWorldPosition(Vector3 const& data) const;
+	Vector3 worldToDataPosition(Vector3 const& world) const;
 	void printPositionInDataSpace(Side controller = Side::NONE) const;
 	static std::vector<float> generateVertices(unsigned int number,
 	                                           unsigned int seed);
