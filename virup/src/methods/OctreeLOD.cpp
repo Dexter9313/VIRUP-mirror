@@ -212,7 +212,7 @@ unsigned int
 	if(isLeaf())
 	{
 		QVector3D campos = model.inverted()
-		                   * camera.hmdScaledSpaceToWorldTransform()
+		                   * camera.cameraSpaceToWorldTransform()
 		                   * QVector3D(0.f, 0.f, 0.f);
 		if(totalScale > 100 && campos.x() > bbox.minx && campos.x() < bbox.maxx
 		   && campos.y() > bbox.miny && campos.y() < bbox.maxy
