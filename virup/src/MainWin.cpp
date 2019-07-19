@@ -1,5 +1,229 @@
 #include "MainWin.hpp"
 
+MainWin::MainWin()
+{
+	srand(time(nullptr));
+}
+
+void MainWin::loadSolarSystem()
+{
+	QString solarsystemdir(
+	    QSettings().value("simulation/solarsystemdir").toString());
+
+	QFile jsonFile(solarsystemdir + "/definition.json");
+
+	if(jsonFile.exists())
+	{
+		PlanetRenderer::currentSystemDir = solarsystemdir;
+		CSVOrbit::currentSystemDir       = solarsystemdir;
+
+		jsonFile.open(QIODevice::ReadOnly);
+		QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonFile.readAll());
+		QString name(QFileInfo(jsonFile).dir().dirName());
+		solarSystem = new OrbitalSystem(name.toStdString(), jsonDoc.object());
+		if(!solarSystem->isValid())
+		{
+			std::cerr << solarSystem->getName() << " is invalid... ";
+			delete solarSystem;
+			exit(EXIT_FAILURE);
+		}
+	}
+	else
+	{
+		QMessageBox::critical(nullptr, tr("Invalid data directory"),
+		                      tr("The solar system root directory doesn't "
+		                         "contain any definition.json file."));
+		exit(EXIT_FAILURE);
+	}
+
+	auto barycenters = solarSystem->getAllBinariesNames();
+	auto stars       = solarSystem->getAllStarsNames();
+	auto fcPlanets   = solarSystem->getAllFirstClassPlanetsNames();
+	auto satellites  = solarSystem->getAllSatellitePlanetsNames();
+
+	std::cout << "-=-=- SYSTEM " << solarSystem->getName() << " -=-=-"
+	          << std::endl;
+	std::cout << "Barycenters : " << barycenters.size() << std::endl;
+	for(auto const& name : barycenters)
+	{
+		std::cout << name << std::endl;
+	}
+	std::cout << std::endl;
+
+	std::cout << "Stars : " << stars.size() << std::endl;
+	for(auto const& name : stars)
+	{
+		std::cout << name << std::endl;
+	}
+	std::cout << std::endl;
+
+	std::cout << "Main Planets : " << fcPlanets.size() << std::endl;
+	for(auto const& name : fcPlanets)
+	{
+		std::cout << name << std::endl;
+	}
+	std::cout << std::endl;
+
+	std::cout << "Satellites : " << satellites.size() << std::endl;
+	for(auto const& name : satellites)
+	{
+		std::cout << name << "(" << (*solarSystem)[name]->getParent()->getName()
+		          << ")" << std::endl;
+	}
+	std::cout << std::endl;
+
+	if(camPlanet == nullptr)
+	{
+		camPlanet = new OrbitalSystemCamera(&vrHandler);
+		camPlanet->setPerspectiveProj(
+		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
+	}
+	camPlanet->target = solarSystem->getAllCelestialBodiesPointers()[0];
+	camPlanet->relativePosition = Vector3(
+	    camPlanet->target->getCelestialBodyParameters().radius * 2.0, 0.0, 0.0);
+	solarSystemRenderer = new OrbitalSystemRenderer(solarSystem);
+
+	CelestialBodyRenderer::overridenScale = 1.0;
+}
+
+void MainWin::loadNewSystem()
+{
+	if(orbitalSystem != nullptr && orbitalSystem != solarSystem)
+	{
+		delete systemRenderer;
+		delete orbitalSystem;
+	}
+
+	if(static_cast<double>(rand()) / RAND_MAX
+	   < QSettings().value("simulation/solarsystemprob").toUInt() / 100.0)
+	{
+		orbitalSystem  = solarSystem;
+		systemRenderer = solarSystemRenderer;
+		QString solarsystemdir(
+		    QSettings().value("simulation/solarsystemdir").toString());
+		PlanetRenderer::currentSystemDir = solarsystemdir;
+		CSVOrbit::currentSystemDir       = solarsystemdir;
+	}
+	else
+	{
+		QString planetsystemdir(
+		    QSettings().value("simulation/planetsystemdir").toString());
+
+		unsigned int tries(3);
+
+		while(tries > 0)
+		{
+			tries--;
+			QFile jsonFile;
+			QStringList nameFilter;
+			nameFilter << "*.json";
+
+			QStringList files;
+			QDirIterator it(planetsystemdir, QStringList() << "*.json",
+			                QDir::Files, QDirIterator::Subdirectories);
+			while(it.hasNext())
+			{
+				files << it.next();
+			}
+
+			jsonFile.setFileName(files[rand() % files.size()]);
+
+			if(jsonFile.exists())
+			{
+				PlanetRenderer::currentSystemDir = planetsystemdir;
+				CSVOrbit::currentSystemDir       = planetsystemdir;
+
+				jsonFile.open(QIODevice::ReadOnly);
+				QJsonDocument jsonDoc
+				    = QJsonDocument::fromJson(jsonFile.readAll());
+				QString name(QFileInfo(jsonFile).dir().dirName());
+				orbitalSystem
+				    = new OrbitalSystem(name.toStdString(), jsonDoc.object());
+				if(!orbitalSystem->isValid())
+				{
+					std::cerr << orbitalSystem->getName() << " is invalid... ";
+					delete orbitalSystem;
+					if(tries > 0)
+					{
+						std::cerr << "Trying another one..." << std::endl;
+					}
+					else
+					{
+						std::cerr << "All tries done. Shuting down..."
+						          << std::endl;
+						exit(EXIT_FAILURE);
+					}
+				}
+				else
+				{
+					tries = 0;
+				}
+			}
+			else
+			{
+				QMessageBox::critical(
+				    nullptr, tr("Invalid data directory"),
+				    tr("The planetary system root directory doesn't "
+				       "contain any definition.json file."));
+				exit(EXIT_FAILURE);
+			}
+		}
+		systemRenderer = new OrbitalSystemRenderer(orbitalSystem);
+	}
+
+	debugText->setText(QString(orbitalSystem->getName().c_str()));
+	timeSinceTextUpdate = 0.f;
+
+	auto barycenters = orbitalSystem->getAllBinariesNames();
+	auto stars       = orbitalSystem->getAllStarsNames();
+	auto fcPlanets   = orbitalSystem->getAllFirstClassPlanetsNames();
+	auto satellites  = orbitalSystem->getAllSatellitePlanetsNames();
+
+	std::cout << "-=-=- SYSTEM " << orbitalSystem->getName() << " -=-=-"
+	          << std::endl;
+	std::cout << "Barycenters : " << barycenters.size() << std::endl;
+	for(auto const& name : barycenters)
+	{
+		std::cout << name << std::endl;
+	}
+	std::cout << std::endl;
+
+	std::cout << "Stars : " << stars.size() << std::endl;
+	for(auto const& name : stars)
+	{
+		std::cout << name << std::endl;
+	}
+	std::cout << std::endl;
+
+	std::cout << "Main Planets : " << fcPlanets.size() << std::endl;
+	for(auto const& name : fcPlanets)
+	{
+		std::cout << name << std::endl;
+	}
+	std::cout << std::endl;
+
+	std::cout << "Satellites : " << satellites.size() << std::endl;
+	for(auto const& name : satellites)
+	{
+		std::cout << name << "("
+		          << (*orbitalSystem)[name]->getParent()->getName() << ")"
+		          << std::endl;
+	}
+	std::cout << std::endl;
+
+	if(camPlanet == nullptr)
+	{
+		camPlanet = new OrbitalSystemCamera(&vrHandler);
+		camPlanet->setPerspectiveProj(
+		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
+	}
+	camPlanet->target = orbitalSystem->getAllCelestialBodiesPointers()[0];
+	camPlanet->relativePosition = Vector3(
+	    camPlanet->target->getCelestialBodyParameters().radius * 2.0, 0.0, 0.0);
+
+	CelestialBodyRenderer::overridenScale = 1.0;
+}
+
 QColor MainWin::getCubeColor() const
 {
 	return QSettings().value("misc/cubecolor").value<QColor>();
@@ -13,45 +237,51 @@ void MainWin::setCubeColor(QColor const& color)
 
 void MainWin::keyPressEvent(QKeyEvent* e)
 {
-	if(e->key() == Qt::Key_PageUp)
+	if(loaded)
 	{
-		method->setAlpha(method->getAlpha() * 10 / 8);
-	}
-	else if(e->key() == Qt::Key_PageDown)
-	{
-		method->setAlpha(method->getAlpha() * 8 / 10);
-	}
-	else if(e->key() == Qt::Key_Home)
-	{
-		// integralDt    = 0;
-		if(vrHandler)
+		if(e->key() == Qt::Key_PageUp)
 		{
-			vrHandler.resetPos();
+			method->setAlpha(method->getAlpha() * 10 / 8);
 		}
+		else if(e->key() == Qt::Key_PageDown)
+		{
+			method->setAlpha(method->getAlpha() * 8 / 10);
+		}
+		else if(e->key() == Qt::Key_Home)
+		{
+			// integralDt    = 0;
+			if(vrHandler)
+			{
+				vrHandler.resetPos();
+			}
+		}
+		else if(e->key() == Qt::Key_M)
+		{
+			method->toggleDarkMatter();
+		}
+		else if(e->key() == Qt::Key_C)
+		{
+			showCube = !showCube;
+		}
+		else if(e->key() == Qt::Key_H)
+		{
+			setHDR(!getHDR());
+		}
+		else if(e->key() == Qt::Key_P)
+		{
+			printPositionInDataSpace();
+		}
+		movementControls->keyPressEvent(e);
 	}
-	else if(e->key() == Qt::Key_M)
-	{
-		method->toggleDarkMatter();
-	}
-	else if(e->key() == Qt::Key_C)
-	{
-		showCube = !showCube;
-	}
-	else if(e->key() == Qt::Key_H)
-	{
-		setHDR(!getHDR());
-	}
-	else if(e->key() == Qt::Key_P)
-	{
-		printPositionInDataSpace();
-	}
-	movementControls->keyPressEvent(e);
 	AbstractMainWin::keyPressEvent(e);
 }
 
 void MainWin::keyReleaseEvent(QKeyEvent* e)
 {
-	movementControls->keyReleaseEvent(e);
+	if(loaded)
+	{
+		movementControls->keyReleaseEvent(e);
+	}
 	AbstractMainWin::keyReleaseEvent(e);
 }
 
@@ -77,52 +307,56 @@ void MainWin::wheelEvent(QWheelEvent* e)
 
 void MainWin::vrEvent(VRHandler::Event const& e)
 {
-	auto cam(dynamic_cast<Camera*>(&getCamera("default")));
-	switch(e.type)
+	if(loaded)
 	{
-		case VRHandler::EventType::BUTTON_PRESSED:
-			switch(e.button)
-			{
-				case VRHandler::Button::TOUCHPAD:
+		auto cam(dynamic_cast<Camera*>(&getCamera("cosmo")));
+		switch(e.type)
+		{
+			case VRHandler::EventType::BUTTON_PRESSED:
+				switch(e.button)
 				{
-					Controller const* ctrl(vrHandler.getController(e.side));
-					if(ctrl != nullptr)
+					case VRHandler::Button::TOUCHPAD:
 					{
-						QVector2D padCoords(ctrl->getPadCoords());
-						if(padCoords.length() < 0.5) // CENTER
+						Controller const* ctrl(vrHandler.getController(e.side));
+						if(ctrl != nullptr)
 						{
-							method->resetAlpha();
-							cam->setEyeDistanceFactor(1.0f);
-						}
-						else if(fabsf(padCoords[0])
-						        > fabsf(padCoords[1])) // LEFT OR
-						                               // RIGHT
-						{
-							if(padCoords[0] < 0.0f) // LEFT
+							QVector2D padCoords(ctrl->getPadCoords());
+							if(padCoords.length() < 0.5) // CENTER
 							{
-								method->setAlpha(method->getAlpha() * 8 / 10);
+								method->resetAlpha();
+								cam->setEyeDistanceFactor(1.0f);
 							}
-							else // RIGHT
+							else if(fabsf(padCoords[0])
+							        > fabsf(padCoords[1])) // LEFT OR
+							                               // RIGHT
 							{
-								method->setAlpha(method->getAlpha() * 10 / 8);
+								if(padCoords[0] < 0.0f) // LEFT
+								{
+									method->setAlpha(method->getAlpha() * 8
+									                 / 10);
+								}
+								else // RIGHT
+								{
+									method->setAlpha(method->getAlpha() * 10
+									                 / 8);
+								}
 							}
 						}
+						break;
 					}
-					break;
+					case VRHandler::Button::TRIGGER:
+						method->toggleDarkMatter();
+						break;
+					case VRHandler::Button::MENU:
+						printPositionInDataSpace(e.side);
+						break;
+					default:
+						break;
 				}
-				case VRHandler::Button::TRIGGER:
-					method->toggleDarkMatter();
-					break;
-				case VRHandler::Button::MENU:
-					printPositionInDataSpace(e.side);
-					break;
-				default:
-					break;
-			}
-			break;
-		default:
-			break;
-	}
+				break;
+			default:
+				break;
+		}
 
 	movementControls->vrEvent(
 	    e, getCamera("default").trackedSpaceToWorldTransform());
@@ -391,6 +625,8 @@ void MainWin::deleteCube(GLHandler::Mesh mesh, GLHandler::ShaderProgram shader)
 
 MainWin::~MainWin()
 {
+	delete systemRenderer;
+	delete orbitalSystem;
 	delete movementControls;
 	deleteCube(cube, cubeShader);
 	delete method;

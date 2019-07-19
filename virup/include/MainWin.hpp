@@ -2,6 +2,8 @@
 #define MAINWIN_H
 
 #include <QCoreApplication>
+#include <QDirIterator>
+#include <QJsonDocument>
 #include <QMessageBox>
 
 #include "AbstractMainWin.hpp"
@@ -12,11 +14,18 @@
 #include "methods/TreeMethodLOD.hpp"
 #include "methods/TreeMethodTex.hpp"
 
+#include "graphics/OrbitalSystemCamera.hpp"
+#include "graphics/renderers/OrbitalSystemRenderer.hpp"
+#include "physics/OrbitalSystem.hpp"
+#include "physics/SimulationTime.hpp"
+
 class MainWin : public AbstractMainWin
 {
 	Q_OBJECT
   public:
-	MainWin() = default;
+	MainWin();
+	void loadSolarSystem();
+	void loadNewSystem();
 	~MainWin();
 
   public slots:
@@ -67,7 +76,20 @@ class MainWin : public AbstractMainWin
 	GLHandler::ShaderProgram cubeShader = {};
 	bool showCube = QSettings().value("misc/showcube").toBool();
 
-	MovementControls* movementControls;
+	MovementControls* movementControls = nullptr;
+
+	/* PLANET SYSTEMS */
+	OrbitalSystem* solarSystem                 = nullptr;
+	OrbitalSystemRenderer* solarSystemRenderer = nullptr;
+
+	OrbitalSystemCamera* camPlanet        = nullptr;
+	OrbitalSystem* orbitalSystem          = nullptr;
+	OrbitalSystemRenderer* systemRenderer = nullptr;
+	SimulationTime clock                  = SimulationTime(
+        QSettings().value("simulation/starttime").value<QDateTime>());
+
+	Vector3 lastData   = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
+	Vector3 sysInWorld = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
 };
 
 #endif // MAINWIN_H
