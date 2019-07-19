@@ -589,7 +589,6 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		}
 
 		timeSinceTextUpdate += frameTiming;
-		OrbitalSystemRenderer::autoCameraTarget = false;
 		if(!OctreeLOD::renderPlanetarySystem)
 		{
 			return;

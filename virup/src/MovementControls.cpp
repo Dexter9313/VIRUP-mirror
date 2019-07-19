@@ -354,7 +354,7 @@ void MovementControls::vrEventOrbitalSystem(VRHandler::Event const& e)
 						}
 						else
 						{
-							//	OrbitalSystemRenderer::autoCameraTarget = true;
+							OrbitalSystemRenderer::autoCameraTarget = true;
 						}
 					}
 					else if(e.side == Side::RIGHT)
@@ -370,8 +370,7 @@ void MovementControls::vrEventOrbitalSystem(VRHandler::Event const& e)
 						}
 						else
 						{
-							//		OrbitalSystemRenderer::autoCameraTarget =
-							// true;
+							OrbitalSystemRenderer::autoCameraTarget = true;
 						}
 					}
 					break;
