@@ -271,6 +271,32 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 		{
 			printPositionInDataSpace();
 		}
+		else if(e->key() == Qt::Key_R)
+		{
+			float tc(clock.getTimeCoeff());
+			if(tc > 1.f && !clock.getLockedRealTime())
+			{
+				clock.setTimeCoeff(tc / 10.f);
+				debugText->setText(
+				    ("Time coeff. : "
+				     + std::to_string(static_cast<int>(tc / 10.f)) + "x")
+				        .c_str());
+				timeSinceTextUpdate = 0.f;
+			}
+		}
+		else if(e->key() == Qt::Key_T)
+		{
+			float tc(clock.getTimeCoeff());
+			if(tc < 1000000.f && !clock.getLockedRealTime())
+			{
+				clock.setTimeCoeff(tc * 10.f);
+				debugText->setText(
+				    ("Time coeff. : "
+				     + std::to_string(static_cast<int>(tc * 10.f)) + "x")
+				        .c_str());
+				timeSinceTextUpdate = 0.f;
+			}
+		}
 		movementControls->keyPressEvent(e);
 	}
 	AbstractMainWin::keyPressEvent(e);
@@ -333,8 +359,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 								cam->setEyeDistanceFactor(1.0f);
 							}
 							else if(fabsf(padCoords[0])
-							        > fabsf(padCoords[1])) // LEFT OR
-							                               // RIGHT
+							        > fabsf(padCoords[1])) // LEFT OR RIGHT
 							{
 								if(padCoords[0] < 0.0f) // LEFT
 								{
@@ -345,6 +370,39 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 								{
 									method->setAlpha(method->getAlpha() * 10
 									                 / 8);
+								}
+							}
+							else // UP OR DOWN
+							{
+								float tc(clock.getTimeCoeff());
+								if(padCoords[1] < 0.0f) // DOWN
+								{
+									if(tc > 1.f && !clock.getLockedRealTime())
+									{
+										clock.setTimeCoeff(tc / 10.f);
+										debugText->setText(
+										    ("Time coeff. : "
+										     + std::to_string(
+										           static_cast<int>(tc / 10.f))
+										     + "x")
+										        .c_str());
+										timeSinceTextUpdate = 0.f;
+									}
+								}
+								else // UP
+								{
+									if(tc < 1000000.f
+									   && !clock.getLockedRealTime())
+									{
+										clock.setTimeCoeff(tc * 10.f);
+										debugText->setText(
+										    ("Time coeff. : "
+										     + std::to_string(
+										           static_cast<int>(tc * 10.f))
+										     + "x")
+										        .c_str());
+										timeSinceTextUpdate = 0.f;
+									}
 								}
 							}
 						}
@@ -511,6 +569,24 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 	}
 	if(pathId == "planet")
 	{
+		auto& cam = dynamic_cast<OrbitalSystemCamera&>(camera);
+		if(vrHandler)
+		{
+			debugText->getModel() = cam.hmdSpaceToWorldTransform();
+			debugText->getModel().translate(QVector3D(0.0f, -0.15f, -0.4f));
+			debugText->getModel().scale(
+			    1.5 * static_cast<float>(textWidth) / width(),
+			    1.5 * static_cast<float>(textHeight) / height());
+		}
+		else
+		{
+			debugText->getModel() = cam.screenToWorldTransform();
+			// debugText->getModel().translate(QVector3D(-0.88f, 0.88f, 0.f));
+			debugText->getModel().scale(
+			    2 * static_cast<float>(textWidth) / width(),
+			    2 * static_cast<float>(textWidth) / height());
+		}
+
 		timeSinceTextUpdate += frameTiming;
 		OrbitalSystemRenderer::autoCameraTarget = false;
 		if(!OctreeLOD::renderPlanetarySystem)
@@ -540,7 +616,6 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		lastData   = OctreeLOD::planetarySysInitData();
 		sysInWorld = dataToWorldPosition(lastData);
 
-		auto& cam            = dynamic_cast<OrbitalSystemCamera&>(camera);
 		cam.target           = mainBody;
 		cam.relativePosition = -1 * sysInWorld
 		                       / (OctreeLOD::planetarySysInitScale
@@ -555,23 +630,6 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		cam.updateUT(clock.getCurrentUt());
 
 		systemRenderer->updateMesh(clock.getCurrentUt(), cam);
-
-		if(vrHandler)
-		{
-			debugText->getModel() = cam.hmdSpaceToWorldTransform();
-			debugText->getModel().translate(QVector3D(0.0f, -0.15f, -0.4f));
-			debugText->getModel().scale(
-			    1.5 * static_cast<float>(textWidth) / width(),
-			    1.5 * static_cast<float>(textHeight) / height());
-		}
-		else
-		{
-			debugText->getModel() = cam.screenToWorldTransform();
-			// debugText->getModel().translate(QVector3D(-0.88f, 0.88f, 0.f));
-			debugText->getModel().scale(
-			    2 * static_cast<float>(textWidth) / width(),
-			    2 * static_cast<float>(textWidth) / height());
-		}
 		return;
 	}
 }
@@ -585,6 +643,10 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 
 	if(pathId == "planet")
 	{
+		if(timeSinceTextUpdate < 5.f)
+		{
+			debugText->render();
+		}
 		if(!OctreeLOD::renderPlanetarySystem)
 		{
 			return;
@@ -592,11 +654,6 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 		systemRenderer->render(camera);
 		renderVRControls();
 		systemRenderer->renderTransparent(camera);
-
-		if(timeSinceTextUpdate < 5.f)
-		{
-			debugText->render();
-		}
 
 		return;
 	}
