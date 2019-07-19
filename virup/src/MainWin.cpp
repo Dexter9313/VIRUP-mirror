@@ -291,11 +291,14 @@ void MainWin::mouseMoveEvent(QMouseEvent* e)
 	{
 		return;
 	}
-	auto cam(dynamic_cast<Camera*>(&getCamera("default")));
 	float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
 	float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
+	auto cam(dynamic_cast<Camera*>(&getCamera("cosmo")));
 	cam->yaw += dx * 3.14f / 3.f;
 	cam->pitch += dy * 3.14f / 3.f;
+	auto cam2 = (dynamic_cast<OrbitalSystemCamera*>(&getCamera("planet")));
+	cam2->yaw += dx * 3.14f / 3.f;
+	cam2->pitch += dy * 3.14f / 3.f;
 	QCursor::setPos(width() / 2, height() / 2);
 }
 
@@ -361,8 +364,9 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 				break;
 		}
 
-	movementControls->vrEvent(
-	    e, getCamera("default").trackedSpaceToWorldTransform());
+		movementControls->vrEvent(
+		    e, getCamera("cosmo").trackedSpaceToWorldTransform());
+	}
 	AbstractMainWin::vrEvent(e);
 }
 
@@ -387,9 +391,6 @@ void MainWin::initScene()
 	auto cam = new Camera(&vrHandler);
 	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
 	                                   / static_cast<float>(height()));
-	removeSceneRenderPath("default");
-	appendSceneRenderPath("default", RenderPath(cam));
-
 	// METHOD LOADING
 	QStringList argv = QCoreApplication::arguments();
 	int argc         = argv.size();
@@ -450,49 +451,130 @@ void MainWin::initScene()
 
 	movementControls
 	    = new MovementControls(vrHandler, method->getDataBoundingBox());
+	// PLANETS LOADING
+	loadSolarSystem();
+	loadNewSystem();
 
 	double cubeScale(movementControls->getCubeScale());
 
 	method->setAlpha(method->getAlpha() / (cubeScale * cubeScale));
 
+	removeSceneRenderPath("default");
+
+	appendSceneRenderPath("cosmo", RenderPath(cam));
+	appendSceneRenderPath("planet", RenderPath(camPlanet));
+
+	// we will draw them ourselves
+	pathIdRenderingControllers = "";
+
 	loaded = true;
 }
 
-void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
+void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 {
 	if(!loaded)
 	{
 		return;
 	}
-	auto& cam(dynamic_cast<Camera&>(camera));
-	cam.currentFrameTiming = frameTiming;
 
-	/*float distPeriod = 60.f, anglePeriod = 10.f;
-	integralDt += dt;
-	if(integralDt
-	   < 500000.0f * distPeriod) // if we are within a semi-period
+	if(pathId == "cosmo")
 	{
-	    camera->distance
-	        = 1.001
-	          + 1 * cos(6.28 * integralDt / (1000000.0f * distPeriod));
-	    camera->distance
-	        = (camera->distance < 0.001) ? 0.001 : camera->distance;
-	    anglePeriod = 20.f / camera->distance;
-	    camera->angle += 6.28f * (dt / 1000000.0f) / anglePeriod;
-	    camera->update();
-	    // empirical
-	    method->setAlpha((-28.0f / 1999.0f) * camera->distance
-	                     + ((3 + ((2000 * 28) / 1999.0f)) / 1000.0f));
-	}*/
+		auto& cam(dynamic_cast<Camera&>(camera));
+		cam.currentFrameTiming = frameTiming;
 
-	movementControls->update(cam, frameTiming);
+		/*float distPeriod = 60.f, anglePeriod = 10.f;
+		integralDt += dt;
+		if(integralDt
+		   < 500000.0f * distPeriod) // if we are within a semi-period
+		{
+		    camera->distance
+		        = 1.001
+		          + 1 * cos(6.28 * integralDt / (1000000.0f * distPeriod));
+		    camera->distance
+		        = (camera->distance < 0.001) ? 0.001 : camera->distance;
+		    anglePeriod = 20.f / camera->distance;
+		    camera->angle += 6.28f * (dt / 1000000.0f) / anglePeriod;
+		    camera->update();
+		    // empirical
+		    method->setAlpha((-28.0f / 1999.0f) * camera->distance
+		                     + ((3 + ((2000 * 28) / 1999.0f)) / 1000.0f));
+		}*/
+
+		movementControls->update(cam, frameTiming);
+	}
+	if(pathId == "planet")
+	{
+		timeSinceTextUpdate += frameTiming;
+		OrbitalSystemRenderer::autoCameraTarget = false;
+		if(!OctreeLOD::renderPlanetarySystem)
+		{
+			return;
+		}
+		if(lastData != OctreeLOD::planetarySysInitData())
+		{
+			loadNewSystem();
+		}
+
+		CelestialBody* mainBody = nullptr;
+		for(auto star : orbitalSystem->getAllStarsPointers())
+		{
+			if(star->getAbsolutePositionAtUT(0.0).length() == 0.0)
+			{
+				mainBody = star;
+				break;
+			}
+		}
+		// if no star, rogue planet
+		if(mainBody == nullptr)
+		{
+			mainBody = orbitalSystem->getAllPlanetsPointers()[0];
+		}
+
+		lastData   = OctreeLOD::planetarySysInitData();
+		sysInWorld = dataToWorldPosition(lastData);
+
+		auto& cam            = dynamic_cast<OrbitalSystemCamera&>(camera);
+		cam.target           = mainBody;
+		cam.relativePosition = -1 * sysInWorld
+		                       / (OctreeLOD::planetarySysInitScale
+		                          * movementControls->getCubeScale());
+		CelestialBodyRenderer::overridenScale
+		    = OctreeLOD::planetarySysInitScale
+		      * movementControls->getCubeScale();
+
+		sysInWorld = dataToWorldPosition(lastData);
+
+		clock.update();
+		cam.updateUT(clock.getCurrentUt());
+
+		systemRenderer->updateMesh(clock.getCurrentUt(), cam);
+		return;
+	}
 }
 
-void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
+void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 {
 	if(!loaded)
 	{
 		return;
+	}
+
+	if(pathId == "planet")
+	{
+		if(!OctreeLOD::renderPlanetarySystem)
+		{
+			return;
+		}
+		systemRenderer->render(camera);
+		renderVRControls();
+		systemRenderer->renderTransparent(camera);
+
+		return;
+	}
+
+	if(!OctreeLOD::renderPlanetarySystem)
+	{
+		renderVRControls();
 	}
 	auto cam(dynamic_cast<Camera const*>(&camera));
 
@@ -500,8 +582,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	GLHandler::glf().glEnable(GL_DEPTH_CLAMP);
 	QMatrix4x4 model;
 
-	std::array<double, 3> cubeTranslation(
-	    movementControls->getCubeTranslation());
+	Vector3 cubeTranslation(movementControls->getCubeTranslation());
 	double cubeScale(movementControls->getCubeScale());
 	model.translate(
 	    QVector3D(cubeTranslation[0], cubeTranslation[1], cubeTranslation[2]));
@@ -511,7 +592,9 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 		GLHandler::setUpRender(cubeShader, model);
 		GLHandler::render(cube, GLHandler::PrimitiveType::LINES);
 	}
-	method->render(*cam, cubeScale, cubeTranslation);
+	method->render(
+	    *cam, cubeScale,
+	    {{cubeTranslation[0], cubeTranslation[1], cubeTranslation[2]}});
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
 }
 
@@ -542,13 +625,13 @@ void MainWin::printPositionInDataSpace(Side controller) const
 	// world space first
 	if(cont != nullptr)
 	{
-		position = getCamera("default").trackedSpaceToWorldTransform()
+		position = getCamera("cosmo").trackedSpaceToWorldTransform()
 		           * cont->getPosition();
 	}
 	else
 	{
 		position
-		    = getCamera("default").hmdScaledSpaceToWorldTransform() * position;
+		    = getCamera("cosmo").hmdScaledSpaceToWorldTransform() * position;
 	}
 
 	// then data space
