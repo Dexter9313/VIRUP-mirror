@@ -40,13 +40,19 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	addBoolSetting("lockedrealtime", false, tr("Lock to Real Time"));
 
 	addDirPathSetting(
+	    "solarsystemdir",
+	    QFileInfo(QSettings().fileName()).absoluteDir().absolutePath()
+	        + "/systems/",
+	    tr("Solar System Root Directory"));
+
+	addUIntSetting("solarsystemprob", 25, tr("Solar System Probability (in %)"),
+	               0, 100);
+
+	addDirPathSetting(
 	    "planetsystemdir",
 	    QFileInfo(QSettings().fileName()).absoluteDir().absolutePath()
 	        + "/systems/",
-	    tr("Planetary System Root Directory"));
-
-	addBoolSetting("randomsystem", false,
-	               tr("Random Planetary System (from subdir)"));
+	    tr("Exoplanetary Systems Root Directory"));
 
 	insertGroup("quality", tr("Quality"), 2);
 	addUIntSetting("texmaxsize", 16, tr("Textures max size (x512)"), 1, 32);
