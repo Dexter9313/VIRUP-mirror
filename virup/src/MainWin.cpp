@@ -78,7 +78,7 @@ void MainWin::loadSolarSystem()
 		camPlanet->setPerspectiveProj(
 		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
 	}
-	camPlanet->target = solarSystem->getAllCelestialBodiesPointers()[0];
+	camPlanet->target           = solarSystem->getMainCelestialBody();
 	camPlanet->relativePosition = Vector3(
 	    camPlanet->target->getCelestialBodyParameters().radius * 2.0, 0.0, 0.0);
 	solarSystemRenderer = new OrbitalSystemRenderer(solarSystem);
@@ -172,6 +172,7 @@ void MainWin::loadNewSystem()
 	}
 
 	debugText->setText(QString(orbitalSystem->getName().c_str()));
+	lastTargetName      = orbitalSystem->getMainCelestialBody()->getName();
 	timeSinceTextUpdate = 0.f;
 
 	auto barycenters = orbitalSystem->getAllBinariesNames();
@@ -217,7 +218,7 @@ void MainWin::loadNewSystem()
 		camPlanet->setPerspectiveProj(
 		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
 	}
-	camPlanet->target = orbitalSystem->getAllCelestialBodiesPointers()[0];
+	camPlanet->target           = orbitalSystem->getMainCelestialBody();
 	camPlanet->relativePosition = Vector3(
 	    camPlanet->target->getCelestialBodyParameters().radius * 2.0, 0.0, 0.0);
 
@@ -598,28 +599,16 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 			loadNewSystem();
 		}
 
-		CelestialBody* mainBody = nullptr;
-		for(auto star : orbitalSystem->getAllStarsPointers())
-		{
-			if(star->getAbsolutePositionAtUT(0.0).length() == 0.0)
-			{
-				mainBody = star;
-				break;
-			}
-		}
-		// if no star, rogue planet
-		if(mainBody == nullptr)
-		{
-			mainBody = orbitalSystem->getAllPlanetsPointers()[0];
-		}
-
 		lastData   = OctreeLOD::planetarySysInitData();
 		sysInWorld = dataToWorldPosition(lastData);
 
-		cam.target           = mainBody;
-		cam.relativePosition = -1 * sysInWorld
-		                       / (OctreeLOD::planetarySysInitScale
-		                          * movementControls->getCubeScale());
+		if(cam.target == orbitalSystem->getMainCelestialBody())
+		{
+			cam.relativePosition = -1 * sysInWorld
+			                       / (OctreeLOD::planetarySysInitScale
+			                          * movementControls->getCubeScale());
+		}
+
 		CelestialBodyRenderer::overridenScale
 		    = OctreeLOD::planetarySysInitScale
 		      * movementControls->getCubeScale();
@@ -630,6 +619,14 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		cam.updateUT(clock.getCurrentUt());
 
 		systemRenderer->updateMesh(clock.getCurrentUt(), cam);
+
+		std::string targetName(cam.target->getName());
+		if(targetName != lastTargetName)
+		{
+			debugText->setText(targetName.c_str());
+			timeSinceTextUpdate = 0.f;
+			lastTargetName      = targetName;
+		}
 		return;
 	}
 }

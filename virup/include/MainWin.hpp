@@ -99,6 +99,8 @@ class MainWin : public AbstractMainWin
 
 	Vector3 lastData   = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
 	Vector3 sysInWorld = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
+
+	std::string lastTargetName = std::string("");
 };
 
 #endif // MAINWIN_H
