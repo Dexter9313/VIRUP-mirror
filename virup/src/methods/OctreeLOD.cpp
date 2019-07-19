@@ -14,10 +14,12 @@ const int64_t& OctreeLOD::memLimit()
 	return memLimit;
 }
 
-QElapsedTimer& OctreeLOD::starTimer()
+bool OctreeLOD::renderPlanetarySystem   = false;
+double OctreeLOD::planetarySysInitScale = 1.0;
+Vector3& OctreeLOD::planetarySysInitData()
 {
-	static QElapsedTimer starTimer;
-	return starTimer;
+	static Vector3 planetarySysInitData = Vector3();
+	return planetarySysInitData;
 }
 
 // TODO just draw nothing if vertices.size() == 0 (prevents nullptr tests when
@@ -164,18 +166,7 @@ unsigned int
 		return 0;
 	}
 
-	std::array<double, 3> totalTranslation = {};
-	for(unsigned int i(0); i < 3; ++i)
-	{
-		totalTranslation.at(i)
-		    = translation.at(i) + scale * localTranslation.at(i);
-	}
 	double totalScale(scale * localScale);
-
-	QMatrix4x4 totalModel;
-	totalModel.translate(QVector3D(totalTranslation[0], totalTranslation[1],
-	                               totalTranslation[2]));
-	totalModel.scale(totalScale);
 
 	if(!isLoaded)
 	{
@@ -218,70 +209,123 @@ unsigned int
 		}
 	}
 
-	if(isLeaf() && totalScale > 1000)
+	if(isLeaf())
 	{
 		QVector3D campos = model.inverted()
 		                   * camera.hmdScaledSpaceToWorldTransform()
 		                   * QVector3D(0.f, 0.f, 0.f);
-		if(campos.x() > bbox.minx && campos.x() < bbox.maxx
+		if(totalScale > 100 && campos.x() > bbox.minx && campos.x() < bbox.maxx
 		   && campos.y() > bbox.miny && campos.y() < bbox.maxy
 		   && campos.z() > bbox.minz && campos.z() < bbox.maxz)
 		{
-			// Maybe don't do all this every frame...
-			readOwnData(*file);
-			std::vector<float> absoluteData(getOwnData());
-			data.resize(0);
-			data.shrink_to_fit();
-			QVector3D closest(FLT_MAX, FLT_MAX, FLT_MAX);
-			float dist(FLT_MAX);
-			for(unsigned int i(0); i < absoluteData.size(); i += dimPerVertex)
+			Vector3 closest(DBL_MAX, DBL_MAX, DBL_MAX);
+			if(campos != camposBackup)
 			{
-				QVector3D x(absoluteData[i], absoluteData[i + 1],
-				            absoluteData[i + 2]);
-				float distx(campos.distanceToPoint(x));
-				if(distx < dist)
+				camposBackup = campos;
+				if(absoluteData.empty())
 				{
-					closest = x;
-					dist    = distx;
+					readOwnData(*file);
+					absoluteData = getOwnData();
+					data.resize(0);
+					data.shrink_to_fit();
 				}
-			}
-			localTranslation[0] = closest.x();
-			localTranslation[1] = closest.y();
-			localTranslation[2] = closest.z();
-			for(unsigned int i(0); i < absoluteData.size(); i += dimPerVertex)
-			{
-				absoluteData[i] -= closest.x();
-				absoluteData[i] /= localScale;
-				absoluteData[i + 1] -= closest.y();
-				absoluteData[i + 1] /= localScale;
-				absoluteData[i + 2] -= closest.z();
-				absoluteData[i + 2] /= localScale;
-			}
-			GLHandler::updateVertices(mesh, absoluteData);
 
-			if(starLoaded)
-			{
-				renderStar(totalModel);
+				double dist(FLT_MAX);
+				for(unsigned int i(0); i < absoluteData.size();
+				    i += dimPerVertex)
+				{
+					Vector3 x(absoluteData[i], absoluteData[i + 1],
+					          absoluteData[i + 2]);
+					double distx((Utils::fromQt(campos) - x).length());
+					if(distx < dist)
+					{
+						closest = x;
+						dist    = distx;
+					}
+				}
 			}
 			else
 			{
-				initStar(1.f / 500000.f);
-				renderStar(totalModel);
+				closest = closestBackup;
 			}
-			GLHandler::useShader(*shaderProgram);
+			localTranslation[0] = closest[0];
+			localTranslation[1] = closest[1];
+			localTranslation[2] = closest[2];
+			bool switchedPoint(false);
+			if(closest != closestBackup)
+			{
+				switchedPoint = true;
+				closestBackup = closest;
+
+				std::vector<float> vertexData(absoluteData);
+				for(unsigned int i(0); i < vertexData.size(); i += dimPerVertex)
+				{
+					vertexData[i] -= closest[0];
+					vertexData[i] /= localScale;
+					vertexData[i + 1] -= closest[1];
+					vertexData[i + 1] /= localScale;
+					vertexData[i + 2] -= closest[2];
+					vertexData[i + 2] /= localScale;
+				}
+				GLHandler::updateVertices(mesh, vertexData);
+
+				Vector3 closestNeighbor(DBL_MAX, DBL_MAX, DBL_MAX);
+				neighborDist = DBL_MAX;
+				for(unsigned int i(0); i < vertexData.size(); i += dimPerVertex)
+				{
+					Vector3 x(vertexData[i], vertexData[i + 1],
+					          vertexData[i + 2]);
+					// it's closest itself !
+					if(x.length() == 0.0)
+					{
+						continue;
+					}
+
+					if(x.length() < neighborDist)
+					{
+						closestNeighbor = x;
+						neighborDist    = x.length();
+					}
+				}
+			}
+
+			if(totalScale * neighborDist > 2 && (!starLoaded || switchedPoint)
+			   && isStarField)
+			{
+				// 9.461e+15 m = 1ly
+				double realDistanceBetweenNeighbors(9.461e+15);
+				planetarySysInitScale
+				    = neighborDist / realDistanceBetweenNeighbors;
+				planetarySysInitData() = closest;
+				initStar();
+			}
+			else if(totalScale * neighborDist <= 2 && starLoaded)
+			{
+				deleteStar();
+			}
 		}
-		else if(starLoaded)
+		else
 		{
+			absoluteData.resize(0);
+			absoluteData.shrink_to_fit();
+			closestBackup = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
 			deleteStar();
 		}
-	}
-	else if(starLoaded)
-	{
-		deleteStar();
 	}
 
 	if(dataSize / dimPerVertex <= maxPoints)
 	{
+		std::array<double, 3> totalTranslation = {};
+		for(unsigned int i(0); i < 3; ++i)
+		{
+			totalTranslation.at(i)
+			    = translation.at(i) + scale * localTranslation.at(i);
+		}
+		QMatrix4x4 totalModel;
+		totalModel.translate(QVector3D(totalTranslation[0], totalTranslation[1],
+		                               totalTranslation[2]));
+		totalModel.scale(totalScale);
+
 		GLHandler::setShaderParam(
 		    *shaderProgram, "view",
 		    camera.hmdScaledSpaceToWorldTransform().inverted() * totalModel);
@@ -381,47 +425,14 @@ OctreeLOD::~OctreeLOD()
 	unload();
 }
 
-void OctreeLOD::initStar(float radius)
+void OctreeLOD::initStar()
 {
 	if(starLoaded)
 	{
 		return;
 	}
-	starLoaded = true;
-
-	std::random_device rd;
-	std::mt19937 generator(rd());
-	std::exponential_distribution<double> d(0.0005);
-
-	starShader = GLHandler::newShader("star");
-	GLHandler::setShaderParam(starShader, "temperature",
-	                          static_cast<float>(1000 + d(generator)));
-	GLHandler::setShaderParam(
-	    starShader, "blackbodyBoundaries",
-	    QVector2D(blackbody::min_temp, blackbody::max_temp));
-
-	starMesh = Primitives::newUnitSphere(starShader, 50, 50);
-
-	starTex = GLHandler::newTexture(
-	    (blackbody::max_temp - blackbody::min_temp) / blackbody::temp_step + 1,
-	    // NOLINTNEXTLINE(hicpp-no-array-decay)
-	    blackbody::red, blackbody::green, blackbody::blue);
-
-	starModel = QMatrix4x4();
-	starModel.scale(radius);
-
-	starTimer().restart();
-}
-
-void OctreeLOD::renderStar(QMatrix4x4 const& model)
-{
-	GLHandler::endTransparent();
-	GLHandler::setShaderParam(
-	    starShader, "time", static_cast<float>(starTimer().elapsed()) / 1000.f);
-	GLHandler::setUpRender(starShader, model * starModel);
-	GLHandler::useTextures({starTex});
-	GLHandler::render(starMesh);
-	GLHandler::beginTransparent(GL_SRC_ALPHA, GL_ONE);
+	starLoaded            = true;
+	renderPlanetarySystem = true;
 }
 
 void OctreeLOD::deleteStar()
@@ -430,8 +441,6 @@ void OctreeLOD::deleteStar()
 	{
 		return;
 	}
-	GLHandler::deleteTexture(starTex);
-	GLHandler::deleteMesh(starMesh);
-	GLHandler::deleteShader(starShader);
-	starLoaded = false;
+	starLoaded            = false;
+	renderPlanetarySystem = false;
 }

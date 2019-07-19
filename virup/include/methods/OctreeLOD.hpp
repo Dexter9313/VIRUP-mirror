@@ -10,6 +10,7 @@
 #include "Camera.hpp"
 #include "GLHandler.hpp"
 #include "Primitives.hpp"
+#include "math/Vector3.hpp"
 #include "physics/blackbody.hpp"
 #include "utils.hpp"
 
@@ -45,6 +46,10 @@ class OctreeLOD : public Octree
 	static int64_t getUsedMem() { return usedMem(); };
 	static int64_t getMemLimit() { return memLimit(); };
 
+	static bool renderPlanetarySystem;
+	static double planetarySysInitScale;
+	static Vector3& planetarySysInitData();
+
   protected:
 	virtual Octree* newOctree(Flags flags) const override;
 
@@ -68,20 +73,19 @@ class OctreeLOD : public Octree
 
 	/* STARS */
 
-	bool starLoaded                     = false;
-	GLHandler::ShaderProgram starShader = {};
-	GLHandler::Mesh starMesh            = {};
-	GLHandler::Texture starTex          = {};
-	QMatrix4x4 starModel;
-	static QElapsedTimer& starTimer();
-
-	void initStar(float radius);
-	void renderStar(QMatrix4x4 const& model);
+	bool starLoaded = false;
+	void initStar();
 	void deleteStar();
 
 	/* PRECISION ENHANCEMENT */
+	std::vector<float> absoluteData; // backup data from file
+	double neighborDist                    = 0.0;
+	Vector3 closestBackup                  = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
 	double localScale                      = 1.f;
 	std::array<double, 3> localTranslation = {{0.f, 0.f, 0.f}};
+
+	/* PERFORMANCE */
+	QVector3D camposBackup = QVector3D(FLT_MAX, FLT_MAX, FLT_MAX);
 };
 
 #endif // OCTREELOD_H
