@@ -287,7 +287,7 @@ void MainWin::keyReleaseEvent(QKeyEvent* e)
 
 void MainWin::mouseMoveEvent(QMouseEvent* e)
 {
-	if(!isActive() || vrHandler)
+	if(!isActive() || vrHandler || !loaded)
 	{
 		return;
 	}
@@ -301,7 +301,10 @@ void MainWin::mouseMoveEvent(QMouseEvent* e)
 
 void MainWin::wheelEvent(QWheelEvent* e)
 {
-	movementControls->wheelEvent(e);
+	if(loaded)
+	{
+		movementControls->wheelEvent(e);
+	}
 	AbstractMainWin::wheelEvent(e);
 }
 
