@@ -450,8 +450,14 @@ void MainWin::initScene()
 	}
 
 	// PLANETS LOADING
+	debugText = new Text3D(textWidth, textHeight);
+	debugText->setFlags(Qt::AlignCenter);
+	debugText->setColor(QColor(255, 0, 0));
+
 	loadSolarSystem();
 	loadNewSystem();
+
+	debugText->setText("");
 
 	movementControls = new MovementControls(
 	    vrHandler, method->getDataBoundingBox(), camPlanet);
@@ -549,6 +555,23 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		cam.updateUT(clock.getCurrentUt());
 
 		systemRenderer->updateMesh(clock.getCurrentUt(), cam);
+
+		if(vrHandler)
+		{
+			debugText->getModel() = cam.hmdSpaceToWorldTransform();
+			debugText->getModel().translate(QVector3D(0.0f, -0.15f, -0.4f));
+			debugText->getModel().scale(
+			    1.5 * static_cast<float>(textWidth) / width(),
+			    1.5 * static_cast<float>(textHeight) / height());
+		}
+		else
+		{
+			debugText->getModel() = cam.screenToWorldTransform();
+			// debugText->getModel().translate(QVector3D(-0.88f, 0.88f, 0.f));
+			debugText->getModel().scale(
+			    2 * static_cast<float>(textWidth) / width(),
+			    2 * static_cast<float>(textWidth) / height());
+		}
 		return;
 	}
 }
@@ -569,6 +592,11 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 		systemRenderer->render(camera);
 		renderVRControls();
 		systemRenderer->renderTransparent(camera);
+
+		if(timeSinceTextUpdate < 5.f)
+		{
+			debugText->render();
+		}
 
 		return;
 	}
@@ -706,6 +734,7 @@ MainWin::~MainWin()
 {
 	delete systemRenderer;
 	delete orbitalSystem;
+	delete debugText;
 	delete movementControls;
 	deleteCube(cube, cubeShader);
 	delete method;

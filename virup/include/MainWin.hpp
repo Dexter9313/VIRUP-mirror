@@ -7,6 +7,7 @@
 #include <QMessageBox>
 
 #include "AbstractMainWin.hpp"
+#include "Text3D.hpp"
 
 #include "MovementControls.hpp"
 #include "methods/BaseLineMethod.hpp"
@@ -87,6 +88,14 @@ class MainWin : public AbstractMainWin
 	OrbitalSystemRenderer* systemRenderer = nullptr;
 	SimulationTime clock                  = SimulationTime(
         QSettings().value("simulation/starttime").value<QDateTime>());
+
+	/* TEXT */
+	Text3D* debugText         = nullptr;
+	float timeSinceTextUpdate = FLT_MAX;
+
+	// TEMP
+	const int textWidth  = 225;
+	const int textHeight = 145;
 
 	Vector3 lastData   = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
 	Vector3 sysInWorld = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
