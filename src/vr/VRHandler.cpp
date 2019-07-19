@@ -282,7 +282,7 @@ void VRHandler::renderControllers() const
 	}
 }
 
-void VRHandler::renderHands()
+void VRHandler::renderHands() const
 {
 	if(leftHand->isValid())
 	{
@@ -356,14 +356,16 @@ bool VRHandler::pollEvent(Event* e)
 				e->type = EventType::BUTTON_PRESSED;
 				if(leftController != nullptr)
 				{
-					if(leftController->nDevice == vrevent.trackedDeviceIndex)
+					if(leftController->getNDevice()
+					   == vrevent.trackedDeviceIndex)
 					{
 						e->side = Side::LEFT;
 					}
 				}
 				if(rightController != nullptr)
 				{
-					if(rightController->nDevice == vrevent.trackedDeviceIndex)
+					if(rightController->getNDevice()
+					   == vrevent.trackedDeviceIndex)
 					{
 						e->side = Side::RIGHT;
 					}
@@ -374,14 +376,16 @@ bool VRHandler::pollEvent(Event* e)
 				e->type = EventType::BUTTON_UNPRESSED;
 				if(leftController != nullptr)
 				{
-					if(leftController->nDevice == vrevent.trackedDeviceIndex)
+					if(leftController->getNDevice()
+					   == vrevent.trackedDeviceIndex)
 					{
 						e->side = Side::LEFT;
 					}
 				}
 				if(rightController != nullptr)
 				{
-					if(rightController->nDevice == vrevent.trackedDeviceIndex)
+					if(rightController->getNDevice()
+					   == vrevent.trackedDeviceIndex)
 					{
 						e->side = Side::RIGHT;
 					}
@@ -452,7 +456,7 @@ void VRHandler::updateController(Side side, int nDevice)
 	}
 	else if(*controller != nullptr)
 	{
-		(*controller)->update(tracked_device_pose_matrix.at(nDevice));
+		(*controller)->update(tracked_device_pose_matrix.at(nDevice), nDevice);
 	}
 	PythonQtHandler::addObject(
 	    ((side == Side::LEFT) ? QString("left") : QString("right"))

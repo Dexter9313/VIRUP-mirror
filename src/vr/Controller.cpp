@@ -188,9 +188,10 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 	vr::VRRenderModels()->FreeTexture(rm_texture);
 }
 
-void Controller::update(QMatrix4x4 const& model)
+void Controller::update(QMatrix4x4 const& model, unsigned int nDevice)
 {
-	this->model = model;
+	this->nDevice = nDevice;
+	this->model   = model;
 	vr::VRControllerState_t controllerState;
 	if(!vr_pointer->GetControllerState(nDevice, &controllerState,
 	                                   sizeof(controllerState)))
