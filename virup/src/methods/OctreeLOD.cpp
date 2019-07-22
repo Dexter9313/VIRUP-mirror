@@ -211,17 +211,23 @@ unsigned int
 
 	if(isLeaf())
 	{
-		QVector3D campos = model.inverted()
-		                   * camera.cameraSpaceToWorldTransform()
-		                   * QVector3D(0.f, 0.f, 0.f);
-		if(totalScale > 100 && campos.x() > bbox.minx && campos.x() < bbox.maxx
-		   && campos.y() > bbox.miny && campos.y() < bbox.maxy
-		   && campos.z() > bbox.minz && campos.z() < bbox.maxz)
+		QVector3D camposQt = camera.hmdScaledSpaceToWorldTransform()
+		                     * QVector3D(0.f, 0.f, 0.f);
+		Vector3 campos(Utils::fromQt(camposQt));
+		campos[0] -= translation[0];
+		campos[1] -= translation[1];
+		campos[2] -= translation[2];
+		campos /= scale;
+
+		if(isStarField && totalScale > 100 && campos[0] > bbox.minx
+		   && campos[0] < bbox.maxx && campos[1] > bbox.miny
+		   && campos[1] < bbox.maxy && campos[2] > bbox.minz
+		   && campos[2] < bbox.maxz)
 		{
 			Vector3 closest(DBL_MAX, DBL_MAX, DBL_MAX);
-			if(campos != camposBackup)
+			if((campos - closestBackup).length()
+			   > localScale * neighborDist / 2.0)
 			{
-				camposBackup = campos;
 				if(absoluteData.empty())
 				{
 					readOwnData(*file);
@@ -236,7 +242,7 @@ unsigned int
 				{
 					Vector3 x(absoluteData[i], absoluteData[i + 1],
 					          absoluteData[i + 2]);
-					double distx((Utils::fromQt(campos) - x).length());
+					double distx((campos - x).length());
 					if(distx < dist)
 					{
 						closest = x;
@@ -289,8 +295,7 @@ unsigned int
 				}
 			}
 
-			if(totalScale * neighborDist > 2 && (!starLoaded || switchedPoint)
-			   && isStarField)
+			if(totalScale * neighborDist > 2 && (!starLoaded || switchedPoint))
 			{
 				// 9.461e+15 m = 1ly
 				double realDistanceBetweenNeighbors(9.461e+15);
@@ -309,6 +314,7 @@ unsigned int
 			absoluteData.resize(0);
 			absoluteData.shrink_to_fit();
 			closestBackup = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
+			neighborDist  = 0.0;
 			deleteStar();
 		}
 	}
