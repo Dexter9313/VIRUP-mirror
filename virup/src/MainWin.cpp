@@ -601,7 +601,8 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		lastData   = OctreeLOD::planetarySysInitData();
 		sysInWorld = dataToWorldPosition(lastData);
 
-		if(cam.target == orbitalSystem->getMainCelestialBody())
+		if(cam.target == orbitalSystem->getMainCelestialBody()
+		   && CelestialBodyRenderer::overridenScale < 1e-12)
 		{
 			cam.relativePosition = -1 * sysInWorld
 			                       / (OctreeLOD::planetarySysInitScale
