@@ -19,6 +19,7 @@ Add the repo as the "hydrogenvr" remote:
 Then squash HydrogenVR's history into one commit. For the first time you should do this manually using the following code :
 
 Linux :
+
 	git fetch --all
 	HASH=$(git ls-remote hydrogenvr -h refs/heads/master | cut -f1)
 	git pull --squash -X theirs hydrogenvr master --allow-unrelated-histories
@@ -27,6 +28,7 @@ Linux :
 If you only want to get HydrogenVR up to one specific commit hash, the procedure is a bit more tedious :
 
 Linux :
+
 	git fetch --all
 	HASH="abcdefghij..."
 	CURRENT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
