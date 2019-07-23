@@ -30,7 +30,7 @@ If you only want to get HydrogenVR up to one specific commit hash, the procedure
 Linux :
 
 	git fetch --all
-	HASH="abcdefghij..."
+	HASH="abcdefghij..." # replace with desired hash !
 	CURRENT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
 	git checkout --orphan update_hydrogenvr
 	git reset --hard
