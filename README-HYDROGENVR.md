@@ -10,17 +10,37 @@ Strong OpenGL knowledge is required as the GLHandler class is merely a convenien
 
 ## To use the template
 
-Make sure your new project is an empty repository without any commit...
+Make sure your new project is not empty if you don't want a dirty git history right off the bat (make an initial commit with a README.md file for example).
 
-Add the repo as the source remote (for example):
+Add the repo as the "hydrogenvr" remote:
 
-	git remote add source https://gitlab.com/Dexter9313/hydrogenvr.git
+	git remote add hydrogenvr https://gitlab.com/Dexter9313/hydrogenvr.git
 
-Then any time you want to update :
+Then squash HydrogenVR's history into one commit. For the first time you should do this manually using the following code :
 
-	git pull source master
+Linux :
+	git fetch --all
+	HASH=$(git ls-remote hydrogenvr -h refs/heads/master | cut -f1)
+	git pull --squash -X theirs hydrogenvr master --allow-unrelated-histories
+	git commit -m "Update HydrogenVR to $HASH" -e
 
-Don't rebase anything from source if you want to be able to pull.
+If you only want to get HydrogenVR up to one specific commit hash, the procedure is a bit more tedious :
+
+Linux :
+	git fetch --all
+	HASH="abcdefghij..."
+	CURRENT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
+	git checkout --orphan update_hydrogenvr
+	git reset --hard
+	git pull hydrogenvr master
+	git reset --hard $HASH
+	git checkout $CURRENT_BRANCH
+	git merge --squash -X theirs update_hydrogenvr --allow-unrelated-histories
+	git branch -D update_hydrogenvr
+	git commit -m "Update HydrogenVR to $HASH" -e
+
+Then anytime you want to update HydrogenVR, run the update-hydrogenvr.sh script with an optional specific commit hash as argument. This script basically does the same as the commands above.
+
 
 For initial setup, make sure you :
 
