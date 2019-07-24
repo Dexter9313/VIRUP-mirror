@@ -47,7 +47,7 @@ Then anytime you want to update HydrogenVR, run the update-hydrogenvr.sh script 
 For initial setup, make sure you :
 
 *  Write your own README.md (see bellow for informations to put in it)
-*  Change variables in build.conf
+*  Copy build.conf.example as build.conf, then change variables values in build.conf accordingly.
 *  If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
 *  Create a project directory. We will call it "projectdir" in this README but you can name it whatever you want as long as build.conf is set accordingly. All your source code should be within your project directory. Don't change anything at root level unless specified as safe here, unless you want engine update problems (see data/ and example/ directories for an example project).
 *  Create a MainWin class in projectdir/include/MainWin.hpp that inherits from AbstractMainWin to draw. It can do nothing if you don't want to do anything (you only have to implement the pure virtual methods, but you can make them do nothing).
