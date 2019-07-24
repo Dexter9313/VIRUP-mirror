@@ -10,22 +10,44 @@ Strong OpenGL knowledge is required as the GLHandler class is merely a convenien
 
 ## To use the template
 
-Make sure your new project is an empty repository without any commit...
+Make sure your new project is not empty if you don't want a dirty git history right off the bat (make an initial commit with a README.md file for example).
 
-Add the repo as the source remote (for example):
+Add the repo as the "hydrogenvr" remote:
 
-	git remote add source https://gitlab.com/Dexter9313/hydrogenvr.git
+	git remote add hydrogenvr https://gitlab.com/Dexter9313/hydrogenvr.git
 
-Then any time you want to update :
+Then squash HydrogenVR's history into one commit. For the first time you should do this manually using the following code :
 
-	git pull source master
+Linux :
 
-Don't rebase anything from source if you want to be able to pull.
+	git fetch --all
+	HASH=$(git ls-remote hydrogenvr -h refs/heads/master | cut -f1)
+	git pull --squash -X theirs hydrogenvr master --allow-unrelated-histories
+	git commit -m "Update HydrogenVR to $HASH" -e
+
+If you only want to get HydrogenVR up to one specific commit hash, the procedure is a bit more tedious :
+
+Linux :
+
+	git fetch --all
+	HASH="abcdefghij..." # replace with desired hash !
+	CURRENT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
+	git checkout --orphan update_hydrogenvr
+	git reset --hard
+	git pull hydrogenvr master
+	git reset --hard $HASH
+	git checkout $CURRENT_BRANCH
+	git merge --squash -X theirs update_hydrogenvr --allow-unrelated-histories
+	git branch -D update_hydrogenvr
+	git commit -m "Update HydrogenVR to $HASH" -e
+
+Then anytime you want to update HydrogenVR, run the update-hydrogenvr.sh script with an optional specific commit hash as argument. This script basically does the same as the commands above.
+
 
 For initial setup, make sure you :
 
 *  Write your own README.md (see bellow for informations to put in it)
-*  Change variables in build.conf
+*  Copy build.conf.example as build.conf, then change variables values in build.conf accordingly.
 *  If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
 *  Create a project directory. We will call it "projectdir" in this README but you can name it whatever you want as long as build.conf is set accordingly. All your source code should be within your project directory. Don't change anything at root level unless specified as safe here, unless you want engine update problems (see data/ and example/ directories for an example project).
 *  Create a MainWin class in projectdir/include/MainWin.hpp that inherits from AbstractMainWin to draw. It can do nothing if you don't want to do anything (you only have to implement the pure virtual methods, but you can make them do nothing).

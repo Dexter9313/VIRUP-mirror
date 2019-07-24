@@ -1,10 +1,13 @@
 #ifndef MAINWIN_H
 #define MAINWIN_H
 
+#include <QCalendarWidget>
+
 #include "AbstractMainWin.hpp"
 #include "Billboard.hpp"
 #include "Primitives.hpp"
 #include "Text3D.hpp"
+#include "Widget3D.hpp"
 #include "movingcube/MovingCube.hpp"
 
 class MainWin : public AbstractMainWin
@@ -51,6 +54,7 @@ class MainWin : public AbstractMainWin
 
 	Billboard* bill;
 	Text3D* text;
+	Widget3D* widget3d;
 
 	float barrelPower = 1.01f;
 };

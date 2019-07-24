@@ -25,6 +25,9 @@ addons:
             - libassimp-dev
 
 install:
+    - if [ ! -f "./build.conf" ]; then
+          cp ./build.conf.example ./build.conf ;
+      fi
     - . ./build.conf
     - CACHED=false
     # travis creates deps/ even if there's nothing in cache
