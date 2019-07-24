@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <QDirIterator>
 #include <QFile>
 #include <QString>
 #include <vector>
@@ -39,6 +40,8 @@ void append(std::vector<T>& v1, std::vector<T> const& v2)
 
 /* if data/projectdir/relativeDataPath exists,
  *   returns data/projectdir/relativeDataPath
+ * else if data/anythirdparty/relativeDataPath exists,
+ *   returns data/anythirdparty/relativeDataPath
  * else if data/core/relativeDataPath exists,
  *   returns data/core/relativeDataPath
  * else,
