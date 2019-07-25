@@ -22,8 +22,9 @@ install:
     - set Path=%QTPATH%;%QTPATH%/bin;%INNOSETUPPATH%;%PATH%
 
     - cd %APPVEYOR_BUILD_FOLDER%
-    - IF NOT EXIST build.conf ( copy build.conf.example build.conf)
-    - for /f "delims=" %%x in (build.conf) do (set "%%x")
+    - set BUILD_CONF=build.conf
+    - IF NOT EXIST build.conf ( set BUILD_CONF=build.conf.example )
+    - for /f "delims=" %%x in (%BUILD_CONF%) do (set "%%x")
     - IF NOT EXIST deps\ ( mkdir deps )
     - cd deps
     ############################################################################
@@ -83,7 +84,9 @@ after_build:
     - copy %PYTHON_PATH%\python37.dll %RELEASE_DIR%
     - copy %PYTHONQT_SHARED% %RELEASE_DIR%
     - copy %PYTHONQT_QTALL_SHARED% %RELEASE_DIR%
-    - move data\ %RELEASE_DIR%
+    - cd ..
+    - move data %RELEASE_DIR%
+    - cd Release
     - ..\..\%PROJECT_DIRECTORY%\ci\appveyor\before_archiving.bat
     - 7z a -tzip %RELEASE_DIR_NAME%.zip %RELEASE_DIR%
     - IF "%BUILD_TYPE%" == "64bit" (set ARCH=/DX64) ELSE (set ARCH=/DX86)

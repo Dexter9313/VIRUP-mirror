@@ -26,9 +26,10 @@ addons:
 
 install:
     - if [ ! -f "./build.conf" ]; then
-          cp ./build.conf.example ./build.conf ;
+          . ./build.conf.example ;
+      else
+          . ./build.conf ;
       fi
-    - . ./build.conf
     - CACHED=false
     # travis creates deps/ even if there's nothing in cache
     - if [ ! -d ./deps ]; then

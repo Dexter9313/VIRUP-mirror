@@ -18,7 +18,11 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 #READ CONFIG FILE AND SET VARIABLES
-file(STRINGS "build.conf" ConfigContents)
+set(BUILD_CONF "build.conf")
+if(NOT EXISTS "build.conf")
+	set(BUILD_CONF "build.conf.example")
+endif()
+file(STRINGS "${BUILD_CONF}" ConfigContents)
 foreach(NameAndValue ${ConfigContents})
 #Strip leading spaces
   string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
