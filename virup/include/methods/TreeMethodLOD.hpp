@@ -1,6 +1,7 @@
 #ifndef TREEMETHODLOD_H
 #define TREEMETHODLOD_H
 
+#include <QElapsedTimer>
 #include <QProgressDialog>
 #include <chrono>
 #include <future>
@@ -42,6 +43,9 @@ class TreeMethodLOD : public Method
 	bool setPointSize = true;
 
 	static void initOctree(OctreeLOD* octree, std::istream* in);
+
+	// used to detect too long frames
+	QElapsedTimer timer;
 };
 
 #endif // TREEMETHOD_H

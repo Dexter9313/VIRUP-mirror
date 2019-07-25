@@ -15,6 +15,7 @@ TreeMethodLOD::TreeMethodLOD(std::string const& vertexShaderPath,
     : Method(vertexShaderPath, fragmentShaderPath)
     , currentTanAngle(1.0f)
 {
+	timer.start();
 	// init chrono
 	// gettimeofday(&t0, NULL);
 
@@ -287,7 +288,7 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	currentTanAngle = currentTanAngle < 0.05f ? 0.05f : currentTanAngle;
 
 	// if something very bad happened regarding last frame rendering
-	if(camera.currentFrameTiming > 0.2)
+	if(timer.restart() > 200)
 	{
 		currentTanAngle = 1.2f;
 	}
@@ -308,7 +309,7 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	if(gazTree != nullptr)
 	{
 		rendered += gazTree->renderAboveTanAngle(
-		    currentTanAngle, camera, scale, translation, 1000000000, false);
+		    currentTanAngle, camera, scale, translation, 100000000, false);
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
@@ -316,7 +317,7 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	if(starsTree != nullptr)
 	{
 		rendered += starsTree->renderAboveTanAngle(
-		    currentTanAngle, camera, scale, translation, 1000000000, true);
+		    currentTanAngle, camera, scale, translation, 100000000, true);
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
@@ -324,7 +325,7 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	if(darkMatterTree != nullptr && showdm)
 	{
 		rendered += darkMatterTree->renderAboveTanAngle(
-		    currentTanAngle, camera, scale, translation, 1000000000, false);
+		    currentTanAngle, camera, scale, translation, 100000000, false);
 	}
 	GLHandler::endTransparent();
 
