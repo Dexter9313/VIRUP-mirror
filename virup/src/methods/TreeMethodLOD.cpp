@@ -286,6 +286,12 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	currentTanAngle = currentTanAngle > 1.2f ? 1.2f : currentTanAngle;
 	currentTanAngle = currentTanAngle < 0.05f ? 0.05f : currentTanAngle;
 
+	// if something very bad happened regarding last frame rendering
+	if(camera.currentFrameTiming > 0.2)
+	{
+		currentTanAngle = 1.2f;
+	}
+
 	GLHandler::beginTransparent(GL_SRC_ALPHA, GL_ONE);
 	GLHandler::setShaderParam(shaderProgram, "color",
 	                          QVector3D(1.0f, 1.0f, 1.0f));
