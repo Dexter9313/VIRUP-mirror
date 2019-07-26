@@ -260,6 +260,11 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 		{
 			method->toggleDarkMatter();
 		}
+		else if(e->key() == Qt::Key_L)
+		{
+			CelestialBodyRenderer::renderLabels
+			    = !CelestialBodyRenderer::renderLabels;
+		}
 		else if(e->key() == Qt::Key_C)
 		{
 			showCube = !showCube;
@@ -410,7 +415,8 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						break;
 					}
 					case VRHandler::Button::TRIGGER:
-						method->toggleDarkMatter();
+						CelestialBodyRenderer::renderLabels
+						    = !CelestialBodyRenderer::renderLabels;
 						break;
 					case VRHandler::Button::MENU:
 						printPositionInDataSpace(e.side);

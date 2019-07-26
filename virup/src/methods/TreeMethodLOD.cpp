@@ -28,7 +28,7 @@ TreeMethodLOD::TreeMethodLOD(std::string const& vertexShaderPath,
 
 	ctrl.tol = 500;
 
-	showdm = false;
+	showdm = true;
 
 	GLHandler::setPointSize(1);
 }
