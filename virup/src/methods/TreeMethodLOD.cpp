@@ -308,8 +308,8 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	unsigned int rendered = 0;
 	if(gazTree != nullptr)
 	{
-		rendered += gazTree->renderAboveTanAngle(
-		    currentTanAngle, camera, scale, translation, 100000000, false);
+		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, scale,
+		                                         translation, 100000000, false);
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
