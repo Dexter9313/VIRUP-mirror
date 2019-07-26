@@ -623,7 +623,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		std::string targetName(cam.target->getName());
 		if(targetName != lastTargetName)
 		{
-			debugText->setText(targetName.c_str());
+			debugText->setText(QString("Locked to ") + targetName.c_str());
 			timeSinceTextUpdate = 0.f;
 			lastTargetName      = targetName;
 		}
