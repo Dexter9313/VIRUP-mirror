@@ -417,6 +417,8 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 					case VRHandler::Button::TRIGGER:
 						CelestialBodyRenderer::renderLabels
 						    = !CelestialBodyRenderer::renderLabels;
+						CelestialBodyRenderer::renderOrbits
+						    = !CelestialBodyRenderer::renderOrbits;
 						break;
 					case VRHandler::Button::MENU:
 						printPositionInDataSpace(e.side);
