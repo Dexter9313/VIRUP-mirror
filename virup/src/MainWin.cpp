@@ -608,13 +608,10 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		solarSystemLabel->width
 		    = camDist * movementControls->getCubeScale() / 3.0;
 
-		camDist
-		    = (worldToDataPosition(Vector3(0.0, 0.0, 0.0)) - m31DataPos)
-		          .length();
-		m31Label->position
-		    = Utils::toQt(dataToWorldPosition(m31DataPos));
-		m31Label->width
-		    = camDist * movementControls->getCubeScale() / 3.0;
+		camDist = (worldToDataPosition(Vector3(0.0, 0.0, 0.0)) - m31DataPos)
+		              .length();
+		m31Label->position = Utils::toQt(dataToWorldPosition(m31DataPos));
+		m31Label->width    = camDist * movementControls->getCubeScale() / 3.0;
 
 		movementControls->update(cam, frameTiming);
 	}
@@ -732,9 +729,12 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	    *cam, cubeScale,
 	    {{cubeTranslation[0], cubeTranslation[1], cubeTranslation[2]}});
 
-	milkyWayLabel->render(camera);
-	solarSystemLabel->render(camera);
-	m31Label->render(camera);
+	if(CelestialBodyRenderer::renderLabels)
+	{
+		milkyWayLabel->render(camera);
+		solarSystemLabel->render(camera);
+		m31Label->render(camera);
+	}
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
 }
 
