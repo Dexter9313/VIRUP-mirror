@@ -101,6 +101,10 @@ class MainWin : public AbstractMainWin
 	Vector3 sysInWorld = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
 
 	std::string lastTargetName = std::string("");
+
+	Billboard* milkyWayLabel;
+	Billboard* solarSystemLabel;
+	Billboard* m31Label;
 };
 
 #endif // MAINWIN_H

@@ -542,6 +542,20 @@ void MainWin::initScene()
 	pathIdRenderingControllers = "";
 
 	loaded = true;
+
+	// LABELS
+	Text3D labelText(200, 200);
+	labelText.setText("Milky Way");
+	labelText.setColor(QColor(255, 0, 0));
+	labelText.setSuperSampling(2.f);
+	labelText.setFlags(Qt::AlignCenter);
+	milkyWayLabel = new Billboard(labelText.getImage());
+
+	labelText.setText("Solar System");
+	solarSystemLabel = new Billboard(labelText.getImage());
+
+	labelText.setText("Andromeda Galaxy");
+	m31Label = new Billboard(labelText.getImage());
 }
 
 void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
@@ -573,6 +587,34 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		    method->setAlpha((-28.0f / 1999.0f) * camera->distance
 		                     + ((3 + ((2000 * 28) / 1999.0f)) / 1000.0f));
 		}*/
+
+		Vector3 milkyWayDataPos(0.0, 0.0, 0.0),
+		    solarSystemDataPos(8.29995608, 0.0, -0.027),
+		    m31DataPos(382.92994334, -617.94616647, 288.2071201);
+
+		// TODO(florian) : usr camDist in 2D...
+		double camDist(
+		    (worldToDataPosition(Vector3(0.0, 0.0, 0.0)) - milkyWayDataPos)
+		        .length());
+		milkyWayLabel->position
+		    = Utils::toQt(dataToWorldPosition(milkyWayDataPos));
+		milkyWayLabel->width = camDist * movementControls->getCubeScale() / 3.0;
+
+		camDist
+		    = (worldToDataPosition(Vector3(0.0, 0.0, 0.0)) - solarSystemDataPos)
+		          .length();
+		solarSystemLabel->position
+		    = Utils::toQt(dataToWorldPosition(solarSystemDataPos));
+		solarSystemLabel->width
+		    = camDist * movementControls->getCubeScale() / 3.0;
+
+		camDist
+		    = (worldToDataPosition(Vector3(0.0, 0.0, 0.0)) - m31DataPos)
+		          .length();
+		m31Label->position
+		    = Utils::toQt(dataToWorldPosition(m31DataPos));
+		m31Label->width
+		    = camDist * movementControls->getCubeScale() / 3.0;
 
 		movementControls->update(cam, frameTiming);
 	}
@@ -689,6 +731,10 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	method->render(
 	    *cam, cubeScale,
 	    {{cubeTranslation[0], cubeTranslation[1], cubeTranslation[2]}});
+
+	milkyWayLabel->render(camera);
+	solarSystemLabel->render(camera);
+	m31Label->render(camera);
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
 }
 
@@ -797,6 +843,9 @@ void MainWin::deleteCube(GLHandler::Mesh mesh, GLHandler::ShaderProgram shader)
 
 MainWin::~MainWin()
 {
+	delete m31Label;
+	delete solarSystemLabel;
+	delete milkyWayLabel;
 	delete systemRenderer;
 	delete orbitalSystem;
 	delete debugText;
