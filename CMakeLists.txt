@@ -18,10 +18,11 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 #READ CONFIG FILE AND SET VARIABLES
-set(BUILD_CONF "build.conf")
-if(NOT EXISTS "build.conf")
-	set(BUILD_CONF "build.conf.example")
+set(BUILD_CONF "${CMAKE_CURRENT_SOURCE_DIR}/build.conf")
+if(NOT EXISTS "${BUILD_CONF}")
+	set(BUILD_CONF "${CMAKE_CURRENT_SOURCE_DIR}/build.conf.example")
 endif()
+message(STATUS "${BUILD_CONF}")
 file(STRINGS "${BUILD_CONF}" ConfigContents)
 foreach(NameAndValue ${ConfigContents})
 #Strip leading spaces
