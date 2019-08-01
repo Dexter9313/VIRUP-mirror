@@ -102,9 +102,9 @@ class MainWin : public AbstractMainWin
 
 	std::string lastTargetName = std::string("");
 
-	Billboard* milkyWayLabel;
-	Billboard* solarSystemLabel;
-	Billboard* m31Label;
+	Billboard* milkyWayLabel    = nullptr;
+	Billboard* solarSystemLabel = nullptr;
+	Billboard* m31Label         = nullptr;
 };
 
 #endif // MAINWIN_H
