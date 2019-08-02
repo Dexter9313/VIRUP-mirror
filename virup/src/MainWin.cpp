@@ -236,6 +236,11 @@ void MainWin::setCubeColor(QColor const& color)
 	GLHandler::setShaderParam(cubeShader, "color", color);
 }
 
+Vector3 MainWin::getCamPosData() const
+{
+	return worldToDataPosition(Vector3(0.0, 0.0, 0.0));
+}
+
 void MainWin::keyPressEvent(QKeyEvent* e)
 {
 	if(loaded)
@@ -588,28 +593,19 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		                     + ((3 + ((2000 * 28) / 1999.0f)) / 1000.0f));
 		}*/
 
-		Vector3 milkyWayDataPos(0.0, 0.0, 0.0),
-		    solarSystemDataPos(8.29995608, 0.0, -0.027),
-		    m31DataPos(382.92994334, -617.94616647, 288.2071201);
-
-		// TODO(florian) : usr camDist in 2D...
-		double camDist(
-		    (worldToDataPosition(Vector3(0.0, 0.0, 0.0)) - milkyWayDataPos)
-		        .length());
+		Vector3 camPosData(getCamPosData());
+		double camDist((camPosData - milkyWayDataPos).length());
 		milkyWayLabel->position
 		    = Utils::toQt(dataToWorldPosition(milkyWayDataPos));
 		milkyWayLabel->width = camDist * movementControls->getCubeScale() / 3.0;
 
-		camDist
-		    = (worldToDataPosition(Vector3(0.0, 0.0, 0.0)) - solarSystemDataPos)
-		          .length();
+		camDist = (camPosData - solarSystemDataPos).length();
 		solarSystemLabel->position
 		    = Utils::toQt(dataToWorldPosition(solarSystemDataPos));
 		solarSystemLabel->width
 		    = camDist * movementControls->getCubeScale() / 3.0;
 
-		camDist = (worldToDataPosition(Vector3(0.0, 0.0, 0.0)) - m31DataPos)
-		              .length();
+		camDist            = (camPosData - m31DataPos).length();
 		m31Label->position = Utils::toQt(dataToWorldPosition(m31DataPos));
 		m31Label->width    = camDist * movementControls->getCubeScale() / 3.0;
 

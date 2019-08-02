@@ -35,6 +35,7 @@ class MainWin : public AbstractMainWin
 	void toggleCube() { setCubeEnabled(!cubeEnabled()); };
 	QColor getCubeColor() const;
 	void setCubeColor(QColor const& color);
+	Vector3 getCamPosData() const;
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
@@ -102,6 +103,9 @@ class MainWin : public AbstractMainWin
 
 	std::string lastTargetName = std::string("");
 
+	Vector3 milkyWayDataPos    = Vector3(0.0, 0.0, 0.0);
+	Vector3 solarSystemDataPos = Vector3(8.29995608, 0.0, -0.027);
+	Vector3 m31DataPos = Vector3(382.92994334, -617.94616647, 288.2071201);
 	Billboard* milkyWayLabel    = nullptr;
 	Billboard* solarSystemLabel = nullptr;
 	Billboard* m31Label         = nullptr;
