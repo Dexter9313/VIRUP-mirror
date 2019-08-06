@@ -35,7 +35,6 @@ class MainWin : public AbstractMainWin
 	void toggleCube() { setCubeEnabled(!cubeEnabled()); };
 	QColor getCubeColor() const;
 	void setCubeColor(QColor const& color);
-	Vector3 getCamPosData() const;
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
@@ -62,8 +61,6 @@ class MainWin : public AbstractMainWin
 	                         QString const& pathId) override;
 
   private:
-	Vector3 dataToWorldPosition(Vector3 const& data) const;
-	Vector3 worldToDataPosition(Vector3 const& world) const;
 	void printPositionInDataSpace(Side controller = Side::NONE) const;
 	static std::vector<float> generateVertices(unsigned int number,
 	                                           unsigned int seed);

@@ -103,15 +103,13 @@ void BaseLineMethod::init(std::string const& gazPath,
 	          << " bytes worth of data" << std::endl;
 }
 
-void BaseLineMethod::render(Camera const& camera, double scale,
-                            std::array<double, 3> const& translation)
+void BaseLineMethod::render(Camera const& camera)
 {
-	QMatrix4x4 model;
-	model.translate(QVector3D(translation[0], translation[1], translation[2]));
-	model.scale(scale);
+	QMatrix4x4 model(camera.dataToWorldTransform());
 
-	GLHandler::setShaderParam(shaderProgram, "alpha",
-	                          static_cast<float>(scale * scale * getAlpha()));
+	GLHandler::setShaderParam(
+	    shaderProgram, "alpha",
+	    static_cast<float>(camera.scale * camera.scale * getAlpha()));
 	GLHandler::setShaderParam(shaderProgram, "view",
 	                          camera.hmdScaledSpaceToWorldTransform().inverted()
 	                              * model);

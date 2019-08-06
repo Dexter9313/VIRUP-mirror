@@ -252,16 +252,13 @@ std::pair<float, std::string> humanReadable(int64_t bytes)
 	return std::pair<float, std::string>(fbytes / (1024 * 1024 * 1024), " Gib");
 }
 
-void TreeMethodLOD::render(Camera const& camera, double scale,
-                           std::array<double, 3> const& translation)
+void TreeMethodLOD::render(Camera const& camera)
 {
 	if(setPointSize)
 	{
 		GLHandler::setPointSize(1);
 	}
-	QMatrix4x4 model;
-	model.translate(QVector3D(translation[0], translation[1], translation[2]));
-	model.scale(scale);
+	QMatrix4x4 model(camera.dataToWorldTransform());
 	/*struct timeval tf;
 	gettimeofday(&tf, NULL);
 	uint64_t dt = (tf.tv_sec * 1000000) + tf.tv_usec - t0.tv_usec
@@ -297,8 +294,9 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	GLHandler::setShaderParam(shaderProgram, "color",
 	                          QVector3D(1.0f, 1.0f, 1.0f));
 	GLHandler::setUpRender(shaderProgram, model);
-	GLHandler::setShaderParam(shaderProgram, "alpha",
-	                          static_cast<float>(scale * scale * getAlpha()));
+	GLHandler::setShaderParam(
+	    shaderProgram, "alpha",
+	    static_cast<float>(camera.scale * camera.scale * getAlpha()));
 	GLHandler::setShaderParam(shaderProgram, "view",
 	                          camera.hmdScaledSpaceToWorldTransform().inverted()
 	                              * model);
@@ -308,24 +306,24 @@ void TreeMethodLOD::render(Camera const& camera, double scale,
 	unsigned int rendered = 0;
 	if(gazTree != nullptr)
 	{
-		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, scale,
-		                                         translation, 100000000, false);
+		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera,
+		                                         100000000, false);
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
 	    QSettings().value("data/starscolor").value<QColor>());
 	if(starsTree != nullptr)
 	{
-		rendered += starsTree->renderAboveTanAngle(
-		    currentTanAngle, camera, scale, translation, 100000000, true);
+		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera,
+		                                           100000000, true);
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
 	    QSettings().value("data/darkmattercolor").value<QColor>());
 	if(darkMatterTree != nullptr && showdm)
 	{
-		rendered += darkMatterTree->renderAboveTanAngle(
-		    currentTanAngle, camera, scale, translation, 100000000, false);
+		rendered += darkMatterTree->renderAboveTanAngle(currentTanAngle, camera,
+		                                                100000000, false);
 	}
 	GLHandler::endTransparent();
 

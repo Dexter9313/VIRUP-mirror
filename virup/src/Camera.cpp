@@ -17,6 +17,38 @@ void Camera::update2D()
 	BasicCamera::update2D();
 }
 
+Vector3 Camera::dataToWorldPosition(Vector3 const& data) const
+{
+	Vector3 result(data);
+	result *= scale;
+	result += position;
+	return result;
+}
+
+QMatrix4x4 Camera::dataToWorldTransform() const
+{
+	QMatrix4x4 result;
+	result.translate(Utils::toQt(position));
+	result.scale(scale);
+	return result;
+}
+
+Vector3 Camera::worldToDataPosition(Vector3 const& world) const
+{
+	Vector3 result(world);
+	result -= position;
+	result /= scale;
+	return result;
+}
+
+QMatrix4x4 Camera::worldToDataTransform() const
+{
+	QMatrix4x4 result;
+	result.scale(1.0 / scale);
+	result.translate(Utils::toQt(-1.0 * position));
+	return result;
+}
+
 void Camera::updateTargetFPS()
 {
 	while(yaw < 0.f)

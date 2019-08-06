@@ -28,18 +28,11 @@ class OctreeLOD : public Octree
 	virtual void readOwnData(std::istream& in) override;
 	virtual void readBBox(std::istream& in) override;
 	virtual std::vector<float> getOwnData() const override;
-	double getLocalScale() const { return localScale; };
-	std::array<double, 3> const& getLocalTranslation() const
-	{
-		return localTranslation;
-	};
 	void unload();
 	void setFile(std::istream* file);
 	std::istream* getFile() { return file; };
 	bool preloadLevel(unsigned int lvlToLoad);
 	unsigned int renderAboveTanAngle(float tanAngle, Camera const& camera,
-	                                 double scale,
-	                                 std::array<double, 3> const& translation,
 	                                 unsigned int maxPoints, bool isStarField);
 	~OctreeLOD();
 
@@ -57,9 +50,9 @@ class OctreeLOD : public Octree
 	unsigned int lvl;
 	BBox bbox;
 
-	std::istream* file;
-	bool isLoaded;
-	unsigned int dataSize;
+	std::istream* file    = nullptr;
+	bool isLoaded         = false;
+	unsigned int dataSize = 0;
 	// total used memory across all instances
 	static int64_t& usedMem();
 	static const int64_t& memLimit();
@@ -79,9 +72,8 @@ class OctreeLOD : public Octree
 
 	/* PRECISION ENHANCEMENT */
 	std::vector<float> absoluteData; // backup data from file
-	double neighborDist                    = 0.0;
-	double localScale                      = 1.f;
-	std::array<double, 3> localTranslation = {{0.f, 0.f, 0.f}};
+	double neighborDist      = 0.0;
+	Vector3 localTranslation = Vector3(0.f, 0.f, 0.f);
 
 	/* PERFORMANCE */
 	Vector3 closestBackup = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);

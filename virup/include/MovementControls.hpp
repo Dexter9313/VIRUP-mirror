@@ -35,15 +35,13 @@ class MovementControls
 {
   public:
 	MovementControls(VRHandler const& vrHandler, BBox dataBBox,
-	                 OrbitalSystemCamera* cam);
-	double getCubeScale() const { return cubeScale; };
-	Vector3 getCubeTranslation() const { return cubeTranslation; };
+	                 Camera* cosmoCam, OrbitalSystemCamera* cam);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 	void wheelEvent(QWheelEvent* e);
 	void vrEvent(VRHandler::Event const& e,
 	             QMatrix4x4 const& trackedSpaceToWorldTransform);
-	void update(Camera const& camera, double frameTiming);
+	void update(double frameTiming);
 
   private:
 	void keyPressEventCube(QKeyEvent* e);
@@ -54,16 +52,14 @@ class MovementControls
 	void vrEventCube(VRHandler::Event const& e,
 	                 QMatrix4x4 const& trackedSpaceToWorldTransform);
 	void vrEventOrbitalSystem(VRHandler::Event const& e);
-	void updateCube(Camera const& camera, double frameTiming);
+	void updateCube(double frameTiming);
 	void updateOrbitalSystem(double frameTiming);
 
 	VRHandler const& vrHandler;
 
-	BBox dataBBox           = {};
-	double cubeScale        = 1.f;
-	Vector3 cubeTranslation = Vector3();
-
 	/* CUBE */
+	BBox dataBBox = {};
+	Camera* cosmoCam;
 	// scaling/translation controls variables
 	bool leftGripPressedCube        = false;
 	bool rightGripPressedCube       = false;
@@ -80,7 +76,7 @@ class MovementControls
 
 	/* ORBITAL SYSTEM */
 
-	OrbitalSystemCamera* cam;
+	OrbitalSystemCamera* planetCam;
 
 	// scaling/translation controls variables
 	bool leftGripPressedOrb      = false;

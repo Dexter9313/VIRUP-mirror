@@ -8,8 +8,7 @@ class BaseLineMethodTex : public BaseLineMethod
 	Q_OBJECT
   public:
 	BaseLineMethodTex();
-	virtual void render(Camera const& camera, double scale,
-	                    std::array<double, 3> const& translation) override;
+	virtual void render(Camera const& camera) override;
 	~BaseLineMethodTex();
 
   public slots:

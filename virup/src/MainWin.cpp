@@ -236,11 +236,6 @@ void MainWin::setCubeColor(QColor const& color)
 	GLHandler::setShaderParam(cubeShader, "color", color);
 }
 
-Vector3 MainWin::getCamPosData() const
-{
-	return worldToDataPosition(Vector3(0.0, 0.0, 0.0));
-}
-
 void MainWin::keyPressEvent(QKeyEvent* e)
 {
 	if(loaded)
@@ -532,9 +527,9 @@ void MainWin::initScene()
 	debugText->setText("");
 
 	movementControls = new MovementControls(
-	    vrHandler, method->getDataBoundingBox(), camPlanet);
+	    vrHandler, method->getDataBoundingBox(), cam, camPlanet);
 
-	double cubeScale(movementControls->getCubeScale());
+	double cubeScale(cam->scale);
 
 	method->setAlpha(method->getAlpha() / (cubeScale * cubeScale));
 
@@ -593,27 +588,27 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		                     + ((3 + ((2000 * 28) / 1999.0f)) / 1000.0f));
 		}*/
 
-		Vector3 camPosData(getCamPosData());
+		Vector3 camPosData(/*cam.position*/cam.worldToDataPosition(Vector3(0.0,0.0,0.0)));
 		double camDist((camPosData - milkyWayDataPos).length());
 		milkyWayLabel->position
-		    = Utils::toQt(dataToWorldPosition(milkyWayDataPos));
-		milkyWayLabel->width = camDist * movementControls->getCubeScale() / 3.0;
+		    = Utils::toQt(cam.dataToWorldPosition(milkyWayDataPos));
+		milkyWayLabel->width = camDist * cam.scale / 3.0;
 
 		camDist = (camPosData - solarSystemDataPos).length();
 		solarSystemLabel->position
-		    = Utils::toQt(dataToWorldPosition(solarSystemDataPos));
-		solarSystemLabel->width
-		    = camDist * movementControls->getCubeScale() / 3.0;
+		    = Utils::toQt(cam.dataToWorldPosition(solarSystemDataPos));
+		solarSystemLabel->width = camDist * cam.scale / 3.0;
 
 		camDist            = (camPosData - m31DataPos).length();
-		m31Label->position = Utils::toQt(dataToWorldPosition(m31DataPos));
-		m31Label->width    = camDist * movementControls->getCubeScale() / 3.0;
+		m31Label->position = Utils::toQt(cam.dataToWorldPosition(m31DataPos));
+		m31Label->width    = camDist * cam.scale / 3.0;
 
-		movementControls->update(cam, frameTiming);
+		movementControls->update(frameTiming);
 	}
 	if(pathId == "planet")
 	{
-		auto& cam = dynamic_cast<OrbitalSystemCamera&>(camera);
+		auto& cam      = dynamic_cast<OrbitalSystemCamera&>(camera);
+		auto& cosmoCam = dynamic_cast<Camera&>(getCamera("cosmo"));
 		if(vrHandler)
 		{
 			debugText->getModel() = cam.hmdSpaceToWorldTransform();
@@ -642,21 +637,20 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		}
 
 		lastData   = OctreeLOD::planetarySysInitData();
-		sysInWorld = dataToWorldPosition(lastData);
+		sysInWorld = cosmoCam.dataToWorldPosition(lastData);
 
 		if(cam.target == orbitalSystem->getMainCelestialBody()
 		   && CelestialBodyRenderer::overridenScale < 1e-12)
 		{
-			cam.relativePosition = -1 * sysInWorld
-			                       / (OctreeLOD::planetarySysInitScale
-			                          * movementControls->getCubeScale());
+			cam.relativePosition
+			    = -1 * sysInWorld
+			      / (OctreeLOD::planetarySysInitScale * cosmoCam.scale);
 		}
 
 		CelestialBodyRenderer::overridenScale
-		    = OctreeLOD::planetarySysInitScale
-		      * movementControls->getCubeScale();
+		    = OctreeLOD::planetarySysInitScale * cosmoCam.scale;
 
-		sysInWorld = dataToWorldPosition(lastData);
+		sysInWorld = cosmoCam.dataToWorldPosition(lastData);
 
 		clock.update();
 		cam.updateUT(clock.getCurrentUt());
@@ -709,21 +703,13 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 
 	GLHandler::glf().glDepthFunc(GL_LEQUAL);
 	GLHandler::glf().glEnable(GL_DEPTH_CLAMP);
-	QMatrix4x4 model;
-
-	Vector3 cubeTranslation(movementControls->getCubeTranslation());
-	double cubeScale(movementControls->getCubeScale());
-	model.translate(
-	    QVector3D(cubeTranslation[0], cubeTranslation[1], cubeTranslation[2]));
-	model.scale(cubeScale);
+	QMatrix4x4 model(cam->dataToWorldTransform());
 	if(showCube)
 	{
 		GLHandler::setUpRender(cubeShader, model);
 		GLHandler::render(cube, GLHandler::PrimitiveType::LINES);
 	}
-	method->render(
-	    *cam, cubeScale,
-	    {{cubeTranslation[0], cubeTranslation[1], cubeTranslation[2]}});
+	method->render(*cam);
 
 	if(CelestialBodyRenderer::renderLabels)
 	{
@@ -732,26 +718,6 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 		m31Label->render(camera);
 	}
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
-}
-
-Vector3 MainWin::dataToWorldPosition(Vector3 const& data) const
-{
-	Vector3 cubeTranslation(movementControls->getCubeTranslation());
-	double cubeScale(movementControls->getCubeScale());
-	Vector3 result(data);
-	result *= cubeScale;
-	result += cubeTranslation;
-	return result;
-}
-
-Vector3 MainWin::worldToDataPosition(Vector3 const& world) const
-{
-	Vector3 cubeTranslation(movementControls->getCubeTranslation());
-	double cubeScale(movementControls->getCubeScale());
-	Vector3 result(world);
-	result -= cubeTranslation;
-	result /= cubeScale;
-	return result;
 }
 
 void MainWin::printPositionInDataSpace(Side controller) const
@@ -771,7 +737,8 @@ void MainWin::printPositionInDataSpace(Side controller) const
 	}
 
 	// then data space
-	position = Utils::toQt(worldToDataPosition(Utils::fromQt(position)));
+	position = Utils::toQt(dynamic_cast<Camera const&>(getCamera("cosmo"))
+	                           .worldToDataPosition(Utils::fromQt(position)));
 	QString posstr;
 	&posstr << position;
 

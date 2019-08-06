@@ -10,13 +10,12 @@ BaseLineMethodTex::BaseLineMethodTex()
 	tex = GLHandler::newTexture("data/virup/images/particle.png");
 }
 
-void BaseLineMethodTex::render(Camera const& camera, double scale,
-                               std::array<double, 3> const& translation)
+void BaseLineMethodTex::render(Camera const& camera)
 {
 	GLHandler::setShaderParam(shaderProgram, "scale",
-	                          static_cast<float>(scale));
+	                          static_cast<float>(camera.scale));
 	GLHandler::useTextures({tex});
-	BaseLineMethod::render(camera, scale, translation);
+	BaseLineMethod::render(camera);
 }
 
 BaseLineMethodTex::~BaseLineMethodTex()

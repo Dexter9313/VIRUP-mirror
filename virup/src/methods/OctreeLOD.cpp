@@ -29,9 +29,6 @@ OctreeLOD::OctreeLOD(GLHandler::ShaderProgram const& shaderProgram, Flags flags,
                      unsigned int lvl)
     : Octree(flags)
     , lvl(lvl)
-    , file(nullptr)
-    , isLoaded(false)
-    , dataSize(0)
     , shaderProgram(&shaderProgram)
 {
 }
@@ -63,8 +60,31 @@ void OctreeLOD::readOwnData(std::istream& in)
 		{
 			for(unsigned int j(0); j < 3; ++j)
 			{
-				data[i + j] -= localTranslation.at(j);
-				data[i + j] /= localScale;
+				data[i + j] -= localTranslation[j];
+			}
+		}
+	}
+	else
+	{
+		double localScale;
+		if((bbox.maxx - bbox.minx >= bbox.maxy - bbox.miny)
+		   && (bbox.maxx - bbox.minx >= bbox.maxz - bbox.minz))
+		{
+			localScale = bbox.maxx - bbox.minx;
+		}
+		else if(bbox.maxy - bbox.miny >= bbox.maxz - bbox.minz)
+		{
+			localScale = bbox.maxy - bbox.miny;
+		}
+		else
+		{
+			localScale = bbox.maxz - bbox.minz;
+		}
+		for(size_t i(0); i < data.size(); i += dimPerVertex)
+		{
+			for(unsigned int j(0); j < 3; ++j)
+			{
+				data[i + j] *= localScale;
 			}
 		}
 	}
@@ -83,8 +103,7 @@ std::vector<float> OctreeLOD::getOwnData() const
 	{
 		for(unsigned int j(0); j < 3; ++j)
 		{
-			result[i + j] *= localScale;
-			result[i + j] += localTranslation.at(j);
+			result[i + j] += localTranslation[j];
 		}
 	}
 
@@ -148,15 +167,12 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 	return true;
 }
 
-unsigned int
-    OctreeLOD::renderAboveTanAngle(float tanAngle, Camera const& camera,
-                                   double scale,
-                                   std::array<double, 3> const& translation,
-                                   unsigned int maxPoints, bool isStarField)
+unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
+                                            Camera const& camera,
+                                            unsigned int maxPoints,
+                                            bool isStarField)
 {
-	QMatrix4x4 model;
-	model.translate(QVector3D(translation[0], translation[1], translation[2]));
-	model.scale(scale);
+	QMatrix4x4 model(camera.dataToWorldTransform());
 	if(camera.shouldBeCulled(bbox, model, true) && lvl > 0)
 	{
 		if(usedMem() > (memLimit() * 80) / 100)
@@ -165,8 +181,6 @@ unsigned int
 		}
 		return 0;
 	}
-
-	double totalScale(scale * localScale);
 
 	if(!isLoaded)
 	{
@@ -190,8 +204,7 @@ unsigned int
 			if(oct != nullptr)
 			{
 				remaining -= dynamic_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
-				    tanAngle, camera, scale, translation, remaining,
-				    isStarField);
+				    tanAngle, camera, remaining, isStarField);
 			}
 		}
 		return maxPoints - remaining;
@@ -213,20 +226,15 @@ unsigned int
 	{
 		QVector3D camposQt = camera.hmdScaledSpaceToWorldTransform()
 		                     * QVector3D(0.f, 0.f, 0.f);
-		Vector3 campos(Utils::fromQt(camposQt));
-		campos[0] -= translation[0];
-		campos[1] -= translation[1];
-		campos[2] -= translation[2];
-		campos /= scale;
+		Vector3 campos(camera.worldToDataPosition(Utils::fromQt(camposQt)));
 
-		if(isStarField && totalScale > 100 && campos[0] > bbox.minx
+		if(isStarField && camera.scale > 100 && campos[0] > bbox.minx
 		   && campos[0] < bbox.maxx && campos[1] > bbox.miny
 		   && campos[1] < bbox.maxy && campos[2] > bbox.minz
 		   && campos[2] < bbox.maxz)
 		{
 			Vector3 closest(DBL_MAX, DBL_MAX, DBL_MAX);
-			if((campos - closestBackup).length()
-			   > localScale * neighborDist / 2.0)
+			if((campos - closestBackup).length() > neighborDist / 2.0)
 			{
 				if(absoluteData.empty())
 				{
@@ -254,9 +262,7 @@ unsigned int
 			{
 				closest = closestBackup;
 			}
-			localTranslation[0] = closest[0];
-			localTranslation[1] = closest[1];
-			localTranslation[2] = closest[2];
+			localTranslation = closest;
 			bool switchedPoint(false);
 			if(closest != closestBackup)
 			{
@@ -267,11 +273,8 @@ unsigned int
 				for(unsigned int i(0); i < vertexData.size(); i += dimPerVertex)
 				{
 					vertexData[i] -= closest[0];
-					vertexData[i] /= localScale;
 					vertexData[i + 1] -= closest[1];
-					vertexData[i + 1] /= localScale;
 					vertexData[i + 2] -= closest[2];
-					vertexData[i + 2] /= localScale;
 				}
 				GLHandler::updateVertices(mesh, vertexData);
 
@@ -295,7 +298,8 @@ unsigned int
 				}
 			}
 
-			if(totalScale * neighborDist > 2 && (!starLoaded || switchedPoint))
+			if(camera.scale * neighborDist > 2
+			   && (!starLoaded || switchedPoint))
 			{
 				// 9.461e+15 m = 1ly
 				double realDistanceBetweenNeighbors(9.461e+15);
@@ -304,7 +308,7 @@ unsigned int
 				planetarySysInitData() = closest;
 				initStar();
 			}
-			else if(totalScale * neighborDist <= 2 && starLoaded)
+			else if(camera.scale * neighborDist <= 2 && starLoaded)
 			{
 				deleteStar();
 			}
@@ -321,16 +325,10 @@ unsigned int
 
 	if(dataSize / dimPerVertex <= maxPoints)
 	{
-		std::array<double, 3> totalTranslation = {};
-		for(unsigned int i(0); i < 3; ++i)
-		{
-			totalTranslation.at(i)
-			    = translation.at(i) + scale * localTranslation.at(i);
-		}
+		Vector3 totalTranslation(camera.dataToWorldPosition(localTranslation));
 		QMatrix4x4 totalModel;
-		totalModel.translate(QVector3D(totalTranslation[0], totalTranslation[1],
-		                               totalTranslation[2]));
-		totalModel.scale(totalScale);
+		totalModel.translate(Utils::toQt(totalTranslation));
+		totalModel.scale(camera.scale);
 
 		GLHandler::setShaderParam(
 		    *shaderProgram, "view",
@@ -358,22 +356,7 @@ void OctreeLOD::computeBBox()
 	bbox.mid.setY((bbox.maxy + bbox.miny) / 2.0f);
 	bbox.mid.setZ((bbox.maxz + bbox.minz) / 2.0f);
 
-	localTranslation[0] = bbox.minx;
-	localTranslation[1] = bbox.miny;
-	localTranslation[2] = bbox.minz;
-	if((bbox.maxx - bbox.minx >= bbox.maxy - bbox.miny)
-	   && (bbox.maxx - bbox.minx >= bbox.maxz - bbox.minz))
-	{
-		localScale = bbox.maxx - bbox.minx;
-	}
-	else if(bbox.maxy - bbox.miny >= bbox.maxz - bbox.minz)
-	{
-		localScale = bbox.maxy - bbox.miny;
-	}
-	else
-	{
-		localScale = bbox.maxz - bbox.minz;
-	}
+	localTranslation = Vector3(bbox.minx, bbox.miny, bbox.minz);
 }
 
 float OctreeLOD::currentTanAngle(Camera const& camera,

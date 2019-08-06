@@ -22,6 +22,8 @@
 #include <cmath>
 
 #include "BasicCamera.hpp"
+#include "graphics/Utils.hpp"
+#include "math/Vector3.hpp"
 
 struct BBox
 {
@@ -45,8 +47,15 @@ class Camera : public BasicCamera
 	Camera(VRHandler const* vrHandler);
 	virtual void update() override;
 	virtual void update2D() override;
+	Vector3 dataToWorldPosition(Vector3 const& data) const;
+	QMatrix4x4 dataToWorldTransform() const;
+	Vector3 worldToDataPosition(Vector3 const& world) const;
+	QMatrix4x4 worldToDataTransform() const;
 	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model,
 	                    bool depthClamp = false) const;
+
+	Vector3 position = Vector3(0.0, 0.0, 0.0);
+	double scale     = 1.0;
 
 	float targetFPS = 60.f;
 

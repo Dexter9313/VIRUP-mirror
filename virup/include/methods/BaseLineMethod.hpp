@@ -14,8 +14,7 @@ class BaseLineMethod : public Method
 	BaseLineMethod(std::string const& vertexShaderPath,
 	               std::string const& fragmentShaderPath);
 	virtual BBox getDataBoundingBox() const override { return dataBBox; };
-	virtual void render(Camera const& camera, double scale,
-	                    std::array<double, 3> const& translation) override;
+	virtual void render(Camera const& camera) override;
 	~BaseLineMethod();
 
   public slots:

@@ -17,8 +17,7 @@ class Method : public QObject
 	Method(std::string const& vertexShaderPath,
 	       std::string const& fragmentShaderPath);
 	virtual BBox getDataBoundingBox() const = 0;
-	virtual void render(Camera const& camera, double scale,
-	                    std::array<double, 3> const& translation)
+	virtual void render(Camera const& camera)
 	    = 0;
 	virtual ~Method();
 
