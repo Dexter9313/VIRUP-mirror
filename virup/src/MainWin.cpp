@@ -1,8 +1,11 @@
 #include "MainWin.hpp"
 
+Vector3 OctreeLOD::solarSystemDataPos = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
+
 MainWin::MainWin()
 {
 	srand(time(nullptr));
+	OctreeLOD::solarSystemDataPos = solarSystemDataPos;
 }
 
 void MainWin::loadSolarSystem()
