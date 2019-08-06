@@ -31,6 +31,12 @@
 #include "graphics/renderers/OrbitalSystemRenderer.hpp"
 #include "math/Vector3.hpp"
 
+// 3261.57860404 ly = 1kpc
+// so we limit scale to 1 real meter = 0.01ly
+// or 10 real meters = 0.1 ly
+// 0.15ly is the closest two stars have been observed in ED
+// #define SCALE_LIMIT 326157.860404
+
 class MovementControls
 {
   public:
