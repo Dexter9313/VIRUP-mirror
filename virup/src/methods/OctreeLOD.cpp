@@ -301,10 +301,9 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 			if(camera.scale * neighborDist > 2
 			   && (!starLoaded || switchedPoint))
 			{
-				// 9.461e+15 m = 1ly
-				double realDistanceBetweenNeighbors(9.461e+15);
-				planetarySysInitScale
-				    = neighborDist / realDistanceBetweenNeighbors;
+				// 3.086e+19 m = 1kpc
+				double mtokpc(3.24078e-20);
+				planetarySysInitScale  = mtokpc;
 				planetarySysInitData() = closest;
 				initStar();
 			}

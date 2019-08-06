@@ -100,6 +100,7 @@ class MainWin : public AbstractMainWin
 
 	std::string lastTargetName = std::string("");
 
+	// in kpc
 	Vector3 milkyWayDataPos    = Vector3(0.0, 0.0, 0.0);
 	Vector3 solarSystemDataPos = Vector3(8.29995608, 0.0, -0.027);
 	Vector3 m31DataPos = Vector3(382.92994334, -617.94616647, 288.2071201);
