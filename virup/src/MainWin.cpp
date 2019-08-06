@@ -281,6 +281,16 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 		{
 			setHDR(!getHDR());
 		}
+		else if(e->key() == Qt::Key_G)
+		{
+			animationTimer.restart();
+			startTranslation
+			    = dynamic_cast<Camera&>(getCamera("cosmo")).position;
+			startScale        = dynamic_cast<Camera&>(getCamera("cosmo")).scale;
+			targetTranslation = solarSystemDataPos;
+			targetScale       = startScale;
+		}
+
 		else if(e->key() == Qt::Key_P)
 		{
 			printPositionInDataSpace();
@@ -613,6 +623,26 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		m31Label->width    = camDist * cam.scale / 3.0;
 
 		movementControls->update(frameTiming);
+
+		if(animationTimer.isValid())
+		{
+			qint64 elapsed = animationTimer.elapsed();
+			if(elapsed > 20000)
+			{
+				go(targetTranslation, targetScale);
+				animationTimer.invalidate();
+			}
+			else
+			{
+				double t(elapsed / 20000.0);
+				double currentScale(
+				    exp(log(startScale) * (1 - t) + log(targetScale) * t));
+				t = sqrt(sqrt(sqrt(sqrt(t))));
+				Vector3 currentTranslation(startTranslation * (1 - t)
+				                           + targetTranslation * t);
+				go(currentTranslation, currentScale);
+			}
+		}
 	}
 	if(pathId == "planet")
 	{
@@ -824,4 +854,13 @@ MainWin::~MainWin()
 	delete movementControls;
 	deleteCube(cube, cubeShader);
 	delete method;
+}
+
+void MainWin::go(Vector3 position, double scale)
+{
+	auto& cosmoCam(dynamic_cast<Camera&>(getCamera("cosmo")));
+	// auto& planetCam(dynamic_cast<Camera&>(getCamera("planet")));
+
+	cosmoCam.position = position;
+	cosmoCam.scale    = scale;
 }
