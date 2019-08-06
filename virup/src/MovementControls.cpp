@@ -39,38 +39,12 @@ MovementControls::MovementControls(VRHandler const& vrHandler, BBox dataBBox,
 	{
 		cosmoCam->scale = 1.f / (dataBBox.maxz - dataBBox.minz);
 	}
-	cosmoCam->position[0] = -1 * dataBBox.mid.x() * cosmoCam->scale;
-	cosmoCam->position[1] = -1 * dataBBox.mid.y() * cosmoCam->scale;
-	cosmoCam->position[2] = -1 * dataBBox.mid.z() * cosmoCam->scale;
+	cosmoCam->position[0] = dataBBox.mid.x();
+	cosmoCam->position[1] = dataBBox.mid.y();
+	cosmoCam->position[2] = dataBBox.mid.z();
 }
 
 void MovementControls::keyPressEvent(QKeyEvent* e)
-{
-	keyPressEventCube(e);
-	keyPressEventOrbitalSystem(e);
-}
-
-void MovementControls::keyPressEventCube(QKeyEvent* e)
-{
-	if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
-	{
-		cubePositiveVelocity.setZ(1);
-	}
-	else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
-	{
-		cubePositiveVelocity.setX(1);
-	}
-	else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
-	{
-		cubeNegativeVelocity.setZ(-1);
-	}
-	else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
-	{
-		cubeNegativeVelocity.setX(-1);
-	}
-}
-
-void MovementControls::keyPressEventOrbitalSystem(QKeyEvent* e)
 {
 	if(e->key() == Qt::Key_C)
 	{
@@ -80,71 +54,45 @@ void MovementControls::keyPressEventOrbitalSystem(QKeyEvent* e)
 	}
 	else if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
 	{
-		negativeVelocity.setZ(-1);
+		negVel.setZ(-1);
 	}
 	else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
 	{
-		negativeVelocity.setX(-1);
+		negVel.setX(-1);
 	}
 	else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
 	{
-		positiveVelocity.setZ(1);
+		posVel.setZ(1);
 	}
 	else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
 	{
-		positiveVelocity.setX(1);
+		posVel.setX(1);
 	}
 }
 
 void MovementControls::keyReleaseEvent(QKeyEvent* e)
 {
-	keyReleaseEventCube(e);
-	keyReleaseEventOrbitalSystem(e);
-}
-
-void MovementControls::keyReleaseEventCube(QKeyEvent* e)
-{
 	if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
 	{
-		cubePositiveVelocity.setZ(0);
+		negVel.setZ(0);
 	}
 	else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
 	{
-		cubePositiveVelocity.setX(0);
+		negVel.setX(0);
 	}
 	else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
 	{
-		cubeNegativeVelocity.setZ(0);
+		posVel.setZ(0);
 	}
 	else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
 	{
-		cubeNegativeVelocity.setX(0);
-	}
-}
-
-void MovementControls::keyReleaseEventOrbitalSystem(QKeyEvent* e)
-{
-	if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
-	{
-		negativeVelocity.setZ(0);
-	}
-	else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
-	{
-		negativeVelocity.setX(0);
-	}
-	else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
-	{
-		positiveVelocity.setZ(0);
-	}
-	else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
-	{
-		positiveVelocity.setX(0);
+		posVel.setX(0);
 	}
 }
 
 void MovementControls::wheelEvent(QWheelEvent* e)
 {
-	rescaleCube(cosmoCam->scale * (1.f + e->angleDelta().y() / 1000.f));
+	cosmoCam->scale *= (1.f + e->angleDelta().y() / 1000.f);
 	CelestialBodyRenderer::overridenScale
 	    *= (1.f + e->angleDelta().y() / 1000.f);
 }
@@ -174,19 +122,17 @@ void MovementControls::vrEventCube(
 					    vrHandler.getController(Side::RIGHT));
 					if(e.side == Side::LEFT && left != nullptr)
 					{
-						leftGripPressedCube = true;
-						initControllerPosInCube
-						    = Utils::fromQt(trackedSpaceToWorldTransform
-						                    * left->getPosition())
-						      - cosmoCam->position;
+						leftGripPressedCube     = true;
+						initControllerPosInCube = cosmoCam->worldToDataPosition(
+						    Utils::fromQt(trackedSpaceToWorldTransform
+						                  * left->getPosition()));
 					}
 					else if(e.side == Side::RIGHT && right != nullptr)
 					{
-						rightGripPressedCube = true;
-						initControllerPosInCube
-						    = Utils::fromQt(trackedSpaceToWorldTransform
-						                    * right->getPosition())
-						      - cosmoCam->position;
+						rightGripPressedCube    = true;
+						initControllerPosInCube = cosmoCam->worldToDataPosition(
+						    Utils::fromQt(trackedSpaceToWorldTransform
+						                  * right->getPosition()));
 					}
 					else
 					{
@@ -199,31 +145,15 @@ void MovementControls::vrEventCube(
 						    = left->getPosition().distanceToPoint(
 						        right->getPosition());
 						initScaleCube = cosmoCam->scale;
-						Vector3 controllersMidPoint(
-						    Utils::fromQt(left->getPosition()
-						                  + right->getPosition())
-						    / 2.0);
 
-						controllersMidPoint
-						    = Utils::fromQt(trackedSpaceToWorldTransform
-						                    * Utils::toQt(controllersMidPoint));
-						scaleCenterCube = controllersMidPoint;
+						QVector3D controllersMidPoint(
+						    (left->getPosition() + right->getPosition()) / 2.0);
 
-						Vector3 controllersMidPointInCube;
+						controllersMidPoint = trackedSpaceToWorldTransform
+						                      * controllersMidPoint;
 
-						controllersMidPointInCube
-						    = (controllersMidPoint - cosmoCam->position)
-						      / cosmoCam->scale;
-
-						if(controllersMidPointInCube[0] < dataBBox.minx
-						   || controllersMidPointInCube[0] > dataBBox.maxx
-						   || controllersMidPointInCube[1] < dataBBox.miny
-						   || controllersMidPointInCube[1] > dataBBox.maxy
-						   || controllersMidPointInCube[2] < dataBBox.minz
-						   || controllersMidPointInCube[2] > dataBBox.maxz)
-						{
-							scaleCenterCube = cosmoCam->position;
-						}
+						scaleCenterCube = cosmoCam->worldToDataPosition(
+						    Utils::fromQt(controllersMidPoint));
 					}
 					break;
 				}
@@ -245,9 +175,9 @@ void MovementControls::vrEventCube(
 						if(right != nullptr && rightGripPressedCube)
 						{
 							initControllerPosInCube
-							    = Utils::fromQt(trackedSpaceToWorldTransform
-							                    * right->getPosition())
-							      - cosmoCam->position;
+							    = cosmoCam->worldToDataPosition(
+							        Utils::fromQt(trackedSpaceToWorldTransform
+							                      * right->getPosition()));
 						}
 					}
 					else if(e.side == Side::RIGHT)
@@ -256,9 +186,9 @@ void MovementControls::vrEventCube(
 						if(left != nullptr && leftGripPressedCube)
 						{
 							initControllerPosInCube
-							    = Utils::fromQt(trackedSpaceToWorldTransform
-							                    * left->getPosition())
-							      - cosmoCam->position;
+							    = cosmoCam->worldToDataPosition(
+							        Utils::fromQt(trackedSpaceToWorldTransform
+							                      * left->getPosition()));
 						}
 					}
 					break;
@@ -406,38 +336,35 @@ void MovementControls::updateCube(double frameTiming)
 		Vector3 controllerPosInCube = {};
 		if(leftGripPressedCube && left != nullptr)
 		{
-			controllerPosInCube
-			    = Utils::fromQt(cosmoCam->trackedSpaceToWorldTransform()
-			                    * left->getPosition())
-			      - cosmoCam->position;
+			controllerPosInCube = cosmoCam->worldToDataPosition(
+			    Utils::fromQt(cosmoCam->trackedSpaceToWorldTransform()
+			                  * left->getPosition()));
 		}
 		else if(rightGripPressedCube && right != nullptr)
 		{
-			controllerPosInCube
-			    = Utils::fromQt(cosmoCam->trackedSpaceToWorldTransform()
-			                    * right->getPosition())
-			      - cosmoCam->position;
+			controllerPosInCube = cosmoCam->worldToDataPosition(
+			    Utils::fromQt(cosmoCam->trackedSpaceToWorldTransform()
+			                  * right->getPosition()));
 		}
-		cosmoCam->position += controllerPosInCube - initControllerPosInCube;
+		cosmoCam->position += initControllerPosInCube - controllerPosInCube;
 	}
 	// double grip = scale
 	if(leftGripPressedCube && rightGripPressedCube && left != nullptr
 	   && right != nullptr)
 	{
-		rescaleCube(
-		    initScaleCube
-		        * left->getPosition().distanceToPoint(right->getPosition())
-		        / initControllersDistance,
-		    scaleCenterCube);
+		rescale(initScaleCube
+		            * left->getPosition().distanceToPoint(right->getPosition())
+		            / initControllersDistance,
+		        scaleCenterCube, cosmoCam->position, cosmoCam->scale);
 	}
 
 	// apply keyboard controls
 	if(!vrHandler)
 	{
-		cosmoCam->position
-		    += frameTiming
-		       * Utils::fromQt(cosmoCam->getView().inverted()
-		                       * (cubePositiveVelocity + cubeNegativeVelocity));
+		cosmoCam->position += frameTiming
+		                      * Utils::fromQt(cosmoCam->getView().inverted()
+		                                      * (posVel + negVel))
+		                      / cosmoCam->scale;
 	}
 }
 
@@ -475,7 +402,8 @@ void MovementControls::updateOrbitalSystem(double frameTiming)
 		rescale(initScaleOrb
 		            * left->getPosition().distanceToPoint(right->getPosition())
 		            / initControllersDistance,
-		        scaleCenterOrb);
+		        scaleCenterOrb, planetCam->relativePosition,
+		        CelestialBodyRenderer::overridenScale);
 	}
 
 	// apply keyboard controls
@@ -483,24 +411,16 @@ void MovementControls::updateOrbitalSystem(double frameTiming)
 	{
 		planetCam->relativePosition[i]
 		    += frameTiming
-		       * (planetCam->getView().inverted()
-		          * (negativeVelocity + positiveVelocity))[i]
+		       * (planetCam->getView().inverted() * (negVel + posVel))[i]
 		       / CelestialBodyRenderer::overridenScale;
 	}
 }
 
-void MovementControls::rescaleCube(double newScale, Vector3 const& scaleCenter)
+void MovementControls::rescale(double newScale, Vector3 const& scaleCenter,
+                               Vector3& position, double& scale)
 {
-	Vector3 scaleCenterPosInCube(scaleCenter - cosmoCam->position);
-	scaleCenterPosInCube *= newScale / cosmoCam->scale;
-	cosmoCam->position = scaleCenter - scaleCenterPosInCube;
-	cosmoCam->scale    = newScale;
-}
-
-void MovementControls::rescale(double newScale, Vector3 const& scaleCenter)
-{
-	Vector3 diff(planetCam->relativePosition - scaleCenter);
-	diff /= newScale / CelestialBodyRenderer::overridenScale;
-	planetCam->relativePosition           = scaleCenter + diff;
-	CelestialBodyRenderer::overridenScale = newScale;
+	Vector3 diff(position - scaleCenter);
+	diff *= scale / newScale;
+	position = scaleCenter + diff;
+	scale    = newScale;
 }

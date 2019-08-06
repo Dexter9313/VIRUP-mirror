@@ -341,15 +341,16 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 
 	if(dataSize / dimPerVertex <= maxPoints)
 	{
-		Vector3 totalTranslation(camera.dataToWorldPosition(localTranslation));
-		QMatrix4x4 totalModel;
-		totalModel.translate(Utils::toQt(totalTranslation));
-		totalModel.scale(camera.scale);
+		// TODO(florian) check precision !
+		QMatrix4x4 localModel;
+		localModel.translate(Utils::toQt(localTranslation));
 
 		GLHandler::setShaderParam(
 		    *shaderProgram, "view",
-		    camera.hmdScaledSpaceToWorldTransform().inverted() * totalModel);
-		GLHandler::setUpRender(*shaderProgram, totalModel);
+		    camera.hmdScaledSpaceToWorldTransform().inverted()
+		        * camera.dataToWorldTransform() * localModel);
+		GLHandler::setUpRender(*shaderProgram,
+		                       camera.dataToWorldTransform() * localModel);
 		GLHandler::render(mesh);
 		return dataSize / dimPerVertex;
 	}

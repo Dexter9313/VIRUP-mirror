@@ -20,32 +20,32 @@ void Camera::update2D()
 Vector3 Camera::dataToWorldPosition(Vector3 const& data) const
 {
 	Vector3 result(data);
+	result -= position;
 	result *= scale;
-	result += position;
 	return result;
 }
 
 QMatrix4x4 Camera::dataToWorldTransform() const
 {
 	QMatrix4x4 result;
-	result.translate(Utils::toQt(position));
 	result.scale(scale);
+	result.translate(Utils::toQt(-1.0 * position));
 	return result;
 }
 
 Vector3 Camera::worldToDataPosition(Vector3 const& world) const
 {
 	Vector3 result(world);
-	result -= position;
 	result /= scale;
+	result += position;
 	return result;
 }
 
 QMatrix4x4 Camera::worldToDataTransform() const
 {
 	QMatrix4x4 result;
+	result.translate(Utils::toQt(position));
 	result.scale(1.0 / scale);
-	result.translate(Utils::toQt(-1.0 * position));
 	return result;
 }
 

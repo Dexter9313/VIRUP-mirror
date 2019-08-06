@@ -50,11 +50,6 @@ class MovementControls
 	void update(double frameTiming);
 
   private:
-	void keyPressEventCube(QKeyEvent* e);
-	void keyPressEventOrbitalSystem(QKeyEvent* e);
-	void keyReleaseEventCube(QKeyEvent* e);
-	void keyReleaseEventOrbitalSystem(QKeyEvent* e);
-
 	void vrEventCube(VRHandler::Event const& e,
 	                 QMatrix4x4 const& trackedSpaceToWorldTransform);
 	void vrEventOrbitalSystem(VRHandler::Event const& e);
@@ -63,22 +58,24 @@ class MovementControls
 
 	VRHandler const& vrHandler;
 
+	/* COMMON */
+	QVector3D posVel;
+	QVector3D negVel;
+	float initControllersDistance;
+
+	static void rescale(double newScale, Vector3 const& scaleCenter,
+	                    Vector3& position, double& scale);
+
 	/* CUBE */
 	BBox dataBBox = {};
 	Camera* cosmoCam;
+
 	// scaling/translation controls variables
 	bool leftGripPressedCube        = false;
 	bool rightGripPressedCube       = false;
-	float initControllersDistance   = 1.f;
-	Vector3 scaleCenterCube         = Vector3();
 	Vector3 initControllerPosInCube = Vector3();
+	Vector3 scaleCenterCube         = Vector3();
 	double initScaleCube            = 1.0;
-
-	// keyboard controls variables
-	QVector3D cubePositiveVelocity;
-	QVector3D cubeNegativeVelocity;
-
-	void rescaleCube(double newScale, Vector3 const& scaleCenter = Vector3());
 
 	/* ORBITAL SYSTEM */
 
@@ -90,12 +87,6 @@ class MovementControls
 	Vector3 initControllerRelPos = Vector3();
 	Vector3 scaleCenterOrb       = Vector3();
 	double initScaleOrb          = 0.0;
-
-	// keyboard+mouse controls variables
-	QVector3D positiveVelocity;
-	QVector3D negativeVelocity;
-
-	void rescale(double newScale, Vector3 const& scaleCenter);
 };
 
 #endif // MOVEMENTCONTROLS_H
