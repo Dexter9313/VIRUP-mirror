@@ -596,7 +596,8 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		                     + ((3 + ((2000 * 28) / 1999.0f)) / 1000.0f));
 		}*/
 
-		Vector3 camPosData(/*cam.position*/cam.worldToDataPosition(Vector3(0.0,0.0,0.0)));
+		Vector3 camPosData(
+		    /*cam.position*/ cam.worldToDataPosition(Vector3(0.0, 0.0, 0.0)));
 		double camDist((camPosData - milkyWayDataPos).length());
 		milkyWayLabel->position
 		    = Utils::toQt(cam.dataToWorldPosition(milkyWayDataPos));

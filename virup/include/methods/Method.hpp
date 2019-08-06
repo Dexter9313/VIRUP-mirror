@@ -16,9 +16,8 @@ class Method : public QObject
 	Method(std::string const& shadersCommonName);
 	Method(std::string const& vertexShaderPath,
 	       std::string const& fragmentShaderPath);
-	virtual BBox getDataBoundingBox() const = 0;
-	virtual void render(Camera const& camera)
-	    = 0;
+	virtual BBox getDataBoundingBox() const   = 0;
+	virtual void render(Camera const& camera) = 0;
 	virtual ~Method();
 
 	GLHandler::ShaderProgram shaderProgram;
