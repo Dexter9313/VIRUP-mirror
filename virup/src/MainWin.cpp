@@ -265,6 +265,11 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 			CelestialBodyRenderer::renderLabels
 			    = !CelestialBodyRenderer::renderLabels;
 		}
+		else if(e->key() == Qt::Key_O)
+		{
+			CelestialBodyRenderer::renderOrbits
+			    = !CelestialBodyRenderer::renderOrbits;
+		}
 		else if(e->key() == Qt::Key_C)
 		{
 			showCube = !showCube;
