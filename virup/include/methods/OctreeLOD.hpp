@@ -42,7 +42,7 @@ class OctreeLOD : public Octree
 	static bool renderPlanetarySystem;
 	static double planetarySysInitScale;
 	static Vector3& planetarySysInitData();
-	static Vector3 solarSystemDataPos;
+	static Vector3& solarSystemDataPos();
 
   protected:
 	virtual Octree* newOctree(Flags flags) const override;

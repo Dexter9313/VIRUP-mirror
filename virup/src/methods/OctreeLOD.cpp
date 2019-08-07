@@ -22,6 +22,12 @@ Vector3& OctreeLOD::planetarySysInitData()
 	return planetarySysInitData;
 }
 
+Vector3& OctreeLOD::solarSystemDataPos()
+{
+	static Vector3 solarSystemDataPos = Vector3();
+	return solarSystemDataPos;
+}
+
 // TODO just draw nothing if vertices.size() == 0 (prevents nullptr tests when
 // drawing)
 
@@ -89,13 +95,15 @@ void OctreeLOD::readOwnData(std::istream& in)
 		}
 	}
 
-	if(isLeaf() && solarSystemDataPos[0] > bbox.minx
-	   && solarSystemDataPos[0] < bbox.maxx && solarSystemDataPos[1] > bbox.miny
-	   && solarSystemDataPos[1] < bbox.maxy && solarSystemDataPos[2] > bbox.minz
-	   && solarSystemDataPos[2] < bbox.maxz)
+	if(isLeaf() && solarSystemDataPos()[0] > bbox.minx
+	   && solarSystemDataPos()[0] < bbox.maxx
+	   && solarSystemDataPos()[1] > bbox.miny
+	   && solarSystemDataPos()[1] < bbox.maxy
+	   && solarSystemDataPos()[2] > bbox.minz
+	   && solarSystemDataPos()[2] < bbox.maxz)
 	{
 		// put in normalized coordinates
-		Vector3 correctedSSDataPos(solarSystemDataPos);
+		Vector3 correctedSSDataPos(solarSystemDataPos());
 		for(unsigned int j(0); j < 3; ++j)
 		{
 			correctedSSDataPos[j] -= localTranslation[j];
