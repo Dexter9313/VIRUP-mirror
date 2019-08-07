@@ -603,21 +603,25 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		                     + ((3 + ((2000 * 28) / 1999.0f)) / 1000.0f));
 		}*/
 
-		Vector3 camPosData(
-		    /*cam.position*/ cam.worldToDataPosition(Vector3(0.0, 0.0, 0.0)));
+		Vector3 camPosData(cam.position);
+
 		double camDist((camPosData - milkyWayDataPos).length());
-		milkyWayLabel->position
-		    = Utils::toQt(cam.dataToWorldPosition(milkyWayDataPos));
-		milkyWayLabel->width = camDist * cam.scale / 3.0;
+		Vector3 pos(cam.dataToWorldPosition(milkyWayDataPos));
+		double rescale(pos.length() <= 8000.0 ? 1.0 : 8000.0 / pos.length());
+		milkyWayLabel->position = Utils::toQt(pos * rescale);
+		milkyWayLabel->width    = rescale * camDist * cam.scale / 3.0;
 
 		camDist = (camPosData - solarSystemDataPos).length();
-		solarSystemLabel->position
-		    = Utils::toQt(cam.dataToWorldPosition(solarSystemDataPos));
-		solarSystemLabel->width = camDist * cam.scale / 3.0;
+		pos     = cam.dataToWorldPosition(solarSystemDataPos);
+		rescale = pos.length() <= 8000.0 ? 1.0 : 8000.0 / pos.length();
+		solarSystemLabel->position = Utils::toQt(rescale * pos);
+		solarSystemLabel->width    = rescale * camDist * cam.scale / 3.0;
 
-		camDist            = (camPosData - m31DataPos).length();
-		m31Label->position = Utils::toQt(cam.dataToWorldPosition(m31DataPos));
-		m31Label->width    = camDist * cam.scale / 3.0;
+		camDist = (camPosData - m31DataPos).length();
+		pos     = cam.dataToWorldPosition(m31DataPos);
+		rescale = pos.length() <= 8000.0 ? 1.0 : 8000.0 / pos.length();
+		m31Label->position = Utils::toQt(rescale * pos);
+		m31Label->width    = rescale * camDist * cam.scale / 3.0;
 
 		movementControls->update(frameTiming);
 
@@ -748,10 +752,13 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	method->render(*cam);
 
 	// TODO(florian) better than this
-	if(CelestialBodyRenderer::renderLabels && !OctreeLOD::renderPlanetarySystem)
+	if(CelestialBodyRenderer::renderLabels)
 	{
+		if(!OctreeLOD::renderPlanetarySystem || orbitalSystem != solarSystem)
+		{
+			solarSystemLabel->render(camera);
+		}
 		milkyWayLabel->render(camera);
-		solarSystemLabel->render(camera);
 		m31Label->render(camera);
 	}
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
