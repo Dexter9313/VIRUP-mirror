@@ -328,17 +328,17 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 			if(isStarField)
 			{
 				if(camera.scale * neighborDist > 2
-				   && (!starLoaded || switchedPoint))
+				   && (!renderPlanetarySystem || switchedPoint))
 				{
 					// 3.086e+19 m = 1kpc
 					double mtokpc(3.24078e-20);
 					planetarySysInitScale  = mtokpc;
 					planetarySysInitData() = closest;
-					initStar();
+					renderPlanetarySystem  = true;
 				}
-				else if(camera.scale * neighborDist <= 2 && starLoaded)
+				else if(camera.scale * neighborDist <= 2)
 				{
-					deleteStar();
+					renderPlanetarySystem = false;
 				}
 			}
 		}
@@ -348,7 +348,6 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 			absoluteData.shrink_to_fit();
 			closestBackup = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
 			neighborDist  = 0.0;
-			deleteStar();
 		}
 	}
 
@@ -441,24 +440,4 @@ Octree* OctreeLOD::newOctree(Flags flags) const
 OctreeLOD::~OctreeLOD()
 {
 	unload();
-}
-
-void OctreeLOD::initStar()
-{
-	if(starLoaded)
-	{
-		return;
-	}
-	starLoaded            = true;
-	renderPlanetarySystem = true;
-}
-
-void OctreeLOD::deleteStar()
-{
-	if(!starLoaded)
-	{
-		return;
-	}
-	starLoaded            = false;
-	renderPlanetarySystem = false;
 }

@@ -65,12 +65,6 @@ class OctreeLOD : public Octree
 	float currentTanAngle(Camera const& camera, QMatrix4x4 const& model) const;
 	void ramToVideo();
 
-	/* STARS */
-
-	bool starLoaded = false;
-	void initStar();
-	void deleteStar();
-
 	/* PRECISION ENHANCEMENT */
 	std::vector<float> absoluteData; // backup data from file
 	double neighborDist      = 0.0;
