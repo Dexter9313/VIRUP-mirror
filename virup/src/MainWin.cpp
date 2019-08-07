@@ -748,7 +748,8 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	}
 	method->render(*cam);
 
-	if(CelestialBodyRenderer::renderLabels)
+	// TODO(florian) better than this
+	if(CelestialBodyRenderer::renderLabels && !OctreeLOD::renderPlanetarySystem)
 	{
 		milkyWayLabel->render(camera);
 		solarSystemLabel->render(camera);
