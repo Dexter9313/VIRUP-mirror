@@ -110,9 +110,9 @@ class MainWin : public AbstractMainWin
 
 	// TEMP ANIMATION
 	Vector3 startTranslation;
-	double startScale;
+	double startScale = 0.0;
 	Vector3 targetTranslation;
-	double targetScale;
+	double targetScale = 0.0;
 	QElapsedTimer animationTimer;
 
 	void go(Vector3 position, double scale);

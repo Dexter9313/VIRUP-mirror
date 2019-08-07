@@ -61,7 +61,7 @@ class MovementControls
 	/* COMMON */
 	QVector3D posVel;
 	QVector3D negVel;
-	float initControllersDistance;
+	float initControllersDistance = 0.f;
 
 	static void rescale(double newScale, Vector3 const& scaleCenter,
 	                    Vector3& position, double& scale);

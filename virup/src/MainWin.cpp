@@ -859,6 +859,6 @@ void MainWin::go(Vector3 position, double scale)
 	auto& cosmoCam(dynamic_cast<Camera&>(getCamera("cosmo")));
 	// auto& planetCam(dynamic_cast<Camera&>(getCamera("planet")));
 
-	cosmoCam.position = position;
+	cosmoCam.position = std::move(position);
 	cosmoCam.scale    = scale;
 }
