@@ -45,9 +45,6 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	        + "/systems/",
 	    tr("Solar System Root Directory"));
 
-	addUIntSetting("solarsystemprob", 25, tr("Solar System Probability (in %)"),
-	               0, 100);
-
 	addDirPathSetting(
 	    "planetsystemdir",
 	    QFileInfo(QSettings().fileName()).absoluteDir().absolutePath()

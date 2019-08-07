@@ -95,8 +95,7 @@ void MainWin::loadNewSystem()
 		delete orbitalSystem;
 	}
 
-	if(static_cast<double>(rand()) / RAND_MAX
-	   < QSettings().value("simulation/solarsystemprob").toUInt() / 100.0)
+	if((OctreeLOD::planetarySysInitData() - solarSystemDataPos).length() < 1e-6)
 	{
 		orbitalSystem  = solarSystem;
 		systemRenderer = solarSystemRenderer;

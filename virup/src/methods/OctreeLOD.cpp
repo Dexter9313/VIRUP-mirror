@@ -18,7 +18,7 @@ bool OctreeLOD::renderPlanetarySystem   = false;
 double OctreeLOD::planetarySysInitScale = 1.0;
 Vector3& OctreeLOD::planetarySysInitData()
 {
-	static Vector3 planetarySysInitData = Vector3();
+	static Vector3 planetarySysInitData = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
 	return planetarySysInitData;
 }
 
