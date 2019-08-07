@@ -253,7 +253,9 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		                     * QVector3D(0.f, 0.f, 0.f);
 		Vector3 campos(camera.worldToDataPosition(Utils::fromQt(camposQt)));
 
-		if(isStarField && camera.scale > 100 && campos[0] > bbox.minx
+		// see if useful for optimization or not... 100 is too much for Eagle
+		// data (won't trigger until precision problems already appear)
+		if(/*camera.scale > 100 &&*/ campos[0] > bbox.minx
 		   && campos[0] < bbox.maxx && campos[1] > bbox.miny
 		   && campos[1] < bbox.maxy && campos[2] > bbox.minz
 		   && campos[2] < bbox.maxz)
@@ -323,18 +325,21 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 				}
 			}
 
-			if(camera.scale * neighborDist > 2
-			   && (!starLoaded || switchedPoint))
+			if(isStarField)
 			{
-				// 3.086e+19 m = 1kpc
-				double mtokpc(3.24078e-20);
-				planetarySysInitScale  = mtokpc;
-				planetarySysInitData() = closest;
-				initStar();
-			}
-			else if(camera.scale * neighborDist <= 2 && starLoaded)
-			{
-				deleteStar();
+				if(camera.scale * neighborDist > 2
+				   && (!starLoaded || switchedPoint))
+				{
+					// 3.086e+19 m = 1kpc
+					double mtokpc(3.24078e-20);
+					planetarySysInitScale  = mtokpc;
+					planetarySysInitData() = closest;
+					initStar();
+				}
+				else if(camera.scale * neighborDist <= 2 && starLoaded)
+				{
+					deleteStar();
+				}
 			}
 		}
 		else
@@ -350,15 +355,14 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 	if(dataSize / dimPerVertex <= maxPoints)
 	{
 		// TODO(florian) check precision !
-		QMatrix4x4 localModel;
-		localModel.translate(Utils::toQt(localTranslation));
+		QMatrix4x4 model;
+		model.scale(camera.scale);
+		model.translate(Utils::toQt(localTranslation - camera.position));
 
 		GLHandler::setShaderParam(
 		    *shaderProgram, "view",
-		    camera.hmdScaledSpaceToWorldTransform().inverted()
-		        * camera.dataToWorldTransform() * localModel);
-		GLHandler::setUpRender(*shaderProgram,
-		                       camera.dataToWorldTransform() * localModel);
+		    camera.hmdScaledSpaceToWorldTransform().inverted() * model);
+		GLHandler::setUpRender(*shaderProgram, model);
 		GLHandler::render(mesh);
 		return dataSize / dimPerVertex;
 	}
