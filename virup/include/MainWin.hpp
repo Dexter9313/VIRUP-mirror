@@ -26,10 +26,16 @@ class MainWin : public AbstractMainWin
 	/**
 	 * @brief The current time of the simulation.
 	 *
-	 * @accessors isSimulationTime(), setSimulationTime()
+	 * @accessors getSimulationTime(), setSimulationTime()
 	 */
 	Q_PROPERTY(
 	    QDateTime simulationTime READ getSimulationTime WRITE setSimulationTime)
+	/**
+	 * @brief The current time coefficient of the simulation.
+	 *
+	 * @accessors getTimeCoeff(), setTimeCoeff()
+	 */
+	Q_PROPERTY(float timeCoeff READ getTimeCoeff WRITE setTimeCoeff)
   public:
 	MainWin();
 	void loadSolarSystem();
@@ -50,6 +56,8 @@ class MainWin : public AbstractMainWin
 	void toggleCube() { setCubeEnabled(!cubeEnabled()); };
 	QColor getCubeColor() const;
 	void setCubeColor(QColor const& color);
+	float getTimeCoeff() const { return clock.getTimeCoeff(); };
+	void setTimeCoeff(float timeCoeff) { clock.setTimeCoeff(timeCoeff); };
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
