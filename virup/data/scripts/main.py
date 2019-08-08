@@ -20,12 +20,13 @@ def updateScene():
     if timer.isValid():
         t = timer.elapsed() / 120000.0
 
-        if t > 1.0:
-            VIRUP.scale = tgtScale
-            timer.invalidate();
+        if t > 2.0:
+            VIRUP.scale = startScale
+            timer.invalidate()
+        elif t > 1.0:
+            VIRUP.scale = exp(log(tgtScale) * (2 - t) + log(startScale) * (t-1))
         else:
-            VIRUP.scale = exp(log(startScale) * (1 - t) + log(tgtScale) * t);
-            print(VIRUP.scale)
+            VIRUP.scale = exp(log(startScale) * (1 - t) + log(tgtScale) * t)
 
 
 def keyPressEvent(e):
