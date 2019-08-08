@@ -235,6 +235,17 @@ void MainWin::setSimulationTime(QDateTime const& simulationTime)
 	clock.setCurrentUt(SimulationTime::dateTimeToUT(simulationTime, false));
 }
 
+double MainWin::getScale() const
+{
+	return dynamic_cast<Camera const&>(getCamera("cosmo")).scale * mtokpc;
+}
+
+void MainWin::setScale(double scale)
+{
+	dynamic_cast<Camera&>(getCamera("cosmo")).scale = scale / mtokpc;
+	CelestialBodyRenderer::overridenScale           = scale;
+}
+
 QColor MainWin::getCubeColor() const
 {
 	return QSettings().value("misc/cubecolor").value<QColor>();

@@ -36,10 +36,24 @@ class MainWin : public AbstractMainWin
 	 * @accessors getTimeCoeff(), setTimeCoeff()
 	 */
 	Q_PROPERTY(float timeCoeff READ getTimeCoeff WRITE setTimeCoeff)
+
+	/**
+	 * @brief The current global scale of the visualization.
+	 * Ratio 1 real meter / 1 visualized meter. For example, if scale == 1/1000,
+	 * each real meter you see represents one kilometer. There should be no
+	 * point to set scale > 1 for astrophysics.
+	 *
+	 * @accessors getScale(), setScale()
+	 */
+	Q_PROPERTY(double scale READ getScale WRITE setScale)
+
   public:
 	MainWin();
 	void loadSolarSystem();
 	void loadNewSystem();
+
+	/* SPACE-TIME MANIPULATION */
+
 	/**
 	 * @getter{simulationTime}
 	 */
@@ -48,6 +62,23 @@ class MainWin : public AbstractMainWin
 	 * @setter{simulationTime, simulationTime}
 	 */
 	void setSimulationTime(QDateTime const& simulationTime);
+	/**
+	 * @getter{timeCoeff}
+	 */
+	float getTimeCoeff() const { return clock.getTimeCoeff(); };
+	/**
+	 * @setter{timeCoeff, timeCoeff}
+	 */
+	void setTimeCoeff(float timeCoeff) { clock.setTimeCoeff(timeCoeff); };
+	/**
+	 * @getter{scale}
+	 */
+	double getScale() const;
+	/**
+	 * @setter{scale, scale}
+	 */
+	void setScale(double scale);
+
 	~MainWin();
 
   public slots:
@@ -56,8 +87,6 @@ class MainWin : public AbstractMainWin
 	void toggleCube() { setCubeEnabled(!cubeEnabled()); };
 	QColor getCubeColor() const;
 	void setCubeColor(QColor const& color);
-	float getTimeCoeff() const { return clock.getTimeCoeff(); };
-	void setTimeCoeff(float timeCoeff) { clock.setTimeCoeff(timeCoeff); };
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
