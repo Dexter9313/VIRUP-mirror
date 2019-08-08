@@ -23,10 +23,25 @@
 class MainWin : public AbstractMainWin
 {
 	Q_OBJECT
+	/**
+	 * @brief The current time of the simulation.
+	 *
+	 * @accessors isSimulationTime(), setSimulationTime()
+	 */
+	Q_PROPERTY(
+	    QDateTime simulationTime READ getSimulationTime WRITE setSimulationTime)
   public:
 	MainWin();
 	void loadSolarSystem();
 	void loadNewSystem();
+	/**
+	 * @getter{simulationTime}
+	 */
+	QDateTime getSimulationTime() const;
+	/**
+	 * @setter{simulationTime, simulationTime}
+	 */
+	void setSimulationTime(QDateTime const& simulationTime);
 	~MainWin();
 
   public slots:

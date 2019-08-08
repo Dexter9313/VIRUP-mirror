@@ -225,6 +225,16 @@ void MainWin::loadNewSystem()
 	CelestialBodyRenderer::overridenScale = 1.0;
 }
 
+QDateTime MainWin::getSimulationTime() const
+{
+	return SimulationTime::utToDateTime(clock.getCurrentUt());
+}
+
+void MainWin::setSimulationTime(QDateTime const& simulationTime)
+{
+	clock.setCurrentUt(SimulationTime::dateTimeToUT(simulationTime, false));
+}
+
 QColor MainWin::getCubeColor() const
 {
 	return QSettings().value("misc/cubecolor").value<QColor>();
