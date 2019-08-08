@@ -14,8 +14,7 @@ const int64_t& OctreeLOD::memLimit()
 	return memLimit;
 }
 
-bool OctreeLOD::renderPlanetarySystem   = false;
-double OctreeLOD::planetarySysInitScale = 1.0;
+bool OctreeLOD::renderPlanetarySystem = false;
 Vector3& OctreeLOD::planetarySysInitData()
 {
 	static Vector3 planetarySysInitData = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
@@ -330,9 +329,6 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 				if(camera.scale * neighborDist > 2
 				   && (!renderPlanetarySystem || switchedPoint))
 				{
-					// 3.086e+19 m = 1kpc
-					double mtokpc(3.24078e-20);
-					planetarySysInitScale  = mtokpc;
 					planetarySysInitData() = closest;
 					renderPlanetarySystem  = true;
 				}
@@ -353,7 +349,6 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 
 	if(dataSize / dimPerVertex <= maxPoints)
 	{
-		// TODO(florian) check precision !
 		QMatrix4x4 model;
 		model.scale(camera.scale);
 		model.translate(Utils::toQt(localTranslation - camera.position));

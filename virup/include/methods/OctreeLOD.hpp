@@ -40,7 +40,6 @@ class OctreeLOD : public Octree
 	static int64_t getMemLimit() { return memLimit(); };
 
 	static bool renderPlanetarySystem;
-	static double planetarySysInitScale;
 	static Vector3& planetarySysInitData();
 	static Vector3& solarSystemDataPos();
 

@@ -689,16 +689,13 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		lastData   = OctreeLOD::planetarySysInitData();
 		sysInWorld = cosmoCam.dataToWorldPosition(lastData);
 
+		CelestialBodyRenderer::overridenScale = mtokpc * cosmoCam.scale;
+
 		if(cam.target == orbitalSystem->getMainCelestialBody()
 		   && CelestialBodyRenderer::overridenScale < 1e-12)
 		{
-			cam.relativePosition
-			    = -1 * sysInWorld
-			      / (OctreeLOD::planetarySysInitScale * cosmoCam.scale);
+			cam.relativePosition = -1 * sysInWorld / (mtokpc * cosmoCam.scale);
 		}
-
-		CelestialBodyRenderer::overridenScale
-		    = OctreeLOD::planetarySysInitScale * cosmoCam.scale;
 
 		sysInWorld = cosmoCam.dataToWorldPosition(lastData);
 

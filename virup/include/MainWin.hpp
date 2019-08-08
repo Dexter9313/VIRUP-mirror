@@ -101,6 +101,9 @@ class MainWin : public AbstractMainWin
 	MovementControls* movementControls = nullptr;
 
 	/* PLANET SYSTEMS */
+	// 1 m = 3.24078e-20 kpc
+	const double mtokpc = 3.24078e-20;
+
 	OrbitalSystem* solarSystem                 = nullptr;
 	OrbitalSystemRenderer* solarSystemRenderer = nullptr;
 
