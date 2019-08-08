@@ -624,7 +624,8 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		                     + ((3 + ((2000 * 28) / 1999.0f)) / 1000.0f));
 		}*/
 
-		Vector3 camPosData(cam.position);
+		Vector3 camPosData(cam.worldToDataPosition(Utils::fromQt(
+		    cam.hmdScaledSpaceToWorldTransform() * QVector3D(0.f, 0.f, 0.f))));
 
 		double camDist((camPosData - milkyWayDataPos).length());
 		Vector3 pos(cam.dataToWorldPosition(milkyWayDataPos));
