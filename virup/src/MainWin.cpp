@@ -476,6 +476,8 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 void MainWin::setupPythonAPI()
 {
 	PythonQtHandler::addObject("VIRUP", this);
+	PythonQtHandler::addWrapper<Vector3Wrapper>("Vector3", "math");
+	Vector3Wrapper().overloadPythonOperators();
 }
 
 void MainWin::initScene()
