@@ -25,7 +25,7 @@ def initScene():
 
     # animation timer
     timer = QElapsedTimer()
-    tgtScale = 1.0 / 3.08568e+25 #~ 1 / 1 Gpc
+    tgtScale = 1.0 / 3.08568e+25 #~ 1:1 Gpc scale
 
 def updateScene():
     global timer
@@ -43,8 +43,8 @@ def updateScene():
         VIRUP.simulationTime = QDateTime(d, t, Qt.UTC)
         # go to solar system
         VIRUP.cosmoPosition = math.Vector3(8.29995608, 0.0, -0.027)
-        # set 1:1 scale
-        VIRUP.scale = 1.0
+        # set 1:1000km scale
+        VIRUP.scale = 1.0e-6
     if i == 2:
         # go to Earth where eclipse is visible
         # (Coordinates found by moving camera (WASD translation - mousewheel for scale/speed),
