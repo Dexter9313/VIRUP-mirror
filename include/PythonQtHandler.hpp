@@ -40,6 +40,8 @@ class PythonQtHandler
 	static void init();
 	template <typename T>
 	static void addClass(QString const& name, QString const& package = "");
+	template <typename T>
+	static void addWrapper(QString const& name, QString const& package = "");
 	static void addVariable(QString const& name, QVariant const& v);
 	static QVariant getVariable(QString const& name);
 	static void removeVariable(QString const& name);
@@ -67,5 +69,31 @@ void PythonQtHandler::addClass(QString const& name, QString const& package)
 	                                   package.toLatin1().constData());
 #endif
 }
+
+template <typename T>
+void PythonQtHandler::addWrapper(QString const& name, QString const& package)
+{
+#ifdef PYTHONQT
+	PythonQt::self()->registerCPPClass(name.toLatin1().constData(), "",
+	                                   package.toLatin1().constData(),
+	                                   PythonQtCreateObject<T>);
+#endif
+}
+
+class PythonQtWrapper : public QObject
+{
+	Q_OBJECT
+  private:
+	void overloadStaticBinary(const char* op);
+	void overloadMember(const char* op);
+	void overloadMemberUnary(const char* op);
+	void overloadMemberBinary(const char* op);
+
+  public:
+	virtual const char* wrappedClassName() const    = 0;
+	virtual const char* wrappedClassPackage() const = 0;
+
+	void overloadPythonOperators();
+};
 
 #endif // PYTHONQTHANDLER_H

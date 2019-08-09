@@ -122,3 +122,82 @@ void PythonQtHandler::clean()
 	delete console;
 #endif
 }
+
+void PythonQtWrapper::overloadStaticBinary(const char* op)
+{
+	PythonQtHandler::evalScript(
+	    QString() + "def __" + op
+	    + "__(x,y):\n"
+	      "\treturn "
+	    + wrappedClassPackage() + "." + wrappedClassName() + "." + op
+	    + "(x,y)\n"
+	      "setattr("
+	    + wrappedClassPackage() + "." + wrappedClassName() + ", '__" + op
+	    + "__', __" + op + "__)");
+}
+
+void PythonQtWrapper::overloadMember(const char* op)
+{
+	PythonQtHandler::evalScript(
+	    QString() + "def __" + op + "__(x):\n\treturn x." + op
+	    + "()\n"
+	      "setattr("
+	    + wrappedClassPackage() + "." + wrappedClassName() + ", '__" + op
+	    + "__', __" + op + "__)");
+}
+
+void PythonQtWrapper::overloadMemberUnary(const char* op)
+{
+	PythonQtHandler::evalScript(
+	    QString() + "def __" + op + "__(x,y):\n\treturn x." + op
+	    + "(y)\n"
+	      "setattr("
+	    + wrappedClassPackage() + "." + wrappedClassName() + ", '__" + op
+	    + "__', __" + op + "__)");
+}
+
+void PythonQtWrapper::overloadMemberBinary(const char* op)
+{
+	PythonQtHandler::evalScript(
+	    QString() + "def __" + op + "__(x,y,z):\n\treturn x." + op
+	    + "(y,z)\n"
+	      "setattr("
+	    + wrappedClassPackage() + "." + wrappedClassName() + ", '__" + op
+	    + "__', __" + op + "__)");
+}
+
+void PythonQtWrapper::overloadPythonOperators()
+{
+	PythonQtHandler::evalScript(QString("import PythonQt.")
+	                            + wrappedClassPackage() + " as "
+	                            + wrappedClassPackage());
+
+	overloadStaticBinary("add");
+	overloadStaticBinary("sub");
+	overloadStaticBinary("mul");
+	overloadStaticBinary("rmul");
+	overloadStaticBinary("truediv");
+	overloadStaticBinary("floordir");
+	overloadStaticBinary("mod");
+	overloadStaticBinary("pow");
+
+	overloadMemberUnary("iadd");
+	overloadMemberUnary("isub");
+	overloadMemberUnary("imul");
+	overloadMemberUnary("itruediv");
+	overloadMemberUnary("ifloordiv");
+	overloadMemberUnary("imod");
+	overloadMemberUnary("ipow");
+
+	overloadStaticBinary("lt");
+	overloadStaticBinary("gt");
+	overloadStaticBinary("le");
+	overloadStaticBinary("ge");
+	overloadStaticBinary("eq");
+	overloadStaticBinary("ne");
+
+	overloadMemberUnary("getitem");
+	overloadMemberBinary("setitem");
+
+	overloadMember("str");
+}
