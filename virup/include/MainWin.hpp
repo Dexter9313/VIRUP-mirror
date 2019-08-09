@@ -46,6 +46,34 @@ class MainWin : public AbstractMainWin
 	 * @accessors getScale(), setScale()
 	 */
 	Q_PROPERTY(double scale READ getScale WRITE setScale)
+	/**
+	 * @brief The current camera position in the visualization, relative to the
+	 * cosmological space, in kpc.
+	 *
+	 * @accessors getCosmoPosition(), setCosmoPosition()
+	 */
+	Q_PROPERTY(
+	    Vector3 cosmoPosition READ getCosmoPosition WRITE setCosmoPosition)
+	/**
+	 * @brief Wether a planetary system is loaded or not.
+	 *
+	 * @accessors isPlanetarySystemLoaded()
+	 */
+	Q_PROPERTY(bool planetarySystemLoaded READ isPlanetarySystemLoaded)
+	/**
+	 * @brief Name of the planetary system camera target.
+	 *
+	 * @accessors getPlanetTarget(), setPlanetTarget()
+	 */
+	Q_PROPERTY(QString planetTarget READ getPlanetTarget WRITE setPlanetTarget)
+	/**
+	 * @brief The current camera position in the visualization, relative to the
+	 * planetTarget, in meters. Undefined if !planetarySystemLoaded.
+	 *
+	 * @accessors getPlanetPosition(), setPlanetPosition()
+	 */
+	Q_PROPERTY(
+	    Vector3 planetPosition READ getPlanetPosition WRITE setPlanetPosition)
 
   public:
 	MainWin();
@@ -53,6 +81,8 @@ class MainWin : public AbstractMainWin
 	void loadNewSystem();
 
 	/* SPACE-TIME MANIPULATION */
+
+	// TIME
 
 	/**
 	 * @getter{simulationTime}
@@ -70,6 +100,9 @@ class MainWin : public AbstractMainWin
 	 * @setter{timeCoeff, timeCoeff}
 	 */
 	void setTimeCoeff(float timeCoeff) { clock.setTimeCoeff(timeCoeff); };
+
+	// SPACE
+
 	/**
 	 * @getter{scale}
 	 */
@@ -78,6 +111,37 @@ class MainWin : public AbstractMainWin
 	 * @setter{scale, scale}
 	 */
 	void setScale(double scale);
+	/**
+	 * @getter{cosmoPosition}
+	 */
+	Vector3 getCosmoPosition() const;
+	/**
+	 * @setter{cosmoPosition, cosmoPosition}
+	 */
+	void setCosmoPosition(Vector3 cosmoPosition);
+	/**
+	 * @getter{planetarySystemLoaded}
+	 */
+	bool isPlanetarySystemLoaded() const
+	{
+		return OctreeLOD::renderPlanetarySystem;
+	};
+	/**
+	 * @getter{planetTarget}
+	 */
+	QString getPlanetTarget() const;
+	/**
+	 * @setter{planetTarget, planetTarget}
+	 */
+	void setPlanetTarget(QString const& name);
+	/**
+	 * @getter{planetPosition}
+	 */
+	Vector3 getPlanetPosition() const;
+	/**
+	 * @setter{planetPosition, planetPosition}
+	 */
+	void setPlanetPosition(Vector3 planetPosition);
 
 	~MainWin();
 
@@ -154,6 +218,8 @@ class MainWin : public AbstractMainWin
 	Vector3 sysInWorld = Vector3(DBL_MAX, DBL_MAX, DBL_MAX);
 
 	std::string lastTargetName = std::string("");
+
+	bool forceUpdateFromCosmo = true;
 
 	// in kpc
 	Vector3 milkyWayDataPos    = Vector3(0.0, 0.0, 0.0);

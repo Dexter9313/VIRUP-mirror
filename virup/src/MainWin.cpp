@@ -246,6 +246,57 @@ void MainWin::setScale(double scale)
 	CelestialBodyRenderer::overridenScale           = scale;
 }
 
+Vector3 MainWin::getCosmoPosition() const
+{
+	return dynamic_cast<Camera const&>(getCamera("cosmo")).position;
+}
+
+void MainWin::setCosmoPosition(Vector3 cosmoPosition)
+{
+	auto& cosmoCam(dynamic_cast<Camera&>(getCamera("cosmo")));
+	auto& planetCam(dynamic_cast<OrbitalSystemCamera&>(getCamera("planet")));
+
+	Vector3 diff(cosmoPosition - cosmoCam.position);
+	cosmoCam.position = cosmoPosition;
+	planetCam.relativePosition += diff / mtokpc;
+}
+
+QString MainWin::getPlanetTarget() const
+{
+	return dynamic_cast<OrbitalSystemCamera const&>(getCamera("planet"))
+	    .target->getName()
+	    .c_str();
+}
+
+void MainWin::setPlanetTarget(QString const& name)
+{
+	auto ptrs = orbitalSystem->getAllCelestialBodiesPointers();
+	for(auto ptr : ptrs)
+	{
+		if(QString(ptr->getName().c_str()) == name)
+		{
+			dynamic_cast<OrbitalSystemCamera&>(getCamera("planet")).target
+			    = ptr;
+		}
+	}
+}
+
+Vector3 MainWin::getPlanetPosition() const
+{
+	return dynamic_cast<OrbitalSystemCamera const&>(getCamera("planet"))
+	    .relativePosition;
+}
+
+void MainWin::setPlanetPosition(Vector3 planetPosition)
+{
+	auto& cosmoCam(dynamic_cast<Camera&>(getCamera("cosmo")));
+	auto& planetCam(dynamic_cast<OrbitalSystemCamera&>(getCamera("planet")));
+
+	Vector3 diff(planetPosition - planetCam.relativePosition);
+	planetCam.relativePosition = planetPosition;
+	cosmoCam.position += diff * mtokpc;
+}
+
 QColor MainWin::getCubeColor() const
 {
 	return QSettings().value("misc/cubecolor").value<QColor>();
@@ -564,12 +615,11 @@ void MainWin::initScene()
 
 	debugText->setText("");
 
+	std::cout << "Foobar !" << std::endl;
 	movementControls = new MovementControls(
 	    vrHandler, method->getDataBoundingBox(), cam, camPlanet);
 
-	double cubeScale(cam->scale);
-
-	method->setAlpha(method->getAlpha() / (cubeScale * cubeScale));
+	method->setAlpha(method->getAlpha() / (cam->scale * cam->scale));
 
 	removeSceneRenderPath("default");
 
@@ -698,6 +748,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		if(lastData != OctreeLOD::planetarySysInitData())
 		{
 			loadNewSystem();
+			forceUpdateFromCosmo = true;
 		}
 
 		lastData   = OctreeLOD::planetarySysInitData();
@@ -705,10 +756,12 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 
 		CelestialBodyRenderer::overridenScale = mtokpc * cosmoCam.scale;
 
-		if(cam.target == orbitalSystem->getMainCelestialBody()
-		   && CelestialBodyRenderer::overridenScale < 1e-12)
+		if((cam.target == orbitalSystem->getMainCelestialBody()
+		    && CelestialBodyRenderer::overridenScale < 1e-12)
+		   || forceUpdateFromCosmo)
 		{
 			cam.relativePosition = -1 * sysInWorld / (mtokpc * cosmoCam.scale);
+			forceUpdateFromCosmo = false;
 		}
 
 		sysInWorld = cosmoCam.dataToWorldPosition(lastData);
