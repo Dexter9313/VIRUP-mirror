@@ -228,15 +228,6 @@ class MainWin : public AbstractMainWin
 	Billboard* milkyWayLabel    = nullptr;
 	Billboard* solarSystemLabel = nullptr;
 	Billboard* m31Label         = nullptr;
-
-	// TEMP ANIMATION
-	Vector3 startTranslation;
-	double startScale = 0.0;
-	Vector3 targetTranslation;
-	double targetScale = 0.0;
-	QElapsedTimer animationTimer;
-
-	void go(Vector3 position, double scale);
 };
 
 #endif // MAINWIN_H
