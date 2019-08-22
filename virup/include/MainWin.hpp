@@ -99,10 +99,14 @@ class MainWin : public AbstractMainWin
 	Q_PROPERTY(QColor cubeColor READ getCubeColor WRITE setCubeColor)
 	/**
 	 * @brief Camera's pitch in radians.
+	 *
+	 * @accessors getCamPitch(), setCamPitch()
 	 */
 	Q_PROPERTY(float camPitch READ getCamPitch WRITE setCamPitch)
 	/**
 	 * @brief Camera's yaw in radians.
+	 *
+	 * @accessors getCamYaw(), setCamYaw()
 	 */
 	Q_PROPERTY(float camYaw READ getCamYaw WRITE setCamYaw)
 
