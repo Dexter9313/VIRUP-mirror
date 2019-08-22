@@ -31,6 +31,7 @@
 #include <QProcess>
 #include <QString>
 #include <QVariant>
+#include <type_traits>
 
 class PythonQtHandler
 {
@@ -41,7 +42,7 @@ class PythonQtHandler
 	template <typename T>
 	static void addClass(QString const& name, QString const& package = "");
 	template <typename T>
-	static void addWrapper(QString const& name, QString const& package = "");
+	static void addWrapper();
 	static void addVariable(QString const& name, QVariant const& v);
 	static QVariant getVariable(QString const& name);
 	static void removeVariable(QString const& name);
@@ -60,26 +61,6 @@ class PythonQtHandler
 #endif
 };
 
-template <typename T>
-void PythonQtHandler::addClass(QString const& name, QString const& package)
-{
-#ifdef PYTHONQT
-	qRegisterMetaType<T>(name.toLatin1().constData());
-	PythonQt::self()->registerCPPClass(name.toLatin1().constData(), "",
-	                                   package.toLatin1().constData());
-#endif
-}
-
-template <typename T>
-void PythonQtHandler::addWrapper(QString const& name, QString const& package)
-{
-#ifdef PYTHONQT
-	PythonQt::self()->registerCPPClass(name.toLatin1().constData(), "",
-	                                   package.toLatin1().constData(),
-	                                   PythonQtCreateObject<T>);
-#endif
-}
-
 class PythonQtWrapper : public QObject
 {
 	Q_OBJECT
@@ -95,5 +76,29 @@ class PythonQtWrapper : public QObject
 
 	void overloadPythonOperators();
 };
+
+template <typename T>
+void PythonQtHandler::addClass(QString const& name, QString const& package)
+{
+#ifdef PYTHONQT
+	qRegisterMetaType<T>(name.toLatin1().constData());
+	PythonQt::self()->registerCPPClass(name.toLatin1().constData(), "",
+	                                   package.toLatin1().constData());
+#endif
+}
+
+template <typename T>
+void PythonQtHandler::addWrapper()
+{
+#ifdef PYTHONQT
+	static_assert(
+	    std::is_base_of<PythonQtWrapper, T>::value,
+	    "Adding a Wrapper that doesn't inherit from PythonQtWrapper.");
+	T wrapper;
+	PythonQt::self()->registerCPPClass(wrapper.wrappedClassName(), "",
+	                                   wrapper.wrappedClassPackage(),
+	                                   PythonQtCreateObject<T>);
+#endif
+}
 
 #endif // PYTHONQTHANDLER_H
