@@ -74,13 +74,23 @@ class MainWin : public AbstractMainWin
 	 */
 	Q_PROPERTY(
 	    Vector3 planetPosition READ getPlanetPosition WRITE setPlanetPosition)
+	/**
+	 * @brief Wether the bounding cube is enabled or not.
+	 *
+	 * @accessors cubeEnabled(), setCubeEnabled()
+	 */
+	Q_PROPERTY(bool cubeEnabled READ cubeEnabled WRITE setCubeEnabled)
+	/**
+	 * @brief Bounding cube color.
+	 *
+	 * @accessors getCubeColor(), setCubeColor()
+	 */
+	Q_PROPERTY(QColor cubeColor READ getCubeColor WRITE setCubeColor)
 
   public:
 	MainWin();
 	void loadSolarSystem();
 	void loadNewSystem();
-
-	/* SPACE-TIME MANIPULATION */
 
 	// TIME
 
@@ -143,14 +153,32 @@ class MainWin : public AbstractMainWin
 	 */
 	void setPlanetPosition(Vector3 planetPosition);
 
+	// CUBE
+
+	/**
+	 * @getter{cubeEnabled}
+	 */
+	bool cubeEnabled() const { return showCube; };
+	/**
+	 * @setter{cubeEnabled}
+	 */
+	void setCubeEnabled(bool enabled) { showCube = enabled; };
+	/**
+	 * @getter{cubeColor}
+	 */
+	QColor getCubeColor() const;
+	/**
+	 * @setter{cubeColor}
+	 */
+	void setCubeColor(QColor const& color);
+
 	~MainWin();
 
   public slots:
-	bool cubeEnabled() const { return showCube; };
-	void setCubeEnabled(bool enabled) { showCube = enabled; };
+	/**
+	 * @brief Toggles the @e cubeEnabled property.
+	 */
 	void toggleCube() { setCubeEnabled(!cubeEnabled()); };
-	QColor getCubeColor() const;
-	void setCubeColor(QColor const& color);
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
