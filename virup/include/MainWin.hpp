@@ -61,6 +61,17 @@ class MainWin : public AbstractMainWin
 	 */
 	Q_PROPERTY(bool planetarySystemLoaded READ isPlanetarySystemLoaded)
 	/**
+	 * @brief Name of the currently (pre-)loaded planetary system.
+	 *
+	 * If set, the corresponding planetary system will be loaded.
+	 *
+	 * The special name "Solar System" will load whichever system that is set as
+	 * the "Solar System" in the launcher, whichever its actual name is. If the
+	 * name isn't "Solar System", then the system must reside in a directory
+	 * named after it, within the exoplanetary systems directory.
+	 */
+	Q_PROPERTY(QString planetarySystemName MEMBER planetarySystemName)
+	/**
 	 * @brief Name of the planetary system camera target.
 	 *
 	 * @accessors getPlanetTarget(), setPlanetTarget()
@@ -86,11 +97,17 @@ class MainWin : public AbstractMainWin
 	 * @accessors getCubeColor(), setCubeColor()
 	 */
 	Q_PROPERTY(QColor cubeColor READ getCubeColor WRITE setCubeColor)
+	/**
+	 * @brief Camera's pitch in radians.
+	 */
+	Q_PROPERTY(float camPitch READ getCamPitch WRITE setCamPitch)
+	/**
+	 * @brief Camera's yaw in radians.
+	 */
+	Q_PROPERTY(float camYaw READ getCamYaw WRITE setCamYaw)
 
   public:
 	MainWin();
-	void loadSolarSystem();
-	void loadNewSystem();
 
 	// TIME
 
@@ -172,7 +189,28 @@ class MainWin : public AbstractMainWin
 	 */
 	void setCubeColor(QColor const& color);
 
+	// CAMERA ORIENTATION
+
+	/**
+	 * @getter{camPitch}
+	 */
+	float getCamPitch() const { return getCamera<Camera>("cosmo").pitch; }
+	/**
+	 * @setter{camPitch}
+	 */
+	void setCamPitch(float pitch);
+	/**
+	 * @getter{camYaw}
+	 */
+	float getCamYaw() const { return getCamera<Camera>("cosmo").yaw; }
+	/**
+	 * @setter{camYaw}
+	 */
+	void setCamYaw(float yaw);
+
 	~MainWin();
+
+	QString planetarySystemName = "";
 
   public slots:
 	/**
@@ -205,6 +243,8 @@ class MainWin : public AbstractMainWin
 	                         QString const& pathId) override;
 
   private:
+	void loadSolarSystem();
+	void loadNewSystem();
 	void printPositionInDataSpace(Side controller = Side::NONE) const;
 	static std::vector<float> generateVertices(unsigned int number,
 	                                           unsigned int seed);

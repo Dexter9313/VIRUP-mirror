@@ -95,7 +95,9 @@ void MainWin::loadNewSystem()
 		delete orbitalSystem;
 	}
 
-	if((OctreeLOD::planetarySysInitData() - solarSystemDataPos).length() < 1e-6)
+	if(((OctreeLOD::planetarySysInitData() - solarSystemDataPos).length() < 1e-6
+	    && planetarySystemName == "")
+	   || planetarySystemName == "Solar System")
 	{
 		orbitalSystem  = solarSystem;
 		systemRenderer = solarSystemRenderer;
@@ -115,9 +117,6 @@ void MainWin::loadNewSystem()
 		{
 			tries--;
 			QFile jsonFile;
-			QStringList nameFilter;
-			nameFilter << "*.json";
-
 			QStringList files;
 			QDirIterator it(planetsystemdir, QStringList() << "*.json",
 			                QDir::Files, QDirIterator::Subdirectories);
@@ -126,7 +125,15 @@ void MainWin::loadNewSystem()
 				files << it.next();
 			}
 
-			jsonFile.setFileName(files[rand() % files.size()]);
+			if(tries == 2 && planetarySystemName != "")
+			{
+				jsonFile.setFileName(planetsystemdir + planetarySystemName
+				                     + "/definition.json");
+			}
+			else
+			{
+				jsonFile.setFileName(files[rand() % files.size()]);
+			}
 
 			if(jsonFile.exists())
 			{
@@ -159,7 +166,7 @@ void MainWin::loadNewSystem()
 					tries = 0;
 				}
 			}
-			else
+			else if(tries == 0)
 			{
 				QMessageBox::critical(
 				    nullptr, tr("Invalid data directory"),
@@ -223,6 +230,9 @@ void MainWin::loadNewSystem()
 	    camPlanet->target->getCelestialBodyParameters().radius * 2.0, 0.0, 0.0);
 
 	CelestialBodyRenderer::overridenScale = 1.0;
+	forceUpdateFromCosmo                  = true;
+
+	planetarySystemName = orbitalSystem->getName().c_str();
 }
 
 QDateTime MainWin::getSimulationTime() const
@@ -302,6 +312,18 @@ void MainWin::setCubeColor(QColor const& color)
 {
 	QSettings().setValue("misc/cubecolor", color);
 	GLHandler::setShaderParam(cubeShader, "color", color);
+}
+
+void MainWin::setCamPitch(float pitch)
+{
+	getCamera<Camera>("cosmo").pitch               = pitch;
+	getCamera<OrbitalSystemCamera>("planet").pitch = pitch;
+}
+
+void MainWin::setCamYaw(float yaw)
+{
+	getCamera<Camera>("cosmo").yaw               = yaw;
+	getCamera<OrbitalSystemCamera>("planet").yaw = yaw;
 }
 
 void MainWin::keyPressEvent(QKeyEvent* e)
@@ -712,8 +734,12 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		}
 		if(lastData != OctreeLOD::planetarySysInitData())
 		{
+			planetarySystemName = "";
 			loadNewSystem();
-			forceUpdateFromCosmo = true;
+		}
+		else if(planetarySystemName != orbitalSystem->getName().c_str())
+		{
+			loadNewSystem();
 		}
 
 		lastData   = OctreeLOD::planetarySysInitData();
