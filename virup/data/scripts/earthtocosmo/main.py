@@ -4,6 +4,7 @@ from PythonQt.QtCore import Qt
 from PythonQt.QtCore import QDateTime
 from PythonQt.QtCore import QDate
 from PythonQt.QtCore import QTime
+from PythonQt.libplanet import Vector3
 from math import exp
 from math import log
 
@@ -14,7 +15,7 @@ def keyPressEvent(e):
     # if spacebar pressed, start animation
     if e.key() == Qt.Key_Space:
         timer.restart()
-        startScale = VIRUP.scale
+        startScale = 1.0e-6
 
 def initScene():
     global timer
@@ -42,14 +43,14 @@ def updateScene():
         t=QTime(19, 29, 42)
         VIRUP.simulationTime = QDateTime(d, t, Qt.UTC)
         # go to solar system
-        VIRUP.cosmoPosition = math.Vector3(8.29995608, 0.0, -0.027)
+        VIRUP.cosmoPosition = Vector3(8.29995608, 0.0, -0.027)
         # set 1:1000km scale
         VIRUP.scale = 1.0e-6
     if i == 2:
         # go to Earth where eclipse is visible
         # (Coordinates found by moving camera (WASD translation - mousewheel for scale/speed),
         # then use python console (F8) : "print(VIRUP.planetPosition)")
-        VIRUP.planetPosition = math.Vector3(-6.22212e+06, 9.64041e+06, -3.62647e+06)
+        VIRUP.planetPosition = Vector3(-6.22212e+06, 9.64041e+06, -3.62647e+06)
         VIRUP.planetTarget = 'Earth'
 
     # if animation is running
@@ -63,7 +64,7 @@ def updateScene():
             timer.invalidate()
         # elif second part
         elif t > 1.0:
-            # scale inearly through log space
+            # scale linearly through log space
             VIRUP.scale = exp(log(tgtScale) * (2 - t) + log(startScale) * (t-1))
         # else; first part
         else:

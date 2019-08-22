@@ -513,7 +513,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 void MainWin::setupPythonAPI()
 {
 	PythonQtHandler::addObject("VIRUP", this);
-	PythonQtHandler::addWrapper<Vector3Wrapper>("Vector3", "math");
+	PythonQtHandler::addWrapper<Vector3Wrapper>();
 	Vector3Wrapper().overloadPythonOperators();
 }
 
@@ -601,7 +601,6 @@ void MainWin::initScene()
 
 	debugText->setText("");
 
-	std::cout << "Foobar !" << std::endl;
 	movementControls = new MovementControls(
 	    vrHandler, method->getDataBoundingBox(), cam, camPlanet);
 
