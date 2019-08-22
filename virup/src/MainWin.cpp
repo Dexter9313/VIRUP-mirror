@@ -237,24 +237,24 @@ void MainWin::setSimulationTime(QDateTime const& simulationTime)
 
 double MainWin::getScale() const
 {
-	return dynamic_cast<Camera const&>(getCamera("cosmo")).scale * mtokpc;
+	return getCamera<Camera>("cosmo").scale * mtokpc;
 }
 
 void MainWin::setScale(double scale)
 {
-	dynamic_cast<Camera&>(getCamera("cosmo")).scale = scale / mtokpc;
-	CelestialBodyRenderer::overridenScale           = scale;
+	getCamera<Camera>("cosmo").scale      = scale / mtokpc;
+	CelestialBodyRenderer::overridenScale = scale;
 }
 
 Vector3 MainWin::getCosmoPosition() const
 {
-	return dynamic_cast<Camera const&>(getCamera("cosmo")).position;
+	return getCamera<Camera>("cosmo").position;
 }
 
 void MainWin::setCosmoPosition(Vector3 cosmoPosition)
 {
-	auto& cosmoCam(dynamic_cast<Camera&>(getCamera("cosmo")));
-	auto& planetCam(dynamic_cast<OrbitalSystemCamera&>(getCamera("planet")));
+	auto& cosmoCam(getCamera<Camera>("cosmo"));
+	auto& planetCam(getCamera<OrbitalSystemCamera>("planet"));
 
 	Vector3 diff(cosmoPosition - cosmoCam.position);
 	cosmoCam.position = cosmoPosition;
@@ -263,9 +263,7 @@ void MainWin::setCosmoPosition(Vector3 cosmoPosition)
 
 QString MainWin::getPlanetTarget() const
 {
-	return dynamic_cast<OrbitalSystemCamera const&>(getCamera("planet"))
-	    .target->getName()
-	    .c_str();
+	return getCamera<OrbitalSystemCamera>("planet").target->getName().c_str();
 }
 
 void MainWin::setPlanetTarget(QString const& name)
@@ -275,22 +273,20 @@ void MainWin::setPlanetTarget(QString const& name)
 	{
 		if(QString(ptr->getName().c_str()) == name)
 		{
-			dynamic_cast<OrbitalSystemCamera&>(getCamera("planet")).target
-			    = ptr;
+			getCamera<OrbitalSystemCamera>("planet").target = ptr;
 		}
 	}
 }
 
 Vector3 MainWin::getPlanetPosition() const
 {
-	return dynamic_cast<OrbitalSystemCamera const&>(getCamera("planet"))
-	    .relativePosition;
+	return getCamera<OrbitalSystemCamera>("planet").relativePosition;
 }
 
 void MainWin::setPlanetPosition(Vector3 planetPosition)
 {
-	auto& cosmoCam(dynamic_cast<Camera&>(getCamera("cosmo")));
-	auto& planetCam(dynamic_cast<OrbitalSystemCamera&>(getCamera("planet")));
+	auto& cosmoCam(getCamera<Camera>("cosmo"));
+	auto& planetCam(getCamera<OrbitalSystemCamera>("planet"));
 
 	Vector3 diff(planetPosition - planetCam.relativePosition);
 	planetCam.relativePosition = planetPosition;
@@ -402,12 +398,12 @@ void MainWin::mouseMoveEvent(QMouseEvent* e)
 	}
 	float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
 	float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
-	auto cam(dynamic_cast<Camera*>(&getCamera("cosmo")));
-	cam->yaw += dx * 3.14f / 3.f;
-	cam->pitch += dy * 3.14f / 3.f;
-	auto cam2 = (dynamic_cast<OrbitalSystemCamera*>(&getCamera("planet")));
-	cam2->yaw += dx * 3.14f / 3.f;
-	cam2->pitch += dy * 3.14f / 3.f;
+	auto& cam(getCamera<Camera>("cosmo"));
+	cam.yaw += dx * 3.14f / 3.f;
+	cam.pitch += dy * 3.14f / 3.f;
+	auto& cam2(getCamera<OrbitalSystemCamera>("planet"));
+	cam2.yaw += dx * 3.14f / 3.f;
+	cam2.pitch += dy * 3.14f / 3.f;
 	QCursor::setPos(width() / 2, height() / 2);
 }
 
@@ -424,7 +420,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 {
 	if(loaded)
 	{
-		auto cam(dynamic_cast<Camera*>(&getCamera("cosmo")));
+		auto& cam(getCamera<Camera>("cosmo"));
 		switch(e.type)
 		{
 			case VRHandler::EventType::BUTTON_PRESSED:
@@ -439,7 +435,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 							if(padCoords.length() < 0.5) // CENTER
 							{
 								method->resetAlpha();
-								cam->setEyeDistanceFactor(1.0f);
+								cam.setEyeDistanceFactor(1.0f);
 							}
 							else if(fabsf(padCoords[0])
 							        > fabsf(padCoords[1])) // LEFT OR RIGHT
@@ -692,7 +688,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 	if(pathId == "planet")
 	{
 		auto& cam      = dynamic_cast<OrbitalSystemCamera&>(camera);
-		auto& cosmoCam = dynamic_cast<Camera&>(getCamera("cosmo"));
+		auto& cosmoCam = getCamera<Camera>("cosmo");
 		if(vrHandler)
 		{
 			debugText->getModel() = cam.hmdSpaceToWorldTransform();
@@ -825,8 +821,8 @@ void MainWin::printPositionInDataSpace(Side controller) const
 	}
 
 	// then data space
-	position = Utils::toQt(dynamic_cast<Camera const&>(getCamera("cosmo"))
-	                           .worldToDataPosition(Utils::fromQt(position)));
+	position = Utils::toQt(getCamera<Camera>("cosmo").worldToDataPosition(
+	    Utils::fromQt(position)));
 	QString posstr;
 	&posstr << position;
 
