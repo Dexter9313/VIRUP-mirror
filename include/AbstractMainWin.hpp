@@ -303,6 +303,22 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	BasicCamera& getCamera(QString const& pathId);
 	/**
+	 * @brief Similar to @e getCamera() but dynamically casts the BasicCamera
+	 * into the specified class.
+	 *
+	 * T must derive from @e BasicCamera.
+	 */
+	template <class T>
+	T const& getCamera(QString const& pathId) const;
+	/**
+	 * @brief Similar to @e getCamera() but dynamically casts the BasicCamera
+	 * into the specified class.
+	 *
+	 * T must derive from @e BasicCamera.
+	 */
+	template <class T>
+	T& getCamera(QString const& pathId);
+	/**
 	 * @brief Returns a reference to the @ref DebugCamera of the engine.
 	 */
 	DebugCamera& getDebugCamera() { return *dbgCamera; };
@@ -395,5 +411,17 @@ class AbstractMainWin : public QOpenGLWindow
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
 };
+
+template <class T>
+T const& AbstractMainWin::getCamera(QString const& pathId) const
+{
+	return dynamic_cast<T const&>(getCamera(pathId));
+}
+
+template <class T>
+T& AbstractMainWin::getCamera(QString const& pathId)
+{
+	return dynamic_cast<T&>(getCamera(pathId));
+}
 
 #endif // ABSTRACTMAINWIN_H
