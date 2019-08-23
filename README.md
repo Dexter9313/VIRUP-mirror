@@ -5,6 +5,10 @@
 
 The VIrtual Reality Universe Project uses astrophysical data to propose a virtual reality visualization of it.
 
+## Documentation
+
+Documentation can be read here : [VIRUP Documentation](https://dexter9313.gitlab.io/virup/).
+
 ## Releases
 
 You can download releases for GNU/Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [VIRUP Releases](https://github.com/Dexter9313/VIRUP-mirror/releases).
