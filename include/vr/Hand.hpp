@@ -25,6 +25,11 @@
 #include "../BasicCamera.hpp"
 #include "../utils.hpp"
 
+/** @ingroup pycall
+ *
+ * Callable in Python as the "leftHand" or "rightHand" objects when relevant (VR
+ * is enabled and hands are available).
+ */
 class Hand : public QObject
 {
 	Q_OBJECT

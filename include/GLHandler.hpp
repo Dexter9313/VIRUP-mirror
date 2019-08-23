@@ -20,9 +20,12 @@
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
 
-/**
+/** @ingroup pycall
+ *
  * @brief A convenient wrapper for the OpenGL API. Contains everything related
  * to rendering.
+ *
+ * Callable in Python as the "GLHandler" object.
  *
  * GLHandler is designed to be used as a static class and you shouldn't
  * instanciate it.
@@ -42,7 +45,7 @@ class GLHandler : public QObject
 	static unsigned int& meshCount();
 	static unsigned int& texCount();
 	static unsigned int& PBOCount();
-	/**
+	/** @ingroup pywrap
 	 * @brief Opaque class that represents a mesh. Use the mesh related methods
 	 * to handle it.
 	 *
@@ -64,7 +67,7 @@ class GLHandler : public QObject
 		unsigned int vboSize;
 		unsigned int eboSize;
 	};
-	/**
+	/** @ingroup pywrap
 	 * @brief Opaque class that represents a Texture. Use the texture related
 	 * methods to handle it.
 	 *
@@ -94,7 +97,7 @@ class GLHandler : public QObject
 		PixelBufferObject& operator=(PixelBufferObject const&) = default;
 	};
 
-	/**
+	/** @ingroup pywrap
 	 * @brief Mostly opaque class that represents a render target. Use the
 	 * render target related methods to handle it.
 	 *
@@ -152,7 +155,7 @@ class GLHandler : public QObject
 		RenderTarget& operator=(RenderTarget const&) = default;
 	};
 
-	/**
+	/** @ingroup pywrap
 	 * @brief Opaque type that represents a Shader Program. Use the shaders
 	 * related methods to handle it.
 	 *

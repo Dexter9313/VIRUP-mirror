@@ -18,6 +18,10 @@ class BasicCamera;
 class Controller;
 class Hand;
 
+/** @ingroup pycall
+ *
+ * Callable in Python as the "VRHandler" object when relevant (VR is enabled).
+ */
 class VRHandler : public QObject
 {
 	Q_OBJECT

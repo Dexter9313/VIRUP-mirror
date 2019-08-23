@@ -15,8 +15,12 @@
 #include "PythonQtHandler.hpp"
 #include "vr/VRHandler.hpp"
 
-/**
+/** @ingroup pycall
+ *
  * @brief Main window to be displayed.
+ *
+ * Callable in Python as the "HydrogenVR" object unless replaced by
+ * application's MainWin object.
  *
  * Inherit from it to implement your application, calling your class "MainWin".
  *
@@ -35,10 +39,6 @@
  * * <code>%VRHandler</code> : Is equivalent to accessing @ref vrHandler. See
  * @ref VRHandler description for a Python API specification. This object is
  * only available (not None) if and only if VR is enabled.
- * * <code>camera</code> : Is equivalent to calling @ref getCamera(). See @ref
- * BasicCamera description for a Python API specification.
- * * <code>dbgcamera</code> : Is equivalent to calling @ref getDebugCamera().
- * See @ref DebugCamera description for a Python API specification.
  *
  * The following methods have a Python equivalent function and both will get
  * called by the engine. Implementation of any Python functions is optional.

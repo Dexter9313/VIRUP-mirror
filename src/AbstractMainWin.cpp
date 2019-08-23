@@ -349,9 +349,6 @@ void AbstractMainWin::initializeGL()
 	                                          / static_cast<float>(height()));
 	appendSceneRenderPath("default", RenderPath(defaultCam));
 
-	PythonQtHandler::addObject("camera", defaultCam);
-	PythonQtHandler::addObject("dbgcamera", dbgCamera);
-
 	if(vrHandler)
 	{
 		vrHandler.resetPos();

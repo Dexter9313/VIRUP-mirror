@@ -8,8 +8,12 @@
 #include "../BasicCamera.hpp"
 #include "../utils.hpp"
 
-/**
+/** @ingroup pycall
+ *
  * @brief Represents a VR controller.
+ *
+ * Callable in Python as the "leftController" or "rightController" objects when
+ * relevant (VR is enabled and controllers are available).
  *
  * This class should be only access as a constant reference as it should only be
  * modified by the @ref VRHandler class.

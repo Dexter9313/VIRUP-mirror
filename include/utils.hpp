@@ -6,6 +6,8 @@
 #include <QString>
 #include <vector>
 
+/** @ingroup pywrap
+ */
 enum class Side
 {
 	NONE,
