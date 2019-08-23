@@ -20,6 +20,8 @@
 #include "physics/OrbitalSystem.hpp"
 #include "physics/SimulationTime.hpp"
 
+#include "LibPlanet.hpp"
+
 class MainWin : public AbstractMainWin
 {
 	Q_OBJECT
@@ -232,6 +234,7 @@ class MainWin : public AbstractMainWin
 	virtual void vrEvent(VRHandler::Event const& e) override;
 
 	virtual void setupPythonAPI() override;
+	virtual void initLibraries() override;
 
 	// declare drawn resources
 	virtual void initScene() override;
