@@ -98,6 +98,7 @@ void PythonQtHandler::addWrapper()
 	PythonQt::self()->registerCPPClass(wrapper.wrappedClassName(), "",
 	                                   wrapper.wrappedClassPackage(),
 	                                   PythonQtCreateObject<T>);
+	wrapper.overloadPythonOperators();
 #endif
 }
 

@@ -8,6 +8,7 @@
 #include <QProcess>
 #include <vector>
 
+#include "AbstractLibrary.hpp"
 #include "BasicCamera.hpp"
 #include "DebugCamera.hpp"
 #include "GLHandler.hpp"
@@ -257,6 +258,17 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	virtual void setupPythonAPI();
 	/**
+	 * @brief Override this to initialize HydrogenVR libraries you use by
+	 * calling @e initLibrary().
+	 */
+	virtual void initLibraries(){};
+	/**
+	 * @brief Initialize a library by class. The class must inherit from @e
+	 * AbstractLibrary.
+	 */
+	template <class T>
+	void initLibrary();
+	/**
 	 * @brief Gets called after the OpenGL context is ready and before the main
 	 * loop.
 	 *
@@ -424,4 +436,13 @@ T& AbstractMainWin::getCamera(QString const& pathId)
 	return dynamic_cast<T&>(getCamera(pathId));
 }
 
+template <class T>
+void initLibrary()
+{
+	static_assert(
+	    std::is_base_of<AbstractLibrary, T>::value,
+	    "Initializing a library that doesn't inherit from AbstractLibrary.");
+	T lib;
+	lib.setupPythonAPI();
+}
 #endif // ABSTRACTMAINWIN_H
