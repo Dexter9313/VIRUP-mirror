@@ -22,6 +22,10 @@
 
 #include "LibPlanet.hpp"
 
+/** @ingroup pycall
+ *
+ * Callable in Python as the "VIRUP" object.
+ */
 class MainWin : public AbstractMainWin
 {
 	Q_OBJECT
