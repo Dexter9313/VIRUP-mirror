@@ -24,7 +24,7 @@ class AbstractLibrary
   public:
 	AbstractLibrary() = default;
 	virtual void setupPythonAPI(){};
-	virtual ~AbstractLibrary() {};
+	virtual ~AbstractLibrary(){};
 };
 
 #endif // ABSTRACT_LIBRARY_HPP
