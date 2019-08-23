@@ -437,7 +437,7 @@ T& AbstractMainWin::getCamera(QString const& pathId)
 }
 
 template <class T>
-void initLibrary()
+void AbstractMainWin::initLibrary()
 {
 	static_assert(
 	    std::is_base_of<AbstractLibrary, T>::value,

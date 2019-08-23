@@ -331,6 +331,8 @@ void AbstractMainWin::initializeGL()
 	setVR(QSettings().value("vr/enabled").toBool());
 	// Init Python API
 	setupPythonAPI();
+	// Init libraries
+	initLibraries();
 
 	// NOLINTNEXTLINE(hicpp-no-array-decay)
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
