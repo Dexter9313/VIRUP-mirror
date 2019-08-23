@@ -14,6 +14,8 @@ if(DOXYGEN_FOUND)
 		set(DOC_INPUT "${DOC_INPUT} ${LIBRARIES_DIRS}")
 	endif()
 
+	message("Generate documentation for: ${DOC_INPUT}")
+
 	set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
 	set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
