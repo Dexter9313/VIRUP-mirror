@@ -8,6 +8,10 @@ A C++ lightweight 3D rendering engine that tightly integrates VR at its core. It
 This engine is used as a template right now, you have to write your code on top of it (but it's easy, follow the guide). This engine is not only a library but also provides CMake, Travis CI and Appveyor scripts to build and deploy your project, that's why it wouldn't be enough to only link to it.
 Strong OpenGL knowledge is required as the GLHandler class is merely a convenient wrapper you will use to draw. Most of the higher level concepts wrapped are close to the OpenGL low-level concepts (for example, a Mesh is only a struct containing GLuint pointing to vertex or element buffers).
 
+## Documentation
+
+Documentation can be read here : [HydrogenVR Documentation](https://dexter9313.gitlab.io/hydrogenvr/).
+
 ## To use the template
 
 Make sure your new project is not empty if you don't want a dirty git history right off the bat (make an initial commit with a README.md file for example).
