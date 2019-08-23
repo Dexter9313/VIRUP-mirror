@@ -5,11 +5,6 @@ if(DOXYGEN_FOUND)
 	message("doxygen version: ${DOXYGEN_VERSION}")
 
 
-	# Get all project files
-	file(GLOB_RECURSE ALL_SOURCE_FILES ${DOCUMENTED_FILES})
-
-	list(REMOVE_DUPLICATES ALL_SOURCE_FILES)
-
 	set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
 	set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
