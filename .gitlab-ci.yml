@@ -1,0 +1,19 @@
+image: gcc
+
+before_script:
+    - apt-get update && apt-get install -y cmake doxygen graphviz
+
+pages:
+    stage: deploy
+    script:
+        - mkdir build
+        - cd build
+        - cmake .. -DDOC_ONLY=true
+        - make doc
+        - mv html ..
+        - cd ..
+        - mv html public
+    artifacts:
+        paths:
+            - public
+
