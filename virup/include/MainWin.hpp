@@ -9,6 +9,7 @@
 #include "AbstractMainWin.hpp"
 #include "Text3D.hpp"
 
+#include "Grid.hpp"
 #include "MovementControls.hpp"
 #include "methods/BaseLineMethod.hpp"
 #include "methods/BaseLineMethodTex.hpp"
@@ -92,17 +93,11 @@ class MainWin : public AbstractMainWin
 	Q_PROPERTY(
 	    Vector3 planetPosition READ getPlanetPosition WRITE setPlanetPosition)
 	/**
-	 * @brief Wether the bounding cube is enabled or not.
+	 * @brief Wether the grid is enabled or not.
 	 *
-	 * @accessors cubeEnabled(), setCubeEnabled()
+	 * @accessors gridEnabled(), setGridEnabled()
 	 */
-	Q_PROPERTY(bool cubeEnabled READ cubeEnabled WRITE setCubeEnabled)
-	/**
-	 * @brief Bounding cube color.
-	 *
-	 * @accessors getCubeColor(), setCubeColor()
-	 */
-	Q_PROPERTY(QColor cubeColor READ getCubeColor WRITE setCubeColor)
+	Q_PROPERTY(bool gridEnabled READ gridEnabled WRITE setGridEnabled)
 	/**
 	 * @brief Camera's pitch in radians.
 	 *
@@ -183,21 +178,13 @@ class MainWin : public AbstractMainWin
 	// CUBE
 
 	/**
-	 * @getter{cubeEnabled}
+	 * @getter{gridEnabled}
 	 */
-	bool cubeEnabled() const { return showCube; };
+	bool gridEnabled() const { return showGrid; };
 	/**
-	 * @setter{cubeEnabled}
+	 * @setter{gridEnabled}
 	 */
-	void setCubeEnabled(bool enabled) { showCube = enabled; };
-	/**
-	 * @getter{cubeColor}
-	 */
-	QColor getCubeColor() const;
-	/**
-	 * @setter{cubeColor}
-	 */
-	void setCubeColor(QColor const& color);
+	void setGridEnabled(bool enabled) { showGrid = enabled; };
 
 	// CAMERA ORIENTATION
 
@@ -224,9 +211,9 @@ class MainWin : public AbstractMainWin
 
   public slots:
 	/**
-	 * @brief Toggles the @e cubeEnabled property.
+	 * @brief Toggles the @e gridEnabled property.
 	 */
-	void toggleCube() { setCubeEnabled(!cubeEnabled()); };
+	void toggleGrid() { setGridEnabled(!gridEnabled()); };
 
   protected:
 	virtual void keyPressEvent(QKeyEvent* e) override;
@@ -259,16 +246,12 @@ class MainWin : public AbstractMainWin
 	void printPositionInDataSpace(Side controller = Side::NONE) const;
 	static std::vector<float> generateVertices(unsigned int number,
 	                                           unsigned int seed);
-	static GLHandler::Mesh createCube(GLHandler::ShaderProgram const& shader);
-	static void deleteCube(GLHandler::Mesh mesh,
-	                       GLHandler::ShaderProgram shader);
 
 	bool loaded    = false;
 	Method* method = nullptr;
 
-	GLHandler::Mesh cube                = {};
-	GLHandler::ShaderProgram cubeShader = {};
-	bool showCube = QSettings().value("misc/showcube").toBool();
+	Grid* grid    = nullptr;
+	bool showGrid = QSettings().value("misc/showgrid").toBool();
 
 	MovementControls* movementControls = nullptr;
 

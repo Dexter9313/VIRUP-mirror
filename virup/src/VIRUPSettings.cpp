@@ -55,8 +55,8 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	addUIntSetting("texmaxsize", 16, tr("Textures max size (x512)"), 1, 32);
 
 	insertGroup("misc", tr("Miscellaneous"), 3);
-	addBoolSetting("showcube", false, tr("Show Cube"));
-	addColorSetting("cubecolor", QColor(255, 255, 255), tr("Cube Color"));
+	addBoolSetting("showgrid", false, tr("Show Grid"));
+	addColorSetting("gridcolor", QColor(255, 255, 255), tr("Grid Color"));
 	addVector3DSetting("focuspoint", QVector3D(), tr("Focus Point"),
 	                   {{tr("x"), tr("y"), tr("z")}}, -1000, 1000);
 	// focuspoint=-0.352592, -0.062213, 0.144314

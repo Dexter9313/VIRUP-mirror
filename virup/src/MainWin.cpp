@@ -303,17 +303,6 @@ void MainWin::setPlanetPosition(Vector3 planetPosition)
 	cosmoCam.position += diff * mtokpc;
 }
 
-QColor MainWin::getCubeColor() const
-{
-	return QSettings().value("misc/cubecolor").value<QColor>();
-}
-
-void MainWin::setCubeColor(QColor const& color)
-{
-	QSettings().setValue("misc/cubecolor", color);
-	GLHandler::setShaderParam(cubeShader, "color", color);
-}
-
 void MainWin::setCamPitch(float pitch)
 {
 	getCamera<Camera>("cosmo").pitch               = pitch;
@@ -360,9 +349,9 @@ void MainWin::keyPressEvent(QKeyEvent* e)
 			CelestialBodyRenderer::renderOrbits
 			    = !CelestialBodyRenderer::renderOrbits;
 		}
-		else if(e->key() == Qt::Key_C)
+		else if(e->key() == Qt::Key_G)
 		{
-			showCube = !showCube;
+			showGrid = !showGrid;
 		}
 		else if(e->key() == Qt::Key_H)
 		{
@@ -514,6 +503,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						    = !CelestialBodyRenderer::renderLabels;
 						CelestialBodyRenderer::renderOrbits
 						    = !CelestialBodyRenderer::renderOrbits;
+						toggleGrid();
 						break;
 					case VRHandler::Button::MENU:
 						printPositionInDataSpace(e.side);
@@ -548,12 +538,7 @@ void MainWin::initScene()
 	c.setShape(Qt::CursorShape::BlankCursor);
 	setCursor(c);
 
-	cubeShader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
-	GLHandler::setShaderParam(
-	    cubeShader, "color",
-	    QSettings().value("misc/cubecolor").value<QColor>());
-	cube = createCube(cubeShader);
+	grid = new Grid;
 
 	auto cam = new Camera(&vrHandler);
 	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
@@ -800,6 +785,11 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 		{
 			debugText->render();
 		}
+		if(showGrid)
+		{
+			grid->renderPlanet(
+			    dynamic_cast<OrbitalSystemCamera const&>(camera));
+		}
 		return;
 	}
 
@@ -807,17 +797,15 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	{
 		renderVRControls();
 	}
-	auto cam(dynamic_cast<Camera const*>(&camera));
+	auto& cam(dynamic_cast<Camera const&>(camera));
 
 	GLHandler::glf().glDepthFunc(GL_LEQUAL);
 	GLHandler::glf().glEnable(GL_DEPTH_CLAMP);
-	QMatrix4x4 model(cam->dataToWorldTransform());
-	if(showCube)
+	if(showGrid && !isPlanetarySystemLoaded())
 	{
-		GLHandler::setUpRender(cubeShader, model);
-		GLHandler::render(cube, GLHandler::PrimitiveType::LINES);
+		grid->renderCosmo(cam);
 	}
-	method->render(*cam);
+	method->render(cam);
 
 	// TODO(florian) better than this
 	if(CelestialBodyRenderer::renderLabels)
@@ -882,40 +870,6 @@ std::vector<float> MainWin::generateVertices(unsigned int number,
 	return vertices;
 }
 
-GLHandler::Mesh MainWin::createCube(GLHandler::ShaderProgram const& shader)
-{
-	GLHandler::Mesh mesh(GLHandler::newMesh());
-	std::vector<float> vertices = {
-	    -1.0f, -1.0f, -1.0f, // 0
-	    -1.0f, -1.0f, 1.0f,  // 1
-	    -1.0f, 1.0f,  -1.0f, // 2
-	    -1.0f, 1.0f,  1.0f,  // 3
-	    1.0f,  -1.0f, -1.0f, // 4
-	    1.0f,  -1.0f, 1.0f,  // 5
-	    1.0f,  1.0f,  -1.0f, // 6
-	    1.0f,  1.0f,  1.0f,  // 7
-	};
-	std::vector<unsigned int> elements = {
-	    0, 1, 0, 2, 0, 4,
-
-	    7, 6, 7, 5, 7, 3,
-
-	    1, 3, 1, 5,
-
-	    2, 6, 2, 3,
-
-	    4, 6, 4, 5,
-	};
-	GLHandler::setVertices(mesh, vertices, shader, {{"position", 3}}, elements);
-	return mesh;
-}
-
-void MainWin::deleteCube(GLHandler::Mesh mesh, GLHandler::ShaderProgram shader)
-{
-	GLHandler::deleteShader(shader);
-	GLHandler::deleteMesh(mesh);
-}
-
 MainWin::~MainWin()
 {
 	delete m31Label;
@@ -925,6 +879,6 @@ MainWin::~MainWin()
 	delete orbitalSystem;
 	delete debugText;
 	delete movementControls;
-	deleteCube(cube, cubeShader);
 	delete method;
+	delete grid;
 }
