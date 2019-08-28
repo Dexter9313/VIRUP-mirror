@@ -35,10 +35,8 @@
  * won't be taken into account. You will have to set your own Python object by
  * overriding the @ref setupPythonAPI method.
  *
- * The following Python object are also declared by the engine :
- * * <code>%VRHandler</code> : Is equivalent to accessing @ref vrHandler. See
- * @ref VRHandler description for a Python API specification. This object is
- * only available (not None) if and only if VR is enabled.
+ * Some engine class are also instanciated in Python. For the complete list, see
+ * : @ref pycall .
  *
  * The following methods have a Python equivalent function and both will get
  * called by the engine. Implementation of any Python functions is optional.
@@ -95,6 +93,12 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	Q_PROPERTY(bool hdr READ getHDR WRITE setHDR)
 	/**
+	 * @brief Wether the engine renders all meshes as wireframes or not.
+	 *
+	 * @accessors getWireframe(), setWireframe()
+	 */
+	Q_PROPERTY(bool wireframe READ getWireframe WRITE setWireframe)
+	/**
 	 * @brief Wether VR mode is enabled or not.
 	 *
 	 * @accessors vrIsEnabled(), setVR()
@@ -144,6 +148,14 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	void setHDR(bool hdr);
 	/**
+	 * @getter{wireframe}
+	 */
+	bool getWireframe() const { return wireframe; };
+	/**
+	 * @setter{wireframe}
+	 */
+	void setWireframe(bool wireframe) { this->wireframe = wireframe; };
+	/**
 	 * @getter{vr}
 	 */
 	bool vrIsEnabled() const;
@@ -167,6 +179,10 @@ class AbstractMainWin : public QOpenGLWindow
 	 * @toggle{hdr}
 	 */
 	void toggleHDR();
+	/**
+	 * @toggle{wireframe}
+	 */
+	void toggleWireframe();
 	/**
 	 * @toggle{vr}
 	 */
@@ -342,6 +358,9 @@ class AbstractMainWin : public QOpenGLWindow
 	 * to a post-processing shader you added or inserted in the post-processing
 	 * pipeline before it is actually used.
 	 *
+	 * @warning Don't forget to call this class version of the method for core
+	 * post-processing (HDR for example) and python post-processing to work !
+	 *
 	 * @param id Identifier of the shader that is going to be used for post
 	 * processing.
 	 * @param shader The actual shader program.
@@ -349,6 +368,20 @@ class AbstractMainWin : public QOpenGLWindow
 	virtual void
 	    applyPostProcShaderParams(QString const& id,
 	                              GLHandler::ShaderProgram shader) const;
+	/**
+	 * @brief Override to return textures to use in your post-processing
+	 * shaders.
+	 *
+	 * Don't forget that the first sampler2D will be used by GLHandler to store
+	 * the previous rendering result.
+	 *
+	 * @param id Identifier of the shader that is going to be used for post
+	 * processing.
+	 * @param shader The actual shader program.
+	 */
+	virtual std::vector<GLHandler::Texture>
+	    getPostProcessingUniformTextures(QString const& id,
+	                                     GLHandler::ShaderProgram shader) const;
 	/**
 	 * @brief Reloads the post-processing targets (2D and VR).
 	 *
@@ -418,7 +451,8 @@ class AbstractMainWin : public QOpenGLWindow
 	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;
 	DebugCamera* dbgCamera = nullptr;
 
-	bool hdr = QSettings().value("window/hdr").toBool();
+	bool hdr       = QSettings().value("window/hdr").toBool();
+	bool wireframe = false;
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;
 	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};

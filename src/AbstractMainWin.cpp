@@ -103,6 +103,10 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 	{
 		dbgCamera->toggle();
 	}
+	if(e->key() == Qt::Key_F2)
+	{
+		toggleWireframe();
+	}
 	if(e->key() == Qt::Key_F8)
 	{
 		PythonQtHandler::toggleConsole();
@@ -296,6 +300,13 @@ void AbstractMainWin::applyPostProcShaderParams(
 	}
 }
 
+std::vector<GLHandler::Texture>
+    AbstractMainWin::getPostProcessingUniformTextures(
+        QString const& /*id*/, GLHandler::ShaderProgram /*shader*/) const
+{
+	return {};
+}
+
 void AbstractMainWin::reloadPostProcessingTargets()
 {
 	GLHandler::defaultRenderTargetFormat() = hdr ? GL_RGBA16F : GL_RGBA;
@@ -321,6 +332,11 @@ void AbstractMainWin::setHDR(bool hdr)
 void AbstractMainWin::toggleHDR()
 {
 	setHDR(!getHDR());
+}
+
+void AbstractMainWin::toggleWireframe()
+{
+	setWireframe(!getWireframe());
 }
 
 void AbstractMainWin::initializeGL()
@@ -396,6 +412,10 @@ void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
 		renderVRControls();
 	}
 	// render scene
+	if(wireframe)
+	{
+		GLHandler::beginWireframe();
+	}
 	renderScene(*renderPath.camera, pathId);
 	if(pathIdRenderingControllers == pathId && !renderControllersBeforeScene)
 	{
@@ -406,6 +426,10 @@ void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
 	if(debug && debugInHeadset)
 	{
 		dbgCamera->renderCamera(renderPath.camera);
+	}
+	if(wireframe)
+	{
+		GLHandler::endWireframe();
 	}
 }
 
@@ -423,9 +447,13 @@ void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
 	{
 		applyPostProcShaderParams(postProcessingPipeline_[i].first,
 		                          postProcessingPipeline_[i].second);
+		auto texs = getPostProcessingUniformTextures(
+		    postProcessingPipeline_[i].first,
+		    postProcessingPipeline_[i].second);
 		GLHandler::postProcess(postProcessingPipeline_[i].second,
 		                       vrHandler.getPostProcessingTarget(i % 2),
-		                       vrHandler.getPostProcessingTarget((i + 1) % 2));
+		                       vrHandler.getPostProcessingTarget((i + 1) % 2),
+		                       texs);
 	}
 	// render last one on true target
 	if(!postProcessingPipeline_.empty())
@@ -433,9 +461,12 @@ void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
 		int i = postProcessingPipeline_.size() - 1;
 		applyPostProcShaderParams(postProcessingPipeline_[i].first,
 		                          postProcessingPipeline_[i].second);
+		auto texs = getPostProcessingUniformTextures(
+		    postProcessingPipeline_[i].first,
+		    postProcessingPipeline_[i].second);
 		GLHandler::postProcess(postProcessingPipeline_[i].second,
 		                       vrHandler.getPostProcessingTarget(i % 2),
-		                       vrHandler.getEyeTarget(side));
+		                       vrHandler.getEyeTarget(side), texs);
 	}
 
 	vrHandler.submitRendering(side);
@@ -519,12 +550,20 @@ void AbstractMainWin::paintGL()
 				pair.second.camera->uploadMatrices();
 			}
 			// render scene
+			if(wireframe)
+			{
+				GLHandler::beginWireframe();
+			}
 			renderScene(*pair.second.camera, pair.first);
 			PythonQtHandler::evalScript(
 			    "if \"renderScene\" in dir():\n\trenderScene()");
 			if(debug)
 			{
 				dbgCamera->renderCamera(pair.second.camera);
+			}
+			if(wireframe)
+			{
+				GLHandler::endWireframe();
 			}
 		}
 
@@ -533,9 +572,12 @@ void AbstractMainWin::paintGL()
 		{
 			applyPostProcShaderParams(postProcessingPipeline_[i].first,
 			                          postProcessingPipeline_[i].second);
+			auto texs = getPostProcessingUniformTextures(
+			    postProcessingPipeline_[i].first,
+			    postProcessingPipeline_[i].second);
 			GLHandler::postProcess(postProcessingPipeline_[i].second,
 			                       postProcessingTargets.at(i % 2),
-			                       postProcessingTargets.at((i + 1) % 2));
+			                       postProcessingTargets.at((i + 1) % 2), texs);
 		}
 		// render last one on screen target
 		if(!postProcessingPipeline_.empty())
@@ -543,8 +585,12 @@ void AbstractMainWin::paintGL()
 			int i = postProcessingPipeline_.size() - 1;
 			applyPostProcShaderParams(postProcessingPipeline_[i].first,
 			                          postProcessingPipeline_[i].second);
+			auto texs = getPostProcessingUniformTextures(
+			    postProcessingPipeline_[i].first,
+			    postProcessingPipeline_[i].second);
 			GLHandler::postProcess(postProcessingPipeline_[i].second,
-			                       postProcessingTargets.at(i % 2));
+			                       postProcessingTargets.at(i % 2),
+			                       GLHandler::getScreenRenderTarget(), texs);
 		}
 	}
 

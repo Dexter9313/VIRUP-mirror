@@ -71,7 +71,6 @@ install:
             git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
             sed -i "s/PythonQt_init_QtQml(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
             sed -i "s/PythonQt_init_QtQuick(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
-            cat ./extensions/PythonQt_QtAll/vim PythonQt_QtAll.cpp ;
             cd build ;
             cmake .. -DPythonQt_Python3=ON -DBUILD_SHARED_LIBS=ON ;
             make ;
