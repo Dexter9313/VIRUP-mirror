@@ -59,8 +59,10 @@ void Grid::renderCosmo(Camera const& cam)
 	t.translate(Utils::toQt(camPos));
 	t.scale(1.0 / camScale);
 
+	GLHandler::beginTransparent();
 	GLHandler::setUpRender(shader, model * t);
 	GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
+	GLHandler::endTransparent();
 
 	QString newScaleText(generateScaleTextCosmo(camScale));
 	if(newScaleText != scaleText)
@@ -98,8 +100,10 @@ void Grid::renderPlanet(OrbitalSystemCamera const& cam)
 	t.translate(Utils::toQt(camPos));
 	t.scale(1.0 / camScale);
 
+	GLHandler::beginTransparent();
 	GLHandler::setUpRender(shader, model * t);
 	GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
+	GLHandler::endTransparent();
 
 	QString newScaleText(generateScaleTextPlanet(camScale));
 	if(newScaleText != scaleText)
