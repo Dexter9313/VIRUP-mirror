@@ -42,6 +42,12 @@ MovementControls::MovementControls(VRHandler const& vrHandler, BBox dataBBox,
 	cosmoCam->position[0] = dataBBox.mid.x();
 	cosmoCam->position[1] = dataBBox.mid.y();
 	cosmoCam->position[2] = dataBBox.mid.z();
+
+	// GUIDES
+	guideShader = GLHandler::newShader("default");
+	GLHandler::setShaderParam(guideShader, "color", QColor(255, 128, 0));
+	GLHandler::setShaderParam(guideShader, "alpha", 0.2f);
+	guideMesh = Primitives::newUnitSphere(guideShader, 20, 20);
 }
 
 void MovementControls::keyPressEvent(QKeyEvent* e)
@@ -323,6 +329,33 @@ void MovementControls::update(double frameTiming)
 	{
 		updateOrbitalSystem(frameTiming);
 	}
+
+	// update controls guides model
+	Controller const* left(vrHandler.getController(Side::LEFT));
+	Controller const* right(vrHandler.getController(Side::RIGHT));
+	displayGuide = left != nullptr && right != nullptr;
+	if(displayGuide)
+	{
+		QVector3D midPoint;
+		float scale(0.005);
+		if(leftGripPressedCube && rightGripPressedCube)
+		{
+			midPoint
+			    = cosmoCam->trackedSpaceToWorldTransform().inverted()
+			      * Utils::toQt(cosmoCam->dataToWorldPosition(scaleCenterCube));
+
+			scale *= left->getPosition().distanceToPoint(right->getPosition())
+			         / initControllersDistance;
+		}
+		else
+		{
+			midPoint = (left->getPosition() + right->getPosition()) / 2.0;
+		}
+
+		guideModel = QMatrix4x4();
+		guideModel.translate(midPoint);
+		guideModel.scale(scale);
+	}
 }
 
 void MovementControls::updateCube(double frameTiming)
@@ -423,4 +456,22 @@ void MovementControls::rescale(double newScale, Vector3 const& scaleCenter,
 	diff *= scale / newScale;
 	position = scaleCenter + diff;
 	scale    = newScale;
+}
+
+void MovementControls::renderGuides()
+{
+	if(displayGuide)
+	{
+		GLHandler::beginTransparent();
+		GLHandler::setUpRender(guideShader, guideModel,
+		                       GLHandler::GeometricSpace::TRACKED);
+		GLHandler::render(guideMesh);
+		GLHandler::endTransparent();
+	}
+}
+
+MovementControls::~MovementControls()
+{
+	GLHandler::deleteMesh(guideMesh);
+	GLHandler::deleteShader(guideShader);
 }

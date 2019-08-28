@@ -776,20 +776,23 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 			{
 				debugText->render();
 			}
-			return;
 		}
-		systemRenderer->render(camera);
-		renderVRControls();
-		systemRenderer->renderTransparent(camera);
-		if(timeSinceTextUpdate < 5.f)
+		else
 		{
-			debugText->render();
+			systemRenderer->render(camera);
+			renderVRControls();
+			systemRenderer->renderTransparent(camera);
+			if(timeSinceTextUpdate < 5.f)
+			{
+				debugText->render();
+			}
+			if(showGrid)
+			{
+				grid->renderPlanet(
+				    dynamic_cast<OrbitalSystemCamera const&>(camera));
+			}
 		}
-		if(showGrid)
-		{
-			grid->renderPlanet(
-			    dynamic_cast<OrbitalSystemCamera const&>(camera));
-		}
+		movementControls->renderGuides();
 		return;
 	}
 
