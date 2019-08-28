@@ -33,6 +33,8 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	                tr("Stars Color"));
 	addColorSetting("darkmattercolor", QColor::fromRgbF(1.f, 0.5f, 0.15f),
 	                tr("Dark Matter Color"));
+	addFilePathSetting("cosmolabelsfile", QString(""),
+	                   tr("Cosmological Labels File"));
 
 	insertGroup("simulation", tr("Simulation"), 1);
 	addDateTimeSetting("starttime", QDateTime::currentDateTimeUtc(),

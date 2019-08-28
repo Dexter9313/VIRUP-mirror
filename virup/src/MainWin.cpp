@@ -627,18 +627,36 @@ void MainWin::initScene()
 	loaded = true;
 
 	// LABELS
-	Text3D labelText(200, 200);
-	labelText.setText("Milky Way");
-	labelText.setColor(QColor(255, 0, 0));
-	labelText.setSuperSampling(2.f);
-	labelText.setFlags(Qt::AlignCenter);
-	milkyWayLabel = new Billboard(labelText.getImage());
+	QString labelspath(QSettings().value("data/cosmolabelsfile").toString());
+	if(labelspath != "")
+	{
+		QFile f(labelspath);
+		if(!f.open(QFile::ReadOnly | QFile::Text))
+		{
+			std::cerr << "Invalid cosmological labels file path : "
+			          << labelspath.toStdString() << std::endl;
+		}
+		else
+		{
+			QTextStream in(&f);
+			Text3D labelText(200, 200);
+			labelText.setColor(QColor(255, 0, 0));
+			labelText.setSuperSampling(2.f);
+			labelText.setFlags(Qt::AlignCenter);
+			while(!in.atEnd())
+			{
+				QString line       = in.readLine();
+				QStringList fields = line.split(",");
+				QString label(fields[0]);
+				Vector3 dataPos(fields[1].toDouble(), fields[2].toDouble(),
+				                fields[3].toDouble());
 
-	labelText.setText("Solar System");
-	solarSystemLabel = new Billboard(labelText.getImage());
-
-	labelText.setText("Andromeda Galaxy");
-	m31Label = new Billboard(labelText.getImage());
+				labelText.setText(label);
+				cosmoLabels.push_back(
+				    {dataPos, new Billboard(labelText.getImage())});
+			}
+		}
+	}
 }
 
 void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
@@ -674,24 +692,15 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		Vector3 camPosData(cam.worldToDataPosition(Utils::fromQt(
 		    cam.hmdScaledSpaceToWorldTransform() * QVector3D(0.f, 0.f, 0.f))));
 
-		double camDist((camPosData - milkyWayDataPos).length());
-		Vector3 pos(cam.dataToWorldPosition(milkyWayDataPos));
-		double rescale(pos.length() <= 8000.0 ? 1.0 : 8000.0 / pos.length());
-		milkyWayLabel->position = Utils::toQt(pos * rescale);
-		milkyWayLabel->width    = rescale * camDist * cam.scale / 3.0;
-
-		camDist = (camPosData - solarSystemDataPos).length();
-		pos     = cam.dataToWorldPosition(solarSystemDataPos);
-		rescale = pos.length() <= 8000.0 ? 1.0 : 8000.0 / pos.length();
-		solarSystemLabel->position = Utils::toQt(rescale * pos);
-		solarSystemLabel->width    = rescale * camDist * cam.scale / 3.0;
-
-		camDist = (camPosData - m31DataPos).length();
-		pos     = cam.dataToWorldPosition(m31DataPos);
-		rescale = pos.length() <= 8000.0 ? 1.0 : 8000.0 / pos.length();
-		m31Label->position = Utils::toQt(rescale * pos);
-		m31Label->width    = rescale * camDist * cam.scale / 3.0;
-
+		for(auto cosmoLabel : cosmoLabels)
+		{
+			double camDist((camPosData - cosmoLabel.first).length());
+			Vector3 pos(cam.dataToWorldPosition(cosmoLabel.first));
+			double rescale(pos.length() <= 8000.0 ? 1.0
+			                                      : 8000.0 / pos.length());
+			cosmoLabel.second->position = Utils::toQt(pos * rescale);
+			cosmoLabel.second->width    = rescale * camDist * cam.scale / 3.0;
+		}
 		movementControls->update(frameTiming);
 	}
 	if(pathId == "planet")
@@ -813,12 +822,16 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	// TODO(florian) better than this
 	if(CelestialBodyRenderer::renderLabels)
 	{
-		if(!OctreeLOD::renderPlanetarySystem || orbitalSystem != solarSystem)
+		for(auto cosmoLabel : cosmoLabels)
 		{
-			solarSystemLabel->render(camera);
+			if(cosmoLabel.first == solarSystemDataPos
+			   && OctreeLOD::renderPlanetarySystem
+			   && orbitalSystem == solarSystem)
+			{
+				continue;
+			}
+			cosmoLabel.second->render(camera);
 		}
-		milkyWayLabel->render(camera);
-		m31Label->render(camera);
 	}
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
 }
@@ -875,9 +888,10 @@ std::vector<float> MainWin::generateVertices(unsigned int number,
 
 MainWin::~MainWin()
 {
-	delete m31Label;
-	delete solarSystemLabel;
-	delete milkyWayLabel;
+	for(auto cosmoLabel : cosmoLabels)
+	{
+		delete cosmoLabel.second;
+	}
 	delete systemRenderer;
 	delete orbitalSystem;
 	delete debugText;
