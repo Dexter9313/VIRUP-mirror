@@ -40,7 +40,7 @@ BaseInputManager::Action BaseInputManager::
 
 void BaseInputManager::addAction(QKeySequence const& defaultKey, Action action)
 {
-	addAction(defaultKey, action, false);
+	addAction(defaultKey, std::move(action), false);
 }
 
 void BaseInputManager::addAction(QKeySequence const& defaultKey, Action action,
