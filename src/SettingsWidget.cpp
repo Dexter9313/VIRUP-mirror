@@ -151,7 +151,7 @@ void SettingsWidget::addStringSetting(QString const& name,
 
 	auto lineEdit = new QLineEdit(this);
 	lineEdit->setText(settings.value(fullName).toString());
-	lineEdit->setMinimumWidth(500);
+	lineEdit->setMinimumWidth(400);
 
 	connect(lineEdit, &QLineEdit::textChanged, this,
 	        [this, fullName](QString const& t) { updateValue(fullName, t); });
@@ -172,7 +172,7 @@ void SettingsWidget::addFilePathSetting(QString const& name,
 
 	auto lineEdit = new QLineEdit(this);
 	lineEdit->setText(settings.value(fullName).toString());
-	lineEdit->setMinimumWidth(500);
+	lineEdit->setMinimumWidth(400);
 
 	auto dirModel = new QFileSystemModel(this);
 	dirModel->setRootPath(QDir::currentPath());
@@ -217,7 +217,7 @@ void SettingsWidget::addDirPathSetting(QString const& name,
 
 	auto lineEdit = new QLineEdit(this);
 	lineEdit->setText(settings.value(fullName).toString());
-	lineEdit->setMinimumWidth(500);
+	lineEdit->setMinimumWidth(400);
 
 	auto dirModel = new QFileSystemModel(this);
 	dirModel->setRootPath(QDir::currentPath());
