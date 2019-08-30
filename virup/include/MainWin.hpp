@@ -43,7 +43,12 @@ class MainWin : public AbstractMainWin
 	 * @accessors getTimeCoeff(), setTimeCoeff()
 	 */
 	Q_PROPERTY(float timeCoeff READ getTimeCoeff WRITE setTimeCoeff)
-
+	/**
+	 * @brief The current luminosity of the cosmological data.
+	 *
+	 * @accessors getCosmoLum(), setCosmoLum()
+	 */
+	Q_PROPERTY(float cosmolum READ getCosmoLum WRITE setCosmoLum)
 	/**
 	 * @brief The current global scale of the visualization.
 	 * Ratio 1 real meter / 1 visualized meter. For example, if scale == 1/1000,
@@ -132,6 +137,14 @@ class MainWin : public AbstractMainWin
 	 * @setter{timeCoeff, timeCoeff}
 	 */
 	void setTimeCoeff(float timeCoeff) { clock.setTimeCoeff(timeCoeff); };
+	/**
+	 * @getter{cosmoLum}
+	 */
+	float getCosmoLum() const;
+	/**
+	 * @setter{cosmoLum, cosmoLum}
+	 */
+	void setCosmoLum(float cosmoLum);
 
 	// SPACE
 
@@ -182,7 +195,7 @@ class MainWin : public AbstractMainWin
 	 */
 	bool gridEnabled() const { return showGrid; };
 	/**
-	 * @setter{gridEnabled}
+	 * @setter{gridEnabled, gridEnabled}
 	 */
 	void setGridEnabled(bool enabled) { showGrid = enabled; };
 
@@ -193,7 +206,7 @@ class MainWin : public AbstractMainWin
 	 */
 	float getCamPitch() const { return getCamera<Camera>("cosmo").pitch; }
 	/**
-	 * @setter{camPitch}
+	 * @setter{camPitch, camPitch}
 	 */
 	void setCamPitch(float pitch);
 	/**
@@ -201,7 +214,7 @@ class MainWin : public AbstractMainWin
 	 */
 	float getCamYaw() const { return getCamera<Camera>("cosmo").yaw; }
 	/**
-	 * @setter{camYaw}
+	 * @setter{camYaw, camYaw}
 	 */
 	void setCamYaw(float yaw);
 

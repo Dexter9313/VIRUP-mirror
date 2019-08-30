@@ -245,6 +245,16 @@ void MainWin::setSimulationTime(QDateTime const& simulationTime)
 	clock.setCurrentUt(SimulationTime::dateTimeToUT(simulationTime, false));
 }
 
+float MainWin::getCosmoLum() const
+{
+	return method->getAlpha();
+}
+
+void MainWin::setCosmoLum(float cosmoLum)
+{
+	method->setAlpha(cosmoLum);
+}
+
 double MainWin::getScale() const
 {
 	return getCamera<Camera>("cosmo").scale * mtokpc;
@@ -323,11 +333,11 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 		{
 			if(a.id == "alphaup")
 			{
-				method->setAlpha(method->getAlpha() * 10 / 8);
+				setCosmoLum(getCosmoLum() * 10 / 8);
 			}
 			else if(a.id == "alphadown")
 			{
-				method->setAlpha(method->getAlpha() * 8 / 10);
+				setCosmoLum(getCosmoLum() * 8 / 10);
 			}
 			else if(a.id == "resetvrpos")
 			{
@@ -441,13 +451,11 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 							{
 								if(padCoords[0] < 0.0f) // LEFT
 								{
-									method->setAlpha(method->getAlpha() * 8
-									                 / 10);
+									setCosmoLum(getCosmoLum() * 8 / 10);
 								}
 								else // RIGHT
 								{
-									method->setAlpha(method->getAlpha() * 10
-									                 / 8);
+									setCosmoLum(getCosmoLum() * 10 / 8);
 								}
 							}
 							else // UP OR DOWN
@@ -602,7 +610,7 @@ void MainWin::initScene()
 	movementControls = new MovementControls(
 	    vrHandler, method->getDataBoundingBox(), cam, camPlanet);
 
-	method->setAlpha(method->getAlpha() / (cam->scale * cam->scale));
+	setCosmoLum(getCosmoLum() / (cam->scale * cam->scale));
 
 	removeSceneRenderPath("default");
 
