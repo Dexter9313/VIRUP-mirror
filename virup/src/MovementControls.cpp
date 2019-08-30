@@ -227,7 +227,7 @@ void MovementControls::vrEventCube(
 void MovementControls::vrEventOrbitalSystem(VRHandler::Event const& e)
 {
 	QMatrix4x4 trackedSpaceToWorldTransform(
-	    planetCam->trackedSpaceToWorldTransform());
+	    planetCam->seatedTrackedSpaceToWorldTransform());
 	switch(e.type)
 	{
 		case VRHandler::EventType::BUTTON_PRESSED:
@@ -357,7 +357,7 @@ void MovementControls::update(double frameTiming)
 		if(leftGripPressedCube && rightGripPressedCube)
 		{
 			midPoint
-			    = cosmoCam->trackedSpaceToWorldTransform().inverted()
+			    = cosmoCam->seatedTrackedSpaceToWorldTransform().inverted()
 			      * Utils::toQt(cosmoCam->dataToWorldPosition(scaleCenterCube));
 
 			scale *= left->getPosition().distanceToPoint(right->getPosition())
@@ -386,13 +386,13 @@ void MovementControls::updateCube(double frameTiming)
 		if(leftGripPressedCube && left != nullptr)
 		{
 			controllerPosInCube = cosmoCam->worldToDataPosition(
-			    Utils::fromQt(cosmoCam->trackedSpaceToWorldTransform()
+			    Utils::fromQt(cosmoCam->seatedTrackedSpaceToWorldTransform()
 			                  * left->getPosition()));
 		}
 		else if(rightGripPressedCube && right != nullptr)
 		{
 			controllerPosInCube = cosmoCam->worldToDataPosition(
-			    Utils::fromQt(cosmoCam->trackedSpaceToWorldTransform()
+			    Utils::fromQt(cosmoCam->seatedTrackedSpaceToWorldTransform()
 			                  * right->getPosition()));
 		}
 		cosmoCam->position += initControllerPosInCube - controllerPosInCube;
@@ -429,7 +429,7 @@ void MovementControls::updateOrbitalSystem(double frameTiming)
 		if(leftGripPressedOrb && left != nullptr)
 		{
 			controllerRelPos
-			    = Utils::fromQt(planetCam->trackedSpaceToWorldTransform()
+			    = Utils::fromQt(planetCam->seatedTrackedSpaceToWorldTransform()
 			                    * left->getPosition())
 			          / CelestialBodyRenderer::overridenScale
 			      + planetCam->relativePosition;
@@ -437,7 +437,7 @@ void MovementControls::updateOrbitalSystem(double frameTiming)
 		else if(rightGripPressedOrb && right != nullptr)
 		{
 			controllerRelPos
-			    = Utils::fromQt(planetCam->trackedSpaceToWorldTransform()
+			    = Utils::fromQt(planetCam->seatedTrackedSpaceToWorldTransform()
 			                    * right->getPosition())
 			          / CelestialBodyRenderer::overridenScale
 			      + planetCam->relativePosition;
@@ -480,7 +480,7 @@ void MovementControls::renderGuides()
 	{
 		GLHandler::beginTransparent();
 		GLHandler::setUpRender(guideShader, guideModel,
-		                       GLHandler::GeometricSpace::TRACKED);
+		                       GLHandler::GeometricSpace::SEATEDTRACKED);
 		GLHandler::render(guideMesh);
 		GLHandler::endTransparent();
 	}

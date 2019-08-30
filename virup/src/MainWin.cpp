@@ -75,7 +75,8 @@ void MainWin::loadSolarSystem()
 
 	if(camPlanet == nullptr)
 	{
-		camPlanet = new OrbitalSystemCamera(&vrHandler);
+		camPlanet                 = new OrbitalSystemCamera(&vrHandler);
+		camPlanet->seatedVROrigin = false;
 		camPlanet->setPerspectiveProj(
 		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
 	}
@@ -221,7 +222,8 @@ void MainWin::loadNewSystem()
 
 	if(camPlanet == nullptr)
 	{
-		camPlanet = new OrbitalSystemCamera(&vrHandler);
+		camPlanet                 = new OrbitalSystemCamera(&vrHandler);
+		camPlanet->seatedVROrigin = false;
 		camPlanet->setPerspectiveProj(
 		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
 	}
@@ -513,7 +515,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 		}
 
 		movementControls->vrEvent(
-		    e, getCamera("cosmo").trackedSpaceToWorldTransform());
+		    e, getCamera("cosmo").seatedTrackedSpaceToWorldTransform());
 	}
 	AbstractMainWin::vrEvent(e);
 }
@@ -536,7 +538,8 @@ void MainWin::initScene()
 
 	grid = new Grid;
 
-	auto cam = new Camera(&vrHandler);
+	auto cam            = new Camera(&vrHandler);
+	cam->seatedVROrigin = false;
 	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
 	                                   / static_cast<float>(height()));
 	// METHOD LOADING
@@ -839,7 +842,7 @@ void MainWin::printPositionInDataSpace(Side controller) const
 	// world space first
 	if(cont != nullptr)
 	{
-		position = getCamera("cosmo").trackedSpaceToWorldTransform()
+		position = getCamera("cosmo").seatedTrackedSpaceToWorldTransform()
 		           * cont->getPosition();
 	}
 	else
