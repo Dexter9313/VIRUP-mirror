@@ -33,7 +33,7 @@ BaseInputManager::BaseInputManager()
 BaseInputManager::Action BaseInputManager::
     operator[](QKeySequence const& key) const
 {
-	return mapping[key];
+	return mapping[key.toString()];
 }
 
 void BaseInputManager::addAction(QKeySequence const& defaultKey, Action action)
@@ -41,5 +41,5 @@ void BaseInputManager::addAction(QKeySequence const& defaultKey, Action action)
 	QKeySequence dKey = QSettings()
 	                        .value("controls/" + action.id, defaultKey)
 	                        .value<QKeySequence>();
-	mapping[dKey] = std::move(action);
+	mapping[dKey.toString()] = std::move(action);
 }

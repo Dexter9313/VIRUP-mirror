@@ -37,7 +37,7 @@ class BaseInputManager : public QObject
 		QString name;
 	};
 	BaseInputManager();
-	QHash<QKeySequence, Action> const& getMapping() const { return mapping; };
+	QHash<QString, Action> const& getMapping() const { return mapping; };
 	Action operator[](QKeySequence const& key) const;
 	virtual ~BaseInputManager(){};
 
@@ -47,7 +47,7 @@ class BaseInputManager : public QObject
 
   private:
 	// QKeySequence is a key (Qt::Key_A for example)
-	QHash<QKeySequence, Action> mapping;
+	QHash<QString, Action> mapping;
 };
 
 #endif // BASEINPUTMANAGER_HPP
