@@ -24,7 +24,7 @@
 class InputManager : public BaseInputManager
 {
   public:
-	InputManager(){};
+	InputManager();
 };
 
 #endif // INPUTMANAGER_HPP

@@ -216,8 +216,7 @@ class MainWin : public AbstractMainWin
 	void toggleGrid() { setGridEnabled(!gridEnabled()); };
 
   protected:
-	virtual void keyPressEvent(QKeyEvent* e) override;
-	virtual void keyReleaseEvent(QKeyEvent* e) override;
+	virtual void actionEvent(BaseInputManager::Action a, bool pressed) override;
 	// virtual void mousePressEvent(QMouseEvent* e) override;
 	// virtual void mouseReleaseEvent(QMouseEvent* e) override;
 	virtual void mouseMoveEvent(QMouseEvent* e) override;

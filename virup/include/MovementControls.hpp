@@ -21,6 +21,7 @@
 
 #include <QKeyEvent>
 
+#include "BaseInputManager.hpp"
 #include "Camera.hpp"
 #include "vr/VRHandler.hpp"
 
@@ -42,8 +43,7 @@ class MovementControls
   public:
 	MovementControls(VRHandler const& vrHandler, BBox dataBBox,
 	                 Camera* cosmoCam, OrbitalSystemCamera* cam);
-	void keyPressEvent(QKeyEvent* e);
-	void keyReleaseEvent(QKeyEvent* e);
+	void actionEvent(BaseInputManager::Action a, bool pressed);
 	void wheelEvent(QWheelEvent* e);
 	void vrEvent(VRHandler::Event const& e,
 	             QMatrix4x4 const& trackedSpaceToWorldTransform);

@@ -50,49 +50,65 @@ MovementControls::MovementControls(VRHandler const& vrHandler, BBox dataBBox,
 	guideMesh = Primitives::newUnitSphere(guideShader, 20, 20);
 }
 
-void MovementControls::keyPressEvent(QKeyEvent* e)
+void MovementControls::actionEvent(BaseInputManager::Action a, bool pressed)
 {
-	if(e->key() == Qt::Key_C)
+	if(pressed)
 	{
-		Vector3 unitRelPos(planetCam->relativePosition.getUnitForm());
-		planetCam->yaw   = atan2(unitRelPos[1], unitRelPos[0]);
-		planetCam->pitch = -1.0 * asin(unitRelPos[2]);
-	}
-	else if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
-	{
-		negVel.setZ(-1);
-	}
-	else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
-	{
-		negVel.setX(-1);
-	}
-	else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
-	{
-		posVel.setZ(1);
-	}
-	else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
-	{
-		posVel.setX(1);
-	}
-}
+		if(a.id == "centercam")
+		{
+			Vector3 unitRelPos(planetCam->relativePosition.getUnitForm());
+			float yaw(atan2(unitRelPos[1], unitRelPos[0]));
+			float pitch(planetCam->pitch = -1.0 * asin(unitRelPos[2]));
 
-void MovementControls::keyReleaseEvent(QKeyEvent* e)
-{
-	if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
-	{
-		negVel.setZ(0);
+			cosmoCam->yaw    = yaw;
+			cosmoCam->pitch  = pitch;
+			planetCam->yaw   = yaw;
+			planetCam->pitch = pitch;
+		}
+		// else if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
+		else if(a.id == "forward")
+		{
+			negVel.setZ(-1);
+		}
+		// else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
+		else if(a.id == "left")
+		{
+			negVel.setX(-1);
+		}
+		// else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
+		else if(a.id == "backward")
+		{
+			posVel.setZ(1);
+		}
+		// else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
+		else if(a.id == "right")
+		{
+			posVel.setX(1);
+		}
 	}
-	else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
+
+	else
 	{
-		negVel.setX(0);
-	}
-	else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
-	{
-		posVel.setZ(0);
-	}
-	else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
-	{
-		posVel.setX(0);
+		// if(e->key() == Qt::Key_W || e->key() == Qt::Key_Up)
+		if(a.id == "forward")
+		{
+			negVel.setZ(0);
+		}
+		// else if(e->key() == Qt::Key_A || e->key() == Qt::Key_Left)
+		else if(a.id == "left")
+		{
+			negVel.setX(0);
+		}
+		// else if(e->key() == Qt::Key_S || e->key() == Qt::Key_Down)
+		else if(a.id == "backward")
+		{
+			posVel.setZ(0);
+		}
+		// else if(e->key() == Qt::Key_D || e->key() == Qt::Key_Right)
+		else if(a.id == "right")
+		{
+			posVel.setX(0);
+		}
 	}
 }
 

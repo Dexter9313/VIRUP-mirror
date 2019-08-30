@@ -315,90 +315,84 @@ void MainWin::setCamYaw(float yaw)
 	getCamera<OrbitalSystemCamera>("planet").yaw = yaw;
 }
 
-void MainWin::keyPressEvent(QKeyEvent* e)
+void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 {
 	if(loaded)
 	{
-		if(e->key() == Qt::Key_PageUp)
+		if(pressed)
 		{
-			method->setAlpha(method->getAlpha() * 10 / 8);
-		}
-		else if(e->key() == Qt::Key_PageDown)
-		{
-			method->setAlpha(method->getAlpha() * 8 / 10);
-		}
-		else if(e->key() == Qt::Key_Home)
-		{
-			// integralDt    = 0;
-			if(vrHandler)
+			if(a.id == "alphaup")
 			{
-				vrHandler.resetPos();
+				method->setAlpha(method->getAlpha() * 10 / 8);
+			}
+			else if(a.id == "alphadown")
+			{
+				method->setAlpha(method->getAlpha() * 8 / 10);
+			}
+			else if(a.id == "resetvrpos")
+			{
+				// integralDt    = 0;
+				if(vrHandler)
+				{
+					vrHandler.resetPos();
+				}
+			}
+			else if(a.id == "toggledm")
+			{
+				method->toggleDarkMatter();
+			}
+			else if(a.id == "togglelabels")
+			{
+				CelestialBodyRenderer::renderLabels
+				    = !CelestialBodyRenderer::renderLabels;
+			}
+			else if(a.id == "toggleorbits")
+			{
+				CelestialBodyRenderer::renderOrbits
+				    = !CelestialBodyRenderer::renderOrbits;
+			}
+			else if(a.id == "toggleegrid")
+			{
+				showGrid = !showGrid;
+			}
+			/*else if(e->key() == Qt::Key_H)
+			{
+			    setHDR(!getHDR());
+			}*/
+			else if(a.id == "showposition")
+			{
+				printPositionInDataSpace();
+			}
+			else if(a.id == "timecoeffdown")
+			{
+				float tc(clock.getTimeCoeff());
+				if(tc > 1.f && !clock.getLockedRealTime())
+				{
+					clock.setTimeCoeff(tc / 10.f);
+					debugText->setText(
+					    ("Time coeff. : "
+					     + std::to_string(static_cast<int>(tc / 10.f)) + "x")
+					        .c_str());
+					timeSinceTextUpdate = 0.f;
+				}
+			}
+			else if(a.id == "timecoeffup")
+			{
+				float tc(clock.getTimeCoeff());
+				if(tc < 1000000.f && !clock.getLockedRealTime())
+				{
+					clock.setTimeCoeff(tc * 10.f);
+					debugText->setText(
+					    ("Time coeff. : "
+					     + std::to_string(static_cast<int>(tc * 10.f)) + "x")
+					        .c_str());
+					timeSinceTextUpdate = 0.f;
+				}
 			}
 		}
-		else if(e->key() == Qt::Key_M)
-		{
-			method->toggleDarkMatter();
-		}
-		else if(e->key() == Qt::Key_L)
-		{
-			CelestialBodyRenderer::renderLabels
-			    = !CelestialBodyRenderer::renderLabels;
-		}
-		else if(e->key() == Qt::Key_O)
-		{
-			CelestialBodyRenderer::renderOrbits
-			    = !CelestialBodyRenderer::renderOrbits;
-		}
-		else if(e->key() == Qt::Key_G)
-		{
-			showGrid = !showGrid;
-		}
-		else if(e->key() == Qt::Key_H)
-		{
-			setHDR(!getHDR());
-		}
-		else if(e->key() == Qt::Key_P)
-		{
-			printPositionInDataSpace();
-		}
-		else if(e->key() == Qt::Key_R)
-		{
-			float tc(clock.getTimeCoeff());
-			if(tc > 1.f && !clock.getLockedRealTime())
-			{
-				clock.setTimeCoeff(tc / 10.f);
-				debugText->setText(
-				    ("Time coeff. : "
-				     + std::to_string(static_cast<int>(tc / 10.f)) + "x")
-				        .c_str());
-				timeSinceTextUpdate = 0.f;
-			}
-		}
-		else if(e->key() == Qt::Key_T)
-		{
-			float tc(clock.getTimeCoeff());
-			if(tc < 1000000.f && !clock.getLockedRealTime())
-			{
-				clock.setTimeCoeff(tc * 10.f);
-				debugText->setText(
-				    ("Time coeff. : "
-				     + std::to_string(static_cast<int>(tc * 10.f)) + "x")
-				        .c_str());
-				timeSinceTextUpdate = 0.f;
-			}
-		}
-		movementControls->keyPressEvent(e);
+		movementControls->actionEvent(a, pressed);
 	}
-	AbstractMainWin::keyPressEvent(e);
-}
-
-void MainWin::keyReleaseEvent(QKeyEvent* e)
-{
-	if(loaded)
-	{
-		movementControls->keyReleaseEvent(e);
-	}
-	AbstractMainWin::keyReleaseEvent(e);
+	AbstractMainWin::actionEvent(a, pressed);
 }
 
 void MainWin::mouseMoveEvent(QMouseEvent* e)
