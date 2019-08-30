@@ -15,10 +15,10 @@ def keyPressEvent(e):
     # if spacebar pressed, start animation
     if e.key() == Qt.Key_Space:
         timer.restart()
-        startScale = 1.0e-6
 
 def initScene():
     global timer
+    global startScale
     global tgtScale
     global i
 
@@ -26,6 +26,7 @@ def initScene():
 
     # animation timer
     timer = QElapsedTimer()
+    startScale = 7.69230769e-8 #earth diameter = 1m
     tgtScale = 1.0 / 3.08568e+25 #~ 1:1 Gpc scale
 
 def updateScene():
@@ -33,6 +34,7 @@ def updateScene():
     global tgtScale
     global startScale
     global i
+    global initCosmoPos
 
     # right now it's not possible to go to the solar system and somewhere else inside it during the same frame
     # if it was possible this code should belong to initScene()
@@ -44,14 +46,15 @@ def updateScene():
         VIRUP.simulationTime = QDateTime(d, t, Qt.UTC)
         # go to solar system
         VIRUP.cosmoPosition = Vector3(8.29995608, 0.0, -0.027)
-        # set 1:1000km scale
-        VIRUP.scale = 1.0e-6
+        VIRUP.scale = startScale
     if i == 2:
         # go to Earth where eclipse is visible
         # (Coordinates found by moving camera (WASD translation - mousewheel for scale/speed),
         # then use python console (F8) : "print(VIRUP.planetPosition)")
-        VIRUP.planetPosition = Vector3(-6.22212e+06, 9.64041e+06, -3.62647e+06)
+        VIRUP.planetPosition = Vector3(0, 0, 0)
         VIRUP.planetTarget = 'Earth'
+        initCosmoPos = VIRUP.cosmoPosition
+        VIRUP.planetPosition = Vector3(0, 0, -1.125 / VIRUP.scale)
 
     # if animation is running
     if timer.isValid():
@@ -70,5 +73,7 @@ def updateScene():
         else:
             # scale linearly through log space
             VIRUP.scale = exp(log(startScale) * (1 - t) + log(tgtScale) * t)
+
+        VIRUP.cosmoPosition = initCosmoPos + Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale)
 
 
