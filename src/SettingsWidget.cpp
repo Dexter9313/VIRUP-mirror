@@ -21,11 +21,21 @@
 SettingsWidget::SettingsWidget(QWidget* parent)
     : QTabWidget(parent)
 {
+	// NOLINTNEXTLINE(hicpp-no-array-decay)
+	qDebug() << QString("Config file :") + QSettings().fileName();
 	addGroup("window", tr("Window"));
 	addUIntSetting("width", 1500, tr("Window Width"), 0, 10000);
 	addUIntSetting("height", 800, tr("Window Height"), 0, 10000);
 	addBoolSetting("fullscreen", false, tr("Window Fullscreen"));
 	addBoolSetting("hdr", true, tr("High Dynamic Range"));
+
+	InputManager inputManager;
+	addGroup("controls", tr("Controls"));
+	for(auto const& key : inputManager.getMapping().keys())
+	{
+		addKeySequenceSetting(inputManager[key].id, key,
+		                      inputManager[key].name);
+	}
 
 	addGroup("vr", tr("Virtual Reality"));
 	addBoolSetting("enabled", true, tr("Enable VR"));
@@ -332,4 +342,25 @@ void SettingsWidget::addDateTimeSetting(QString const& name,
 	layout->addWidget(dtEdit);
 	layout->addWidget(now);
 	currentForm->addRow(label + " :", w);
+}
+
+void SettingsWidget::addKeySequenceSetting(QString const& name,
+                                           QKeySequence const& defaultVal,
+                                           QString const& label)
+{
+	QString fullName(currentGroup + '/' + name);
+
+	if(!settings.contains(fullName))
+	{
+		settings.setValue(fullName, defaultVal);
+	}
+
+	auto keyseqEdit = new QKeySequenceEdit(
+	    settings.value(fullName).value<QKeySequence>(), this);
+
+	connect(
+	    keyseqEdit, &QKeySequenceEdit::keySequenceChanged, this,
+	    [this, fullName](QKeySequence const& t) { updateValue(fullName, t); });
+
+	currentForm->addRow(label + " :", keyseqEdit);
 }

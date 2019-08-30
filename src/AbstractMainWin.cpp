@@ -99,31 +99,30 @@ bool AbstractMainWin::event(QEvent* e)
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 {
-	if(e->key() == Qt::Key_F1)
+	QString modifier;
+	QString key;
+
+	if((e->modifiers() & Qt::ShiftModifier) != 0u)
 	{
-		dbgCamera->toggle();
+		modifier += "Shift+";
 	}
-	if(e->key() == Qt::Key_F2)
+	if((e->modifiers() & Qt::ControlModifier) != 0u)
 	{
-		toggleWireframe();
+		modifier += "Ctrl+";
 	}
-	if(e->key() == Qt::Key_F8)
+	if((e->modifiers() & Qt::AltModifier) != 0u)
 	{
-		PythonQtHandler::toggleConsole();
+		modifier += "Alt+";
 	}
-	if(e->key() == Qt::Key_F11)
+	if((e->modifiers() & Qt::MetaModifier) != 0u)
 	{
-		toggleVR();
+		modifier += "Meta+";
 	}
-	else if(e->key() == Qt::Key_Return
-	        && (e->modifiers() & Qt::AltModifier) != 0)
-	{
-		toggleFullscreen();
-	}
-	else if(e->key() == Qt::Key_Escape)
-	{
-		close();
-	}
+
+	key = QKeySequence(e->key()).toString();
+
+	QKeySequence ks(modifier + key);
+	actionEvent(inputManager[ks], true);
 
 	if(!PythonQtHandler::isSupported())
 	{
@@ -154,6 +153,31 @@ void AbstractMainWin::keyPressEvent(QKeyEvent* e)
 
 void AbstractMainWin::keyReleaseEvent(QKeyEvent* e)
 {
+	QString modifier;
+	QString key;
+
+	if((e->modifiers() & Qt::ShiftModifier) != 0u)
+	{
+		modifier += "Shift+";
+	}
+	if((e->modifiers() & Qt::ControlModifier) != 0u)
+	{
+		modifier += "Ctrl+";
+	}
+	if((e->modifiers() & Qt::AltModifier) != 0u)
+	{
+		modifier += "Alt+";
+	}
+	if((e->modifiers() & Qt::MetaModifier) != 0u)
+	{
+		modifier += "Meta+";
+	}
+
+	key = QKeySequence(e->key()).toString();
+
+	QKeySequence ks(modifier + key);
+	actionEvent(inputManager[ks], false);
+
 	if(!PythonQtHandler::isSupported())
 	{
 		return;
@@ -180,6 +204,39 @@ void AbstractMainWin::keyReleaseEvent(QKeyEvent* e)
 	PythonQtHandler::evalScript(
 	    "if \"keyReleaseEvent\" in dir():\n\tkeyReleaseEvent(" + pyKeyEvent
 	    + ")");
+}
+
+void AbstractMainWin::actionEvent(BaseInputManager::Action a, bool pressed)
+{
+	if(!pressed)
+	{
+		return;
+	}
+
+	if(a.id == "toggledbgcam")
+	{
+		dbgCamera->toggle();
+	}
+	else if(a.id == "togglewireframe")
+	{
+		toggleWireframe();
+	}
+	else if(a.id == "togglepyconsole")
+	{
+		PythonQtHandler::toggleConsole();
+	}
+	else if(a.id == "togglevr")
+	{
+		toggleVR();
+	}
+	else if(a.id == "togglefullscreen")
+	{
+		toggleFullscreen();
+	}
+	else if(a.id == "quit")
+	{
+		close();
+	}
 }
 
 void AbstractMainWin::vrEvent(VRHandler::Event const& e)

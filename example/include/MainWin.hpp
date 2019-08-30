@@ -18,7 +18,7 @@ class MainWin : public AbstractMainWin
 	~MainWin();
 
   protected:
-	virtual void keyPressEvent(QKeyEvent* e) override;
+	virtual void actionEvent(BaseInputManager::Action a, bool pressed) override;
 
 	// declare drawn resources
 	virtual void initScene() override;

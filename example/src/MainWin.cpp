@@ -1,16 +1,22 @@
 #include "MainWin.hpp"
 
-void MainWin::keyPressEvent(QKeyEvent* e)
+void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 {
-	AbstractMainWin::keyPressEvent(e);
-	if(e->key() == Qt::Key_PageUp)
+	if(!pressed)
+	{
+		AbstractMainWin::actionEvent(a, pressed);
+		return;
+	}
+
+	if(a.id == "barrelup")
 	{
 		barrelPower = 1.f + (barrelPower - 1.f) * 1.2f;
 	}
-	else
+	else if(a.id == "barreldown")
 	{
 		barrelPower = 1.f + (barrelPower - 1.f) / 1.2f;
 	}
+	AbstractMainWin::actionEvent(a, pressed);
 }
 
 void MainWin::initScene()

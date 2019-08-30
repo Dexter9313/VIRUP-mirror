@@ -22,7 +22,7 @@ set(BUILD_CONF "${CMAKE_CURRENT_SOURCE_DIR}/build.conf")
 if(NOT EXISTS "${BUILD_CONF}")
 	set(BUILD_CONF "${CMAKE_CURRENT_SOURCE_DIR}/build.conf.example")
 endif()
-message(STATUS "${BUILD_CONF}")
+message(STATUS "Build configuration file: ${BUILD_CONF}")
 file(STRINGS "${BUILD_CONF}" ConfigContents)
 foreach(NameAndValue ${ConfigContents})
 #Strip leading spaces
@@ -72,6 +72,11 @@ endif()
 #Define project name in source for preprocessor
 add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
 add_definitions(-DPROJECT_DIRECTORY="${PROJECT_DIRECTORY}")
+add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
+
+message(STATUS "Project name: ${PROJECT_NAME}")
+message(STATUS "Project dir: ${PROJECT_DIRECTORY}")
+message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 
 #FILES / DIRECTORIES
 

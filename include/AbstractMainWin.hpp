@@ -12,6 +12,7 @@
 #include "BasicCamera.hpp"
 #include "DebugCamera.hpp"
 #include "GLHandler.hpp"
+#include "InputManager.hpp"
 #include "PythonQtHandler.hpp"
 #include "vr/VRHandler.hpp"
 
@@ -258,6 +259,12 @@ class AbstractMainWin : public QOpenGLWindow
 	 */
 	virtual void keyReleaseEvent(QKeyEvent* e) override;
 	/**
+	 * @brief Captures a @e BaseInputManager Action triggered by a QKeySequence.
+	 *
+	 * For a key press, @p pressed is true, for a key release, it is false.
+	 */
+	virtual void actionEvent(BaseInputManager::Action a, bool pressed);
+	/**
 	 * @brief Captures an event polled from @ref VRHandler.
 	 *
 	 * Make sure you call @ref AbstractMainWin#vrEvent if you override
@@ -390,6 +397,10 @@ class AbstractMainWin : public QOpenGLWindow
 	 * VRHandler#reloadPostProcessingTargets if necessary.
 	 */
 	void reloadPostProcessingTargets();
+	/**
+	 * @brief The engine's only @ref BaseInputManager.
+	 */
+	InputManager inputManager;
 	/**
 	 * @brief The engine's only @ref VRHandler.
 	 */
