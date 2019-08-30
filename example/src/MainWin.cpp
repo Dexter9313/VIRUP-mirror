@@ -16,6 +16,10 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	{
 		barrelPower = 1.f + (barrelPower - 1.f) / 1.2f;
 	}
+	else if(a.id == "togglevrorigin")
+	{
+		getCamera("default").seatedVROrigin = !getCamera("default").seatedVROrigin;
+	}
 	AbstractMainWin::actionEvent(a, pressed);
 }
 

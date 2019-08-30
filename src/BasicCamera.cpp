@@ -77,6 +77,13 @@ void BasicCamera::update()
 		      * vrHandler->getSeatedToStandingAbsoluteTrackingPos().inverted();
 		fullHmdSpaceTransform = *projEye * eyeDistanceCorrection;
 
+		if(!seatedVROrigin)
+		{
+			hmdMat = hmdMat
+			         * vrHandler->getSeatedToStandingAbsoluteTrackingPos()
+			               .inverted();
+		}
+
 		hmdMat = eyeDist(hmdMat, eyeDistanceFactor);
 		// not true ! it holds its inverse for now
 		hmdScaledToWorld = hmdMat * view;

@@ -98,6 +98,11 @@ class BasicCamera : public QObject
 	 * @accessors screenToWorldTransform()
 	 */
 	Q_PROPERTY(QMatrix4x4 screentoworldtransform READ screenToWorldTransform)
+	/**
+	 * @brief If true, VR origin is in seated coordinates. If false in standing
+	 * coordinates.
+	 */
+	Q_PROPERTY(bool seatedvrorigin MEMBER seatedVROrigin)
 
   protected: // protected typedefs
 	/**
@@ -182,6 +187,8 @@ class BasicCamera : public QObject
 	 * @brief Destroys a @ref BasicCamera instance, freeing its resources.
 	 */
 	virtual ~BasicCamera(){};
+
+	bool seatedVROrigin = true;
 
   public slots:
 	/**

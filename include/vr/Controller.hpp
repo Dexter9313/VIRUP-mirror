@@ -45,7 +45,7 @@ class Controller : public QObject
 	 */
 	Q_PROPERTY(float triggervalue READ getTriggerValue)
 	/**
-	 * @brief Position of the controller in tracked space coordinates.
+	 * @brief Position of the controller in seated tracked space coordinates.
 	 *
 	 * Multiply the transform given by BasicCamera#trackedSpaceToWorldTransform
 	 * with this position to compute the position of the controller in world

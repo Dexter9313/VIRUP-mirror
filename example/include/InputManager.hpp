@@ -27,6 +27,7 @@ class InputManager : public BaseInputManager
 	InputManager(){
 		addAction(Qt::Key_PageUp ,{"barrelup", "Barrel Power Up"});
 		addAction(Qt::Key_PageDown,{"barreldown", "Barrel Power Down"});
+		addAction(Qt::Key_V, {"togglevrorigin", "Toggle VR origin"});
 	};
 
   private:
