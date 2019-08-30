@@ -64,12 +64,19 @@ class BasicCamera : public QObject
 	Q_PROPERTY(
 	    QMatrix4x4 cameraspacetoworldtransform READ cameraSpaceToWorldTransform)
 	/**
-	 * @brief Transformation matrix from tracked space to world space.
+	 * @brief Transformation matrix from seated tracked space to world space.
 	 *
-	 * @accessors trackedSpaceToWorldTransform()
+	 * @accessors seatedTrackedSpaceToWorldTransform()
 	 */
-	Q_PROPERTY(QMatrix4x4 trackedspacetoworldtransform READ
-	               trackedSpaceToWorldTransform)
+	Q_PROPERTY(QMatrix4x4 seatedtrackedspacetoworldtransform READ
+	               seatedTrackedSpaceToWorldTransform)
+	/**
+	 * @brief Transformation matrix from standing tracked space to world space.
+	 *
+	 * @accessors standingTrackedSpaceToWorldTransform()
+	 */
+	Q_PROPERTY(QMatrix4x4 standingtrackedspacetoworldtransform READ
+	               standingTrackedSpaceToWorldTransform)
 	/**
 	 * @brief Transformation matrix from hmd space to world space.
 	 *
@@ -152,9 +159,13 @@ class BasicCamera : public QObject
 	 */
 	QMatrix4x4 cameraSpaceToWorldTransform() const;
 	/**
-	 * @getter{trackedspacetoworldtransform}
+	 * @getter{seatedtrackedspacetoworldtransform}
 	 */
-	QMatrix4x4 trackedSpaceToWorldTransform() const;
+	QMatrix4x4 seatedTrackedSpaceToWorldTransform() const;
+	/**
+	 * @getter{standingtrackedspacetoworldtransform}
+	 */
+	QMatrix4x4 standingTrackedSpaceToWorldTransform() const;
 	/**
 	 * @getter{hmdspacetoworldtransform}
 	 */
@@ -333,7 +344,7 @@ class BasicCamera : public QObject
 	 * @brief Transformation matrix from world space to screen space (or clip
 	 * space).
 	 *
-	 * One of the four matrices that transform from one space to screen space
+	 * One of the five matrices that transform from one space to screen space
 	 * (or clip space).
 	 *
 	 * See GLHandler#setUpTransforms and GLHandler::setUpRender's space
@@ -344,7 +355,7 @@ class BasicCamera : public QObject
 	 * @brief Transformation matrix from camera space to screen space (or clip
 	 * space).
 	 *
-	 * One of the four matrices that transform from one space to screen space
+	 * One of the five matrices that transform from one space to screen space
 	 * (or clip space).
 	 *
 	 * See GLHandler#setUpTransforms and GLHandler::setUpRender's space
@@ -352,21 +363,32 @@ class BasicCamera : public QObject
 	 */
 	QMatrix4x4 fullCameraSpaceTransform;
 	/**
-	 * @brief Transformation matrix from tracked space to screen space (or clip
-	 * space).
+	 * @brief Transformation matrix from seated tracked space to screen space
+	 * (or clip space).
 	 *
-	 * One of the four matrices that transform from one space to screen space
+	 * One of the five matrices that transform from one space to screen space
 	 * (or clip space).
 	 *
 	 * See GLHandler#setUpTransforms and GLHandler::setUpRender's space
 	 * parameter.
 	 */
-	QMatrix4x4 fullTrackedSpaceTransform;
+	QMatrix4x4 fullSeatedTrackedSpaceTransform;
+	/**
+	 * @brief Transformation matrix from standing tracked space to screen space
+	 * (or clip space).
+	 *
+	 * One of the five matrices that transform from one space to screen space
+	 * (or clip space).
+	 *
+	 * See GLHandler#setUpTransforms and GLHandler::setUpRender's space
+	 * parameter.
+	 */
+	QMatrix4x4 fullStandingTrackedSpaceTransform;
 	/**
 	 * @brief Transformation matrix from hmd space to screen space (or clip
 	 * space).
 	 *
-	 * One of the four matrices that transform from one space to screen space
+	 * One of the five matrices that transform from one space to screen space
 	 * (or clip space).
 	 *
 	 * See GLHandler#setUpTransforms and GLHandler::setUpRender's space

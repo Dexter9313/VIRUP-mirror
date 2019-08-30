@@ -52,6 +52,9 @@ class MainWin : public AbstractMainWin
 	GLHandler::Mesh sphere;
 	GLHandler::ShaderProgram sphereShader;
 
+	GLHandler::Mesh playarea;
+	GLHandler::ShaderProgram playareaShader;
+
 	Billboard* bill;
 	Text3D* text;
 	Widget3D* widget3d;

@@ -67,6 +67,9 @@ class VRHandler : public QObject
 	float getFrameTiming() const;
 	const Controller* getController(Side side) const;
 	const Hand* getHand(Side side) const;
+	// same order as in HmdQuad_t struct
+	QMatrix4x4 getSeatedToStandingAbsoluteTrackingPos() const;
+	std::vector<QVector3D> getPlayAreaQuad() const;
 	void prepareRendering();
 	void beginRendering(Side eye, bool postProcessed);
 	void renderControllers() const;
@@ -126,6 +129,7 @@ class VRHandler : public QObject
 	{
 		return (eye == Side::LEFT) ? vr::Eye_Left : vr::Eye_Right;
 	};
+	static QVector3D toQt(const vr::HmdVector3_t& vector);
 	static QMatrix4x4 toQt(const vr::HmdMatrix34_t& matrix);
 	static QMatrix4x4 toQt(const vr::HmdMatrix44_t& matrix);
 	std::string sideToStr(Side side) const

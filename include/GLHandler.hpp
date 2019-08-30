@@ -195,7 +195,8 @@ class GLHandler : public QObject
 	{
 		WORLD,
 		CAMERA,
-		TRACKED,
+		SEATEDTRACKED,
+		STANDINGTRACKED,
 		HMD,
 		SKYBOX
 	};
@@ -413,11 +414,13 @@ class GLHandler : public QObject
 	 *
 	 * See the TRANSFORMS file for more details about the parameters.
 	 */
-	static void setUpTransforms(QMatrix4x4 const& fullTransform,
-	                            QMatrix4x4 const& fullCameraSpaceTransform,
-	                            QMatrix4x4 const& fullTrackedSpaceTransform,
-	                            QMatrix4x4 const& fullHmdSpaceTransform,
-	                            QMatrix4x4 const& fullSkyboxSpaceTransform);
+	static void
+	    setUpTransforms(QMatrix4x4 const& fullTransform,
+	                    QMatrix4x4 const& fullCameraSpaceTransform,
+	                    QMatrix4x4 const& fullSeatedTrackedSpaceTransform,
+	                    QMatrix4x4 const& fullStandingTrackedSpaceTransform,
+	                    QMatrix4x4 const& fullHmdSpaceTransform,
+	                    QMatrix4x4 const& fullSkyboxSpaceTransform);
 
 	// SHADERS
 	/**
@@ -683,7 +686,10 @@ class GLHandler : public QObject
 	 * The transformation matrix used will depend on the @p space parameter :
 	 * * WORLD : fullTransform : from world space to clip space
 	 * * CAMERA : fullCameraSpaceTransform : from camera space to clip space
-	 * * TRACKED : fullTrackedSpaceTransform : from tracked space to clip space
+	 * * SEATEDTRACKED : fullSeatedTrackedSpaceTransform : from seated tracked
+	 * space to clip space
+	 * * STANDINGTEDTRACKED : fullStandingTrackedSpaceTransform : from standing
+	 * tracked space to clip space
 	 * * HMD : fullHmdSpaceTransform : from hmd space (not world-scaled) to clip
 	 * * SKYBOX : fullSkyboxSpaceTransform : from skybox space to clip
 	 * space
@@ -789,8 +795,10 @@ class GLHandler : public QObject
 	static QMatrix4x4& fullTransform();
 	// transform for any Camera space object (follows Camera)
 	static QMatrix4x4& fullCameraSpaceTransform();
-	// transform for any Tracked space object
-	static QMatrix4x4& fullTrackedSpaceTransform();
+	// transform for any Seated Tracked space object
+	static QMatrix4x4& fullSeatedTrackedSpaceTransform();
+	// transform for any Standing Tracked space object
+	static QMatrix4x4& fullStandingTrackedSpaceTransform();
 	// transform for any HMD space object (follows HMD)
 	static QMatrix4x4& fullHmdSpaceTransform();
 	// transform for any Skybox space object (follows HMD translations + no

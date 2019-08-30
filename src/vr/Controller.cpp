@@ -210,7 +210,7 @@ void Controller::render() const
 {
 	GLHandler::setPointSize(8);
 	GLHandler::setUpRender(shaderProgram, model,
-	                       GLHandler::GeometricSpace::TRACKED);
+	                       GLHandler::GeometricSpace::SEATEDTRACKED);
 	GLHandler::useTextures({tex});
 	GLHandler::render(mesh);
 }

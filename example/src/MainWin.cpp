@@ -85,6 +85,21 @@ void MainWin::initScene()
 	                          QColor::fromRgbF(0.5f, 0.5f, 1.0f));
 	sphere = Primitives::newUnitSphere(sphereShader, 100, 100);
 
+	playareaShader = GLHandler::newShader("default");
+	GLHandler::setShaderParam(playareaShader, "color", QColor(255, 0, 0));
+	GLHandler::setShaderParam(playareaShader, "alpha", 1.f);
+	playarea = GLHandler::newMesh();
+	auto playareaquad(vrHandler.getPlayAreaQuad());
+	vertices = {
+		playareaquad[0].x(), playareaquad[0].y(), playareaquad[0].z(),
+		playareaquad[1].x(), playareaquad[1].y(), playareaquad[1].z(),
+		playareaquad[2].x(), playareaquad[2].y(), playareaquad[2].z(),
+		playareaquad[3].x(), playareaquad[3].y(), playareaquad[3].z(),
+	};
+	indices = {0, 1, 1, 2, 2, 3, 3, 0};
+	GLHandler::setVertices(playarea, vertices, playareaShader, {{"position", 3}}, indices);
+
+
 	bill           = new Billboard("data/example/images/cc.png");
 	bill->position = QVector3D(0.f, 0.f, 0.8f);
 
@@ -122,7 +137,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 	{
 		if(cont->getTriggerValue() > 0.5)
 		{
-			QVector4D pos(camera.trackedSpaceToWorldTransform()
+			QVector4D pos(camera.seatedTrackedSpaceToWorldTransform()
 			              * cont->getPosition());
 			std::vector<float> points(3);
 			points[0] = pos[0];
@@ -176,6 +191,9 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	GLHandler::render(pointsMesh);
 	GLHandler::setPointSize(1);
 
+	GLHandler::setUpRender(playareaShader, QMatrix4x4(), GLHandler::GeometricSpace::STANDINGTRACKED);
+	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
+
 	widget3d->render();
 	bill->render(camera);
 	text->render();
@@ -201,6 +219,9 @@ MainWin::~MainWin()
 
 	GLHandler::deleteMesh(pointsMesh);
 	GLHandler::deleteShader(pointsShader);
+
+	GLHandler::deleteMesh(playarea);
+	GLHandler::deleteShader(playareaShader);
 
 	delete movingCube;
 

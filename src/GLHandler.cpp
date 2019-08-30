@@ -54,10 +54,16 @@ QMatrix4x4& GLHandler::fullCameraSpaceTransform()
 	return fullCameraSpaceTransform;
 }
 
-QMatrix4x4& GLHandler::fullTrackedSpaceTransform()
+QMatrix4x4& GLHandler::fullSeatedTrackedSpaceTransform()
 {
-	static QMatrix4x4 fullTrackedSpaceTransform;
-	return fullTrackedSpaceTransform;
+	static QMatrix4x4 fullSeatedTrackedSpaceTransform;
+	return fullSeatedTrackedSpaceTransform;
+}
+
+QMatrix4x4& GLHandler::fullStandingTrackedSpaceTransform()
+{
+	static QMatrix4x4 fullStandingTrackedSpaceTransform;
+	return fullStandingTrackedSpaceTransform;
 }
 
 QMatrix4x4& GLHandler::fullHmdSpaceTransform()
@@ -237,7 +243,7 @@ void GLHandler::generateEnvironmentMap(
 		QMatrix4x4 cubeCamera;
 		cubeCamera.lookAt(QVector3D(0, 0, 0), vecs[2 * i], vecs[(2 * i) + 1]);
 		QMatrix4x4 c = perspective * cubeCamera * translation;
-		GLHandler::setUpTransforms(c, c, c, c, c);
+		GLHandler::setUpTransforms(c, c, c, c, c, c);
 		GLHandler::beginRendering(renderTarget, faces[i]);
 		renderFunction();
 	}
@@ -298,17 +304,21 @@ void GLHandler::clearDepthBuffer()
 	glf().glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void GLHandler::setUpTransforms(QMatrix4x4 const& fullTransform,
-                                QMatrix4x4 const& fullCameraSpaceTransform,
-                                QMatrix4x4 const& fullTrackedSpaceTransform,
-                                QMatrix4x4 const& fullHmdSpaceTransform,
-                                QMatrix4x4 const& fullSkyboxSpaceTransform)
+void GLHandler::setUpTransforms(
+    QMatrix4x4 const& fullTransform, QMatrix4x4 const& fullCameraSpaceTransform,
+    QMatrix4x4 const& fullSeatedTrackedSpaceTransform,
+    QMatrix4x4 const& fullStandingTrackedSpaceTransform,
+    QMatrix4x4 const& fullHmdSpaceTransform,
+    QMatrix4x4 const& fullSkyboxSpaceTransform)
 {
-	GLHandler::fullTransform()             = fullTransform;
-	GLHandler::fullCameraSpaceTransform()  = fullCameraSpaceTransform;
-	GLHandler::fullTrackedSpaceTransform() = fullTrackedSpaceTransform;
-	GLHandler::fullHmdSpaceTransform()     = fullHmdSpaceTransform;
-	GLHandler::fullSkyboxSpaceTransform()  = fullSkyboxSpaceTransform;
+	GLHandler::fullTransform()            = fullTransform;
+	GLHandler::fullCameraSpaceTransform() = fullCameraSpaceTransform;
+	GLHandler::fullSeatedTrackedSpaceTransform()
+	    = fullSeatedTrackedSpaceTransform;
+	GLHandler::fullStandingTrackedSpaceTransform()
+	    = fullStandingTrackedSpaceTransform;
+	GLHandler::fullHmdSpaceTransform()    = fullHmdSpaceTransform;
+	GLHandler::fullSkyboxSpaceTransform() = fullSkyboxSpaceTransform;
 }
 
 GLHandler::ShaderProgram
@@ -695,9 +705,13 @@ void GLHandler::setUpRender(ShaderProgram shader, QMatrix4x4 const& model,
 			setShaderParam(shader, "camera",
 			               fullCameraSpaceTransform() * model);
 			break;
-		case GeometricSpace::TRACKED:
+		case GeometricSpace::SEATEDTRACKED:
 			setShaderParam(shader, "camera",
-			               fullTrackedSpaceTransform() * model);
+			               fullSeatedTrackedSpaceTransform() * model);
+			break;
+		case GeometricSpace::STANDINGTRACKED:
+			setShaderParam(shader, "camera",
+			               fullStandingTrackedSpaceTransform() * model);
 			break;
 		case GeometricSpace::HMD:
 			setShaderParam(shader, "camera", fullHmdSpaceTransform() * model);

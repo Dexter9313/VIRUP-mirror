@@ -70,8 +70,12 @@ void BasicCamera::update()
 		// prog * view
 		QMatrix4x4 hmdMat(vrHandler->getHMDPosMatrix().inverted());
 
-		fullTrackedSpaceTransform = *projEye * eyeDistanceCorrection * hmdMat;
-		fullHmdSpaceTransform     = *projEye * eyeDistanceCorrection;
+		fullSeatedTrackedSpaceTransform
+		    = *projEye * eyeDistanceCorrection * hmdMat;
+		fullStandingTrackedSpaceTransform
+		    = fullSeatedTrackedSpaceTransform
+		      * vrHandler->getSeatedToStandingAbsoluteTrackingPos().inverted();
+		fullHmdSpaceTransform = *projEye * eyeDistanceCorrection;
 
 		hmdMat = eyeDist(hmdMat, eyeDistanceFactor);
 		// not true ! it holds its inverse for now
@@ -98,11 +102,12 @@ void BasicCamera::update()
 
 void BasicCamera::update2D()
 {
-	fullTransform             = proj * view;
-	fullCameraSpaceTransform  = proj;
-	fullTrackedSpaceTransform = proj * eyeDistanceCorrection;
-	fullHmdSpaceTransform     = fullTrackedSpaceTransform;
-	fullSkyboxSpaceTransform  = proj * noTrans(view);
+	fullTransform                     = proj * view;
+	fullCameraSpaceTransform          = proj;
+	fullSeatedTrackedSpaceTransform   = proj * eyeDistanceCorrection;
+	fullStandingTrackedSpaceTransform = fullSeatedTrackedSpaceTransform;
+	fullHmdSpaceTransform             = fullSeatedTrackedSpaceTransform;
+	fullSkyboxSpaceTransform          = proj * noTrans(view);
 
 	updateClippingPlanes();
 }
@@ -110,8 +115,9 @@ void BasicCamera::update2D()
 void BasicCamera::uploadMatrices() const
 {
 	GLHandler::setUpTransforms(fullTransform, fullCameraSpaceTransform,
-	                           fullTrackedSpaceTransform, fullHmdSpaceTransform,
-	                           fullSkyboxSpaceTransform);
+	                           fullSeatedTrackedSpaceTransform,
+	                           fullStandingTrackedSpaceTransform,
+	                           fullHmdSpaceTransform, fullSkyboxSpaceTransform);
 }
 
 void BasicCamera::updateClippingPlanes()
@@ -142,10 +148,16 @@ QMatrix4x4 BasicCamera::cameraSpaceToWorldTransform() const
 	return view.inverted();
 }
 
-QMatrix4x4 BasicCamera::trackedSpaceToWorldTransform() const
+QMatrix4x4 BasicCamera::seatedTrackedSpaceToWorldTransform() const
 {
 	// see TRANSFORMS
-	return fullTransform.inverted() * fullTrackedSpaceTransform;
+	return fullTransform.inverted() * fullSeatedTrackedSpaceTransform;
+}
+
+QMatrix4x4 BasicCamera::standingTrackedSpaceToWorldTransform() const
+{
+	// see TRANSFORMS
+	return fullTransform.inverted() * fullStandingTrackedSpaceTransform;
 }
 
 QMatrix4x4 BasicCamera::hmdSpaceToWorldTransform() const

@@ -158,6 +158,25 @@ const Hand* VRHandler::getHand(Side side) const
 	return nullptr;
 }
 
+QMatrix4x4 VRHandler::getSeatedToStandingAbsoluteTrackingPos() const
+{
+	return toQt(vr_pointer->GetSeatedZeroPoseToStandingAbsoluteTrackingPose());
+}
+
+std::vector<QVector3D> VRHandler::getPlayAreaQuad() const
+{
+	vr::HmdQuad_t rect = {};
+	vr::VRChaperone()->GetPlayAreaRect(&rect);
+
+	std::vector<QVector3D> result;
+	result.push_back(toQt(rect.vCorners[0]));
+	result.push_back(toQt(rect.vCorners[1]));
+	result.push_back(toQt(rect.vCorners[2]));
+	result.push_back(toQt(rect.vCorners[3]));
+
+	return result;
+}
+
 void VRHandler::resetPos()
 {
 	vr_pointer->ResetSeatedZeroPose();
@@ -486,6 +505,11 @@ void VRHandler::updateHands()
 		}
 	}
 #endif
+}
+
+QVector3D VRHandler::toQt(const vr::HmdVector3_t& vector)
+{
+	return {vector.v[0], vector.v[1], vector.v[2]};
 }
 
 QMatrix4x4 VRHandler::toQt(const vr::HmdMatrix34_t& matrix)
