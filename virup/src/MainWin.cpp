@@ -425,7 +425,6 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 {
 	if(loaded)
 	{
-		auto& cam(getCamera<Camera>("cosmo"));
 		switch(e.type)
 		{
 			case VRHandler::EventType::BUTTON_PRESSED:
@@ -437,13 +436,8 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						if(ctrl != nullptr)
 						{
 							QVector2D padCoords(ctrl->getPadCoords());
-							if(padCoords.length() < 0.5) // CENTER
-							{
-								method->resetAlpha();
-								cam.setEyeDistanceFactor(1.0f);
-							}
-							else if(fabsf(padCoords[0])
-							        > fabsf(padCoords[1])) // LEFT OR RIGHT
+							if(fabsf(padCoords[0])
+							   > fabsf(padCoords[1])) // LEFT OR RIGHT
 							{
 								if(padCoords[0] < 0.0f) // LEFT
 								{
