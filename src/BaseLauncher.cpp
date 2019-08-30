@@ -21,6 +21,7 @@
 void BaseLauncher::init()
 {
 	this->setWindowTitle(QString(PROJECT_NAME) + tr(" Launcher"));
+	this->setFixedSize(QSize(800, 600));
 
 	mainLayout = new QVBoxLayout(this);
 

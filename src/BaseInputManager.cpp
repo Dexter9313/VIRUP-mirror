@@ -20,13 +20,15 @@
 
 BaseInputManager::BaseInputManager()
 {
-	addAction(Qt::Key_F1, {"toggledbgcam", tr("Toggle Debug Camera")});
-	addAction(Qt::Key_F2, {"togglewireframe", tr("Toggle Wireframe Mode")});
-	addAction(Qt::Key_F8, {"togglepyconsole", tr("Toggle Python Console")});
-	addAction(Qt::Key_F11, {"togglevr", tr("Toggle Virtual Reality")});
+	addAction(Qt::Key_F1, {"toggledbgcam", tr("Toggle Debug Camera")}, true);
+	addAction(Qt::Key_F2, {"togglewireframe", tr("Toggle Wireframe Mode")},
+	          true);
+	addAction(Qt::Key_F8, {"togglepyconsole", tr("Toggle Python Console")},
+	          true);
+	addAction(Qt::Key_F11, {"togglevr", tr("Toggle Virtual Reality")}, true);
 	addAction(Qt::ALT + Qt::Key_Return,
-	          {"togglefullscreen", tr("Toggle Fullscreen")});
-	addAction(Qt::Key_Escape, {"quit", tr("Quit")});
+	          {"togglefullscreen", tr("Toggle Fullscreen")}, true);
+	addAction(Qt::Key_Escape, {"quit", tr("Quit")}, true);
 }
 
 // NOLINTNEXTLINE(fuchsia-overloaded-operator)
@@ -38,8 +40,22 @@ BaseInputManager::Action BaseInputManager::
 
 void BaseInputManager::addAction(QKeySequence const& defaultKey, Action action)
 {
+	addAction(defaultKey, action, false);
+}
+
+void BaseInputManager::addAction(QKeySequence const& defaultKey, Action action,
+                                 bool engine)
+{
 	QKeySequence dKey = QSettings()
 	                        .value("controls/" + action.id, defaultKey)
 	                        .value<QKeySequence>();
 	mapping[dKey.toString()] = std::move(action);
+	if(engine)
+	{
+		orderedEngineKeys.push_back(dKey.toString());
+	}
+	else
+	{
+		orderedProgramKeys.push_back(dKey.toString());
+	}
 }

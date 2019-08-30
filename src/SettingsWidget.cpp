@@ -31,10 +31,21 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 
 	InputManager inputManager;
 	addGroup("controls", tr("Controls"));
-	for(auto const& key : inputManager.getMapping().keys())
+	currentForm->addRow(tr("ENGINE"), new QWidget());
+	for(auto const& key : inputManager.getOrderedEngineKeys())
 	{
 		addKeySequenceSetting(inputManager[key].id, key,
 		                      inputManager[key].name);
+	}
+	if(!inputManager.getOrderedProgramKeys().empty())
+	{
+		currentForm->addRow(" ", new QWidget());
+		currentForm->addRow(PROJECT_NAME, new QWidget());
+		for(auto const& key : inputManager.getOrderedProgramKeys())
+		{
+			addKeySequenceSetting(inputManager[key].id, key,
+			                      inputManager[key].name);
+		}
 	}
 
 	addGroup("vr", tr("Virtual Reality"));
@@ -60,9 +71,14 @@ void SettingsWidget::addGroup(QString const& name, QString const& label)
 {
 	currentGroup = name;
 
-	auto newTab = new QWidget(this);
-	QTabWidget::addTab(newTab, label);
-	currentForm = new QFormLayout(newTab);
+	auto newScrollArea = new QScrollArea(this);
+	auto newTab        = new QWidget(this);
+	currentForm        = new QFormLayout(newTab);
+	currentForm->setSizeConstraint(QLayout::SetMinimumSize);
+
+	newScrollArea->setWidget(newTab);
+
+	QTabWidget::addTab(newScrollArea, label);
 }
 
 void SettingsWidget::insertGroup(QString const& name, QString const& label,
@@ -70,9 +86,14 @@ void SettingsWidget::insertGroup(QString const& name, QString const& label,
 {
 	currentGroup = name;
 
-	QWidget* newTab = new QWidget(this);
-	QTabWidget::insertTab(index, newTab, label);
-	currentForm = new QFormLayout(newTab);
+	auto newScrollArea = new QScrollArea(this);
+	auto newTab        = new QWidget(this);
+	currentForm        = new QFormLayout(newTab);
+	currentForm->setSizeConstraint(QLayout::SetMinimumSize);
+
+	newScrollArea->setWidget(newTab);
+
+	QTabWidget::insertTab(index, newScrollArea, label);
 }
 
 void SettingsWidget::addBoolSetting(QString const& name, bool defaultVal,
@@ -130,6 +151,7 @@ void SettingsWidget::addStringSetting(QString const& name,
 
 	auto lineEdit = new QLineEdit(this);
 	lineEdit->setText(settings.value(fullName).toString());
+	lineEdit->setMinimumWidth(500);
 
 	connect(lineEdit, &QLineEdit::textChanged, this,
 	        [this, fullName](QString const& t) { updateValue(fullName, t); });
@@ -150,6 +172,7 @@ void SettingsWidget::addFilePathSetting(QString const& name,
 
 	auto lineEdit = new QLineEdit(this);
 	lineEdit->setText(settings.value(fullName).toString());
+	lineEdit->setMinimumWidth(500);
 
 	auto dirModel = new QFileSystemModel(this);
 	dirModel->setRootPath(QDir::currentPath());
@@ -194,6 +217,7 @@ void SettingsWidget::addDirPathSetting(QString const& name,
 
 	auto lineEdit = new QLineEdit(this);
 	lineEdit->setText(settings.value(fullName).toString());
+	lineEdit->setMinimumWidth(500);
 
 	auto dirModel = new QFileSystemModel(this);
 	dirModel->setRootPath(QDir::currentPath());
@@ -352,11 +376,15 @@ void SettingsWidget::addKeySequenceSetting(QString const& name,
 
 	if(!settings.contains(fullName))
 	{
-		settings.setValue(fullName, defaultVal);
+		settings.setValue(fullName,
+		                  defaultVal.toString(QKeySequence::PortableText));
 	}
 
-	auto keyseqEdit = new QKeySequenceEdit(
-	    settings.value(fullName).value<QKeySequence>(), this);
+	auto keyseqEdit
+	    = new QKeySequenceEdit(QKeySequence(settings.value(fullName).toString(),
+	                                        QKeySequence::PortableText),
+	                           this);
+	keyseqEdit->setMinimumWidth(100);
 
 	connect(
 	    keyseqEdit, &QKeySequenceEdit::keySequenceChanged, this,

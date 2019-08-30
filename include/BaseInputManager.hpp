@@ -37,6 +37,14 @@ class BaseInputManager : public QObject
 		QString name;
 	};
 	BaseInputManager();
+	std::vector<QString> const& getOrderedEngineKeys() const
+	{
+		return orderedEngineKeys;
+	};
+	std::vector<QString> const& getOrderedProgramKeys() const
+	{
+		return orderedProgramKeys;
+	};
 	QHash<QString, Action> const& getMapping() const { return mapping; };
 	Action operator[](QKeySequence const& key) const;
 	virtual ~BaseInputManager(){};
@@ -46,8 +54,14 @@ class BaseInputManager : public QObject
 	void addAction(QKeySequence const& defaultKey, Action action);
 
   private:
+	void addAction(QKeySequence const& defaultKey, Action action, bool engine);
+
 	// QKeySequence is a key (Qt::Key_A for example)
 	QHash<QString, Action> mapping;
+
+	// keep declaration order for interface
+	std::vector<QString> orderedEngineKeys;
+	std::vector<QString> orderedProgramKeys;
 };
 
 #endif // BASEINPUTMANAGER_HPP

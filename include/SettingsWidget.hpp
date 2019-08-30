@@ -31,6 +31,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QSettings>
 #include <QSpinBox>
 #include <QStringListModel>
