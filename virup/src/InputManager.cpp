@@ -26,6 +26,7 @@ InputManager::InputManager()
 	addAction(Qt::Key_M, {"toggledm", "Toggle Dark Matter"});
 	addAction(Qt::Key_L, {"togglelabels", "Toggle Labels"});
 	addAction(Qt::Key_O, {"toggleorbits", "Toggle Orbits"});
+	addAction(Qt::Key_G, {"togglegrid", "Toggle Grid"});
 	addAction(Qt::Key_P, {"showposition", "Show Current Position"});
 	addAction(Qt::Key_R, {"timecoeffdown", "Lower Time Coeff"});
 	addAction(Qt::Key_T, {"timecoeffup", "Raise Time Coeff"});
