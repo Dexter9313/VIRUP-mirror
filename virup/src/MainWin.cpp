@@ -363,9 +363,9 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 				CelestialBodyRenderer::renderOrbits
 				    = !CelestialBodyRenderer::renderOrbits;
 			}
-			else if(a.id == "toggleegrid")
+			else if(a.id == "togglegrid")
 			{
-				showGrid = !showGrid;
+				setGridEnabled(!gridEnabled());
 			}
 			/*else if(e->key() == Qt::Key_H)
 			{
