@@ -74,6 +74,10 @@ def updateScene():
             # scale linearly through log space
             VIRUP.scale = exp(log(startScale) * (1 - t) + log(tgtScale) * t)
 
-        VIRUP.cosmoPosition = initCosmoPos + Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale)
+        if VIRUP.planetarySystemLoaded:
+            VIRUP.planetTarget = 'Earth'
+            VIRUP.planetPosition = Vector3(0, 0, -1.125 / VIRUP.scale)
+        else:
+            VIRUP.cosmoPosition = initCosmoPos + Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale)
 
 
