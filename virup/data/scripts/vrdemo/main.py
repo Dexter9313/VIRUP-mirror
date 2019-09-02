@@ -22,7 +22,7 @@ class TemporalData:
         self.timeCoeff = timeCoeff
 
 class UI:
-    def __init__(self, luminosity=110000008.0, orbits=True, labels=True, darkmatter=False, grid=False):
+    def __init__(self, luminosity=110000008.0, orbits=False, labels=False, darkmatter=False, grid=False):
         self.luminosity = luminosity
         self.orbits = orbits
         self.labels = labels
@@ -108,28 +108,28 @@ scenes = [
            TemporalData(), UI(0.167)),
     # Earth-Moon dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 300000000, 'Earth'),
-          TemporalData(100000.0), UI(0.167)),
+          TemporalData(100000.0), UI(0.167, True, True)),
     # Saturn
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 130000000, 'Saturn'),
            TemporalData(), UI(0.167)),
     # Saturn moons dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 1300000000, 'Saturn'),
-          TemporalData(100000.0), UI(0.167)),
+          TemporalData(100000.0), UI(0.167, True, True)),
     # inner Solar System dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2.27987e+11, 'Sun'),
-          TemporalData(1000000.0), UI(0.167)),
+          TemporalData(1000000.0), UI(0.167, True, True)),
     # outer Solar System dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 5.65181e+12, 'Sun'),
-          TemporalData(10000000.0), UI(0.167)),
+          TemporalData(10000000.0), UI(0.167, True, True)),
     # Milky Way
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 6.171e+20),
-           TemporalData(), UI(18.1)),
+           TemporalData(), UI(18.1, False, True)),
     # Local Group
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2.469e+22),
-           TemporalData(), UI(55800.0)),
+           TemporalData(), UI(55800.0, False, True, True)),
     # Whole cube
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 8.7474e+23),
-           TemporalData(), UI(1015000.0)),
+           TemporalData(), UI(1015000.0, False, False, True)),
 ]
 
 prev_id = -1
@@ -223,5 +223,8 @@ def updateScene():
 
     ui = scene.ui
     VIRUP.cosmolum = ui.luminosity
+    VIRUP.orbitsEnabled = ui.orbits
+    VIRUP.labelsEnabled = ui.labels
+    VIRUP.darkmatterEnabled = ui.darkmatter
     VIRUP.gridEnabled = ui.grid
 

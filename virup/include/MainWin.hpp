@@ -98,6 +98,25 @@ class MainWin : public AbstractMainWin
 	Q_PROPERTY(
 	    Vector3 planetPosition READ getPlanetPosition WRITE setPlanetPosition)
 	/**
+	 * @brief Wether the orbits is enabled or not.
+	 *
+	 * @accessors orbitsEnabled(), setOrbitsEnabled()
+	 */
+	Q_PROPERTY(bool orbitsEnabled READ orbitsEnabled WRITE setOrbitsEnabled)
+	/**
+	 * @brief Wether the labels is enabled or not.
+	 *
+	 * @accessors labelsEnabled(), setLabelsEnabled()
+	 */
+	Q_PROPERTY(bool labelsEnabled READ labelsEnabled WRITE setLabelsEnabled)
+	/**
+	 * @brief Wether the darkmatter is enabled or not.
+	 *
+	 * @accessors darkmatterEnabled(), setDarkmatterEnabled()
+	 */
+	Q_PROPERTY(bool darkmatterEnabled READ darkmatterEnabled WRITE
+	               setDarkmatterEnabled)
+	/**
 	 * @brief Wether the grid is enabled or not.
 	 *
 	 * @accessors gridEnabled(), setGridEnabled()
@@ -190,6 +209,39 @@ class MainWin : public AbstractMainWin
 
 	// CUBE
 
+	/**
+	 * @getter{orbitsEnabled}
+	 */
+	bool orbitsEnabled() const { return CelestialBodyRenderer::renderOrbits; };
+	/**
+	 * @setter{orbitsEnabled, orbitsEnabled}
+	 */
+	void setOrbitsEnabled(bool enabled)
+	{
+		CelestialBodyRenderer::renderOrbits = enabled;
+	};
+	/**
+	 * @getter{labelsEnabled}
+	 */
+	bool labelsEnabled() const { return CelestialBodyRenderer::renderLabels; };
+	/**
+	 * @setter{labelsEnabled, labelsEnabled}
+	 */
+	void setLabelsEnabled(bool enabled)
+	{
+		CelestialBodyRenderer::renderLabels = enabled;
+	};
+	/**
+	 * @getter{darkmatterEnabled}
+	 */
+	bool darkmatterEnabled() const { return method->isDarkMatterEnabled(); };
+	/**
+	 * @setter{darkmatterEnabled, darkmatterEnabled}
+	 */
+	void setDarkmatterEnabled(bool enabled)
+	{
+		method->setDarkMatterEnabled(enabled);
+	};
 	/**
 	 * @getter{gridEnabled}
 	 */

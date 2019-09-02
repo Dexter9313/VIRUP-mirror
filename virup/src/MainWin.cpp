@@ -349,19 +349,19 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 					vrHandler.resetPos();
 				}
 			}
-			else if(a.id == "toggledm")
+			else if(a.id == "toggleorbits")
 			{
-				method->toggleDarkMatter();
+				CelestialBodyRenderer::renderOrbits
+				    = !CelestialBodyRenderer::renderOrbits;
 			}
 			else if(a.id == "togglelabels")
 			{
 				CelestialBodyRenderer::renderLabels
 				    = !CelestialBodyRenderer::renderLabels;
 			}
-			else if(a.id == "toggleorbits")
+			else if(a.id == "toggledm")
 			{
-				CelestialBodyRenderer::renderOrbits
-				    = !CelestialBodyRenderer::renderOrbits;
+				method->toggleDarkMatter();
 			}
 			else if(a.id == "togglegrid")
 			{
