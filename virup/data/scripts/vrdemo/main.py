@@ -11,11 +11,12 @@ from math import log
 
 
 class SpatialData:
-    def __init__(self, cosmoPos, invscale, bodyName = '', systemName = ''):
+    def __init__(self, cosmoPos, invscale, bodyName = '', systemName = '', planetPos = Vector3()):
         self.cosmoPos = cosmoPos
         self.scale = 1.0 / invscale
         self.bodyName = bodyName
         self.systemName = systemName
+        self.planetPos = planetPos
 
 class TemporalData:
     def __init__(self, timeCoeff = 1.0):
@@ -50,17 +51,36 @@ def interpolateLinear(x0, x1, t):
 def interpolateLog(x0, x1, t):
     return exp(log(x0) * (1 - t) + log(x1) * t)
 
-# interpolatePlanetPos
-
 def interpolateSpatialData(s0, s1, t):
-    bn = s1.bodyName
-    if bn == '':
-        bn = s0.bodyName
+    planetpos = Vector3()
+    scale=1.0 / interpolateLog(s0.scale, s1.scale, t)
+
+    if s0.bodyName != '' and s1.bodyName != '':
+        bn = VIRUP.getClosestCommonAncestorName(s0.bodyName, s1.bodyName)
+        planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, t)
+
+        dist = (VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 0) - VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 1)).length()
+        maxscale = 1.0 / (dist * 10)
+        if t < 0.25:
+            scale = 1.0 / interpolateLog(s0.scale, maxscale, 4*t)
+            planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 0)
+        elif t < 0.75:
+            planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, t*2 - 0.5)
+            scale = maxscale
+        else:
+            scale = 1.0 / interpolateLog(maxscale, s1.scale, 4*t - 3)
+            planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 1)
+    else:
+        bn = s1.bodyName
+        if bn == '':
+            bn = s0.bodyName
+
     return SpatialData(
         interpolateLinear(s0.cosmoPos, s1.cosmoPos, t),
-        1.0 / interpolateLog(s0.scale, s1.scale, t),
+        scale,
         bn,
-        s1.systemName
+        s1.systemName,
+        planetpos
     )
 
 def interpolateTemporalData(t0, t1, t):
@@ -212,7 +232,7 @@ def updateScene():
     if spatialData.bodyName != '':
         if VIRUP.planetarySystemLoaded:
             VIRUP.planetTarget = spatialData.bodyName
-            VIRUP.planetPosition = Vector3(0, 0, -1.125 / VIRUP.scale)
+            VIRUP.planetPosition = spatialData.planetPos + Vector3(0, 0, -1.125 / VIRUP.scale)
         else:
             VIRUP.cosmoPosition = spatialData.cosmoPos + Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale)
     else:

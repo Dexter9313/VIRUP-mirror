@@ -279,6 +279,19 @@ class MainWin : public AbstractMainWin
 	 * @brief Toggles the @e gridEnabled property.
 	 */
 	void toggleGrid() { setGridEnabled(!gridEnabled()); };
+	/**
+	 * @brief Returns closest common ancestor between two planetary bodies.
+	 */
+	QString
+	    getClosestCommonAncestorName(QString const& celestialBodyName0,
+	                                 QString const& celestialBodyName1) const;
+	/**
+	 * @brief Interpolates celestial bodies coordinates relative to their
+	 * closest common ancestor.
+	 */
+	Vector3 interpolateCoordinates(QString const& celestialBodyName0,
+	                               QString const& celestialBodyName1,
+	                               float t) const;
 
   protected:
 	virtual void actionEvent(BaseInputManager::Action a, bool pressed) override;

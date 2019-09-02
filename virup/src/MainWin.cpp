@@ -327,6 +327,73 @@ void MainWin::setCamYaw(float yaw)
 	getCamera<OrbitalSystemCamera>("planet").yaw = yaw;
 }
 
+QString MainWin::getClosestCommonAncestorName(
+    QString const& celestialBodyName0, QString const& celestialBodyName1) const
+{
+	Orbitable const* orb0(nullptr);
+	Orbitable const* orb1(nullptr);
+
+	auto ptrs = orbitalSystem->getAllCelestialBodiesPointers();
+	for(auto ptr : ptrs)
+	{
+		if(QString(ptr->getName().c_str()) == celestialBodyName0)
+		{
+			orb0 = ptr;
+		}
+		if(QString(ptr->getName().c_str()) == celestialBodyName1)
+		{
+			orb1 = ptr;
+		}
+	}
+	if(orb0 == nullptr || orb1 == nullptr)
+	{
+		return "";
+	}
+	auto result(Orbitable::getCommonAncestor(orb0, orb1));
+	if(result == nullptr)
+	{
+		return "";
+	}
+	return result->getName().c_str();
+}
+
+Vector3 MainWin::interpolateCoordinates(QString const& celestialBodyName0,
+                                        QString const& celestialBodyName1,
+                                        float t) const
+{
+	Orbitable const* orb0(nullptr);
+	Orbitable const* orb1(nullptr);
+
+	auto ptrs = orbitalSystem->getAllCelestialBodiesPointers();
+	for(auto ptr : ptrs)
+	{
+		if(QString(ptr->getName().c_str()) == celestialBodyName0)
+		{
+			orb0 = ptr;
+		}
+		if(QString(ptr->getName().c_str()) == celestialBodyName1)
+		{
+			orb1 = ptr;
+		}
+	}
+	if(orb0 == nullptr || orb1 == nullptr)
+	{
+		return Vector3();
+	}
+	auto ancestor(Orbitable::getCommonAncestor(orb0, orb1));
+	if(ancestor == nullptr)
+	{
+		return Vector3();
+	}
+
+	return (Orbitable::getRelativePositionAtUt(ancestor, orb0,
+	                                           clock.getCurrentUt())
+	        * (1 - t))
+	       + (Orbitable::getRelativePositionAtUt(ancestor, orb1,
+	                                             clock.getCurrentUt())
+	          * t);
+}
+
 void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 {
 	if(loaded)
