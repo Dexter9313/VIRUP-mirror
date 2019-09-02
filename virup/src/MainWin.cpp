@@ -378,12 +378,12 @@ Vector3 MainWin::interpolateCoordinates(QString const& celestialBodyName0,
 	}
 	if(orb0 == nullptr || orb1 == nullptr)
 	{
-		return Vector3();
+		return {};
 	}
 	auto ancestor(Orbitable::getCommonAncestor(orb0, orb1));
 	if(ancestor == nullptr)
 	{
-		return Vector3();
+		return {};
 	}
 
 	return (Orbitable::getRelativePositionAtUt(ancestor, orb0,
