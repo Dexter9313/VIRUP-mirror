@@ -19,8 +19,9 @@ class SpatialData:
         self.planetPos = planetPos
 
 class TemporalData:
-    def __init__(self, timeCoeff = 1.0):
+    def __init__(self, timeCoeff = 1.0, simulationTime = QDateTime()):
         self.timeCoeff = timeCoeff
+        self.simulationTime = simulationTime
 
 class UI:
     def __init__(self, luminosity=110000008.0, orbits=False, labels=False, darkmatter=False, grid=False):
@@ -50,6 +51,15 @@ def interpolateLinear(x0, x1, t):
 
 def interpolateLog(x0, x1, t):
     return exp(log(x0) * (1 - t) + log(x1) * t)
+
+def interpolateDateTime(dt0, dt1, t):
+    global currentscene
+    if not dt1.isValid():
+        return
+    ms0 = currentscene.temporalData.simulationTime.toMSecsSinceEpoch()
+    ms1 = dt1.toMSecsSinceEpoch()
+    ms = ms0 * (1-t) + ms1 * t
+    return QDateTime.fromMSecsSinceEpoch(ms, Qt.UTC)
 
 def interpolateSpatialData(s0, s1, t):
     global longanimation
@@ -106,7 +116,8 @@ def interpolateSpatialData(s0, s1, t):
 
 def interpolateTemporalData(t0, t1, t):
     return TemporalData(
-        interpolateLog(t0.timeCoeff, t1.timeCoeff, t)
+        interpolateLog(t0.timeCoeff, t1.timeCoeff, t),
+        interpolateDateTime(t0.simulationTime, t1.simulationTime, t)
     )
 
 def interpolateUI(ui0, ui1, t):
@@ -126,24 +137,27 @@ def interpolateScene(sc0, sc1, t):
     )
 
 scenes = [
-    # Earth
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 130000000, 'Earth', 'Solar System'),
-           TemporalData(), UI(0.167)),
     # Earth-Moon dynamics
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 300000000, 'Earth',  'Solar System'),
-          TemporalData(100000.0), UI(0.167, True, True)),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Earth',  'Solar System'),
+          TemporalData(10000.0, QDateTime(QDate(2019, 7, 2), QTime(19, 29, 42))), UI(0.167)),
+    # Phobos
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 30000, 'Phobos',  'Solar System'),
+          TemporalData(1.0), UI(0.167)),
     # Saturn
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 130000000, 'Saturn', 'Solar System'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Saturn', 'Solar System'),
            TemporalData(), UI(0.167)),
     # Saturn moons dynamics
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 1300000000, 'Saturn', 'Solar System'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2000000000, 'Saturn', 'Solar System'),
           TemporalData(100000.0), UI(0.167, True, True)),
-    # inner Solar System dynamics
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2.27987e+11, 'Sun', 'Solar System'),
-          TemporalData(1000000.0), UI(0.167, True, True)),
-    # outer Solar System dynamics
+    # Enceladus
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 1000000, 'Enceladus',  'Solar System'),
+          TemporalData(1.0), UI(0.167)),
+    # Solar System dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 5.65181e+12, 'Sun', 'Solar System'),
           TemporalData(10000000.0), UI(0.167, True, True)),
+    # Kepler-11 general area
+    Scene(SpatialData(Vector3(8.094034192480557, -0.5269932753083851, -0.13332218244029664), 5e+10, 'Kepler-11', 'Kepler-11'),
+           TemporalData(50000), UI(0.167, True, True)),
     # Milky Way
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 6.171e+20),
            TemporalData(), UI(18.1, False, True)),
@@ -153,64 +167,47 @@ scenes = [
     # Whole cube
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 8.7474e+23),
            TemporalData(), UI(1015000.0, False, False, True)),
-    # Kepler-11 general area
-    Scene(SpatialData(Vector3(8.094034192480557, -0.5269932753083851, -0.13332218244029664), 5e+10, 'Kepler-11', 'Kepler-11'),
-           TemporalData(50000), UI(0.167, True, True)),
 ]
 
-prev_id = -1
-id = 8
+id = 0
 
 def keyPressEvent(e):
-    global prev_id
     global timer
     global startScale
     global id
+    global currentscene
 
     # if spacebar pressed, start animation
     numpad_mod = int(e.modifiers()) == Qt.KeypadModifier
     if e.key() == Qt.Key_0 and numpad_mod:
-        prev_id = id
         id = 0
-        timer.restart()
-    if e.key() == Qt.Key_1 and numpad_mod:
-        prev_id = id
+    elif e.key() == Qt.Key_1 and numpad_mod:
         id = 1
-        timer.restart()
-    if e.key() == Qt.Key_2 and numpad_mod:
-        prev_id = id
+    elif e.key() == Qt.Key_2 and numpad_mod:
         id = 2
-        timer.restart()
-    if e.key() == Qt.Key_3 and numpad_mod:
-        prev_id = id
+    elif e.key() == Qt.Key_3 and numpad_mod:
         id = 3
-        timer.restart()
-    if e.key() == Qt.Key_4 and numpad_mod:
-        prev_id = id
+    elif e.key() == Qt.Key_4 and numpad_mod:
         id = 4
-        timer.restart()
-    if e.key() == Qt.Key_5 and numpad_mod:
-        prev_id = id
+    elif e.key() == Qt.Key_5 and numpad_mod:
         id = 5
-        timer.restart()
-    if e.key() == Qt.Key_6 and numpad_mod:
-        prev_id = id
+    elif e.key() == Qt.Key_6 and numpad_mod:
         id = 6
-        timer.restart()
-    if e.key() == Qt.Key_7 and numpad_mod:
-        prev_id = id
+    elif e.key() == Qt.Key_7 and numpad_mod:
         id = 7
-        timer.restart()
-    if e.key() == Qt.Key_8 and numpad_mod:
-        prev_id = id
+    elif e.key() == Qt.Key_8 and numpad_mod:
         id = 8
-        timer.restart()
-    if e.key() == Qt.Key_9 and numpad_mod:
-        prev_id = id
+    elif e.key() == Qt.Key_9 and numpad_mod:
         id = 9
         timer.restart()
-    if e.key() == Qt.Key_Space:
+    elif e.key() == Qt.Key_Space:
         id = -1
+    else:
+        return
+
+    timer.restart()
+    currentscene=Scene(SpatialData(VIRUP.cosmoPosition - Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale), 1.0 / VIRUP.scale, VIRUP.planetTarget, VIRUP.planetarySystemName),
+           TemporalData(VIRUP.timeCoeff, VIRUP.simulationTime), UI(VIRUP.cosmolum, VIRUP.orbitsEnabled, VIRUP.labelsEnabled, VIRUP.darkmatterEnabled, VIRUP.gridEnabled))
 
 def initScene():
     global timer
@@ -220,10 +217,10 @@ def initScene():
     longanimation = False
 
 def updateScene():
-    global prev_id
     global id
     global timer
     global longanimation
+    global currentscene
     if id not in range(len(scenes)):
         return
 
@@ -231,11 +228,10 @@ def updateScene():
         t = timer.elapsed() / 15000.0
     else:
         t = timer.elapsed() / 10000.0
-    if prev_id in range(len(scenes)) and t <= 1.0:
-        scene=interpolateScene(scenes[prev_id], scenes[id], t)
+    if t <= 1.0:
+        scene=interpolateScene(currentscene, scenes[id], t)
     else:
         timer.invalidate()
-        prev_id = -1
         scene=scenes[id]
 
     spatialData = scene.spatialData
@@ -251,9 +247,13 @@ def updateScene():
 
     temporalData = scene.temporalData
     VIRUP.timeCoeff = temporalData.timeCoeff
+    if temporalData.simulationTime != None:
+        if temporalData.simulationTime.isValid() and t <= 1:
+            VIRUP.simulationTime = temporalData.simulationTime
 
     ui = scene.ui
     VIRUP.cosmolum = ui.luminosity
+    print(ui.luminosity)
     VIRUP.orbitsEnabled = ui.orbits
     VIRUP.labelsEnabled = ui.labels
     VIRUP.darkmatterEnabled = ui.darkmatter
