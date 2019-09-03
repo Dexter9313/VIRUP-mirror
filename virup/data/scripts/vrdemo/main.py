@@ -52,21 +52,42 @@ def interpolateLog(x0, x1, t):
     return exp(log(x0) * (1 - t) + log(x1) * t)
 
 def interpolateSpatialData(s0, s1, t):
+    global longanimation
+
+    longanimation = False
     planetpos = Vector3()
     scale=1.0 / interpolateLog(s0.scale, s1.scale, t)
 
-    if s0.bodyName != '' and s1.bodyName != '':
+    if s0.systemName != '' and s1.systemName != '' and s0.systemName != s1.systemName:
+        dist=(s0.cosmoPos - s1.cosmoPos).length() * 3.086e+19
+        if t <= 0.25:
+            inter0=SpatialData(s0.cosmoPos, dist)
+            result=interpolateSpatialData(s0, inter0, t*4)
+        elif t <= 0.75:
+            inter0=SpatialData(s0.cosmoPos, dist)
+            inter1=SpatialData(s1.cosmoPos, dist)
+            result=interpolateSpatialData(inter0, inter1,t*2 - 0.5)
+        else:
+            inter1=SpatialData(s1.cosmoPos, dist)
+            result=interpolateSpatialData(inter1, s1, t*4 - 3)
+        longanimation = True
+        return result
+
+    if s0.bodyName != '' and s1.bodyName != '' and s0.bodyName != s1.bodyName :
+        longanimation = True
         bn = VIRUP.getClosestCommonAncestorName(s0.bodyName, s1.bodyName)
         planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, t)
 
         dist = (VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 0) - VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 1)).length()
-        maxscale = 1.0 / (dist * 10)
-        if t < 0.25:
+        maxscale = 1.0 / (dist)
+        if t <= 0.25:
             scale = 1.0 / interpolateLog(s0.scale, maxscale, 4*t)
             planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 0)
-        elif t < 0.75:
-            planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, t*2 - 0.5)
-            scale = maxscale
+        elif t <= 0.75:
+            scale = 1.0 / maxscale
+            # maybe try some smoother t
+            tprime = t*2 - 0.5
+            planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, tprime)
         else:
             scale = 1.0 / interpolateLog(maxscale, s1.scale, 4*t - 3)
             planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 1)
@@ -103,43 +124,25 @@ def interpolateScene(sc0, sc1, t):
         interpolateTemporalData(sc0.temporalData, sc1.temporalData, t),
         interpolateUI(sc0.ui, sc1.ui, t)
     )
-    
-
-""" bad interactions :
-0:
-    2
-    3
-    4
-    5
-
-1: copy 0
-
-2:
-    4
-    5
-
-3: copy 2
-
-"""
 
 scenes = [
     # Earth
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 130000000, 'Earth'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 130000000, 'Earth', 'Solar System'),
            TemporalData(), UI(0.167)),
     # Earth-Moon dynamics
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 300000000, 'Earth'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 300000000, 'Earth',  'Solar System'),
           TemporalData(100000.0), UI(0.167, True, True)),
     # Saturn
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 130000000, 'Saturn'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 130000000, 'Saturn', 'Solar System'),
            TemporalData(), UI(0.167)),
     # Saturn moons dynamics
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 1300000000, 'Saturn'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 1300000000, 'Saturn', 'Solar System'),
           TemporalData(100000.0), UI(0.167, True, True)),
     # inner Solar System dynamics
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2.27987e+11, 'Sun'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2.27987e+11, 'Sun', 'Solar System'),
           TemporalData(1000000.0), UI(0.167, True, True)),
     # outer Solar System dynamics
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 5.65181e+12, 'Sun'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 5.65181e+12, 'Sun', 'Solar System'),
           TemporalData(10000000.0), UI(0.167, True, True)),
     # Milky Way
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 6.171e+20),
@@ -150,6 +153,9 @@ scenes = [
     # Whole cube
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 8.7474e+23),
            TemporalData(), UI(1015000.0, False, False, True)),
+    # Kepler-11 general area
+    Scene(SpatialData(Vector3(8.094034192480557, -0.5269932753083851, -0.13332218244029664), 5e+10, 'Kepler-11', 'Kepler-11'),
+           TemporalData(50000), UI(0.167, True, True)),
 ]
 
 prev_id = -1
@@ -208,16 +214,23 @@ def keyPressEvent(e):
 
 def initScene():
     global timer
+    global longanimation
+
     timer = QElapsedTimer()
+    longanimation = False
 
 def updateScene():
     global prev_id
     global id
     global timer
+    global longanimation
     if id not in range(len(scenes)):
         return
 
-    t = timer.elapsed() / 10000.0
+    if longanimation:
+        t = timer.elapsed() / 15000.0
+    else:
+        t = timer.elapsed() / 10000.0
     if prev_id in range(len(scenes)) and t <= 1.0:
         scene=interpolateScene(scenes[prev_id], scenes[id], t)
     else:
@@ -229,12 +242,10 @@ def updateScene():
     VIRUP.scale = spatialData.scale
     if spatialData.systemName != '':
         VIRUP.planetarySystemName = spatialData.systemName
-    if spatialData.bodyName != '':
-        if VIRUP.planetarySystemLoaded:
-            VIRUP.planetTarget = spatialData.bodyName
-            VIRUP.planetPosition = spatialData.planetPos + Vector3(0, 0, -1.125 / VIRUP.scale)
-        else:
-            VIRUP.cosmoPosition = spatialData.cosmoPos + Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale)
+
+    if spatialData.bodyName != '' and VIRUP.planetarySystemLoaded:
+        VIRUP.planetTarget = spatialData.bodyName
+        VIRUP.planetPosition = spatialData.planetPos + Vector3(0, 0, -1.125 / VIRUP.scale)
     else:
         VIRUP.cosmoPosition = spatialData.cosmoPos + Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale)
 
