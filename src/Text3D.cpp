@@ -74,10 +74,10 @@ void Text3D::setSuperSampling(float superSampling)
 	updateTex();
 }
 
-void Text3D::render()
+void Text3D::render(GLHandler::GeometricSpace geometricSpace)
 {
 	GLHandler::beginTransparent();
-	GLHandler::setUpRender(shader, model * aspectratio);
+	GLHandler::setUpRender(shader, model * aspectratio, geometricSpace);
 	GLHandler::useTextures({tex});
 	GLHandler::render(quad, GLHandler::PrimitiveType::TRIANGLE_STRIP);
 	GLHandler::endTransparent();

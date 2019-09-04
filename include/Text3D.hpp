@@ -47,7 +47,8 @@ class Text3D
 	void setRectangle(QRect const& rectangle);
 	void setFlags(int flags);
 	void setSuperSampling(float superSampling);
-	void render();
+	void render(GLHandler::GeometricSpace geometricSpace
+	            = GLHandler::GeometricSpace::WORLD);
 	~Text3D();
 
 	static QRect

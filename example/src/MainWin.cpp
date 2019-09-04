@@ -18,7 +18,8 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	}
 	else if(a.id == "togglevrorigin")
 	{
-		getCamera("default").seatedVROrigin = !getCamera("default").seatedVROrigin;
+		getCamera("default").seatedVROrigin
+		    = !getCamera("default").seatedVROrigin;
 	}
 	AbstractMainWin::actionEvent(a, pressed);
 }
@@ -93,16 +94,19 @@ void MainWin::initScene()
 	GLHandler::setShaderParam(playareaShader, "color", QColor(255, 0, 0));
 	GLHandler::setShaderParam(playareaShader, "alpha", 1.f);
 	playarea = GLHandler::newMesh();
-	auto playareaquad(vrHandler.getPlayAreaQuad());
-	vertices = {
-		playareaquad[0].x(), playareaquad[0].y(), playareaquad[0].z(),
-		playareaquad[1].x(), playareaquad[1].y(), playareaquad[1].z(),
-		playareaquad[2].x(), playareaquad[2].y(), playareaquad[2].z(),
-		playareaquad[3].x(), playareaquad[3].y(), playareaquad[3].z(),
-	};
-	indices = {0, 1, 1, 2, 2, 3, 3, 0};
-	GLHandler::setVertices(playarea, vertices, playareaShader, {{"position", 3}}, indices);
-
+	if(vrHandler)
+	{
+		auto playareaquad(vrHandler.getPlayAreaQuad());
+		vertices = {
+		    playareaquad[0].x(), playareaquad[0].y(), playareaquad[0].z(),
+		    playareaquad[1].x(), playareaquad[1].y(), playareaquad[1].z(),
+		    playareaquad[2].x(), playareaquad[2].y(), playareaquad[2].z(),
+		    playareaquad[3].x(), playareaquad[3].y(), playareaquad[3].z(),
+		};
+		indices = {0, 1, 1, 2, 2, 3, 3, 0};
+		GLHandler::setVertices(playarea, vertices, playareaShader,
+		                       {{"position", 3}}, indices);
+	}
 
 	bill           = new Billboard("data/example/images/cc.png");
 	bill->position = QVector3D(0.f, 0.f, 0.8f);
@@ -195,7 +199,8 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	GLHandler::render(pointsMesh);
 	GLHandler::setPointSize(1);
 
-	GLHandler::setUpRender(playareaShader, QMatrix4x4(), GLHandler::GeometricSpace::STANDINGTRACKED);
+	GLHandler::setUpRender(playareaShader, QMatrix4x4(),
+	                       GLHandler::GeometricSpace::STANDINGTRACKED);
 	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
 
 	widget3d->render();
