@@ -45,8 +45,9 @@ class Grid : public QObject
 		return QSettings().value("misc/gridcolor").value<QColor>();
 	}
 	void setColor(QColor const& color);
-	void renderCosmo(Camera const& cam);
-	void renderPlanet(OrbitalSystemCamera const& cam);
+	// void renderCosmo(Camera const& cam);
+	// void renderPlanet(OrbitalSystemCamera const& cam);
+	void render(double scale, double height);
 	~Grid();
 
   private:
@@ -59,8 +60,9 @@ class Grid : public QObject
 	static void generateGridVertices(std::vector<float>& vertices,
 	                                 std::vector<unsigned int>& elements);
 	static double customRound(double x, double scale = 1.0);
-	static QString generateScaleTextCosmo(double scale);
-	static QString generateScaleTextPlanet(double scale);
+	/*static QString generateScaleTextCosmo(double scale);
+	static QString generateScaleTextPlanet(double scale);*/
+	static QString generateScaleText(double scale);
 };
 
 #endif // GRID_HPP

@@ -861,11 +861,10 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 			{
 				debugText->render();
 			}
-			if(showGrid)
-			{
-				grid->renderPlanet(
-				    dynamic_cast<OrbitalSystemCamera const&>(camera));
-			}
+		}
+		if(showGrid)
+		{
+			grid->render(getScale(), 1.125);
 		}
 		movementControls->renderGuides();
 		return;
@@ -879,10 +878,6 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 
 	GLHandler::glf().glDepthFunc(GL_LEQUAL);
 	GLHandler::glf().glEnable(GL_DEPTH_CLAMP);
-	if(showGrid && !isPlanetarySystemLoaded())
-	{
-		grid->renderCosmo(cam);
-	}
 	method->render(cam);
 
 	// TODO(florian) better than this

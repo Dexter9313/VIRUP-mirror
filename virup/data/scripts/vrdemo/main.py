@@ -66,6 +66,7 @@ def interpolateSpatialData(s0, s1, t):
 
     longanimation = False
     planetpos = Vector3()
+
     scale=1.0 / interpolateLog(s0.scale, s1.scale, t)
 
     if s0.systemName != '' and s1.systemName != '' and s0.systemName != s1.systemName:
@@ -138,10 +139,10 @@ def interpolateScene(sc0, sc1, t):
 
 scenes = [
     # Earth-Moon dynamics
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Earth',  'Solar System'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Earth', 'Solar System'),
           TemporalData(10000.0, QDateTime(QDate(2019, 7, 2), QTime(19, 29, 42))), UI(0.167)),
     # Phobos
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 30000, 'Phobos',  'Solar System'),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 30000, 'Phobos', 'Solar System'),
           TemporalData(1.0), UI(0.167)),
     # Saturn
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Saturn', 'Solar System'),
@@ -212,9 +213,11 @@ def keyPressEvent(e):
 def initScene():
     global timer
     global longanimation
+    global currentscene
 
     timer = QElapsedTimer()
     longanimation = False
+    currentscene = None
 
 def updateScene():
     global id
@@ -228,7 +231,7 @@ def updateScene():
         t = timer.elapsed() / 15000.0
     else:
         t = timer.elapsed() / 10000.0
-    if t <= 1.0:
+    if t <= 1.0 and t >= 0.0 and currentscene != None:
         scene=interpolateScene(currentscene, scenes[id], t)
     else:
         timer.invalidate()
@@ -256,5 +259,5 @@ def updateScene():
     VIRUP.orbitsEnabled = ui.orbits
     VIRUP.labelsEnabled = ui.labels
     VIRUP.darkmatterEnabled = ui.darkmatter
-    VIRUP.gridEnabled = ui.grid
+    #VIRUP.gridEnabled = ui.grid
 
