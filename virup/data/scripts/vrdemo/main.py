@@ -253,7 +253,6 @@ def updateScene():
 
     ui = scene.ui
     VIRUP.cosmolum = ui.luminosity
-    print(ui.luminosity)
     VIRUP.orbitsEnabled = ui.orbits
     VIRUP.labelsEnabled = ui.labels
     VIRUP.darkmatterEnabled = ui.darkmatter
