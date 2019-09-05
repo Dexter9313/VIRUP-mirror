@@ -46,7 +46,8 @@ void Grid::render(double scale, double height)
 {
 	// round scale to nearest power of 10
 	double roundscale(pow(10, round(log10(scale))));
-	double gridScale(10.0 * scale / roundscale);
+	roundscale = scale;
+	double gridScale(1.0 * scale / roundscale);
 
 	QMatrix4x4 t;
 	t.translate(QVector3D(0.f, height, 0.f));
@@ -157,7 +158,7 @@ Grid::~Grid()
 void Grid::generateGridVertices(std::vector<float>& vertices,
                                 std::vector<unsigned int>& elements)
 {
-	const unsigned int subdivisions(200);
+	const unsigned int subdivisions(20);
 
 	for(unsigned int i(0); i <= subdivisions; ++i)
 	{
