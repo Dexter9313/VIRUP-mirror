@@ -8,10 +8,18 @@ uniform mat4 view;
 
 out float fragAlpha;
 
+out gl_PerVertex
+{
+	vec4 gl_Position;
+	float gl_ClipDistance[1];
+};
+
 void main()
 {
-    gl_Position = camera*vec4(position, 1.0);
+	vec4 pos = camera * vec4(position, 1.0);
+	gl_Position = pos;
+	gl_ClipDistance[0] = (pos.z / pos.w) - 0.1;
 
-    float camdist = length(vec3(view*vec4(position, 1.0)));
-    fragAlpha = alpha / (camdist*camdist);
+	float camdist = length(vec3(view * vec4(position, 1.0)));
+	fragAlpha     = alpha / (camdist * camdist);
 }

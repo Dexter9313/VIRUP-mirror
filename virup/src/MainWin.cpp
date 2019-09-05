@@ -878,6 +878,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 
 	GLHandler::glf().glDepthFunc(GL_LEQUAL);
 	GLHandler::glf().glEnable(GL_DEPTH_CLAMP);
+	GLHandler::glf().glEnable(GL_CLIP_DISTANCE0);
 	method->render(cam);
 
 	// TODO(florian) better than this
@@ -894,6 +895,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 			cosmoLabel.second->render(camera);
 		}
 	}
+	GLHandler::glf().glDisable(GL_CLIP_DISTANCE0);
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
 }
 
