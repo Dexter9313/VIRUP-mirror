@@ -357,6 +357,34 @@ QString MainWin::getClosestCommonAncestorName(
 	return result->getName().c_str();
 }
 
+Vector3 MainWin::getCelestialBodyPosition(QString const& bodyName,
+                                          QString const& referenceBodyName,
+                                          QDateTime const& dt) const
+{
+	Orbitable const* orb(nullptr);
+	Orbitable const* orbRef(nullptr);
+
+	auto ptrs = orbitalSystem->getAllCelestialBodiesPointers();
+	for(auto ptr : ptrs)
+	{
+		if(QString(ptr->getName().c_str()) == bodyName)
+		{
+			orb = ptr;
+		}
+		if(QString(ptr->getName().c_str()) == referenceBodyName)
+		{
+			orbRef = ptr;
+		}
+	}
+	if(orb == nullptr || orbRef == nullptr)
+	{
+		return {};
+	}
+
+	return Orbitable::getRelativePositionAtUt(orbRef, orb,
+	                                          SimulationTime::dateTimeToUT(dt));
+}
+
 Vector3 MainWin::interpolateCoordinates(QString const& celestialBodyName0,
                                         QString const& celestialBodyName1,
                                         float t) const

@@ -286,6 +286,14 @@ class MainWin : public AbstractMainWin
 	    getClosestCommonAncestorName(QString const& celestialBodyName0,
 	                                 QString const& celestialBodyName1) const;
 	/**
+	 * @brief Returns celestial body position relative to another at a given
+	 * date/time.
+	 */
+	Vector3 getCelestialBodyPosition(QString const& bodyName,
+	                                 QString const& referenceBodyName,
+	                                 QDateTime const& dt
+	                                 = QDateTime::currentDateTimeUtc()) const;
+	/**
 	 * @brief Interpolates celestial bodies coordinates relative to their
 	 * closest common ancestor.
 	 */

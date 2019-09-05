@@ -54,14 +54,24 @@ def interpolateLog(x0, x1, t):
 
 def interpolateDateTime(dt0, dt1, t):
     global currentscene
+    global longanimation
+
     if not dt1.isValid():
         return
     ms0 = currentscene.temporalData.simulationTime.toMSecsSinceEpoch()
     ms1 = dt1.toMSecsSinceEpoch()
     ms = ms0 * (1-t) + ms1 * t
+    if longanimation:
+        if t <= 0.25:
+            t=0.0
+        elif t <= 0.75:
+            t=2.0*t - 0.5
+        else:
+            t=1.0
+    ms = ms0 * (1-t) + ms1 * t
     return QDateTime.fromMSecsSinceEpoch(ms, Qt.UTC)
 
-def interpolateSpatialData(s0, s1, t):
+def interpolateSpatialData(s0, s1, t, simTime0, simTime1):
     global longanimation
 
     longanimation = False
@@ -73,14 +83,14 @@ def interpolateSpatialData(s0, s1, t):
         dist=(s0.cosmoPos - s1.cosmoPos).length() * 3.086e+19
         if t <= 0.25:
             inter0=SpatialData(s0.cosmoPos, dist)
-            result=interpolateSpatialData(s0, inter0, t*4)
+            result=interpolateSpatialData(s0, inter0, t*4, simTime0, simTime0)
         elif t <= 0.75:
             inter0=SpatialData(s0.cosmoPos, dist)
             inter1=SpatialData(s1.cosmoPos, dist)
-            result=interpolateSpatialData(inter0, inter1,t*2 - 0.5)
+            result=interpolateSpatialData(inter0, inter1,t*2 - 0.5, simTime0, simTime1)
         else:
             inter1=SpatialData(s1.cosmoPos, dist)
-            result=interpolateSpatialData(inter1, s1, t*4 - 3)
+            result=interpolateSpatialData(inter1, s1, t*4 - 3, simTime1, simTime1)
         longanimation = True
         return result
 
@@ -89,19 +99,22 @@ def interpolateSpatialData(s0, s1, t):
         bn = VIRUP.getClosestCommonAncestorName(s0.bodyName, s1.bodyName)
         planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, t)
 
-        dist = (VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 0) - VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 1)).length()
+        start=VIRUP.getCelestialBodyPosition(s0.bodyName, bn, simTime0)
+        end=VIRUP.getCelestialBodyPosition(s1.bodyName, bn, simTime1)
+
+        dist = (end-start).length()
         maxscale = 1.0 / (dist)
         if t <= 0.25:
             scale = 1.0 / interpolateLog(s0.scale, maxscale, 4*t)
-            planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 0)
+            planetpos = start
         elif t <= 0.75:
             scale = 1.0 / maxscale
             # maybe try some smoother t
             tprime = t*2 - 0.5
-            planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, tprime)
+            planetpos = interpolateLinear(start, end, 2*t - 0.5)
         else:
             scale = 1.0 / interpolateLog(maxscale, s1.scale, 4*t - 3)
-            planetpos = VIRUP.interpolateCoordinates(s0.bodyName, s1.bodyName, 1)
+            planetpos = end
     else:
         bn = s1.bodyName
         if bn == '':
@@ -132,7 +145,7 @@ def interpolateUI(ui0, ui1, t):
 
 def interpolateScene(sc0, sc1, t):
     return Scene(
-        interpolateSpatialData(sc0.spatialData, sc1.spatialData, t),
+        interpolateSpatialData(sc0.spatialData, sc1.spatialData, t, sc0.temporalData.simulationTime, sc1.temporalData.simulationTime),
         interpolateTemporalData(sc0.temporalData, sc1.temporalData, t),
         interpolateUI(sc0.ui, sc1.ui, t)
     )
@@ -146,7 +159,7 @@ scenes = [
           TemporalData(1.0), UI(0.167)),
     # Saturn
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Saturn', 'Solar System'),
-           TemporalData(), UI(0.167)),
+           TemporalData(1.0), UI(0.167)),
     # Saturn moons dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2000000000, 'Saturn', 'Solar System'),
           TemporalData(100000.0), UI(0.167, True, True)),
