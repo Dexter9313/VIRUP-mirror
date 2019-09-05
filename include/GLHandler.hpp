@@ -368,6 +368,13 @@ class GLHandler : public QObject
 	                         int screenx0, int screeny0, int screenx1,
 	                         int screeny1);
 	/**
+	 * @brief Copies the color content of a RenderTarget in a QImage.
+	 */
+	static QImage
+	    generateScreenshot(RenderTarget const& renderTarget
+	                       = {QSettings().value("window/width").toUInt(),
+	                          QSettings().value("window/height").toUInt()});
+	/**
 	 * @brief Begins wireframe rendering.
 	 */
 	static void beginWireframe();

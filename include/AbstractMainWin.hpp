@@ -3,9 +3,11 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QFileDialog>
 #include <QKeyEvent>
 #include <QOpenGLWindow>
 #include <QProcess>
+#include <QStandardPaths>
 #include <vector>
 
 #include "AbstractLibrary.hpp"
@@ -188,6 +190,13 @@ class AbstractMainWin : public QOpenGLWindow
 	 * @toggle{vr}
 	 */
 	void toggleVR();
+	/**
+	 * @brief Saves a screenshot the file specified as @p path.
+	 *
+	 * If @p path is empty, a valid path will be asked graphically to the user.
+	 *
+	 */
+	void takeScreenshot(QString path = "") const;
 	// /!\ ownership of path.camera
 	void appendSceneRenderPath(QString const& id, RenderPath path);
 	// /!\ ownership of path.camera

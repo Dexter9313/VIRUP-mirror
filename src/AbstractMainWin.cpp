@@ -88,6 +88,19 @@ void AbstractMainWin::toggleVR()
 	setVR(!vrIsEnabled());
 }
 
+void AbstractMainWin::takeScreenshot(QString path) const
+{
+	QImage screenshot(GLHandler::generateScreenshot());
+	if(path == "")
+	{
+		path = QFileDialog::getSaveFileName(
+		    nullptr, tr("Save Screenshot"),
+		    QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
+		    tr("Images (*.png *.xpm *.jpg)"));
+	}
+	screenshot.mirrored(false, true).save(path);
+}
+
 bool AbstractMainWin::event(QEvent* e)
 {
 	if(e->type() == QEvent::Type::Close)
@@ -228,6 +241,10 @@ void AbstractMainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	else if(a.id == "togglevr")
 	{
 		toggleVR();
+	}
+	else if(a.id == "screenshot")
+	{
+		takeScreenshot();
 	}
 	else if(a.id == "togglefullscreen")
 	{

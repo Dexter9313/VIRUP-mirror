@@ -25,6 +25,7 @@ BaseInputManager::BaseInputManager()
 	          true);
 	addAction(Qt::Key_F8, {"togglepyconsole", tr("Toggle Python Console")},
 	          true);
+	addAction(Qt::Key_F10, {"screenshot", tr("Take Screenshot")}, true);
 	addAction(Qt::Key_F11, {"togglevr", tr("Toggle Virtual Reality")}, true);
 	addAction(Qt::ALT + Qt::Key_Return,
 	          {"togglefullscreen", tr("Toggle Fullscreen")}, true);

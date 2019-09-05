@@ -259,6 +259,19 @@ void GLHandler::showOnScreen(RenderTarget const& renderTarget, int screenx0,
 	                        GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
+QImage GLHandler::generateScreenshot(RenderTarget const& renderTarget)
+{
+	auto data(new uchar[renderTarget.width * renderTarget.height * 4]);
+
+	glf().glBindFramebuffer(GL_READ_FRAMEBUFFER, renderTarget.frameBuffer);
+	glf().glReadPixels(0, 0, renderTarget.width, renderTarget.height, GL_RGBA,
+	                   GL_UNSIGNED_BYTE, static_cast<GLvoid*>(data));
+
+	return QImage(data, renderTarget.width, renderTarget.height,
+	              renderTarget.width * 4, QImage::Format::Format_RGBA8888,
+	              [](void* data) { delete static_cast<uchar*>(data); }, data);
+}
+
 void GLHandler::beginWireframe()
 {
 	GLHandler::glf().glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
