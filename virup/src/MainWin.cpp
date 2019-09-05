@@ -733,10 +733,6 @@ void MainWin::initScene()
 		else
 		{
 			QTextStream in(&f);
-			Text3D labelText(200, 200);
-			labelText.setColor(QColor(255, 0, 0));
-			labelText.setSuperSampling(2.f);
-			labelText.setFlags(Qt::AlignCenter);
 			while(!in.atEnd())
 			{
 				QString line       = in.readLine();
@@ -745,9 +741,12 @@ void MainWin::initScene()
 				Vector3 dataPos(fields[1].toDouble(), fields[2].toDouble(),
 				                fields[3].toDouble());
 
-				labelText.setText(label);
-				cosmoLabels.push_back(
-				    {dataPos, new Billboard(labelText.getImage())});
+				auto labelText = new Text3D(200, 200);
+				labelText->setColor(QColor(255, 0, 0));
+				labelText->setSuperSampling(2.f);
+				labelText->setFlags(Qt::AlignCenter);
+				labelText->setText(label);
+				cosmoLabels.push_back({dataPos, labelText});
 			}
 		}
 	}
@@ -788,12 +787,20 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 
 		for(auto cosmoLabel : cosmoLabels)
 		{
-			double camDist((camPosData - cosmoLabel.first).length());
 			Vector3 pos(cam.dataToWorldPosition(cosmoLabel.first));
+			Vector3 camRelPos(camPosData - cosmoLabel.first);
+			Vector3 unitRelPos(camRelPos.getUnitForm());
+
+			float yaw(atan2(unitRelPos[1], unitRelPos[0]));
+			float pitch(-1.0 * asin(unitRelPos[2]));
 			double rescale(pos.length() <= 8000.0 ? 1.0
 			                                      : 8000.0 / pos.length());
-			cosmoLabel.second->position = Utils::toQt(pos * rescale);
-			cosmoLabel.second->width    = rescale * camDist * cam.scale / 3.0;
+			QMatrix4x4 model;
+			model.translate(Utils::toQt(pos * rescale));
+			model.scale(rescale * camRelPos.length() * cam.scale / 3.0);
+			model.rotate(yaw * 180.f / M_PI + 90.f, 0.0, 0.0, 1.0);
+			model.rotate(pitch * 180.f / M_PI + 90.f, 1.0, 0.0, 0.0);
+			cosmoLabel.second->getModel() = model;
 		}
 		movementControls->update(frameTiming);
 	}
@@ -812,7 +819,8 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		else
 		{
 			debugText->getModel() = cam.screenToWorldTransform();
-			// debugText->getModel().translate(QVector3D(-0.88f, 0.88f, 0.f));
+			// debugText->getModel().translate(QVector3D(-0.88f, 0.88f,
+			// 0.f));
 			debugText->getModel().scale(
 			    2 * static_cast<float>(textWidth) / width(),
 			    2 * static_cast<float>(textWidth) / height());
@@ -920,7 +928,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 			{
 				continue;
 			}
-			cosmoLabel.second->render(camera);
+			cosmoLabel.second->render();
 		}
 	}
 	GLHandler::glf().glDisable(GL_CLIP_DISTANCE0);
