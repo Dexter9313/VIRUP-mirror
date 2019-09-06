@@ -375,6 +375,10 @@ class MainWin : public AbstractMainWin
 	std::string lastTargetName = std::string("");
 
 	bool forceUpdateFromCosmo = true;
+
+	// SAFE ZONE
+	GLHandler::ShaderProgram szShader;
+	GLHandler::Mesh szMesh;
 };
 
 #endif // MAINWIN_H

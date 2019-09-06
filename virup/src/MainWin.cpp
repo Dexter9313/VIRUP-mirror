@@ -750,6 +750,39 @@ void MainWin::initScene()
 			}
 		}
 	}
+
+	// SAFE ZONE
+	szShader = GLHandler::newShader("default");
+	GLHandler::setShaderParam(szShader, "color", QColor(0, 0, 255));
+	GLHandler::setShaderParam(szShader, "alpha", 1.f);
+
+	szMesh = GLHandler::newMesh();
+	std::vector<float> vertices;
+	std::vector<unsigned int> elements;
+	for(unsigned int i(0); i < 100; ++i)
+	{
+		vertices.push_back(0.25f * cos(2.f * M_PI * i / 100));
+		vertices.push_back(0.f);
+		vertices.push_back(0.25f * sin(2.f * M_PI * i / 100));
+		elements.push_back(i);
+		elements.push_back(i + 1);
+	}
+	elements.pop_back();
+	elements.push_back(0);
+
+	vertices.push_back(0.125f);
+	vertices.push_back(0.f);
+	vertices.push_back(0.f);
+
+	vertices.push_back(0.125f + 0.25f);
+	vertices.push_back(0.f);
+	vertices.push_back(0.f);
+
+	elements.push_back(100);
+	elements.push_back(101);
+
+	GLHandler::setVertices(szMesh, vertices, szShader, {{"position", 3}},
+	                       elements);
 }
 
 void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
@@ -903,6 +936,24 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 			grid->render(getScale(), 1.125);
 		}
 		movementControls->renderGuides();
+
+		if(vrHandler)
+		{
+			QMatrix4x4 model;
+			QSizeF playAreaSize(vrHandler.getPlayAreaSize());
+			if(playAreaSize.width() > playAreaSize.height())
+			{
+				model.translate(-0.5f * playAreaSize.width() + 0.25, 0.f, 0.f);
+			}
+			else
+			{
+				model.translate(0.f, 0.f, -0.5f * playAreaSize.height() + 0.25);
+				model.rotate(-90.f, 0.f, 1.f, 0.f);
+			}
+			GLHandler::setUpRender(szShader, model,
+			                       GLHandler::GeometricSpace::STANDINGTRACKED);
+			GLHandler::render(szMesh, GLHandler::PrimitiveType::LINES);
+		}
 		return;
 	}
 
@@ -997,4 +1048,7 @@ MainWin::~MainWin()
 	delete movementControls;
 	delete method;
 	delete grid;
+
+	GLHandler::deleteMesh(szMesh);
+	GLHandler::deleteShader(szShader);
 }
