@@ -377,8 +377,8 @@ class MainWin : public AbstractMainWin
 	bool forceUpdateFromCosmo = true;
 
 	// SAFE ZONE
-	GLHandler::ShaderProgram szShader;
-	GLHandler::Mesh szMesh;
+	GLHandler::ShaderProgram szShader = {};
+	GLHandler::Mesh szMesh            = {};
 };
 
 #endif // MAINWIN_H
