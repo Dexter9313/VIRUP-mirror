@@ -179,17 +179,19 @@ scenes = [
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2.469e+22),
            TemporalData(), UI(55800.0, False, True, True)),
     # Whole cube
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 8.7474e+23),
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 1.2e+24),
            TemporalData(), UI(1015000.0, False, False, True)),
 ]
 
 id = 0
+disableanimations = False
 
 def keyPressEvent(e):
     global timer
     global startScale
     global id
     global currentscene
+    global disableanimations
 
     # if spacebar pressed, start animation
     numpad_mod = int(e.modifiers()) == Qt.KeypadModifier
@@ -214,13 +216,18 @@ def keyPressEvent(e):
     elif e.key() == Qt.Key_9 and numpad_mod:
         id = 9
         timer.restart()
+    elif e.key() == Qt.Key_Minus and numpad_mod:
+        disableanimations = not disableanimations
     elif e.key() == Qt.Key_Space:
         id = -1
     else:
         return
 
     timer.restart()
-    currentscene=Scene(SpatialData(VIRUP.cosmoPosition - Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale), 1.0 / VIRUP.scale, VIRUP.planetTarget, VIRUP.planetarySystemName),
+    if disableanimations:
+        currentscene = scenes[id]
+    else:
+        currentscene=Scene(SpatialData(VIRUP.cosmoPosition - Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale), 1.0 / VIRUP.scale, VIRUP.planetTarget, VIRUP.planetarySystemName),
            TemporalData(VIRUP.timeCoeff, VIRUP.simulationTime), UI(VIRUP.cosmolum, VIRUP.orbitsEnabled, VIRUP.labelsEnabled, VIRUP.darkmatterEnabled, VIRUP.gridEnabled))
 
 def initScene():
