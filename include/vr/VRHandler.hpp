@@ -69,6 +69,7 @@ class VRHandler : public QObject
 	const Hand* getHand(Side side) const;
 	// same order as in HmdQuad_t struct
 	QMatrix4x4 getSeatedToStandingAbsoluteTrackingPos() const;
+	QSizeF getPlayAreaSize() const;
 	std::vector<QVector3D> getPlayAreaQuad() const;
 	void prepareRendering();
 	void beginRendering(Side eye, bool postProcessed);

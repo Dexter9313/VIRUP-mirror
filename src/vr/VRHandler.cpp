@@ -163,6 +163,13 @@ QMatrix4x4 VRHandler::getSeatedToStandingAbsoluteTrackingPos() const
 	return toQt(vr_pointer->GetSeatedZeroPoseToStandingAbsoluteTrackingPose());
 }
 
+QSizeF VRHandler::getPlayAreaSize() const
+{
+	float width(0.f), height(0.f);
+	vr::VRChaperone()->GetPlayAreaSize(&width, &height);
+	return {width, height};
+}
+
 std::vector<QVector3D> VRHandler::getPlayAreaQuad() const
 {
 	vr::HmdQuad_t rect = {};
