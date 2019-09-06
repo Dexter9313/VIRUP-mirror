@@ -746,7 +746,7 @@ void MainWin::initScene()
 				labelText->setSuperSampling(2.f);
 				labelText->setFlags(Qt::AlignCenter);
 				labelText->setText(label);
-				cosmoLabels.push_back({dataPos, labelText});
+				cosmoLabels.emplace_back(dataPos, labelText);
 			}
 		}
 	}

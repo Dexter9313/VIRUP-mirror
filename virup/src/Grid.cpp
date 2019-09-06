@@ -45,8 +45,7 @@ void Grid::setColor(QColor const& color)
 void Grid::render(double scale, double height)
 {
 	// round scale to nearest power of 10
-	double roundscale(pow(10, round(log10(scale))));
-	roundscale = scale;
+	double roundscale((pow(10, round(log10(scale)))));
 	double gridScale(1.0 * scale / roundscale);
 
 	QMatrix4x4 t;
