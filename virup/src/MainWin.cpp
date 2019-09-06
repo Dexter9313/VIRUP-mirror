@@ -943,11 +943,11 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 			QSizeF playAreaSize(vrHandler.getPlayAreaSize());
 			if(playAreaSize.width() > playAreaSize.height())
 			{
-				model.translate(-0.5f * playAreaSize.width() + 0.25, 0.f, 0.f);
+				model.translate(-0.5f * playAreaSize.width() + 0.45, 0.f, 0.f);
 			}
 			else
 			{
-				model.translate(0.f, 0.f, -0.5f * playAreaSize.height() + 0.25);
+				model.translate(0.f, 0.f, -0.5f * playAreaSize.height() + 0.45);
 				model.rotate(-90.f, 0.f, 1.f, 0.f);
 			}
 			GLHandler::setUpRender(szShader, model,
