@@ -150,16 +150,18 @@ def interpolateScene(sc0, sc1, t):
         interpolateUI(sc0.ui, sc1.ui, t)
     )
 
+solareclipsedt = QDateTime(QDate(2019, 7, 2), QTime(22, 18, 00))
+
 scenes = [
     # Earth-Moon dynamics
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 15000000, 'Earth', 'Solar System'),
+          TemporalData(1.0, solareclipsedt), UI(0.167)),
+    # Earth-Moon dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Earth', 'Solar System'),
-          TemporalData(10000.0, QDateTime(QDate(2019, 7, 2), QTime(19, 29, 42))), UI(0.167)),
+          TemporalData(1.0, solareclipsedt), UI(0.167)),
     # Phobos
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 30000, 'Phobos', 'Solar System'),
           TemporalData(1.0), UI(0.167)),
-    # Saturn
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Saturn', 'Solar System'),
-           TemporalData(1.0), UI(0.167)),
     # Saturn moons dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2000000000, 'Saturn', 'Solar System'),
           TemporalData(100000.0), UI(0.167, True, True)),
@@ -234,6 +236,8 @@ def initScene():
     global timer
     global longanimation
     global currentscene
+
+    VIRUP.simulationTime = solareclipsedt
 
     timer = QElapsedTimer()
     longanimation = False
