@@ -388,7 +388,7 @@ class MainWin : public AbstractMainWin
 	// LENSING
 	GLHandler::Texture lenseDistortionMap = {};
 	QVector4D lenseScreenCoord;
-	float lenseDist;
+	float lenseDist = 0.f;
 };
 
 #endif // MAINWIN_H

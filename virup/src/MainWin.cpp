@@ -601,7 +601,7 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 						    = !CelestialBodyRenderer::renderLabels;
 						CelestialBodyRenderer::renderOrbits
 						    = !CelestialBodyRenderer::renderOrbits;
-						toggleGrid();
+						// toggleGrid();
 						break;
 					case VRHandler::Button::MENU:
 						printPositionInDataSpace(e.side);
