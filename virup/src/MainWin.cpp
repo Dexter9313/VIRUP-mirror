@@ -788,6 +788,12 @@ void MainWin::initScene()
 
 	GLHandler::setVertices(szMesh, vertices, szShader, {{"position", 3}},
 	                       elements);
+
+	// LENSING
+	lenseDistortionMap = GLHandler::newTexture(
+	    "data/virup/images/pointmass-distortion.png", false);
+
+	appendPostProcessingShader("lensing", "lensing");
 }
 
 void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
@@ -989,6 +995,56 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	}
 	GLHandler::glf().glDisable(GL_CLIP_DISTANCE0);
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
+
+	// update here because depends on eye
+	QVector3D pos(Utils::toQt(cam.dataToWorldPosition(Vector3(0.0, 0.0, 0.0))));
+	lenseScreenCoord = camera.project(pos);
+	lenseScreenCoord /= lenseScreenCoord.w();
+	lenseDist
+	    = ((camera.hmdScaledSpaceToWorldTransform() * QVector3D(0, 0, 0)) - pos)
+	          .length();
+}
+
+void MainWin::applyPostProcShaderParams(QString const& id,
+                                        GLHandler::ShaderProgram shader) const
+{
+	AbstractMainWin::applyPostProcShaderParams(id, shader);
+	if(id == "lensing")
+	{
+		float aspectRatio(width());
+		aspectRatio /= height();
+		if(vrHandler)
+		{
+			QSize rtSize(vrHandler.getEyeRenderTargetSize());
+			aspectRatio = rtSize.width();
+			aspectRatio /= rtSize.height();
+		}
+
+		GLHandler::setShaderParam(shader, "aspectRatio", aspectRatio);
+		GLHandler::setShaderParam(shader, "lenseSize",
+		                          static_cast<float>(1.0e14 * getScale()));
+		GLHandler::setShaderParam(shader, "lenseScreenCoord", lenseScreenCoord);
+		GLHandler::setShaderParam(shader, "lenseDist", lenseDist);
+		GLHandler::setShaderParam(shader, "radiusLimit", 0.2f);
+
+		GLHandler::setShaderParam(shader, "distortionMap", 1);
+	}
+}
+
+std::vector<GLHandler::Texture> MainWin::getPostProcessingUniformTextures(
+    QString const& id, GLHandler::ShaderProgram shader) const
+{
+	auto abstractResult(
+	    AbstractMainWin::getPostProcessingUniformTextures(id, shader));
+	if(!abstractResult.empty())
+	{
+		return abstractResult;
+	}
+	if(id == "lensing")
+	{
+		return {lenseDistortionMap};
+	}
+	return {};
 }
 
 void MainWin::printPositionInDataSpace(Side controller) const

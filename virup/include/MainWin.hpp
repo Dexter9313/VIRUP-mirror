@@ -324,6 +324,11 @@ class MainWin : public AbstractMainWin
 	// (no controllers or hands)
 	virtual void renderScene(BasicCamera const& camera,
 	                         QString const& pathId) override;
+	virtual void applyPostProcShaderParams(
+	    QString const& id, GLHandler::ShaderProgram shader) const override;
+
+	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
+	    QString const& id, GLHandler::ShaderProgram shader) const override;
 
   private:
 	void loadSolarSystem();
@@ -379,6 +384,11 @@ class MainWin : public AbstractMainWin
 	// SAFE ZONE
 	GLHandler::ShaderProgram szShader = {};
 	GLHandler::Mesh szMesh            = {};
+
+	// LENSING
+	GLHandler::Texture lenseDistortionMap = {};
+	QVector4D lenseScreenCoord;
+	float lenseDist;
 };
 
 #endif // MAINWIN_H

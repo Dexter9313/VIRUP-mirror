@@ -177,6 +177,9 @@ scenes = [
     # Milky Way
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 6.171e+20),
            TemporalData(), UI(18.1, False, True)),
+    # Black Hole
+    Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 1.0e+14),
+           TemporalData(), UI(18.1, False, False)),
     # Local Group
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2.469e+22),
            TemporalData(), UI(55800.0, False, True, True)),
