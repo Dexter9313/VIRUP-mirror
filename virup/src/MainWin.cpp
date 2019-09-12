@@ -380,14 +380,13 @@ Vector3 MainWin::getCelestialBodyPosition(QString const& bodyName,
 	{
 		return {};
 	}
-    if(dt.isValid())
-    {
-    	return Orbitable::getRelativePositionAtUt(orbRef, orb,
-    	                                          SimulationTime::dateTimeToUT(dt));
-    }
-    return Orbitable::getRelativePositionAtUt(orbRef, orb,
-    	                                          clock.getCurrentUt());
-    
+	if(dt.isValid())
+	{
+		return Orbitable::getRelativePositionAtUt(
+		    orbRef, orb, SimulationTime::dateTimeToUT(dt));
+	}
+	return Orbitable::getRelativePositionAtUt(orbRef, orb,
+	                                          clock.getCurrentUt());
 }
 
 Vector3 MainWin::interpolateCoordinates(QString const& celestialBodyName0,
@@ -794,6 +793,46 @@ void MainWin::initScene()
 	    "data/virup/images/pointmass-distortion.png", false);
 
 	appendPostProcessingShader("lensing", "lensing");
+
+	// TRANSITIONS
+	dialog = new QDialog;
+	dialog->show();
+	dialog->setWindowTitle("VIRUP Scenes");
+
+	auto layout = new QVBoxLayout(dialog);
+
+	layout->addWidget(new QLabel("Scenes :"));
+
+	QStringList scenes = {"July Eclipse close-up",
+	                      "July Eclipse further",
+	                      "Phobos",
+	                      "Saturn Moons",
+	                      "Enceladus",
+	                      "Solar System",
+	                      "Kepler-11",
+	                      "Milky Way",
+	                      "Sagittarius A*",
+	                      "Local Group",
+	                      "Cosmological Scale"};
+	for(int i(0); i < scenes.size(); ++i)
+	{
+		auto button = new QPushButton(scenes[i]);
+		connect(button, &QPushButton::clicked, this, [i]() {
+			PythonQtHandler::evalScript("setSceneId(" + QString::number(i)
+			                            + ")");
+		});
+		layout->addWidget(button);
+	}
+	layout->addWidget(new QLabel("Options :"));
+	auto button = new QPushButton("Unlock controls");
+	connect(button, &QPushButton::clicked, this,
+	        []() { PythonQtHandler::evalScript("setSceneId(-1)"); });
+	layout->addWidget(button);
+	button = new QPushButton(
+	    "Toggle transitions (only if user is sick, can introduce problems !)");
+	connect(button, &QPushButton::clicked, this,
+	        []() { PythonQtHandler::evalScript("toggleAnimations()"); });
+	layout->addWidget(button);
 }
 
 void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
@@ -1099,6 +1138,7 @@ std::vector<float> MainWin::generateVertices(unsigned int number,
 
 MainWin::~MainWin()
 {
+	delete dialog;
 	for(auto cosmoLabel : cosmoLabels)
 	{
 		delete cosmoLabel.second;

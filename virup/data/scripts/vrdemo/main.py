@@ -1,4 +1,5 @@
 from PythonQt.QtGui import QKeyEvent
+from PythonQt.QtGui import QDialog
 from PythonQt.QtCore import QElapsedTimer
 from PythonQt.QtCore import Qt
 from PythonQt.QtCore import QDateTime
@@ -57,7 +58,7 @@ def interpolateDateTime(dt0, dt1, t):
     global longanimation
 
     if not dt1.isValid():
-        return
+        return QDateTime()
     ms0 = currentscene.temporalData.simulationTime.toMSecsSinceEpoch()
     ms1 = dt1.toMSecsSinceEpoch()
     ms = ms0 * (1-t) + ms1 * t
@@ -79,8 +80,8 @@ def interpolateSpatialData(s0, s1, t, simTime0, simTime1):
 
     scale=1.0 / interpolateLog(s0.scale, s1.scale, t)
 
-    if s0.systemName != '' and s1.systemName != '' and s0.systemName != s1.systemName:
-        dist=(s0.cosmoPos - s1.cosmoPos).length() * 3.086e+19
+    dist=(s0.cosmoPos - s1.cosmoPos).length() * 3.086e+19
+    if s0.systemName != s1.systemName and dist != 0.0:
         if t <= 0.25:
             inter0=SpatialData(s0.cosmoPos, dist)
             result=interpolateSpatialData(s0, inter0, t*4, simTime0, simTime0)
@@ -144,8 +145,10 @@ def interpolateUI(ui0, ui1, t):
     )
 
 def interpolateScene(sc0, sc1, t):
+    simTime0=interpolateDateTime(sc0.temporalData.simulationTime, sc1.temporalData.simulationTime, 0.25)
+    simTime1=interpolateDateTime(sc0.temporalData.simulationTime, sc1.temporalData.simulationTime, 0.75)
     return Scene(
-        interpolateSpatialData(sc0.spatialData, sc1.spatialData, t, sc0.temporalData.simulationTime, sc1.temporalData.simulationTime),
+        interpolateSpatialData(sc0.spatialData, sc1.spatialData, t, simTime0, simTime1),
         interpolateTemporalData(sc0.temporalData, sc1.temporalData, t),
         interpolateUI(sc0.ui, sc1.ui, t)
     )
@@ -175,65 +178,73 @@ scenes = [
     Scene(SpatialData(Vector3(8.094034192480557, -0.5269932753083851, -0.13332218244029664), 5e+10, 'Kepler-11', 'Kepler-11'),
            TemporalData(50000), UI(0.167, True, True)),
     # Milky Way
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 6.171e+20),
-           TemporalData(), UI(18.1, False, True)),
+    Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 6.171e+20),
+           TemporalData(), UI(18.1)),
     # Black Hole
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 1.0e+14),
-           TemporalData(), UI(18.1, False, False)),
+           TemporalData(), UI(18.1)),
     # Local Group
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2.469e+22),
+    Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 2.469e+22),
            TemporalData(), UI(55800.0, False, True, True)),
     # Whole cube
-    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 1.2e+24),
+    Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 1.2e+24),
            TemporalData(), UI(1015000.0, False, False, True)),
 ]
 
 id = 0
 disableanimations = False
 
-def keyPressEvent(e):
+def setSceneId(newid):
     global timer
-    global startScale
     global id
     global currentscene
-    global disableanimations
 
-    # if spacebar pressed, start animation
-    numpad_mod = int(e.modifiers()) == Qt.KeypadModifier
-    if e.key() == Qt.Key_0 and numpad_mod:
-        id = 0
-    elif e.key() == Qt.Key_1 and numpad_mod:
-        id = 1
-    elif e.key() == Qt.Key_2 and numpad_mod:
-        id = 2
-    elif e.key() == Qt.Key_3 and numpad_mod:
-        id = 3
-    elif e.key() == Qt.Key_4 and numpad_mod:
-        id = 4
-    elif e.key() == Qt.Key_5 and numpad_mod:
-        id = 5
-    elif e.key() == Qt.Key_6 and numpad_mod:
-        id = 6
-    elif e.key() == Qt.Key_7 and numpad_mod:
-        id = 7
-    elif e.key() == Qt.Key_8 and numpad_mod:
-        id = 8
-    elif e.key() == Qt.Key_9 and numpad_mod:
-        id = 9
-        timer.restart()
-    elif e.key() == Qt.Key_Minus and numpad_mod:
-        disableanimations = not disableanimations
-    elif e.key() == Qt.Key_Space:
-        id = -1
-    else:
-        return
-
+    id = newid
     timer.restart()
     if disableanimations:
         currentscene = scenes[id]
     else:
         currentscene=Scene(SpatialData(VIRUP.cosmoPosition - Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale), 1.0 / VIRUP.scale, VIRUP.planetTarget, VIRUP.planetarySystemName),
            TemporalData(VIRUP.timeCoeff, VIRUP.simulationTime), UI(VIRUP.cosmolum, VIRUP.orbitsEnabled, VIRUP.labelsEnabled, VIRUP.darkmatterEnabled, VIRUP.gridEnabled))
+        if scenes[id].spatialData.systemName == currentscene.spatialData.systemName and (scenes[id].spatialData.cosmoPos - currentscene.spatialData.cosmoPos).length() > 0.1:
+            currentscene.spatialData.systemName = ""
+
+def toggleAnimations():
+    global disableanimations
+    disableanimations = not disableanimations
+
+def keyPressEvent(e):
+    global disableanimations
+
+    # if spacebar pressed, start animation
+    numpad_mod = int(e.modifiers()) == Qt.KeypadModifier
+    if e.key() == Qt.Key_0 and numpad_mod:
+        setSceneId(0)
+    elif e.key() == Qt.Key_1 and numpad_mod:
+        setSceneId(1)
+    elif e.key() == Qt.Key_2 and numpad_mod:
+        setSceneId(2)
+    elif e.key() == Qt.Key_3 and numpad_mod:
+        setSceneId(3)
+    elif e.key() == Qt.Key_4 and numpad_mod:
+        setSceneId(4)
+    elif e.key() == Qt.Key_5 and numpad_mod:
+        setSceneId(5)
+    elif e.key() == Qt.Key_6 and numpad_mod:
+        setSceneId(6)
+    elif e.key() == Qt.Key_7 and numpad_mod:
+        setSceneId(7)
+    elif e.key() == Qt.Key_8 and numpad_mod:
+        setSceneId(8)
+    elif e.key() == Qt.Key_9 and numpad_mod:
+        setSceneId(9)
+    elif e.key() == Qt.Key_Minus and numpad_mod:
+        toggleAnimations()
+    elif e.key() == Qt.Key_Space:
+        setSceneId(-1)
+    else:
+        return
+
 
 def initScene():
     global timer
@@ -245,6 +256,8 @@ def initScene():
     timer = QElapsedTimer()
     longanimation = False
     currentscene = None
+
+    foo = QDialog()
 
 def updateScene():
     global id

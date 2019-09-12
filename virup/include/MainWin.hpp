@@ -4,7 +4,10 @@
 #include <QCoreApplication>
 #include <QDirIterator>
 #include <QJsonDocument>
+#include <QLabel>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 #include "AbstractMainWin.hpp"
 #include "Text3D.hpp"
@@ -389,6 +392,9 @@ class MainWin : public AbstractMainWin
 	GLHandler::Texture lenseDistortionMap = {};
 	QVector4D lenseScreenCoord;
 	float lenseDist = 0.f;
+
+	// SCENES
+	QDialog* dialog;
 };
 
 #endif // MAINWIN_H
