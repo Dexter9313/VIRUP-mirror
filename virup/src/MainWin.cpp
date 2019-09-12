@@ -380,9 +380,14 @@ Vector3 MainWin::getCelestialBodyPosition(QString const& bodyName,
 	{
 		return {};
 	}
-
-	return Orbitable::getRelativePositionAtUt(orbRef, orb,
-	                                          SimulationTime::dateTimeToUT(dt));
+    if(dt.isValid())
+    {
+    	return Orbitable::getRelativePositionAtUt(orbRef, orb,
+    	                                          SimulationTime::dateTimeToUT(dt));
+    }
+    return Orbitable::getRelativePositionAtUt(orbRef, orb,
+    	                                          clock.getCurrentUt());
+    
 }
 
 Vector3 MainWin::interpolateCoordinates(QString const& celestialBodyName0,
