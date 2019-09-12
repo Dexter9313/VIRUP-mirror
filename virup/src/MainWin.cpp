@@ -968,7 +968,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 		{
 			if(timeSinceTextUpdate < 5.f)
 			{
-				debugText->render();
+				// debugText->render();
 			}
 		}
 		else
@@ -978,7 +978,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 			systemRenderer->renderTransparent(camera);
 			if(timeSinceTextUpdate < 5.f)
 			{
-				debugText->render();
+				// debugText->render();
 			}
 		}
 		if(showGrid)
