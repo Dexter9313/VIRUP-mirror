@@ -798,21 +798,23 @@ void MainWin::initScene()
 	dialog = new QDialog;
 	dialog->show();
 	dialog->setWindowTitle("VIRUP Scenes");
+	// dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint |
+	// Qt::X11BypassWindowManagerHint );
 
 	auto layout = new QVBoxLayout(dialog);
 
 	layout->addWidget(new QLabel("Scenes :"));
 
-	QStringList scenes = {"July Eclipse close-up",
-	                      "July Eclipse further",
-	                      "Phobos",
-	                      "Saturn Moons",
-	                      "Enceladus",
-	                      "Solar System",
-	                      "Kepler-11",
-	                      "Milky Way",
-	                      "Sagittarius A*",
-	                      "Local Group",
+	QStringList scenes = {"0:July Eclipse close-up",
+	                      "1:July Eclipse further",
+	                      "2:Phobos",
+	                      "3:Saturn Moons",
+	                      "4:Enceladus",
+	                      "5:Solar System",
+	                      "6:Kepler-11",
+	                      "7:Milky Way",
+	                      "8:Sagittarius A*",
+	                      "9:Local Group",
 	                      "Cosmological Scale"};
 	for(int i(0); i < scenes.size(); ++i)
 	{
@@ -821,18 +823,17 @@ void MainWin::initScene()
 			PythonQtHandler::evalScript("setSceneId(" + QString::number(i)
 			                            + ")");
 		});
+		button->setFocusPolicy(Qt::NoFocus);
 		layout->addWidget(button);
+		buttons.push_back(button);
 	}
 	layout->addWidget(new QLabel("Options :"));
-	auto button = new QPushButton("Unlock controls");
-	connect(button, &QPushButton::clicked, this,
-	        []() { PythonQtHandler::evalScript("setSceneId(-1)"); });
-	layout->addWidget(button);
-	button = new QPushButton(
+	transitionsButton = new QPushButton(
 	    "Toggle transitions (only if user is sick, can introduce problems !)");
-	connect(button, &QPushButton::clicked, this,
+	connect(transitionsButton, &QPushButton::clicked, this,
 	        []() { PythonQtHandler::evalScript("toggleAnimations()"); });
-	layout->addWidget(button);
+	transitionsButton->setFocusPolicy(Qt::NoFocus);
+	layout->addWidget(transitionsButton);
 }
 
 void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
@@ -886,6 +887,39 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 			cosmoLabel.second->getModel() = model;
 		}
 		movementControls->update(frameTiming);
+		int currentScene(PythonQtHandler::getVariable("id").toInt());
+		for(int i(0); i < static_cast<int>(buttons.size()); ++i)
+		{
+			auto button  = buttons[i];
+			QPalette pal = button->palette();
+			if(i == currentScene)
+			{
+				pal.setColor(QPalette::Button, QColor(Qt::green));
+			}
+			else
+			{
+				pal.setColor(QPalette::Button, QColor(255, 128, 128));
+			}
+			button->setAutoFillBackground(true);
+			button->setPalette(pal);
+			button->update();
+		}
+		QPalette pal = transitionsButton->palette();
+		bool animationDisabled(
+		    PythonQtHandler::getVariable("disableanimations").toBool());
+		if(animationDisabled)
+		{
+			transitionsButton->setText("Transitions : DISABLED");
+			pal.setColor(QPalette::Button, QColor(255, 128, 128));
+		}
+		else
+		{
+			transitionsButton->setText("Transitions : ENABLED");
+			pal.setColor(QPalette::Button, QColor(Qt::green));
+		}
+		transitionsButton->setAutoFillBackground(true);
+		transitionsButton->setPalette(pal);
+		transitionsButton->update();
 	}
 	if(pathId == "planet")
 	{

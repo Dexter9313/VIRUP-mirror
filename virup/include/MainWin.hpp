@@ -394,7 +394,9 @@ class MainWin : public AbstractMainWin
 	float lenseDist = 0.f;
 
 	// SCENES
-	QDialog* dialog;
+	QDialog* dialog                   = nullptr;
+	std::vector<QPushButton*> buttons = {};
+	QPushButton* transitionsButton    = nullptr;
 };
 
 #endif // MAINWIN_H

@@ -1,5 +1,4 @@
 from PythonQt.QtGui import QKeyEvent
-from PythonQt.QtGui import QDialog
 from PythonQt.QtCore import QElapsedTimer
 from PythonQt.QtCore import Qt
 from PythonQt.QtCore import QDateTime
@@ -256,8 +255,6 @@ def initScene():
     timer = QElapsedTimer()
     longanimation = False
     currentscene = None
-
-    foo = QDialog()
 
 def updateScene():
     global id
