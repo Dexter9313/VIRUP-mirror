@@ -49,25 +49,6 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 		}
 	}
 
-	InputManager inputManager;
-	addGroup("controls", tr("Controls"));
-	currentForm->addRow(tr("ENGINE"), new QWidget());
-	for(auto const& key : inputManager.getOrderedEngineKeys())
-	{
-		addKeySequenceSetting(inputManager[key].id, key,
-		                      inputManager[key].name);
-	}
-	if(!inputManager.getOrderedProgramKeys().empty())
-	{
-		currentForm->addRow(" ", new QWidget());
-		currentForm->addRow(PROJECT_NAME, new QWidget());
-		for(auto const& key : inputManager.getOrderedProgramKeys())
-		{
-			addKeySequenceSetting(inputManager[key].id, key,
-			                      inputManager[key].name);
-		}
-	}
-
 	addGroup("vr", tr("Virtual Reality"));
 	addBoolSetting("enabled", true, tr("Enable VR"));
 	addBoolSetting(
