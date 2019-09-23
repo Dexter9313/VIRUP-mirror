@@ -266,6 +266,12 @@ FOREACH(PATH ${THIRDPARTY_DATA_FILES})
 						WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 ENDFOREACH(PATH)
 
+#translations
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/translations ${PROJECT_BINARY_DIR}/data/translations
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+
 #INSTALL RULES / NOT FOR WINDOWS
 if(NOT WIN32)
 	INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} DESTINATION bin)
@@ -364,3 +370,26 @@ endif()
 # Including extra cmake rules
 include(cmake/ClangDevTools.cmake)
 include(cmake/Doc.cmake)
+
+
+# Translation
+if(PROJECT_TRANSLATE)
+	set(TRANSLATION_FILES ${TRANSLATION_FILES} ${PROJECT_HPP_FILES} ${PROJECT_SRC_FILES})
+endif()
+if(PROJECT_TRANSLATE_ENGINE)
+	set(TRANSLATION_FILES ${TRANSLATION_FILES} ${ENGINE_HPP_FILES} ${ENGINE_SRC_FILES})
+endif()
+if(PROJECT_TRANSLATE_THIRDPARTY)
+	set(TRANSLATION_FILES ${TRANSLATION_FILES} ${THIRDPARTY_HPP_FILES} ${THIRDPARTY_SRC_FILES})
+endif()
+
+add_custom_target(translation-update
+	COMMAND lupdate ${TRANSLATION_FILES} -ts ${CMAKE_CURRENT_SOURCE_DIR}/translations/${PROJECT_NAME}_fr.ts
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	COMMENT "Generating translation (.ts) file."
+	VERBATIM)
+add_custom_target(translation-release
+	COMMAND lrelease ${CMAKE_CURRENT_SOURCE_DIR}/translations/${PROJECT_NAME}_fr.ts
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	COMMENT "Generating translation (.qm) file."
+	VERBATIM)

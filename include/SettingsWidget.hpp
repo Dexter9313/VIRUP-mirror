@@ -21,6 +21,7 @@
 
 #include <QCheckBox>
 #include <QColorDialog>
+#include <QComboBox>
 #include <QCompleter>
 #include <QDateTime>
 #include <QDateTimeEdit>
@@ -74,6 +75,11 @@ class SettingsWidget : public QTabWidget
 	void addKeySequenceSetting(QString const& name,
 	                           QKeySequence const& defaultVal,
 	                           QString const& label);
+	void addLanguageSetting(QString const& name = "language",
+	                        QString const& defaultVal
+	                        = QLocale::system().name(),
+	                        QString const& label
+	                        = tr("Language (needs restart)"));
 
   private:
 	QFormLayout* currentForm = nullptr;

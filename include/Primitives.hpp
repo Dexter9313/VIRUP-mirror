@@ -30,6 +30,12 @@ class Primitives
 	                               GLHandler::PrimitiveType primitiveType
 	                               = GLHandler::PrimitiveType::TRIANGLE_STRIP);
 
+	// dim 2
+	static GLHandler::Mesh newGrid(GLHandler::ShaderProgram shader,
+	                               unsigned int size = 1024,
+	                               GLHandler::PrimitiveType primitiveType
+	                               = GLHandler::PrimitiveType::TRIANGLE_STRIP);
+
 	static GLHandler::Mesh
 	    newUnitCube(GLHandler::ShaderProgram shader,
 	                GLHandler::PrimitiveType primitiveType

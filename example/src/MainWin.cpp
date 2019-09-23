@@ -112,7 +112,7 @@ void MainWin::initScene()
 	bill->position = QVector3D(0.f, 0.f, 0.8f);
 
 	text = new Text3D(200, 40);
-	text->setText("Hello World !\nLet's draw some text !");
+	text->setText(tr("Hello World !\nLet's draw some text !"));
 	text->setColor(QColor(0, 0, 0, 255));
 	text->setBackgroundColor(QColor(255, 0, 0, 127));
 	text->setRectangle(QRect(50, 0, 150, 40));

@@ -28,6 +28,26 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addUIntSetting("height", 800, tr("Window Height"), 0, 10000);
 	addBoolSetting("fullscreen", false, tr("Window Fullscreen"));
 	addBoolSetting("hdr", true, tr("High Dynamic Range"));
+	addLanguageSetting();
+
+	InputManager inputManager;
+	addGroup("controls", tr("Controls"));
+	currentForm->addRow(tr("ENGINE"), new QWidget());
+	for(auto const& key : inputManager.getOrderedEngineKeys())
+	{
+		addKeySequenceSetting(inputManager[key].id, key,
+		                      inputManager[key].name);
+	}
+	if(!inputManager.getOrderedProgramKeys().empty())
+	{
+		currentForm->addRow(" ", new QWidget());
+		currentForm->addRow(PROJECT_NAME, new QWidget());
+		for(auto const& key : inputManager.getOrderedProgramKeys())
+		{
+			addKeySequenceSetting(inputManager[key].id, key,
+			                      inputManager[key].name);
+		}
+	}
 
 	InputManager inputManager;
 	addGroup("controls", tr("Controls"));
@@ -182,7 +202,7 @@ void SettingsWidget::addFilePathSetting(QString const& name,
 	lineEdit->setCompleter(completer);
 
 	auto browsePb = new QPushButton(this);
-	browsePb->setText(tr("..."));
+	browsePb->setText("...");
 	connect(browsePb, &QPushButton::clicked, this,
 	        [this, label, lineEdit](bool) {
 		        QString result(QFileDialog::getOpenFileName(this, label,
@@ -227,7 +247,7 @@ void SettingsWidget::addDirPathSetting(QString const& name,
 	lineEdit->setCompleter(completer);
 
 	auto browsePb = new QPushButton(this);
-	browsePb->setText(tr("..."));
+	browsePb->setText("...");
 	connect(browsePb, &QPushButton::clicked, this,
 	        [this, label, lineEdit](bool) {
 		        QString result(QFileDialog::getExistingDirectory(
@@ -391,4 +411,49 @@ void SettingsWidget::addKeySequenceSetting(QString const& name,
 	    [this, fullName](QKeySequence const& t) { updateValue(fullName, t); });
 
 	currentForm->addRow(label + " :", keyseqEdit);
+}
+
+void SettingsWidget::addLanguageSetting(QString const& name,
+                                        QString const& defaultVal,
+                                        QString const& label)
+{
+	QString fullName(currentGroup + '/' + name);
+	if(!settings.contains(fullName))
+	{
+		settings.setValue(fullName, defaultVal);
+	}
+
+	auto stored = settings.value(fullName).toString();
+
+	QList<QPair<QString, QString>> available(
+	    {{"en", QLocale("en").nativeLanguageName()}});
+	for(auto const& file :
+	    QDir("data/translations").entryList({"HydrogenVR_*.qm"}, QDir::Files))
+	{
+		QString name(file.split('_')[1].split(".")[0]);
+		QPair<QString, QString> elem(
+		    {name, QLocale(name).nativeLanguageName()});
+		elem.second[0] = elem.second[0].toUpper();
+		available.push_back(elem);
+	}
+
+	auto comboBox = new QComboBox(this);
+	for(auto const& pair : available)
+	{
+		comboBox->addItem(pair.second, pair.first);
+
+		if(QLocale(stored).language() == QLocale(pair.first).language())
+		{
+			comboBox->setCurrentText(pair.second);
+		}
+	}
+
+	void (QComboBox::*indexChangedSignal)(int)
+	    = &QComboBox::currentIndexChanged;
+	connect(comboBox, indexChangedSignal, this,
+	        [this, fullName, available](int index) {
+		        updateValue(fullName, available[index].first);
+	        });
+
+	currentForm->addRow(label + " :", comboBox);
 }

@@ -71,6 +71,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "{#ROOT_DIR}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#VCREDIST}"; DestDir: {tmp}; Flags: deleteafterinstall
+Source: "{#PYTHONREDIST}"; DestDir: {tmp}; Flags: deleteafterinstall
 
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"
@@ -79,6 +80,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; Tasks:
 [Run]
 Filename: "{app}\{#MyAppName}.exe"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 Filename: "{tmp}\{#VCREDIST_EXE}"; Check: VCRedistNeedsInstall
+Filename: "{tmp}\python.exe"
 
 [Code]
 #IFDEF UNICODE

@@ -56,6 +56,31 @@ GLHandler::Mesh Primitives::newQuad(GLHandler::ShaderProgram shader,
 	return result;
 }
 
+GLHandler::Mesh Primitives::newGrid(GLHandler::ShaderProgram shader,
+                                    unsigned int size,
+                                    GLHandler::PrimitiveType primitiveType)
+{
+	std::vector<float> vertices;
+	for(unsigned int i(0); i < size; ++i)
+	{
+		for(unsigned int j(0); j < size; ++j)
+		{
+			vertices.push_back(static_cast<float>(i) / (size - 1));
+			vertices.push_back(static_cast<float>(j) / (size - 1));
+		}
+	}
+
+	GLHandler::Mesh result(GLHandler::newMesh());
+	if(primitiveType == GLHandler::PrimitiveType::POINTS)
+	{
+		GLHandler::setVertices(result, vertices, shader, {{"position", 2}});
+		return result;
+	}
+
+	// TODO(florian) finish this
+	return result;
+}
+
 GLHandler::Mesh Primitives::newUnitCube(GLHandler::ShaderProgram shader,
                                         GLHandler::PrimitiveType primitiveType)
 {

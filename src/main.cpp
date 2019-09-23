@@ -1,5 +1,7 @@
 #include <QApplication>
+#include <QLibraryInfo>
 #include <QSettings>
+#include <QTranslator>
 #ifdef Q_OS_UNIX
 #include <QDir>
 #include <unistd.h>
@@ -16,6 +18,23 @@ int main(int argc, char* argv[])
 	QSettings::setDefaultFormat(QSettings::IniFormat);
 
 	QApplication a(argc, argv);
+
+	QString localeName(QSettings()
+	                       .value("window/language", QLocale::system().name())
+	                       .toString());
+	QTranslator qtTranslator;
+	qtTranslator.load("qt_" + localeName,
+	                  QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+	QCoreApplication::installTranslator(&qtTranslator);
+
+	QTranslator hvrTranslator;
+	hvrTranslator.load("HydrogenVR_" + localeName, "data/translations/");
+	QCoreApplication::installTranslator(&hvrTranslator);
+
+	QTranslator programTranslator;
+	programTranslator.load(QString(PROJECT_NAME) + "_" + localeName,
+	                       "data/translations/");
+	QCoreApplication::installTranslator(&programTranslator);
 
 #ifdef Q_OS_UNIX
 	// set current dir as application dir path to avoid reading coincidental
