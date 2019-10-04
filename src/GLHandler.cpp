@@ -633,7 +633,7 @@ GLHandler::Mesh GLHandler::newMesh()
 }
 
 void GLHandler::setVertices(
-    Mesh& mesh, std::vector<float> const& vertices,
+    Mesh& mesh, float const* vertices, size_t size,
     ShaderProgram const& shaderProgram,
     std::vector<QPair<const char*, unsigned int>> const& mapping,
     std::vector<unsigned int> const& elements)
@@ -641,8 +641,8 @@ void GLHandler::setVertices(
 	glf().glBindVertexArray(mesh.vao);
 	glf().glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
 	// put data in buffer (it is now sent to graphics card)
-	glf().glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]),
-	                   &(vertices[0]), GL_STATIC_DRAW);
+	glf().glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertices[0]), vertices,
+	                   GL_STATIC_DRAW);
 
 	size_t offset = 0, stride = 0;
 	for(auto map : mapping)
@@ -666,7 +666,7 @@ void GLHandler::setVertices(
 	}
 	if(offset != 0)
 	{
-		mesh.vboSize = vertices.size() / offset;
+		mesh.vboSize = size / offset;
 	}
 	if(!elements.empty())
 	{
@@ -678,6 +678,16 @@ void GLHandler::setVertices(
 	}
 
 	glf().glBindVertexArray(0);
+}
+
+void GLHandler::setVertices(
+    Mesh& mesh, std::vector<float> const& vertices,
+    ShaderProgram const& shaderProgram,
+    std::vector<QPair<const char*, unsigned int>> const& mapping,
+    std::vector<unsigned int> const& elements)
+{
+	setVertices(mesh, &(vertices[0]), vertices.size(), shaderProgram, mapping,
+	            elements);
 }
 
 void GLHandler::setVertices(GLHandler::Mesh& mesh,
@@ -696,14 +706,20 @@ void GLHandler::setVertices(GLHandler::Mesh& mesh,
 	setVertices(mesh, vertices, shaderProgram, mapping, elements);
 }
 
-void GLHandler::updateVertices(Mesh& mesh, std::vector<float> const& vertices)
+void GLHandler::updateVertices(GLHandler::Mesh& mesh, float const* vertices,
+                               size_t size)
 {
 	glf().glBindVertexArray(mesh.vao);
 	glf().glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
 	// put data in buffer (it is now sent to graphics card)
-	glf().glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]),
-	                   &(vertices[0]), GL_DYNAMIC_DRAW);
+	glf().glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertices[0]), vertices,
+	                   GL_DYNAMIC_DRAW);
 	glf().glBindVertexArray(0);
+}
+
+void GLHandler::updateVertices(Mesh& mesh, std::vector<float> const& vertices)
+{
+	updateVertices(mesh, &(vertices[0]), vertices.size());
 }
 
 void GLHandler::setUpRender(ShaderProgram shader, QMatrix4x4 const& model,
@@ -934,7 +950,7 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
                                            GLvoid const* data,
                                            GLint internalFormat, GLenum format,
                                            GLenum target, GLint filter,
-                                           GLint wrap)
+                                           GLint wrap, GLenum type)
 {
 	++texCount();
 	Texture tex  = {};
@@ -943,7 +959,7 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
 	// glActiveTexture(GL_TEXTURE0);
 	glf().glBindTexture(target, tex.glTexture);
 	glf().glTexImage2D(target, 0, internalFormat, width, height, 0, format,
-	                   GL_UNSIGNED_BYTE, data);
+	                   type, data);
 	// GL_UNSIGNED_BYTE, data);
 	// glGenerateMipmap(target);
 	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);

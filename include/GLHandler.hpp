@@ -602,6 +602,11 @@ class GLHandler : public QObject
 	static Mesh newMesh();
 
   public: // doesn't work in PythonQt
+	static void setVertices(
+	    GLHandler::Mesh& mesh, float const* vertices, size_t size,
+	    ShaderProgram const& shaderProgram,
+	    std::vector<QPair<const char*, unsigned int>> const& mapping,
+	    std::vector<unsigned int> const& elements = {});
 	/**
 	 * @brief Sets vertices data for a mesh.
 	 *
@@ -669,6 +674,8 @@ class GLHandler : public QObject
 	                        QStringList const& mappingNames,
 	                        std::vector<unsigned int> const& mappingSizes,
 	                        std::vector<unsigned int> const& elements = {});
+	static void updateVertices(GLHandler::Mesh& mesh, float const* vertices,
+	                           size_t size);
 	/**
 	 * @brief Updates a mesh vertices data.
 	 *
@@ -762,13 +769,11 @@ class GLHandler : public QObject
 	                 GLint internalFormat = GL_SRGB8_ALPHA8,
 	                 GLenum format = GL_RGBA, GLenum target = GL_TEXTURE_1D,
 	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE);
-	static Texture newTexture2D(unsigned int width, unsigned int height,
-	                            GLvoid const* data   = nullptr,
-	                            GLint internalFormat = GL_SRGB8_ALPHA8,
-	                            GLenum format        = GL_RGBA,
-	                            GLenum target        = GL_TEXTURE_2D,
-	                            GLint filter         = GL_LINEAR,
-	                            GLint wrap           = GL_CLAMP_TO_EDGE);
+	static Texture newTexture2D(
+	    unsigned int width, unsigned int height, GLvoid const* data = nullptr,
+	    GLint internalFormat = GL_SRGB8_ALPHA8, GLenum format = GL_RGBA,
+	    GLenum target = GL_TEXTURE_2D, GLint filter = GL_LINEAR,
+	    GLint wrap = GL_CLAMP_TO_EDGE, GLenum type = GL_UNSIGNED_BYTE);
 	static Texture newTextureCubemap(
 	    unsigned int side,
 	    std::array<GLvoid const*, 6> data

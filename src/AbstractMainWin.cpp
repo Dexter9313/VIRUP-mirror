@@ -399,7 +399,6 @@ void AbstractMainWin::reloadPostProcessingTargets()
 void AbstractMainWin::setHDR(bool hdr)
 {
 	this->hdr = hdr;
-	QSettings().setValue("window/hdr", hdr);
 	reloadPostProcessingTargets();
 }
 

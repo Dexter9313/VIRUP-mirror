@@ -78,6 +78,28 @@ GLHandler::Mesh Primitives::newGrid(GLHandler::ShaderProgram shader,
 	}
 
 	// TODO(florian) finish this
+	std::vector<unsigned int> elements;
+	if(primitiveType == GLHandler::PrimitiveType::TRIANGLES)
+	{
+		for(unsigned int i(1); i < size; ++i)
+		{
+			for(unsigned int j(1); j < size; ++j)
+			{
+				unsigned int id = j + size * i;
+
+				elements.push_back(id - size - 1);
+				elements.push_back(id - size);
+				elements.push_back(id - 1);
+
+				elements.push_back(id - 1);
+				elements.push_back(id - size);
+				elements.push_back(id);
+			}
+		}
+	}
+
+	GLHandler::setVertices(result, vertices, shader, {{"position", 2}},
+	                       elements);
 	return result;
 }
 

@@ -471,7 +471,7 @@ class AbstractMainWin : public QOpenGLWindow
 	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;
 	DebugCamera* dbgCamera = nullptr;
 
-	bool hdr       = QSettings().value("window/hdr").toBool();
+	bool hdr       = true;
 	bool wireframe = false;
 
 	QList<QPair<QString, GLHandler::ShaderProgram>> postProcessingPipeline_;

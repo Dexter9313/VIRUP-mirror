@@ -6,7 +6,7 @@ language: cpp
 os:
     - linux
     #- osx
-dist: xenial
+dist: bionic
 
 compiler:
     - gcc
@@ -23,6 +23,16 @@ addons:
         packages:
             - qtbase5-dev
             - libassimp-dev
+            - libqt5opengl5-dev
+            - qtdeclarative5-dev
+            - libqt5svg5-dev
+            - qttools5-dev
+            - libqt5webkit5-dev
+            - qtmultimedia5-dev
+            - libqt5xmlpatterns5-dev
+            - libpython3-dev
+            - libpythonqt-qt5-python3-dev
+            - libpythonqt-qtall-qt5-python3-dev
 
 install:
     - if [ ! -f "./build.conf" ]; then
@@ -61,26 +71,6 @@ install:
         fi;
         sudo cp ./LeapDeveloperKit*/LeapSDK/include/Leap*.h /usr/include ;
         sudo cp ./LeapDeveloperKit*/LeapSDK/lib/x64/libLeap.so /usr/lib ;
-      fi
-    # install PythonQt
-    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-            sudo apt-get install libqt5opengl5-dev qtdeclarative5-dev libqt5svg5-dev qttools5-dev libqt5webkit5-dev qtmultimedia5-dev libqt5xmlpatterns5-dev libpython3-dev ;
-        if [[ "$CACHED" = false ]]; then
-            git clone https://github.com/Orochimarufan/PythonQt ;
-            cd PythonQt ;
-            git checkout 18d4c249ca9b0003cfb10ad711c60fb7f9d5f79b ;
-            sed -i "s/PythonQt_init_QtQml(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
-            sed -i "s/PythonQt_init_QtQuick(0);//" ./extensions/PythonQt_QtAll/PythonQt_QtAll.cpp ;
-            cd build ;
-            cmake .. -DPythonQt_Python3=ON -DBUILD_SHARED_LIBS=ON ;
-            make ;
-        else
-            cd PythonQt/build ;
-        fi;
-        sudo make install ;
-        sudo ln -s /usr/local/lib/libQt5Python35.so /usr/local/lib/libQtPython.so ;
-        sudo ln -s /usr/local/lib/libQt5Python35_QtAll.so /usr/local/lib/libQtPython_QtAll.so ;
-        cd ../.. ;
       fi
     - cd ..
     # install project additional deps
