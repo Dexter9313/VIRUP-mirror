@@ -1007,7 +1007,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 		}
 		else
 		{
-			systemRenderer->render(camera);
+			systemRenderer->render(camera, vrHandler);
 			renderVRControls();
 			systemRenderer->renderTransparent(camera);
 			if(timeSinceTextUpdate < 5.f)
