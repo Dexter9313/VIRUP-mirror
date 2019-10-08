@@ -88,7 +88,9 @@ float AssetLoader::loadFile(QString modelName,
 		}
 		for(unsigned int i = 0; i < mesh->mNumFaces; i++)
 		{
-			aiFace face = mesh->mFaces[i];
+			aiFace face;
+			face.mNumIndices = 0;
+			face             = mesh->mFaces[i];
 			for(unsigned int j = 0; j < face.mNumIndices; j++)
 			{
 				ind.push_back(face.mIndices[j]);

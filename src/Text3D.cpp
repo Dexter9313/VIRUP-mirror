@@ -87,7 +87,7 @@ void Text3D::updateTex()
 {
 	GLHandler::deleteTexture(tex);
 
-	image = QImage(superSampling * originalSize, QImage::Format_ARGB32);
+	image = QImage(superSampling * originalSize, QImage::Format_RGBA8888);
 
 	bool sizeInPixels(true);
 	int fontSize(font.pixelSize());

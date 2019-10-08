@@ -37,9 +37,12 @@ int main(int argc, char* argv[])
 	QCoreApplication::installTranslator(&programTranslator);
 
 #ifdef Q_OS_UNIX
-	// set current dir as application dir path to avoid reading coincidental
-	// data/core that doesn't belong to it
+// set current dir as application dir path to avoid reading coincidental
+// data/core that doesn't belong to it
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
 	chdir(QCoreApplication::applicationDirPath().toLocal8Bit().data());
+#pragma GCC diagnostic pop
 	if(!QDir("./data/core").exists())
 	{
 		// if no data/core in application dir, search in
@@ -50,7 +53,10 @@ int main(int argc, char* argv[])
 			// else let it be /usr/share/PROJECT_NAME
 			path = QString("/usr/share/") + PROJECT_NAME;
 		}
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
 		chdir((path.toLocal8Bit().data()));
+#pragma GCC diagnostic pop
 	}
 #endif
 

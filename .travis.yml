@@ -82,7 +82,7 @@ cache:
 
 script:
     - mkdir build ; cd build
-    - cmake .. -DTAG=$TRAVIS_TAG -DWERROR=true
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DTAG=$TRAVIS_TAG -DWERROR=true
     - make -j 6
     - ./tests
     - make clang-format

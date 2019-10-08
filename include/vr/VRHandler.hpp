@@ -73,6 +73,7 @@ class VRHandler : public QObject
 	std::vector<QVector3D> getPlayAreaQuad() const;
 	void prepareRendering();
 	void beginRendering(Side eye, bool postProcessed);
+	void applyHiddenAreaDepth(Side eye);
 	void renderControllers() const;
 	void renderHands() const;
 	GLHandler::RenderTarget& getEyeTarget(Side side)
@@ -83,6 +84,10 @@ class VRHandler : public QObject
 	{
 		return postProcessingTargets[i];
 	};
+	GLHandler::RenderTarget& getHiddenAreaTarget(Side side)
+	{
+		return hiddenAreaTarget[side == Side::LEFT ? 0 : 1];
+	}
 	void reloadPostProcessingTargets();
 	void submitRendering(Side eye);
 	void displayOnCompanion(unsigned int companionWidth,
@@ -105,6 +110,10 @@ class VRHandler : public QObject
 	std::array<QMatrix4x4, vr::k_unMaxTrackedDeviceCount>
 	    tracked_device_pose_matrix;
 	vr::IVRRenderModels* vr_render_models;
+
+	// Target for rendering the hidden area mesh
+	GLHandler::RenderTarget hiddenAreaTarget[2];
+	bool postProcessed = false;
 
 	Controller* leftController  = nullptr;
 	Controller* rightController = nullptr;

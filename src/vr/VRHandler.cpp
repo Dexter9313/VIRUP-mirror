@@ -73,6 +73,44 @@ bool VRHandler::init()
 		std::cout << "Render models loaded successfully" << std::endl;
 	}
 
+	// render hidden area mesh
+	GLHandler::setBackfaceCulling(false);
+	hiddenAreaTarget[0]        = GLHandler::newRenderTarget(2000, 1000);
+	hiddenAreaTarget[1]        = GLHandler::newRenderTarget(2000, 1000);
+	GLHandler::ShaderProgram s = GLHandler::newShader("hiddenarea");
+
+	// LEFT
+	GLHandler::Mesh hiddenAreaMesh = GLHandler::newMesh();
+	GLHandler::setVertices(
+	    hiddenAreaMesh,
+	    &(vr_pointer->GetHiddenAreaMesh(vr::Eye_Left).pVertexData[0].v[0]),
+	    2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Left).unTriangleCount, s,
+	    {{"position", 2}});
+
+	GLHandler::beginRendering(hiddenAreaTarget[0]);
+	GLHandler::useShader(s);
+	GLHandler::render(hiddenAreaMesh, GLHandler::PrimitiveType::TRIANGLES);
+	GLHandler::deleteMesh(hiddenAreaMesh);
+	// GLHandler::generateScreenshot(hiddenAreaTarget[0]).save("left.png");
+
+	// RIGHT
+	hiddenAreaMesh = GLHandler::newMesh();
+	GLHandler::setVertices(
+	    hiddenAreaMesh,
+	    &(vr_pointer->GetHiddenAreaMesh(vr::Eye_Right).pVertexData[0].v[0]),
+	    2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Right).unTriangleCount, s,
+	    {{"position", 2}});
+
+	GLHandler::beginRendering(hiddenAreaTarget[1]);
+	GLHandler::useShader(s);
+	GLHandler::render(hiddenAreaMesh, GLHandler::PrimitiveType::TRIANGLES);
+	GLHandler::deleteMesh(hiddenAreaMesh);
+	// GLHandler::generateScreenshot(hiddenAreaTarget[1]).save("right.png");
+
+	GLHandler::deleteShader(s);
+	GLHandler::setBackfaceCulling(true);
+	// end render hidden area mesh
+
 	leftTarget  = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(),
                                             getEyeRenderTargetSize().height(),
                                             GL_RGBA8);
@@ -285,6 +323,7 @@ void VRHandler::prepareRendering()
 
 void VRHandler::beginRendering(Side eye, bool postProcessed)
 {
+	this->postProcessed = postProcessed;
 	if(postProcessed)
 	{
 		GLHandler::beginRendering(postProcessingTargets[0]);
@@ -293,7 +332,23 @@ void VRHandler::beginRendering(Side eye, bool postProcessed)
 	{
 		GLHandler::beginRendering(eye == Side::LEFT ? leftTarget : rightTarget);
 	}
+	applyHiddenAreaDepth(eye);
 	currentRenderingEye = eye;
+}
+
+void VRHandler::applyHiddenAreaDepth(Side eye)
+{
+	if(postProcessed)
+	{
+		GLHandler::blitDepthBuffer(getHiddenAreaTarget(eye),
+		                           postProcessingTargets[0]);
+	}
+	else
+	{
+		GLHandler::blitDepthBuffer(getHiddenAreaTarget(eye), eye == Side::LEFT
+		                                                         ? leftTarget
+		                                                         : rightTarget);
+	}
 }
 
 void VRHandler::renderControllers() const
@@ -431,6 +486,8 @@ void VRHandler::close()
 	{
 		return;
 	}
+	GLHandler::deleteRenderTarget(hiddenAreaTarget[0]);
+	GLHandler::deleteRenderTarget(hiddenAreaTarget[1]);
 	updateController(Side::LEFT, -1);
 	updateController(Side::RIGHT, -1);
 	delete leftHand;

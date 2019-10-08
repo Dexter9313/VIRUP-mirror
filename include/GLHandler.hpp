@@ -304,6 +304,11 @@ class GLHandler : public QObject
 	static Texture
 	    getColorAttachmentTexture(GLHandler::RenderTarget const& renderTarget);
 	/**
+	 * @brief Blits one depth buffer from a render target to another one's.
+	 */
+	static void blitDepthBuffer(RenderTarget const& from,
+	                            RenderTarget const& to);
+	/**
 	 * @brief Frees a @ref RenderTarget and any buffer it allocated.
 	 */
 	static void deleteRenderTarget(GLHandler::RenderTarget const& renderTarget);

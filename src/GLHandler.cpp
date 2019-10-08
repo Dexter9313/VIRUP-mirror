@@ -156,6 +156,16 @@ GLHandler::Texture
 	return renderTarget.texColorBuffer;
 }
 
+void GLHandler::blitDepthBuffer(RenderTarget const& from,
+                                RenderTarget const& to)
+{
+	GLHandler::glf().glBindFramebuffer(GL_READ_FRAMEBUFFER, from.frameBuffer);
+	GLHandler::glf().glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to.frameBuffer);
+	GLHandler::glf().glBlitFramebuffer(0, 0, from.width, from.height, 0, 0,
+	                                   to.width, to.height, GL_DEPTH_BUFFER_BIT,
+	                                   GL_NEAREST);
+}
+
 void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
 {
 	--renderTargetCount();
