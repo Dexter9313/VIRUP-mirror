@@ -156,6 +156,16 @@ GLHandler::Texture
 	return renderTarget.texColorBuffer;
 }
 
+void GLHandler::blitColorBuffer(RenderTarget const& from,
+                                RenderTarget const& to)
+{
+	GLHandler::glf().glBindFramebuffer(GL_READ_FRAMEBUFFER, from.frameBuffer);
+	GLHandler::glf().glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to.frameBuffer);
+	GLHandler::glf().glBlitFramebuffer(0, 0, from.width, from.height, 0, 0,
+	                                   to.width, to.height, GL_COLOR_BUFFER_BIT,
+	                                   GL_LINEAR);
+}
+
 void GLHandler::blitDepthBuffer(RenderTarget const& from,
                                 RenderTarget const& to)
 {
@@ -175,7 +185,21 @@ void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
 	glf().glDeleteFramebuffers(1, &renderTarget.frameBuffer);
 }
 
+void GLHandler::setClearColor(QColor const& color)
+{
+	glf().glClearColor(color.redF(), color.greenF(), color.blueF(),
+	                   color.alphaF());
+}
+
 void GLHandler::beginRendering(RenderTarget const& renderTarget, CubeFace face)
+{
+	beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
+	                   | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT),
+	               renderTarget, face);
+}
+
+void GLHandler::beginRendering(GLbitfield clearMask,
+                               RenderTarget const& renderTarget, CubeFace face)
 {
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, renderTarget.frameBuffer);
 	if(renderTarget.frameBuffer != 0)
@@ -196,8 +220,7 @@ void GLHandler::beginRendering(RenderTarget const& renderTarget, CubeFace face)
 			                             0);
 		}
 	}
-	glf().glClear(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
-	              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT));
+	glf().glClear(clearMask);
 	glf().glViewport(0, 0, renderTarget.width, renderTarget.height);
 }
 

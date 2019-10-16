@@ -304,6 +304,11 @@ class GLHandler : public QObject
 	static Texture
 	    getColorAttachmentTexture(GLHandler::RenderTarget const& renderTarget);
 	/**
+	 * @brief Blits one color buffer from a render target to another one's.
+	 */
+	static void blitColorBuffer(RenderTarget const& from,
+	                            RenderTarget const& to);
+	/**
 	 * @brief Blits one depth buffer from a render target to another one's.
 	 */
 	static void blitDepthBuffer(RenderTarget const& from,
@@ -312,6 +317,7 @@ class GLHandler : public QObject
 	 * @brief Frees a @ref RenderTarget and any buffer it allocated.
 	 */
 	static void deleteRenderTarget(GLHandler::RenderTarget const& renderTarget);
+	static void setClearColor(QColor const& color);
 	/**
 	 * @brief Prepares a @ref RenderTarget to be rendered on.
 	 *
@@ -320,6 +326,11 @@ class GLHandler : public QObject
 	 * screen will be used.
 	 */
 	static void beginRendering(GLHandler::RenderTarget const& renderTarget
+	                           = {QSettings().value("window/width").toUInt(),
+	                              QSettings().value("window/height").toUInt()},
+	                           CubeFace face = CubeFace::FRONT);
+	static void beginRendering(GLbitfield clearMask,
+	                           GLHandler::RenderTarget const& renderTarget
 	                           = {QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()},
 	                           CubeFace face = CubeFace::FRONT);
