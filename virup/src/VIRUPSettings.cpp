@@ -54,7 +54,7 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	    tr("Exoplanetary Systems Root Directory"));
 
 	insertGroup("quality", tr("Quality"), 2);
-	addUIntSetting("texmaxsize", 8, tr("Textures max size (x1024)"), 1, 16);
+	addUIntSetting("texmaxsize", 4, tr("Textures max size (x2048)"), 1, 8);
 	addUIntSetting("gentexload", 3, tr("Texture generation GPU load"), 1, 4);
 	addUIntSetting("atmoquality", 6, tr("Atmosphere rendering quality"), 1, 8);
 
