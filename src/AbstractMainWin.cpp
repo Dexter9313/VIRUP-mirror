@@ -667,6 +667,10 @@ void AbstractMainWin::paintGL()
 		}
 	}
 
+	// garbage collect some resources
+	AsyncTexture::garbageCollect();
+	AsyncMesh::garbageCollect();
+
 	// Trigger a repaint immediatly
 	update();
 }
@@ -686,6 +690,10 @@ void AbstractMainWin::resizeGL(int w, int h)
 
 AbstractMainWin::~AbstractMainWin()
 {
+	// force garbage collect some resources
+	AsyncTexture::garbageCollect(true);
+	AsyncMesh::garbageCollect(true);
+
 	PythonQtHandler::evalScript(
 	    "if \"cleanUpScene\" in dir():\n\tcleanUpScene()");
 	for(const QPair<QString, GLHandler::ShaderProgram>& p :

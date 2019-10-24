@@ -20,10 +20,61 @@
 #define ASYNCTEXTURE_HPP
 
 #include <QImageReader>
-#include <QtConcurrent>
+#include <QThread>
 #include <cstring>
 
 #include "GLHandler.hpp"
+
+// TODO(florian) when Qt 5.10 is available, use QThread::create
+namespace at
+{
+class WorkerThread : public QThread
+{
+	Q_OBJECT
+  public:
+	WorkerThread(QString const& path, unsigned char* data)
+	    : path(path)
+	    , data(data)
+	{
+	}
+
+	WorkerThread(QString const& path, unsigned char* data, unsigned int width,
+	             unsigned int height)
+	    : path(path)
+	    , data(data)
+	    , resize(true)
+	    , width(width)
+	    , height(height)
+	{
+	}
+
+  private:
+	QString path;
+	unsigned char* data;
+	bool resize         = false;
+	unsigned int width  = 0;
+	unsigned int height = 0;
+	void run() override
+	{
+		QImageReader imReader(path);
+		if(resize)
+		{
+			imReader.setScaledSize(QSize(width, height));
+		}
+		QImage img(imReader.read());
+		if(img.isNull())
+		{
+			// NOLINTNEXTLINE(hicpp-no-array-decay)
+			qWarning() << "Could not load Texture '" + path
+			                  + "' : " + imReader.errorString();
+			return;
+		}
+		img = img.convertToFormat(QImage::Format_RGBA8888);
+		std::memcpy(data, img.bits(), std::size_t(img.byteCount()));
+	}
+};
+
+} // namespace at
 
 class AsyncTexture
 {
@@ -39,16 +90,24 @@ class AsyncTexture
 	GLHandler::Texture getTexture();
 	~AsyncTexture();
 
+	static void garbageCollect(bool force = false);
+
   private:
 	GLHandler::Texture defaultTex = {};
 	GLHandler::Texture tex        = {};
 
 	GLHandler::PixelBufferObject pbo = {};
-	QFuture<void> future;
+	at::WorkerThread* thread;
 
 	bool loaded    = false;
 	bool emptyPath = false;
 	bool sRGB;
+
+	// never wait for futures to finish within destructor ! if you need to
+	// release resources and the future didn't finish, push it here and other
+	// AsyncTextures will take care of it later
+	static QList<QPair<at::WorkerThread*, GLHandler::PixelBufferObject>>&
+	    waitingForDeletion();
 };
 
 #endif // ASYNCTEXTURE_HPP

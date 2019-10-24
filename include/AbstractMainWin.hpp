@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "AbstractLibrary.hpp"
+#include "AsyncMesh.hpp"
+#include "AsyncTexture.hpp"
 #include "BasicCamera.hpp"
 #include "DebugCamera.hpp"
 #include "GLHandler.hpp"

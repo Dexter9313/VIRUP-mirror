@@ -18,6 +18,14 @@
 
 #include "AsyncTexture.hpp"
 
+QList<QPair<at::WorkerThread*, GLHandler::PixelBufferObject>>&
+    AsyncTexture::waitingForDeletion()
+{
+	static QList<QPair<at::WorkerThread*, GLHandler::PixelBufferObject>>
+	    waitingForDeletion = {};
+	return waitingForDeletion;
+}
+
 AsyncTexture::AsyncTexture(QString const& path, QColor const& defaultColor,
                            bool sRGB)
     : sRGB(sRGB)
@@ -41,19 +49,8 @@ AsyncTexture::AsyncTexture(QString const& path, QColor const& defaultColor,
 	pbo = GLHandler::newPixelBufferObject(size.width(), size.height());
 	unsigned char* data(pbo.mappedData);
 
-	future = QtConcurrent::run([path, data]() {
-		QImageReader imReader(path);
-		QImage img(imReader.read());
-		if(img.isNull())
-		{
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
-			qWarning() << "Could not load Texture '" + path
-			                  + "' : " + imReader.errorString();
-			return;
-		}
-		img = img.convertToFormat(QImage::Format_RGBA8888);
-		std::memcpy(data, img.bits(), std::size_t(img.byteCount()));
-	});
+	thread = new at::WorkerThread(path, data);
+	thread->start();
 }
 
 AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
@@ -77,20 +74,8 @@ AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
 	pbo = GLHandler::newPixelBufferObject(width, height);
 	unsigned char* data(pbo.mappedData);
 
-	future = QtConcurrent::run([path, data, width, height]() {
-		QImageReader imReader(path);
-		imReader.setScaledSize(QSize(width, height));
-		QImage img(imReader.read());
-		if(img.isNull())
-		{
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
-			qWarning() << "Could not load Texture '" + path
-			                  + "' : " + imReader.errorString();
-			return;
-		}
-		img = img.convertToFormat(QImage::Format_RGBA8888);
-		std::memcpy(data, img.bits(), std::size_t(img.byteCount()));
-	});
+	thread = new at::WorkerThread(path, data, width, height);
+	thread->start();
 }
 
 GLHandler::Texture AsyncTexture::getTexture()
@@ -105,13 +90,14 @@ GLHandler::Texture AsyncTexture::getTexture()
 		return tex;
 	}
 
-	if(!future.isFinished())
+	if(!thread->isFinished())
 	{
 		return defaultTex;
 	}
 
 	tex = GLHandler::copyPBOToTex(pbo, sRGB);
 	GLHandler::deletePixelBufferObject(pbo);
+	delete thread;
 	loaded = true;
 
 	return tex;
@@ -126,10 +112,33 @@ AsyncTexture::~AsyncTexture()
 		{
 			GLHandler::deleteTexture(tex);
 		}
+		else if(thread->isFinished())
+		{
+			GLHandler::deletePixelBufferObject(pbo);
+			delete thread;
+		}
 		else
 		{
-			future.waitForFinished();
-			GLHandler::deletePixelBufferObject(pbo);
+			thread->setPriority(QThread::LowestPriority);
+			waitingForDeletion().push_back({thread, pbo});
+		}
+	}
+}
+
+void AsyncTexture::garbageCollect(bool force)
+{
+	// go in reverse because of possible deletions
+	for(int i(waitingForDeletion().size() - 1); i >= 0; --i)
+	{
+		if(force)
+		{
+			waitingForDeletion()[i].first->wait();
+		}
+		if(waitingForDeletion()[i].first->isFinished())
+		{
+			GLHandler::deletePixelBufferObject(waitingForDeletion()[i].second);
+			delete waitingForDeletion()[i].first;
+			waitingForDeletion().removeAt(i);
 		}
 	}
 }

@@ -36,6 +36,8 @@ class AsyncMesh
 	GLHandler::Mesh getMesh();
 	~AsyncMesh();
 
+	static void garbageCollect(bool force = false);
+
   private:
 	GLHandler::Mesh defaultMesh = {};
 	GLHandler::Mesh mesh        = {};
@@ -45,11 +47,22 @@ class AsyncMesh
 	bool loaded                = false;
 	bool emptyPath             = false;
 	float boundingSphereRadius = 0.f;
-	std::vector<std::vector<float>> loadedVertices;
-	std::vector<std::vector<unsigned int>> loadedIndices;
-	std::vector<std::string> loadedTexs;
+
+	struct Data
+	{
+		std::vector<std::vector<float>> loadedVertices;
+		std::vector<std::vector<unsigned int>> loadedIndices;
+		std::vector<std::string> loadedTexs;
+	};
+
+	Data* data;
 
 	GLHandler::ShaderProgram shader;
+
+	// never wait for futures to finish within destructor ! if you need to
+	// release resources and the future didn't finish, push it here and other
+	// AsyncTextures will take care of it later
+	static QList<QPair<QFuture<void>, AsyncMesh::Data*>>& waitingForDeletion();
 };
 
 #endif // ASYNCMESH_HPP
