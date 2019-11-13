@@ -160,7 +160,7 @@ scenes = [
           TemporalData(1.0), UI(0.167)),
     # Earth-Moon dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 15000000, 'Earth', 'Solar System'),
-          TemporalData(1.0), UI(0.167)),
+          TemporalData(1.0, solareclipsedt), UI(0.167)),
     # Earth-Moon dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Earth', 'Solar System'),
           TemporalData(1.0, solareclipsedt), UI(0.167)),
