@@ -9,6 +9,7 @@ uniform sampler2D tex;
 uniform float gamma;
 uniform float hdr;
 
+#ifdef DITHERING
 const int bayer_pattern[64]
     = int[](0, 32, 8, 40, 2, 34, 10, 42,    /* 8x8 Bayer ordered dithering  */
             48, 16, 56, 24, 50, 18, 58, 26, /* pattern.  Each input pixel   */
@@ -24,6 +25,7 @@ vec4 dither()
 	int y = int(mod(round(gl_FragCoord.y / 1.5), 8.0));
 	return vec4(bayer_pattern[x + 8 * y] / (32.0 * 256.0) - (1.0 / 128.0));
 }
+#endif
 
 void main()
 {
@@ -34,7 +36,11 @@ void main()
 		result.rgb = result.rgb / (result.rgb + vec3(1.0));
 	}
 	result.rgb = pow(result.rgb, vec3(1.0 / gamma));
+
+#ifdef DITHERING
 	// dithering to remove banding
 	result += dither();
+#endif
+
 	outColor = result;
 }

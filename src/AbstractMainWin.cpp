@@ -329,11 +329,12 @@ void AbstractMainWin::removeSceneRenderPath(QString const& id)
 	}
 }
 
-void AbstractMainWin::appendPostProcessingShader(QString const& id,
-                                                 QString const& fragment)
+void AbstractMainWin::appendPostProcessingShader(
+    QString const& id, QString const& fragment,
+    QMap<QString, QString> const& defines)
 {
 	postProcessingPipeline_.append(QPair<QString, GLHandler::ShaderProgram>(
-	    id, GLHandler::newShader("postprocess", fragment)));
+	    id, GLHandler::newShader("postprocess", fragment, defines)));
 }
 
 void AbstractMainWin::insertPostProcessingShader(QString const& id,
@@ -459,7 +460,14 @@ void AbstractMainWin::initializeGL()
 	PythonQtHandler::evalScript("if \"initScene\" in dir():\n\tinitScene()");
 
 	// make sure gamma correction is applied last
-	appendPostProcessingShader("colors", "colors");
+	if(QSettings().value("graphics/dithering").toBool())
+	{
+		appendPostProcessingShader("colors", "colors", {{"DITHERING", "0"}});
+	}
+	else
+	{
+		appendPostProcessingShader("colors", "colors");
+	}
 
 	frameTimer.start();
 }

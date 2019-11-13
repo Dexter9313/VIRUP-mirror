@@ -18,10 +18,12 @@
 
 #include "AsyncMesh.hpp"
 
-QList<QPair<QFuture<void>, AsyncMesh::Data*>>& AsyncMesh::waitingForDeletion()
+QList<QPair<QFuture<void>, std::vector<AssetLoader::MeshDescriptor>*>>&
+    AsyncMesh::waitingForDeletion()
 {
-	static QList<QPair<QFuture<void>, AsyncMesh::Data*>> waitingForDeletion
-	    = {};
+	static QList<
+	    QPair<QFuture<void>, std::vector<AssetLoader::MeshDescriptor>*>>
+	    waitingForDeletion = {};
 	return waitingForDeletion;
 }
 
@@ -36,13 +38,10 @@ AsyncMesh::AsyncMesh(QString const& path, GLHandler::Mesh const& defaultMesh,
 		return;
 	}
 
-	data = new Data;
-
-	Data* thisData = this->data;
-	future         = QtConcurrent::run([path, thisData]() {
-        return AssetLoader::loadFile(path, thisData->loadedVertices,
-                                     thisData->loadedIndices,
-                                     thisData->loadedTexs);
+	this->meshDescriptors    = new std::vector<AssetLoader::MeshDescriptor>;
+	auto thisMeshDescriptors = this->meshDescriptors;
+	future                   = QtConcurrent::run([path, thisMeshDescriptors]() {
+        return AssetLoader::loadFile(path, *thisMeshDescriptors);
     });
 }
 
@@ -61,30 +60,31 @@ void AsyncMesh::updateMesh()
 	loaded               = true;
 	boundingSphereRadius = future.result();
 
-	std::vector<GLHandler::Mesh> meshes;
-	std::vector<GLHandler::Texture> textures;
-	AssetLoader::loadModel(data->loadedVertices, data->loadedIndices,
-	                       data->loadedTexs, meshes, textures, shader);
+	std::vector<AssetLoader::TexturedMesh> meshes;
+	AssetLoader::loadModel(*meshDescriptors, meshes, shader);
 
 	if(meshes.size() == 1)
 	{
 		GLHandler::deleteMesh(mesh);
-		mesh = meshes[0];
+		mesh = meshes[0].mesh;
+		for(auto pair : meshes[0].textures)
+		{
+			GLHandler::deleteTexture(pair.second);
+		}
 	}
 	else
 	{
-		for(auto vMesh : meshes)
+		for(auto const& vMesh : meshes)
 		{
-			GLHandler::deleteMesh(vMesh);
+			GLHandler::deleteMesh(vMesh.mesh);
+			for(auto pair : vMesh.textures)
+			{
+				GLHandler::deleteTexture(pair.second);
+			}
 		}
 	}
 
-	for(auto vTex : textures)
-	{
-		GLHandler::deleteTexture(vTex);
-	}
-
-	delete data;
+	delete meshDescriptors;
 }
 
 GLHandler::Mesh AsyncMesh::getMesh()
@@ -112,13 +112,9 @@ AsyncMesh::~AsyncMesh()
 		{
 			GLHandler::deleteMesh(mesh);
 		}
-		else if(future.isFinished())
-		{
-			delete data;
-		}
 		else
 		{
-			waitingForDeletion().push_back({future, data});
+			waitingForDeletion().push_back({future, meshDescriptors});
 		}
 	}
 }

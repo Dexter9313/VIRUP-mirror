@@ -108,6 +108,10 @@ void MainWin::initScene()
 		                       {{"position", 3}}, indices);
 	}
 
+	model                = new Model("models/drone/scene.gltf");
+	light                = new Light;
+	light->ambiantFactor = 0.05f;
+
 	bill           = new Billboard("data/example/images/cc.png");
 	bill->position = QVector3D(0.f, 0.f, 0.8f);
 
@@ -129,9 +133,11 @@ void MainWin::initScene()
 	widget3d->getModel().rotate(45.f, 1.f, 0.f);
 	widget3d->getModel().translate(0.6f, 0.f, 0.5f);
 
-	getCamera("default").setEyeDistanceFactor(5.0f);
+	getCamera("default").setEyeDistanceFactor(1.0f);
 
 	appendPostProcessingShader("distort", "distort");
+
+	timer.start();
 }
 
 void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
@@ -171,6 +177,29 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 	}
 
 	movingCube->update();
+
+	modelModel = QMatrix4x4();
+	modelModel.scale(0.5 / model->getBoundingSphereRadius());
+	float secs(timer.elapsed() / 5000.f);
+	light->color
+	    = QColor(128 + 127 * cos(secs / 2.0), 128 + 127 * sin(secs / 2.0), 0);
+	light->color = QColor(255, 255, 255);
+	if(vrHandler)
+	{
+		modelModel.translate(0.f, 1.4f * model->getBoundingSphereRadius(), 0.f);
+		modelModel.rotate(180.f, QVector3D(0.f, 1.f, 0.f));
+		// light->direction = QVector3D(cos(secs), 0.f, sin(secs));
+	}
+	else
+	{
+		modelModel.translate(0.f, 0.f, -50.f);
+		modelModel.rotate(180.f, QVector3D(0.f, 0.f, 1.f));
+		modelModel.rotate(120.f, QVector3D(1.f, 1.f, 1.f).normalized());
+		modelModel.scale(0.3);
+		// light->direction = QVector3D(sin(secs), cos(secs), 0.f);
+	}
+	modelModel.rotate(100.f * secs, QVector3D(0.f, 1.f, 0.f));
+	model->generateShadowMap(modelModel, *light);
 }
 
 void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
@@ -187,9 +216,9 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 		vrHandler.applyHiddenAreaDepth(vrHandler.getCurrentRenderingEye());
 	}
 
-	QMatrix4x4 model;
-	model.translate(-1.5, 0, 0);
-	GLHandler::setUpRender(sphereShader, model,
+	QMatrix4x4 modelSphere;
+	modelSphere.translate(-1.5, 0, 0);
+	GLHandler::setUpRender(sphereShader, modelSphere,
 	                       GLHandler::GeometricSpace::SKYBOX);
 	GLHandler::render(sphere);
 	GLHandler::clearDepthBuffer();
@@ -210,6 +239,18 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	GLHandler::setUpRender(playareaShader, QMatrix4x4(),
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
 	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
+
+	if(vrHandler)
+	{
+		model->render(camera.standingTrackedSpaceToWorldTransform().inverted()
+		                  * camera.getWorldSpacePosition(),
+		              modelModel, *light,
+		              GLHandler::GeometricSpace::STANDINGTRACKED);
+	}
+	else
+	{
+		model->render(camera.getWorldSpacePosition(), modelModel, *light);
+	}
 
 	widget3d->render();
 	bill->render(camera);
@@ -241,6 +282,9 @@ MainWin::~MainWin()
 	GLHandler::deleteShader(playareaShader);
 
 	delete movingCube;
+
+	delete model;
+	delete light;
 
 	delete bill;
 	delete text;

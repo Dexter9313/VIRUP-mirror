@@ -128,11 +128,13 @@ class GLHandler : public QObject
 		    , renderBuffer(_2)
 		    , width(_3)
 		    , height(_4){};
-		GLuint frameBuffer     = 0;
+		GLuint frameBuffer = 0;
+		// if depth map, will be the depth buffer instead
 		Texture texColorBuffer = {};
 		GLuint renderBuffer    = 0;
 		unsigned int width;
 		unsigned int height;
+		bool isDepthMap = false;
 
 	  public:
 		/**
@@ -295,6 +297,9 @@ class GLHandler : public QObject
 	 */
 	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
 	                                    GLint format, bool cubemap = false);
+
+	static RenderTarget newDepthMap(unsigned int width, unsigned int height,
+	                                bool cubemap = false);
 	/**
 	 * @brief Returns the color attachment of a @p renderTarget.
 	 *

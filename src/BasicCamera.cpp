@@ -149,6 +149,18 @@ void BasicCamera::updateClippingPlanes()
 	    = (fullTransform.row(3) - fullTransform.row(2)).normalized();
 }
 
+QVector3D BasicCamera::getWorldSpacePosition() const
+{
+	QMatrix4x4 eyeViewMatrix;
+	if(*vrHandler)
+	{
+		eyeViewMatrix
+		    = vrHandler->getEyeViewMatrix(vrHandler->getCurrentRenderingEye());
+	}
+
+	return QVector3D((hmdScaledToWorld * eyeViewMatrix.inverted()).column(3));
+}
+
 QMatrix4x4 BasicCamera::cameraSpaceToWorldTransform() const
 {
 	// see TRANSFORMS

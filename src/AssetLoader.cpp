@@ -18,14 +18,28 @@
 
 #include "AssetLoader.hpp"
 
-float AssetLoader::loadFile(QString modelName,
-                            std::vector<std::vector<float>>& vertices,
-                            std::vector<std::vector<unsigned int>>& indices,
-                            std::vector<std::string>& texturesPaths)
+std::vector<AssetLoader::TextureType> const& AssetLoader::textureTypes()
 {
-	vertices.resize(0);
-	indices.resize(0);
-	texturesPaths.resize(0);
+	static std::vector<TextureType> textureTypes
+	    = {TextureType::DIFFUSE,  TextureType::SPECULAR, TextureType::AMBIENT,
+	       TextureType::EMISSIVE, TextureType::NORMALS,  TextureType::SHININESS,
+	       TextureType::OPACITY,  TextureType::LIGHTMAP};
+	return textureTypes;
+}
+
+std::vector<aiTextureType> const& AssetLoader::assimpTextureTypes()
+{
+	static std::vector<aiTextureType> assimpTextureTypes = {
+	    aiTextureType_DIFFUSE,  aiTextureType_SPECULAR, aiTextureType_AMBIENT,
+	    aiTextureType_EMISSIVE, aiTextureType_NORMALS,  aiTextureType_SHININESS,
+	    aiTextureType_OPACITY,  aiTextureType_LIGHTMAP};
+	return assimpTextureTypes;
+}
+
+float AssetLoader::loadFile(QString modelName,
+                            std::vector<MeshDescriptor>& meshDescriptors)
+{
+	meshDescriptors.resize(0);
 	if(!modelName.contains('/'))
 	{
 		modelName = "models/" + modelName;
@@ -40,7 +54,8 @@ float AssetLoader::loadFile(QString modelName,
 	const aiScene* scene = importer.ReadFile(
 	    path, static_cast<unsigned int>(aiProcess_Triangulate)
 	              | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
-	              | aiProcess_OptimizeMeshes | aiProcess_GenSmoothNormals);
+	              | aiProcess_OptimizeMeshes | aiProcess_GenSmoothNormals
+	              | aiProcess_CalcTangentSpace);
 
 	if(scene == nullptr
 	   // NOLINTNEXTLINE(readability-implicit-bool-conversion)
@@ -58,13 +73,16 @@ float AssetLoader::loadFile(QString modelName,
 
 	for(unsigned int i(0); i < scene->mNumMeshes; ++i)
 	{
-		std::vector<float> v;
-		std::vector<unsigned int> ind;
-		aiMesh* mesh = scene->mMeshes[i];
-		for(unsigned int i = 0; i < mesh->mNumVertices; i++)
+		meshDescriptors.emplace_back(MeshDescriptor());
+		MeshDescriptor& descriptor = meshDescriptors.back();
+
+		std::vector<float>& v          = descriptor.vertices;
+		std::vector<unsigned int>& ind = descriptor.indices;
+		aiMesh* mesh                   = scene->mMeshes[i];
+		for(unsigned int j(0); j < mesh->mNumVertices; j++)
 		{
-			QVector3D vertice(mesh->mVertices[i].x, mesh->mVertices[i].y,
-			                  mesh->mVertices[i].z);
+			QVector3D vertice(mesh->mVertices[j].x, mesh->mVertices[j].y,
+			                  mesh->mVertices[j].z);
 			if(boundingSphereRadius < vertice.length())
 			{
 				boundingSphereRadius = vertice.length();
@@ -72,13 +90,25 @@ float AssetLoader::loadFile(QString modelName,
 			v.push_back(vertice.x());
 			v.push_back(vertice.y());
 			v.push_back(vertice.z());
-			v.push_back(mesh->mNormals[i].x);
-			v.push_back(mesh->mNormals[i].y);
-			v.push_back(mesh->mNormals[i].z);
+			if(mesh->HasTangentsAndBitangents())
+			{
+				v.push_back(mesh->mTangents[j].x);
+				v.push_back(mesh->mTangents[j].y);
+				v.push_back(mesh->mTangents[j].z);
+			}
+			else
+			{
+				v.push_back(0.f);
+				v.push_back(0.f);
+				v.push_back(0.f);
+			}
+			v.push_back(mesh->mNormals[j].x);
+			v.push_back(mesh->mNormals[j].y);
+			v.push_back(mesh->mNormals[j].z);
 			if(mesh->mTextureCoords[0] != nullptr)
 			{
-				v.push_back(mesh->mTextureCoords[0][i].x);
-				v.push_back(mesh->mTextureCoords[0][i].y);
+				v.push_back(mesh->mTextureCoords[0][j].x);
+				v.push_back(mesh->mTextureCoords[0][j].y);
 			}
 			else
 			{
@@ -86,77 +116,164 @@ float AssetLoader::loadFile(QString modelName,
 				v.push_back(0.f);
 			}
 		}
-		for(unsigned int i = 0; i < mesh->mNumFaces; i++)
+		for(unsigned int j(0); j < mesh->mNumFaces; j++)
 		{
 			aiFace face;
 			face.mNumIndices = 0;
-			face             = mesh->mFaces[i];
-			for(unsigned int j = 0; j < face.mNumIndices; j++)
+			face             = mesh->mFaces[j];
+			for(unsigned int k = 0; k < face.mNumIndices; k++)
 			{
-				ind.push_back(face.mIndices[j]);
+				ind.push_back(face.mIndices[k]);
 			}
 		}
-		vertices.push_back(v);
-		indices.push_back(ind);
 
+		std::vector<std::pair<TextureType, std::string>>& texturesPathsTypes
+		    = descriptor.texturesPathsTypes;
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		aiString str;
-		material->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-		std::string texpath(str.C_Str());
-		int pos(texpath.size() - 1);
-		while(pos > 0 && texpath[pos] != '\\' && texpath[pos] != '/')
+		for(unsigned int j(0); j < textureTypes().size(); ++j)
 		{
-			pos--;
-		}
-		pos++;
-		if(!texpath.empty())
-		{
-			texpath.append(directory).append("/").append(
-			    texpath.substr(pos, texpath.size() - 1));
-			texturesPaths.push_back(texpath);
+			for(unsigned int k(0);
+			    k < material->GetTextureCount(assimpTextureTypes()[j]); ++k)
+			{
+				material->GetTexture(assimpTextureTypes()[j], k, &str);
+				std::string texpath(str.C_Str());
+				int pos(texpath.size() - 1);
+				while(pos > 0 && texpath[pos] != '\\' && texpath[pos] != '/')
+				{
+					pos--;
+				}
+				if(texpath[pos] == '\\' || texpath[pos] == '/')
+				{
+					pos++;
+				}
+				if(!texpath.empty())
+				{
+					texpath = findFilePath(directory,
+					                       texpath.substr(pos, texpath.size()));
+					texturesPathsTypes.emplace_back(
+					    std::pair<TextureType, std::string>{textureTypes()[j],
+					                                        texpath});
+				}
+			}
 		}
 	}
 
 	return boundingSphereRadius;
 }
 
-void AssetLoader::loadModel(
-    std::vector<std::vector<float>> const& vertices,
-    std::vector<std::vector<unsigned int>> const& indices,
-    std::vector<std::string> const& texturesPaths,
-    std::vector<GLHandler::Mesh>& meshes,
-    std::vector<GLHandler::Texture>& textures,
-    GLHandler::ShaderProgram const& shader)
+void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
+                            std::vector<TexturedMesh>& meshes,
+                            GLHandler::ShaderProgram const& shader,
+                            QColor const& defaultDiffuseColor)
 {
-	for(unsigned int i(0); i < vertices.size(); ++i)
+	for(auto const& descriptor : meshDescriptors)
 	{
-		GLHandler::Mesh result(GLHandler::newMesh());
+		TexturedMesh tMesh;
+
+		tMesh.mesh = GLHandler::newMesh();
 		GLHandler::setVertices(
-		    result, vertices[i], shader,
-		    {{"position", 3}, {"normal", 3}, {"texcoord", 2}}, indices[i]);
-		meshes.push_back(result);
-	}
-	for(auto const& texPath : texturesPaths)
-	{
-		textures.push_back(GLHandler::newTexture(texPath.c_str()));
+		    tMesh.mesh, descriptor.vertices, shader,
+		    {{"position", 3}, {"tangent", 3}, {"normal", 3}, {"texcoord", 2}},
+		    descriptor.indices);
+
+		for(auto const& tex : descriptor.texturesPathsTypes)
+		{
+			// discard additional textures, keep only one per type
+			if(tMesh.textures.count(tex.first) == 0 && !tex.second.empty())
+			{
+				tMesh.textures[tex.first] = GLHandler::newTexture(
+				    tex.second.c_str(), tex.first == TextureType::DIFFUSE);
+			}
+		}
+		// complete with default textures
+		for(auto const& ttype : textureTypes())
+		{
+			if(tMesh.textures.count(ttype) == 0)
+			{
+				QColor color(getDefaultColor(ttype, defaultDiffuseColor));
+				char data[4];
+				data[0]               = color.red();
+				data[1]               = color.green();
+				data[2]               = color.blue();
+				data[3]               = color.alpha();
+				tMesh.textures[ttype] = GLHandler::newTexture(
+				    1, 1, &data[0], ttype == TextureType::DIFFUSE);
+			}
+		}
+
+		meshes.push_back(tMesh);
 	}
 }
 
 float AssetLoader::loadModel(QString const& modelName,
-                             std::vector<GLHandler::Mesh>& meshes,
-                             std::vector<GLHandler::Texture>& textures,
-                             GLHandler::ShaderProgram const& shader)
+                             std::vector<TexturedMesh>& meshes,
+                             GLHandler::ShaderProgram const& shader,
+                             QColor const& defaultDiffuseColor)
 {
-	std::vector<std::vector<float>> v;
-	std::vector<std::vector<unsigned int>> ind;
-	std::vector<std::string> tPaths;
+	std::vector<MeshDescriptor> descriptors;
 
-	float bsRad(loadFile(modelName, v, ind, tPaths));
+	float bsRad(loadFile(modelName, descriptors));
 	if(bsRad == 0.f)
 	{
 		return 0.f;
 	}
 
-	loadModel(v, ind, tPaths, meshes, textures, shader);
+	loadModel(descriptors, meshes, shader, defaultDiffuseColor);
 	return bsRad;
+}
+
+std::string AssetLoader::findFilePath(std::string const& directory,
+                                      std::string const& fileName)
+{
+	QDir dir(directory.c_str());
+	QFileInfoList results = dir.entryInfoList();
+	for(auto const& entry : results)
+	{
+		if(entry.fileName() == "." || entry.fileName() == "..")
+		{
+			continue;
+		}
+		if(!entry.isDir())
+		{
+			if(entry.fileName() == fileName.c_str())
+			{
+				return entry.filePath().toLatin1().data();
+			}
+			continue;
+		}
+		std::string retrieved(
+		    findFilePath(entry.filePath().toLatin1().data(), fileName));
+		if(!retrieved.empty())
+		{
+			return retrieved;
+		}
+	}
+	return "";
+}
+
+QColor AssetLoader::getDefaultColor(TextureType ttype, QColor diffuseColor)
+{
+	switch(ttype)
+	{
+		case TextureType::DIFFUSE:
+			return diffuseColor;
+		case TextureType::SPECULAR:
+			return {0, 0, 0};
+		case TextureType::AMBIENT:
+			return {255, 255, 255};
+		case TextureType::EMISSIVE:
+			return {0, 0, 0};
+		case TextureType::NORMALS:
+			return {128, 128, 255};
+		case TextureType::SHININESS:
+			return {0, 0, 0};
+		case TextureType::OPACITY:
+			return {255, 255, 255};
+		case TextureType::LIGHTMAP:
+			return {255, 255, 255};
+		default:
+			return {};
+	}
+	return {};
 }

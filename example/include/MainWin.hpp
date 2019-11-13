@@ -5,6 +5,7 @@
 
 #include "AbstractMainWin.hpp"
 #include "Billboard.hpp"
+#include "Model.hpp"
 #include "Primitives.hpp"
 #include "Text3D.hpp"
 #include "Widget3D.hpp"
@@ -55,11 +56,17 @@ class MainWin : public AbstractMainWin
 	GLHandler::Mesh playarea;
 	GLHandler::ShaderProgram playareaShader;
 
+	Model* model;
+	Light* light;
+	QMatrix4x4 modelModel;
+
 	Billboard* bill;
 	Text3D* text;
 	Widget3D* widget3d;
 
 	float barrelPower = 1.01f;
+
+	QElapsedTimer timer;
 };
 
 #endif // MAINWIN_H

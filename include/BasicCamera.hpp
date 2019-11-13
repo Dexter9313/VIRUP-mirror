@@ -27,6 +27,11 @@ class VRHandler;
 class BasicCamera : public QObject
 {
 	Q_OBJECT
+	/** Camera's world space position.
+	 *
+	 * If VR is enabled, the current rendering eye is used as camera position.
+	 */
+	Q_PROPERTY(QVector3D worldspaceposition READ getWorldSpacePosition)
 	/**
 	 * @brief Transformation matrix from world space to camera space.
 	 *
@@ -159,6 +164,10 @@ class BasicCamera : public QObject
 	 * @setter{eyedistancefactor, eyeDistanceFactor}
 	 */
 	void setEyeDistanceFactor(float eyeDistanceFactor);
+	/**
+	 * @getter{worldspaceposition}
+	 */
+	QVector3D getWorldSpacePosition() const;
 	/**
 	 * @getter{cameraspacetoworldtransform}
 	 */

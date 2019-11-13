@@ -53,6 +53,7 @@ class SettingsWidget : public QTabWidget
   protected:
 	void addGroup(QString const& name, QString const& label);
 	void insertGroup(QString const& name, QString const& label, int index);
+	void editGroup(QString const& name);
 	void addBoolSetting(QString const& name, bool defaultVal,
 	                    QString const& label);
 	void addUIntSetting(QString const& name, unsigned int defaultVal,
@@ -86,6 +87,7 @@ class SettingsWidget : public QTabWidget
 
 	QSettings settings;
 	QString currentGroup;
+	QStringList orderedGroups;
 
 	template <typename T>
 	inline void updateValue(QString const& fullName, T newValue);

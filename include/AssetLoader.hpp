@@ -30,23 +30,59 @@
 class AssetLoader
 {
   public:
+	enum class TextureType
+	{
+		NONE      = 0,
+		DIFFUSE   = 1,
+		SPECULAR  = 2,
+		AMBIENT   = 3,
+		EMISSIVE  = 4,
+		NORMALS   = 6,
+		SHININESS = 7,
+		OPACITY   = 9,
+		LIGHTMAP  = 10
+	};
+
+	// for iteration on types
+	static std::vector<TextureType> const& textureTypes();
+
+	struct MeshDescriptor
+	{
+		std::vector<float> vertices;
+		std::vector<unsigned int> indices;
+		std::vector<std::pair<TextureType, std::string>> texturesPathsTypes;
+	};
+
+	struct TexturedMesh
+	{
+		GLHandler::Mesh mesh;
+		std::map<TextureType, GLHandler::Texture> textures; // a.k.a. material
+	};
+
 	// returns model bounding sphere radius
 	static float loadFile(QString modelName,
-	                      std::vector<std::vector<float>>& vertices,
-	                      std::vector<std::vector<unsigned int>>& indices,
-	                      std::vector<std::string>& texturesPaths);
+	                      std::vector<MeshDescriptor>& meshDescriptors);
 
-	static void loadModel(std::vector<std::vector<float>> const& vertices,
-	                      std::vector<std::vector<unsigned int>> const& indices,
-	                      std::vector<std::string> const& texturesPaths,
-	                      std::vector<GLHandler::Mesh>& meshes,
-	                      std::vector<GLHandler::Texture>& textures,
-	                      GLHandler::ShaderProgram const& shader);
+	// GLHandler resources in textured meshes are yours to free !
+	static void loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
+	                      std::vector<TexturedMesh>& meshes,
+	                      GLHandler::ShaderProgram const& shader,
+	                      QColor const& defaultDiffuseColor
+	                      = {0xff, 0x09, 0xf7});
 
-	static float loadModel(QString const& modelName,
-	                       std::vector<GLHandler::Mesh>& meshes,
-	                       std::vector<GLHandler::Texture>& textures,
-	                       GLHandler::ShaderProgram const& shader);
+	// GLHandler resources in textured meshes are yours to free !
+	static float
+	    loadModel(QString const& modelName, std::vector<TexturedMesh>& meshes,
+	              GLHandler::ShaderProgram const& shader,
+	              QColor const& defaultDiffuseColor = {0xff, 0x09, 0xf7});
+
+  private:
+	static std::string findFilePath(std::string const& directory,
+	                                std::string const& fileName);
+
+	static QColor getDefaultColor(TextureType ttype, QColor diffuseColor);
+
+	static std::vector<aiTextureType> const& assimpTextureTypes();
 };
 
 #endif // ASSETLOADER_H

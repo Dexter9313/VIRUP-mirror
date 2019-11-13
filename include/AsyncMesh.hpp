@@ -48,21 +48,16 @@ class AsyncMesh
 	bool emptyPath             = false;
 	float boundingSphereRadius = 0.f;
 
-	struct Data
-	{
-		std::vector<std::vector<float>> loadedVertices;
-		std::vector<std::vector<unsigned int>> loadedIndices;
-		std::vector<std::string> loadedTexs;
-	};
-
-	Data* data;
+	std::vector<AssetLoader::MeshDescriptor>* meshDescriptors;
 
 	GLHandler::ShaderProgram shader;
 
 	// never wait for futures to finish within destructor ! if you need to
 	// release resources and the future didn't finish, push it here and other
 	// AsyncTextures will take care of it later
-	static QList<QPair<QFuture<void>, AsyncMesh::Data*>>& waitingForDeletion();
+	static QList<
+	    QPair<QFuture<void>, std::vector<AssetLoader::MeshDescriptor>*>>&
+	    waitingForDeletion();
 };
 
 #endif // ASYNCMESH_HPP

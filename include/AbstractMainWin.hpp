@@ -215,7 +215,8 @@ class AbstractMainWin : public QOpenGLWindow
 	 * @param fragment Path to the fragment shader to use. See README for
 	 * informations about data paths.
 	 */
-	void appendPostProcessingShader(QString const& id, QString const& fragment);
+	void appendPostProcessingShader(QString const& id, QString const& fragment,
+	                                QMap<QString, QString> const& defines = {});
 	/**
 	 * @brief Inserts a post-processing shader into the post-processing
 	 * pipeline.
