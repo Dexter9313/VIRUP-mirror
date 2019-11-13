@@ -53,11 +53,6 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	        + "/systems/",
 	    tr("Exoplanetary Systems Root Directory"));
 
-	insertGroup("quality", tr("Quality"), 2);
-	addUIntSetting("texmaxsize", 4, tr("Textures max size (x2048)"), 1, 8);
-	addUIntSetting("gentexload", 3, tr("Texture generation GPU load"), 1, 4);
-	addUIntSetting("atmoquality", 6, tr("Atmosphere rendering quality"), 1, 8);
-
 	insertGroup("misc", tr("Miscellaneous"), 3);
 	addBoolSetting("showgrid", false, tr("Show Grid"));
 	addColorSetting("gridcolor", QColor(255, 255, 255), tr("Grid Color"));
@@ -66,6 +61,11 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	// focuspoint=-0.352592, -0.062213, 0.144314
 	addUIntSetting("maxvramusagemb", 500, tr("Max VRAM Usage (in Mb)"), 0,
 	               1000000);
+
+	editGroup("graphics");
+	addUIntSetting("texmaxsize", 4, tr("Textures max size (x2048)"), 1, 8);
+	addUIntSetting("gentexload", 3, tr("Texture generation GPU load"), 1, 4);
+	addUIntSetting("atmoquality", 6, tr("Atmosphere rendering quality"), 1, 8);
 
 	setCurrentIndex(0);
 }

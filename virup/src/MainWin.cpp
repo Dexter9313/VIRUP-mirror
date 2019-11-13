@@ -805,16 +805,17 @@ void MainWin::initScene()
 
 	layout->addWidget(new QLabel("Scenes :"));
 
-	QStringList scenes = {"0:July Eclipse close-up",
-	                      "1:July Eclipse further",
-	                      "2:Phobos",
-	                      "3:Saturn Moons",
-	                      "4:Enceladus",
-	                      "5:Solar System",
-	                      "6:Kepler-11",
-	                      "7:Milky Way",
-	                      "8:Sagittarius A*",
-	                      "9:Local Group",
+	QStringList scenes = {"0:International Space Station",
+	                      "1:July Eclipse close-up",
+	                      "2:July Eclipse further",
+	                      "3:Phobos",
+	                      "4:Saturn Moons",
+	                      "5:Enceladus",
+	                      "6:Solar System",
+	                      "7:Kepler-11",
+	                      "8:Milky Way",
+	                      "9:Sagittarius A*",
+	                      "Local Group",
 	                      "Cosmological Scale"};
 	for(int i(0); i < scenes.size(); ++i)
 	{

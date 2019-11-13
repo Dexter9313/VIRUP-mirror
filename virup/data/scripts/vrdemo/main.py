@@ -155,9 +155,12 @@ def interpolateScene(sc0, sc1, t):
 solareclipsedt = QDateTime(QDate(2019, 7, 2), QTime(22, 18, 00))
 
 scenes = [
+    # International Space Station
+    Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 100, 'ISS', 'Solar System'),
+          TemporalData(1.0), UI(0.167)),
     # Earth-Moon dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 15000000, 'Earth', 'Solar System'),
-          TemporalData(1.0, solareclipsedt), UI(0.167)),
+          TemporalData(1.0), UI(0.167)),
     # Earth-Moon dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Earth', 'Solar System'),
           TemporalData(1.0, solareclipsedt), UI(0.167)),
