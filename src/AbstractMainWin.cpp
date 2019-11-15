@@ -2,12 +2,17 @@
 
 AbstractMainWin::AbstractMainWin()
 {
+	setSurfaceType(QSurface::OpenGLSurface);
+
 	QSurfaceFormat format;
 	format.setDepthBufferSize(24);
 	format.setStencilBufferSize(8);
 	format.setVersion(4, 0);
 	format.setSwapInterval(0);
 	setFormat(format);
+
+	m_context.setFormat(format);
+	m_context.create();
 
 	if(hdr)
 	{
@@ -103,11 +108,16 @@ void AbstractMainWin::takeScreenshot(QString path) const
 
 bool AbstractMainWin::event(QEvent* e)
 {
+	if(e->type() == QEvent::UpdateRequest)
+	{
+		paintGL();
+		return true;
+	}
 	if(e->type() == QEvent::Type::Close)
 	{
 		PythonQtHandler::closeConsole();
 	}
-	return QOpenGLWindow::event(e);
+	return QWindow::event(e);
 }
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
@@ -415,6 +425,7 @@ void AbstractMainWin::toggleWireframe()
 
 void AbstractMainWin::initializeGL()
 {
+	m_context.makeCurrent(this);
 	// Init GL
 	GLHandler::init();
 	// Init VR
@@ -470,6 +481,7 @@ void AbstractMainWin::initializeGL()
 	}
 
 	frameTimer.start();
+	initialized = true;
 }
 
 void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
@@ -516,45 +528,39 @@ void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
 
 void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
 {
-	vrHandler.beginRendering(side, !postProcessingPipeline_.empty());
+	vrHandler.beginRendering(side);
 
 	for(auto pair : sceneRenderPipeline_)
 	{
 		vrRenderSinglePath(pair.second, pair.first, debug, debugInHeadset);
 	}
 
-	// do all postprocesses except last one
-	for(int i(0); i < postProcessingPipeline_.size() - 1; ++i)
+	// do all postprocesses including last one
+	int i(0);
+	for(; i < postProcessingPipeline_.size(); ++i)
 	{
 		applyPostProcShaderParams(postProcessingPipeline_[i].first,
 		                          postProcessingPipeline_[i].second);
 		auto texs = getPostProcessingUniformTextures(
 		    postProcessingPipeline_[i].first,
 		    postProcessingPipeline_[i].second);
-		GLHandler::postProcess(postProcessingPipeline_[i].second,
-		                       vrHandler.getPostProcessingTarget(i % 2),
-		                       vrHandler.getPostProcessingTarget((i + 1) % 2),
-		                       texs);
-	}
-	// render last one on true target
-	if(!postProcessingPipeline_.empty())
-	{
-		int i = postProcessingPipeline_.size() - 1;
-		applyPostProcShaderParams(postProcessingPipeline_[i].first,
-		                          postProcessingPipeline_[i].second);
-		auto texs = getPostProcessingUniformTextures(
-		    postProcessingPipeline_[i].first,
-		    postProcessingPipeline_[i].second);
-		GLHandler::postProcess(postProcessingPipeline_[i].second,
-		                       vrHandler.getPostProcessingTarget(i % 2),
-		                       vrHandler.getEyeTarget(side), texs);
+		GLHandler::postProcess(
+		    postProcessingPipeline_[i].second,
+		    vrHandler.getPostProcessingTarget(i % 2, side),
+		    vrHandler.getPostProcessingTarget((i + 1) % 2, side), texs);
 	}
 
-	vrHandler.submitRendering(side);
+	vrHandler.submitRendering(side, i % 2);
 }
 
 void AbstractMainWin::paintGL()
 {
+	m_context.makeCurrent(this);
+	if(!initialized)
+	{
+		initializeGL();
+	}
+
 	frameTiming_ = frameTimer.restart() / 1000.f;
 
 	setTitle(QString(PROJECT_NAME) + " - " + QString::number(1.f / frameTiming)
@@ -680,7 +686,9 @@ void AbstractMainWin::paintGL()
 	AsyncMesh::garbageCollect();
 
 	// Trigger a repaint immediatly
-	update();
+	m_context.swapBuffers(this);
+	// animate continuously: schedule an update
+	QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
 }
 
 void AbstractMainWin::resizeGL(int w, int h)

@@ -71,5 +71,7 @@ int main(int argc, char* argv[])
 
 	MainWin w;
 	w.setFullscreen(QSettings().value("window/fullscreen").toBool());
+	// start event loop
+	QCoreApplication::postEvent(&w, new QEvent(QEvent::UpdateRequest));
 	return QApplication::exec();
 }

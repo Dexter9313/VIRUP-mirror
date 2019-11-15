@@ -73,11 +73,24 @@ bool VRHandler::init()
 		std::cout << "Render models loaded successfully" << std::endl;
 	}
 
+	postProcessingTargetsLeft[0] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	postProcessingTargetsLeft[1] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	postProcessingTargetsRight[0] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	postProcessingTargetsRight[1] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+
 	// render hidden area mesh
 	GLHandler::setBackfaceCulling(false);
-	hiddenAreaTarget[0]        = GLHandler::newRenderTarget(2000, 1000);
-	hiddenAreaTarget[1]        = GLHandler::newRenderTarget(2000, 1000);
 	GLHandler::ShaderProgram s = GLHandler::newShader("hiddenarea");
+
+	GLHandler::glf().glClearStencil(0x0);
+	GLHandler::glf().glEnable(GL_STENCIL_TEST);
+	GLHandler::glf().glStencilMask(0xFF);
+	GLHandler::glf().glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	// LEFT
 	GLHandler::Mesh hiddenAreaMesh = GLHandler::newMesh();
@@ -87,11 +100,13 @@ bool VRHandler::init()
 	    2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Left).unTriangleCount, s,
 	    {{"position", 2}});
 
-	GLHandler::beginRendering(hiddenAreaTarget[0]);
+	GLHandler::beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
+	                              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
+	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
+	                          postProcessingTargetsLeft[0]);
 	GLHandler::useShader(s);
 	GLHandler::render(hiddenAreaMesh, GLHandler::PrimitiveType::TRIANGLES);
 	GLHandler::deleteMesh(hiddenAreaMesh);
-	// GLHandler::generateScreenshot(hiddenAreaTarget[0]).save("left.png");
 
 	// RIGHT
 	hiddenAreaMesh = GLHandler::newMesh();
@@ -101,26 +116,21 @@ bool VRHandler::init()
 	    2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Right).unTriangleCount, s,
 	    {{"position", 2}});
 
-	GLHandler::beginRendering(hiddenAreaTarget[1]);
+	GLHandler::beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
+	                              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
+	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
+	                          postProcessingTargetsRight[0]);
 	GLHandler::useShader(s);
 	GLHandler::render(hiddenAreaMesh, GLHandler::PrimitiveType::TRIANGLES);
 	GLHandler::deleteMesh(hiddenAreaMesh);
-	// GLHandler::generateScreenshot(hiddenAreaTarget[1]).save("right.png");
 
 	GLHandler::deleteShader(s);
 	GLHandler::setBackfaceCulling(true);
-	// end render hidden area mesh
 
-	leftTarget  = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(),
-                                            getEyeRenderTargetSize().height(),
-                                            GL_RGBA8);
-	rightTarget = GLHandler::newRenderTarget(getEyeRenderTargetSize().width(),
-	                                         getEyeRenderTargetSize().height(),
-	                                         GL_RGBA8);
-	postProcessingTargets[0] = GLHandler::newRenderTarget(
-	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
-	postProcessingTargets[1] = GLHandler::newRenderTarget(
-	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	GLHandler::glf().glStencilMask(0x00);
+	GLHandler::glf().glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	// end render hidden area mesh
 
 #ifdef LEAP_MOTION
 	if(leapController.isConnected())
@@ -321,18 +331,11 @@ void VRHandler::prepareRendering()
 	}
 }
 
-void VRHandler::beginRendering(Side eye, bool postProcessed)
+void VRHandler::beginRendering(Side eye)
 {
-	this->postProcessed = postProcessed;
-	if(postProcessed)
-	{
-		GLHandler::beginRendering(postProcessingTargets[0]);
-	}
-	else
-	{
-		GLHandler::beginRendering(eye == Side::LEFT ? leftTarget : rightTarget);
-	}
-	applyHiddenAreaDepth(eye);
+	GLHandler::beginRendering(eye == Side::LEFT
+	                              ? postProcessingTargetsLeft[0]
+	                              : postProcessingTargetsRight[0]);
 	currentRenderingEye = eye;
 }
 
@@ -377,22 +380,30 @@ void VRHandler::renderHands() const
 
 void VRHandler::reloadPostProcessingTargets()
 {
-	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
-	postProcessingTargets[0] = GLHandler::newRenderTarget(
+	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[0]);
+	GLHandler::deleteRenderTarget(postProcessingTargetsRight[0]);
+	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[1]);
+	GLHandler::deleteRenderTarget(postProcessingTargetsRight[1]);
+
+	postProcessingTargetsLeft[0] = GLHandler::newRenderTarget(
 	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
-	postProcessingTargets[1] = GLHandler::newRenderTarget(
+	postProcessingTargetsLeft[1] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	postProcessingTargetsRight[0] = GLHandler::newRenderTarget(
+	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
+	postProcessingTargetsRight[1] = GLHandler::newRenderTarget(
 	    getEyeRenderTargetSize().width(), getEyeRenderTargetSize().height());
 }
 
-void VRHandler::submitRendering(Side eye)
+void VRHandler::submitRendering(Side eye, unsigned int i)
 {
-	GLHandler::RenderTarget* frame
-	    = eye == Side::LEFT ? &leftTarget : &rightTarget;
+	submittedIndex = i % 2;
+	GLHandler::RenderTarget const& frame
+	    = getPostProcessingTarget(submittedIndex, eye);
 	vr::Texture_t texture = {
 	    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	    reinterpret_cast<void*>(static_cast<uintptr_t>(GLHandler::getGLTexture(
-	        GLHandler::getColorAttachmentTexture(*frame)))),
+	        GLHandler::getColorAttachmentTexture(frame)))),
 	    vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
 	vr::EVRCompositorError error = vr_compositor->Submit(getEye(eye), &texture);
 	if(error != vr::VRCompositorError_None)
@@ -404,12 +415,13 @@ void VRHandler::submitRendering(Side eye)
 void VRHandler::displayOnCompanion(unsigned int companionWidth,
                                    unsigned int companionHeight) const
 {
-	GLHandler::showOnScreen(leftTarget, 0, 0,
-	                        static_cast<int>(companionWidth / 2),
+	GLHandler::showOnScreen(getPostProcessingTarget(submittedIndex, Side::LEFT),
+	                        0, 0, static_cast<int>(companionWidth / 2),
 	                        static_cast<int>(companionHeight));
-	GLHandler::showOnScreen(rightTarget, static_cast<int>(companionWidth / 2),
-	                        0, static_cast<int>(companionWidth),
-	                        static_cast<int>(companionHeight));
+	GLHandler::showOnScreen(
+	    getPostProcessingTarget(submittedIndex, Side::RIGHT),
+	    static_cast<int>(companionWidth / 2), 0,
+	    static_cast<int>(companionWidth), static_cast<int>(companionHeight));
 }
 
 float VRHandler::getFrameTiming() const
@@ -486,18 +498,17 @@ void VRHandler::close()
 	{
 		return;
 	}
-	GLHandler::deleteRenderTarget(hiddenAreaTarget[0]);
-	GLHandler::deleteRenderTarget(hiddenAreaTarget[1]);
+	GLHandler::glf().glDisable(GL_STENCIL_TEST);
 	updateController(Side::LEFT, -1);
 	updateController(Side::RIGHT, -1);
 	delete leftHand;
 	delete rightHand;
 	PythonQtHandler::addObject("leftHand", nullptr);
 	PythonQtHandler::addObject("leftHand", nullptr);
-	GLHandler::deleteRenderTarget(leftTarget);
-	GLHandler::deleteRenderTarget(rightTarget);
-	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
+	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[0]);
+	GLHandler::deleteRenderTarget(postProcessingTargetsRight[0]);
+	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[1]);
+	GLHandler::deleteRenderTarget(postProcessingTargetsRight[1]);
 	std::cout << "Closing VR runtime..." << std::endl;
 	vr::VR_Shutdown();
 	vr_pointer = nullptr;

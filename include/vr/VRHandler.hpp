@@ -72,24 +72,21 @@ class VRHandler : public QObject
 	QSizeF getPlayAreaSize() const;
 	std::vector<QVector3D> getPlayAreaQuad() const;
 	void prepareRendering();
-	void beginRendering(Side eye, bool postProcessed);
-	void applyHiddenAreaDepth(Side eye);
+	void beginRendering(Side eye);
 	void renderControllers() const;
 	void renderHands() const;
-	GLHandler::RenderTarget& getEyeTarget(Side side)
+	GLHandler::RenderTarget const& getPostProcessingTarget(unsigned int i,
+	                                                       Side side) const
 	{
-		return side == Side::LEFT ? leftTarget : rightTarget;
-	};
-	GLHandler::RenderTarget& getPostProcessingTarget(unsigned int i)
-	{
-		return postProcessingTargets[i];
+		return side == Side::LEFT ? postProcessingTargetsLeft[i]
+		                          : postProcessingTargetsRight[i];
 	};
 	GLHandler::RenderTarget& getHiddenAreaTarget(Side side)
 	{
 		return hiddenAreaTarget[side == Side::LEFT ? 0 : 1];
 	}
 	void reloadPostProcessingTargets();
-	void submitRendering(Side eye);
+	void submitRendering(Side eye, unsigned int i);
 	void displayOnCompanion(unsigned int companionWidth,
 	                        unsigned int companionHeight) const;
 	bool pollEvent(Event* e);
@@ -124,9 +121,9 @@ class VRHandler : public QObject
 	Hand* leftHand  = nullptr;
 	Hand* rightHand = nullptr;
 
-	GLHandler::RenderTarget leftTarget;
-	GLHandler::RenderTarget rightTarget;
-	GLHandler::RenderTarget postProcessingTargets[2];
+	unsigned int submittedIndex = 0;
+	GLHandler::RenderTarget postProcessingTargetsLeft[2];
+	GLHandler::RenderTarget postProcessingTargetsRight[2];
 
 	Side currentRenderingEye = Side::LEFT;
 
