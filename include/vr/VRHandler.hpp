@@ -81,10 +81,6 @@ class VRHandler : public QObject
 		return side == Side::LEFT ? postProcessingTargetsLeft[i]
 		                          : postProcessingTargetsRight[i];
 	};
-	GLHandler::RenderTarget& getHiddenAreaTarget(Side side)
-	{
-		return hiddenAreaTarget[side == Side::LEFT ? 0 : 1];
-	}
 	void reloadPostProcessingTargets();
 	void submitRendering(Side eye, unsigned int i);
 	void displayOnCompanion(unsigned int companionWidth,

@@ -339,21 +339,6 @@ void VRHandler::beginRendering(Side eye)
 	currentRenderingEye = eye;
 }
 
-void VRHandler::applyHiddenAreaDepth(Side eye)
-{
-	if(postProcessed)
-	{
-		GLHandler::blitDepthBuffer(getHiddenAreaTarget(eye),
-		                           postProcessingTargets[0]);
-	}
-	else
-	{
-		GLHandler::blitDepthBuffer(getHiddenAreaTarget(eye), eye == Side::LEFT
-		                                                         ? leftTarget
-		                                                         : rightTarget);
-	}
-}
-
 void VRHandler::renderControllers() const
 {
 	if(leftController != nullptr)
