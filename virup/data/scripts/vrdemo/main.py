@@ -196,6 +196,22 @@ scenes = [
 id = 0
 disableanimations = False
 
+def getCosmoShift():
+    try:
+        VRHandler
+    except NameError:
+        return Vector3(1.125*3.24078e-20 / VIRUP.scale, 0, 0)
+    else:
+        return Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale)
+
+def getPlanetShift():
+    try:
+        VRHandler
+    except NameError:
+        return Vector3(1.125 / VIRUP.scale, 0, 0)
+    else:
+        return Vector3(0, 0, -1.125 / VIRUP.scale)
+
 def setSceneId(newid):
     global timer
     global id
@@ -206,7 +222,7 @@ def setSceneId(newid):
     if disableanimations:
         currentscene = scenes[id]
     else:
-        currentscene=Scene(SpatialData(VIRUP.cosmoPosition - Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale), 1.0 / VIRUP.scale, VIRUP.planetTarget, VIRUP.planetarySystemName),
+        currentscene=Scene(SpatialData(VIRUP.cosmoPosition - getCosmoShift(), 1.0 / VIRUP.scale, VIRUP.planetTarget, VIRUP.planetarySystemName),
            TemporalData(VIRUP.timeCoeff, VIRUP.simulationTime), UI(VIRUP.cosmolum, VIRUP.orbitsEnabled, VIRUP.labelsEnabled, VIRUP.darkmatterEnabled, VIRUP.gridEnabled))
         if scenes[id].spatialData.systemName == currentscene.spatialData.systemName and (scenes[id].spatialData.cosmoPos - currentscene.spatialData.cosmoPos).length() > 0.1:
             currentscene.spatialData.systemName = ""
@@ -284,9 +300,9 @@ def updateScene():
 
     if spatialData.bodyName != '' and VIRUP.planetarySystemLoaded:
         VIRUP.planetTarget = spatialData.bodyName
-        VIRUP.planetPosition = spatialData.planetPos + Vector3(0, 0, -1.125 / VIRUP.scale)
+        VIRUP.planetPosition = spatialData.planetPos + getPlanetShift()
     else:
-        VIRUP.cosmoPosition = spatialData.cosmoPos + Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale)
+        VIRUP.cosmoPosition = spatialData.cosmoPos + getCosmoShift()
 
     temporalData = scene.temporalData
     VIRUP.timeCoeff = temporalData.timeCoeff
