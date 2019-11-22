@@ -506,9 +506,34 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	AbstractMainWin::actionEvent(a, pressed);
 }
 
+void MainWin::mousePressEvent(QMouseEvent* e)
+{
+	if(e->button() == Qt::MouseButton::LeftButton)
+	{
+		moveView = true;
+		QCursor c(cursor());
+		c.setShape(Qt::CursorShape::BlankCursor);
+		cursorPosBackup = QCursor::pos();
+		QCursor::setPos(width() / 2, height() / 2);
+		setCursor(c);
+	}
+}
+
+void MainWin::mouseReleaseEvent(QMouseEvent* e)
+{
+	if(e->button() == Qt::MouseButton::LeftButton)
+	{
+		moveView = false;
+		QCursor c(cursor());
+		c.setShape(Qt::CursorShape::ArrowCursor);
+		QCursor::setPos(cursorPosBackup);
+		setCursor(c);
+	}
+}
+
 void MainWin::mouseMoveEvent(QMouseEvent* e)
 {
-	if(!isActive() || vrHandler || !loaded)
+	if(!isActive() || vrHandler || !loaded || !moveView)
 	{
 		return;
 	}
@@ -631,10 +656,6 @@ void MainWin::initLibraries()
 
 void MainWin::initScene()
 {
-	QCursor c(cursor());
-	c.setShape(Qt::CursorShape::BlankCursor);
-	setCursor(c);
-
 	grid = new Grid;
 
 	auto cam            = new Camera(&vrHandler);

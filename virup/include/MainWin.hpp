@@ -306,8 +306,8 @@ class MainWin : public AbstractMainWin
 
   protected:
 	virtual void actionEvent(BaseInputManager::Action a, bool pressed) override;
-	// virtual void mousePressEvent(QMouseEvent* e) override;
-	// virtual void mouseReleaseEvent(QMouseEvent* e) override;
+	virtual void mousePressEvent(QMouseEvent* e) override;
+	virtual void mouseReleaseEvent(QMouseEvent* e) override;
 	virtual void mouseMoveEvent(QMouseEvent* e) override;
 	virtual void wheelEvent(QWheelEvent* e) override;
 	virtual void vrEvent(VRHandler::Event const& e) override;
@@ -346,6 +346,8 @@ class MainWin : public AbstractMainWin
 	Grid* grid    = nullptr;
 	bool showGrid = QSettings().value("misc/showgrid").toBool();
 
+	bool moveView = false;
+	QPoint cursorPosBackup;
 	MovementControls* movementControls = nullptr;
 
 	/* PLANET SYSTEMS */
