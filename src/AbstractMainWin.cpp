@@ -110,7 +110,12 @@ bool AbstractMainWin::event(QEvent* e)
 {
 	if(e->type() == QEvent::UpdateRequest)
 	{
-		paintGL();
+		if(isExposed())
+		{
+			paintGL();
+		}
+		// animate continuously: schedule an update
+		QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
 		return true;
 	}
 	if(e->type() == QEvent::Type::Close)
@@ -561,10 +566,11 @@ void AbstractMainWin::paintGL()
 		initializeGL();
 	}
 
-	frameTiming_ = frameTimer.restart() / 1000.f;
+	frameTiming_ = frameTimer.nsecsElapsed() * 1.e-9f;
+	frameTimer.restart();
 
-	setTitle(QString(PROJECT_NAME) + " - " + QString::number(1.f / frameTiming)
-	         + " FPS");
+	setTitle(QString(PROJECT_NAME) + " - "
+	         + QString::number(round(1.f / frameTiming)) + " FPS");
 
 	if(vrHandler)
 	{
@@ -687,8 +693,6 @@ void AbstractMainWin::paintGL()
 
 	// Trigger a repaint immediatly
 	m_context.swapBuffers(this);
-	// animate continuously: schedule an update
-	QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
 }
 
 void AbstractMainWin::resizeGL(int w, int h)

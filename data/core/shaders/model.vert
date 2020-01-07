@@ -9,6 +9,7 @@ uniform mat4 camera;
 
 uniform mat4 lightspace;
 uniform float boundingSphereRadius;
+uniform mat4 localTransform;
 
 out vec3 f_position;
 out vec3 f_tangent;
@@ -26,6 +27,6 @@ void main()
 	f_tangent     = tangent;
 	f_normal      = normal;
 	f_texcoord    = texcoord;
-	f_lightrelpos = computeLightSpacePosition(lightspace, position, normal,
+	f_lightrelpos = computeLightSpacePosition(lightspace, (localTransform * vec4(position, 1.0)).xyz, normal,
 	                                          boundingSphereRadius);
 }

@@ -51,12 +51,14 @@ class AssetLoader
 		std::vector<float> vertices;
 		std::vector<unsigned int> indices;
 		std::vector<std::pair<TextureType, std::string>> texturesPathsTypes;
+		QMatrix4x4 transform;
 	};
 
 	struct TexturedMesh
 	{
 		GLHandler::Mesh mesh;
 		std::map<TextureType, GLHandler::Texture> textures; // a.k.a. material
+		QMatrix4x4 transform;
 	};
 
 	// returns model bounding sphere radius
@@ -83,6 +85,17 @@ class AssetLoader
 	static QColor getDefaultColor(TextureType ttype, QColor diffuseColor);
 
 	static std::vector<aiTextureType> const& assimpTextureTypes();
+
+	static QMatrix4x4 assimpToQt(aiMatrix4x4 m);
+
+	// both return bounding sphere radius
+	static float parseNode(aiNode const* node, aiScene const* scene,
+	                       std::string const& directory,
+	                       QMatrix4x4 const& transform,
+	                       std::vector<MeshDescriptor>& meshDescriptors);
+	static float parseMesh(aiMesh const* mesh, aiScene const* scene,
+	                       std::string const& directory,
+	                       QMatrix4x4 const& transform, MeshDescriptor& result);
 };
 
 #endif // ASSETLOADER_H

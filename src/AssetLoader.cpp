@@ -51,6 +51,7 @@ float AssetLoader::loadFile(QString modelName,
 	std::string directory = path.substr(0, path.find_last_of('/'));
 
 	Assimp::Importer importer;
+	qDebug() << path.c_str();
 	const aiScene* scene = importer.ReadFile(
 	    path, static_cast<unsigned int>(aiProcess_Triangulate)
 	              | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
@@ -69,97 +70,8 @@ float AssetLoader::loadFile(QString modelName,
 		return 0.f;
 	}
 
-	float boundingSphereRadius = 0.f;
-
-	for(unsigned int i(0); i < scene->mNumMeshes; ++i)
-	{
-		meshDescriptors.emplace_back(MeshDescriptor());
-		MeshDescriptor& descriptor = meshDescriptors.back();
-
-		std::vector<float>& v          = descriptor.vertices;
-		std::vector<unsigned int>& ind = descriptor.indices;
-		aiMesh* mesh                   = scene->mMeshes[i];
-		for(unsigned int j(0); j < mesh->mNumVertices; j++)
-		{
-			QVector3D vertice(mesh->mVertices[j].x, mesh->mVertices[j].y,
-			                  mesh->mVertices[j].z);
-			if(boundingSphereRadius < vertice.length())
-			{
-				boundingSphereRadius = vertice.length();
-			}
-			v.push_back(vertice.x());
-			v.push_back(vertice.y());
-			v.push_back(vertice.z());
-			if(mesh->HasTangentsAndBitangents())
-			{
-				v.push_back(mesh->mTangents[j].x);
-				v.push_back(mesh->mTangents[j].y);
-				v.push_back(mesh->mTangents[j].z);
-			}
-			else
-			{
-				v.push_back(0.f);
-				v.push_back(0.f);
-				v.push_back(0.f);
-			}
-			v.push_back(mesh->mNormals[j].x);
-			v.push_back(mesh->mNormals[j].y);
-			v.push_back(mesh->mNormals[j].z);
-			if(mesh->mTextureCoords[0] != nullptr)
-			{
-				v.push_back(mesh->mTextureCoords[0][j].x);
-				v.push_back(mesh->mTextureCoords[0][j].y);
-			}
-			else
-			{
-				v.push_back(0.f);
-				v.push_back(0.f);
-			}
-		}
-		for(unsigned int j(0); j < mesh->mNumFaces; j++)
-		{
-			aiFace face;
-			face.mNumIndices = 0;
-			face             = mesh->mFaces[j];
-			for(unsigned int k = 0; k < face.mNumIndices; k++)
-			{
-				ind.push_back(face.mIndices[k]);
-			}
-		}
-
-		std::vector<std::pair<TextureType, std::string>>& texturesPathsTypes
-		    = descriptor.texturesPathsTypes;
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		aiString str;
-		for(unsigned int j(0); j < textureTypes().size(); ++j)
-		{
-			for(unsigned int k(0);
-			    k < material->GetTextureCount(assimpTextureTypes()[j]); ++k)
-			{
-				material->GetTexture(assimpTextureTypes()[j], k, &str);
-				std::string texpath(str.C_Str());
-				int pos(texpath.size() - 1);
-				while(pos > 0 && texpath[pos] != '\\' && texpath[pos] != '/')
-				{
-					pos--;
-				}
-				if(texpath[pos] == '\\' || texpath[pos] == '/')
-				{
-					pos++;
-				}
-				if(!texpath.empty())
-				{
-					texpath = findFilePath(directory,
-					                       texpath.substr(pos, texpath.size()));
-					texturesPathsTypes.emplace_back(
-					    std::pair<TextureType, std::string>{textureTypes()[j],
-					                                        texpath});
-				}
-			}
-		}
-	}
-
-	return boundingSphereRadius;
+	return parseNode(scene->mRootNode, scene, directory, QMatrix4x4(),
+	                 meshDescriptors);
 }
 
 void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
@@ -201,7 +113,7 @@ void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
 				    1, 1, &data[0], ttype == TextureType::DIFFUSE);
 			}
 		}
-
+		tMesh.transform = descriptor.transform;
 		meshes.push_back(tMesh);
 	}
 }
@@ -276,4 +188,133 @@ QColor AssetLoader::getDefaultColor(TextureType ttype, QColor diffuseColor)
 			return {};
 	}
 	return {};
+}
+
+QMatrix4x4 AssetLoader::assimpToQt(aiMatrix4x4 m)
+{
+	return {m.a1, m.a2, m.a3, m.a4, m.b1, m.b2, m.b3, m.b4,
+	        m.c1, m.c2, m.c3, m.c4, m.d1, m.d2, m.d3, m.d4};
+}
+
+float AssetLoader::parseNode(aiNode const* node, aiScene const* scene,
+                             std::string const& directory,
+                             QMatrix4x4 const& transform,
+                             std::vector<MeshDescriptor>& meshDescriptors)
+{
+	float boundingSphereRadius(0.f);
+	QMatrix4x4 nodeTransform(transform * assimpToQt(node->mTransformation));
+	for(unsigned int i(0); i < node->mNumMeshes; ++i)
+	{
+		meshDescriptors.emplace_back(MeshDescriptor());
+		MeshDescriptor& descriptor = meshDescriptors.back();
+		aiMesh const* mesh         = scene->mMeshes[node->mMeshes[i]];
+		float bsr(parseMesh(mesh, scene, directory, nodeTransform, descriptor));
+		if(bsr > boundingSphereRadius)
+		{
+			boundingSphereRadius = bsr;
+		}
+	}
+	// recurse
+	for(unsigned int i(0); i < node->mNumChildren; ++i)
+	{
+		float bsr(parseNode(node->mChildren[i], scene, directory, nodeTransform,
+		                    meshDescriptors));
+		if(bsr > boundingSphereRadius)
+		{
+			boundingSphereRadius = bsr;
+		}
+	}
+	return boundingSphereRadius;
+}
+
+float AssetLoader::parseMesh(aiMesh const* mesh, aiScene const* scene,
+                             std::string const& directory,
+                             QMatrix4x4 const& transform,
+                             MeshDescriptor& result)
+{
+	float boundingSphereRadius(0.f);
+	std::vector<float>& v          = result.vertices;
+	std::vector<unsigned int>& ind = result.indices;
+	for(unsigned int j(0); j < mesh->mNumVertices; j++)
+	{
+		QVector3D vertice(mesh->mVertices[j].x, mesh->mVertices[j].y,
+		                  mesh->mVertices[j].z);
+		if(boundingSphereRadius
+		   < (transform * QVector4D(vertice, 1.f)).length())
+		{
+			boundingSphereRadius
+			    = (transform * QVector4D(vertice, 1.f)).length();
+		}
+		v.push_back(vertice.x());
+		v.push_back(vertice.y());
+		v.push_back(vertice.z());
+		if(mesh->HasTangentsAndBitangents())
+		{
+			v.push_back(mesh->mTangents[j].x);
+			v.push_back(mesh->mTangents[j].y);
+			v.push_back(mesh->mTangents[j].z);
+		}
+		else
+		{
+			v.push_back(0.f);
+			v.push_back(0.f);
+			v.push_back(0.f);
+		}
+		v.push_back(mesh->mNormals[j].x);
+		v.push_back(mesh->mNormals[j].y);
+		v.push_back(mesh->mNormals[j].z);
+		if(mesh->mTextureCoords[0] != nullptr)
+		{
+			v.push_back(mesh->mTextureCoords[0][j].x);
+			v.push_back(mesh->mTextureCoords[0][j].y);
+		}
+		else
+		{
+			v.push_back(0.f);
+			v.push_back(0.f);
+		}
+	}
+	for(unsigned int j(0); j < mesh->mNumFaces; j++)
+	{
+		aiFace face;
+		face.mNumIndices = 0;
+		face             = mesh->mFaces[j];
+		for(unsigned int k = 0; k < face.mNumIndices; k++)
+		{
+			ind.push_back(face.mIndices[k]);
+		}
+	}
+
+	std::vector<std::pair<TextureType, std::string>>& texturesPathsTypes
+	    = result.texturesPathsTypes;
+	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+	aiString str;
+	for(unsigned int j(0); j < textureTypes().size(); ++j)
+	{
+		for(unsigned int k(0);
+		    k < material->GetTextureCount(assimpTextureTypes()[j]); ++k)
+		{
+			material->GetTexture(assimpTextureTypes()[j], k, &str);
+			std::string texpath(str.C_Str());
+			int pos(texpath.size() - 1);
+			while(pos > 0 && texpath[pos] != '\\' && texpath[pos] != '/')
+			{
+				pos--;
+			}
+			if(texpath[pos] == '\\' || texpath[pos] == '/')
+			{
+				pos++;
+			}
+			if(!texpath.empty())
+			{
+				texpath = findFilePath(directory,
+				                       texpath.substr(pos, texpath.size()));
+				texturesPathsTypes.emplace_back(
+				    std::pair<TextureType, std::string>{textureTypes()[j],
+				                                        texpath});
+			}
+		}
+	}
+	result.transform = transform;
+	return boundingSphereRadius;
 }

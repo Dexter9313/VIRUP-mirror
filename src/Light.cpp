@@ -69,21 +69,21 @@ GLHandler::Texture Light::getShadowMap() const
 	return GLHandler::getColorAttachmentTexture(shadowMap);
 }
 
-void Light::generateShadowMap(std::vector<GLHandler::Mesh> meshes,
+void Light::generateShadowMap(std::vector<GLHandler::Mesh> const& meshes,
                               float boundingSphereRadius,
+                              std::vector<QMatrix4x4> const& models,
                               QMatrix4x4 const& model)
 {
-	QMatrix4x4 lightSpace(getTransformation(boundingSphereRadius, model));
-
-	GLHandler::beginRendering(GL_DEPTH_BUFFER_BIT, shadowMap);
-	GLHandler::setShaderParam(shadowShader, "camera", lightSpace);
-
 	// see third comment :
 	// https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
 	GLHandler::setBackfaceCulling(false /*, GL_FRONT*/);
-	for(auto& mesh : meshes)
+	GLHandler::beginRendering(GL_DEPTH_BUFFER_BIT, shadowMap);
+	QMatrix4x4 lightSpace(getTransformation(boundingSphereRadius, model));
+	for(unsigned int i(0); i < meshes.size(); ++i)
 	{
-		GLHandler::render(mesh);
+		GLHandler::setShaderParam(shadowShader, "camera",
+		                          lightSpace * models[i]);
+		GLHandler::render(meshes[i]);
 	}
 	GLHandler::setBackfaceCulling(true);
 }
