@@ -17,3 +17,9 @@ else
 	git branch -D update_hydrogenvr
 fi
 git commit -m "Update HydrogenVR to $HASH" -e
+
+if [[ $(grep PROJECT build.conf.example | wc -l) -ne $(grep PROJECT build.conf | wc -l) ]]
+then
+	echo "WARNING:"
+	echo "Your build.conf seems outdated, please compare it with build.conf.example."
+fi
