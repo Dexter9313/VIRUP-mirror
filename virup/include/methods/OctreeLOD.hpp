@@ -33,7 +33,8 @@ class OctreeLOD : public Octree
 	std::istream* getFile() { return file; };
 	bool preloadLevel(unsigned int lvlToLoad);
 	unsigned int renderAboveTanAngle(float tanAngle, Camera const& camera,
-	                                 unsigned int maxPoints, bool isStarField);
+	                                 unsigned int maxPoints, bool isStarField,
+	                                 float alpha);
 	~OctreeLOD();
 
 	static int64_t getUsedMem() { return usedMem(); };

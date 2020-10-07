@@ -194,7 +194,7 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
                                             Camera const& camera,
                                             unsigned int maxPoints,
-                                            bool isStarField)
+                                            bool isStarField, float alpha)
 {
 	QMatrix4x4 model(camera.dataToWorldTransform());
 	if(camera.shouldBeCulled(bbox, model, true) && lvl > 0)
@@ -228,7 +228,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 			if(oct != nullptr)
 			{
 				remaining -= dynamic_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
-				    tanAngle, camera, remaining, isStarField);
+				    tanAngle, camera, remaining, isStarField, alpha);
 			}
 		}
 		return maxPoints - remaining;
@@ -353,6 +353,8 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		model.scale(camera.scale);
 		model.translate(Utils::toQt(localTranslation - camera.position));
 
+		GLHandler::setShaderParam(*shaderProgram, "alpha",
+		                          alpha * totalDataSize / dataSize);
 		GLHandler::setShaderParam(
 		    *shaderProgram, "view",
 		    camera.hmdScaledSpaceToWorldTransform().inverted() * model);
