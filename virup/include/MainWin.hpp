@@ -259,7 +259,10 @@ class MainWin : public AbstractMainWin
 	/**
 	 * @getter{camPitch}
 	 */
-	float getCamPitch() const { return getCamera<Camera>("cosmo").pitch; }
+	float getCamPitch() const
+	{
+		return renderer.getCamera<Camera>("cosmo").pitch;
+	}
 	/**
 	 * @setter{camPitch, camPitch}
 	 */
@@ -267,7 +270,7 @@ class MainWin : public AbstractMainWin
 	/**
 	 * @getter{camYaw}
 	 */
-	float getCamYaw() const { return getCamera<Camera>("cosmo").yaw; }
+	float getCamYaw() const { return renderer.getCamera<Camera>("cosmo").yaw; }
 	/**
 	 * @setter{camYaw, camYaw}
 	 */
@@ -328,10 +331,12 @@ class MainWin : public AbstractMainWin
 	virtual void renderScene(BasicCamera const& camera,
 	                         QString const& pathId) override;
 	virtual void applyPostProcShaderParams(
-	    QString const& id, GLHandler::ShaderProgram shader) const override;
+	    QString const& id, GLHandler::ShaderProgram shader,
+	    GLHandler::RenderTarget const& currentTarget) const override;
 
 	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
-	    QString const& id, GLHandler::ShaderProgram shader) const override;
+	    QString const& id, GLHandler::ShaderProgram shader,
+	    GLHandler::RenderTarget const& currentTarget) const override;
 
   private:
 	void loadSolarSystem();

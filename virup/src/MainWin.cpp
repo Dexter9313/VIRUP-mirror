@@ -75,7 +75,9 @@ void MainWin::loadSolarSystem()
 
 	if(camPlanet == nullptr)
 	{
-		camPlanet                 = new OrbitalSystemCamera(&vrHandler);
+		camPlanet
+		    = new OrbitalSystemCamera(&vrHandler, toneMappingModel->exposure,
+		                              toneMappingModel->dynamicrange);
 		camPlanet->seatedVROrigin = false;
 		camPlanet->setPerspectiveProj(
 		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
@@ -222,7 +224,9 @@ void MainWin::loadNewSystem()
 
 	if(camPlanet == nullptr)
 	{
-		camPlanet                 = new OrbitalSystemCamera(&vrHandler);
+		camPlanet
+		    = new OrbitalSystemCamera(&vrHandler, toneMappingModel->exposure,
+		                              toneMappingModel->dynamicrange);
 		camPlanet->seatedVROrigin = false;
 		camPlanet->setPerspectiveProj(
 		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
@@ -259,24 +263,24 @@ void MainWin::setCosmoLum(float cosmoLum)
 
 double MainWin::getScale() const
 {
-	return getCamera<Camera>("cosmo").scale * mtokpc;
+	return renderer.getCamera<Camera>("cosmo").scale * mtokpc;
 }
 
 void MainWin::setScale(double scale)
 {
-	getCamera<Camera>("cosmo").scale      = scale / mtokpc;
-	CelestialBodyRenderer::overridenScale = scale;
+	renderer.getCamera<Camera>("cosmo").scale = scale / mtokpc;
+	CelestialBodyRenderer::overridenScale     = scale;
 }
 
 Vector3 MainWin::getCosmoPosition() const
 {
-	return getCamera<Camera>("cosmo").position;
+	return renderer.getCamera<Camera>("cosmo").position;
 }
 
 void MainWin::setCosmoPosition(Vector3 cosmoPosition)
 {
-	auto& cosmoCam(getCamera<Camera>("cosmo"));
-	auto& planetCam(getCamera<OrbitalSystemCamera>("planet"));
+	auto& cosmoCam(renderer.getCamera<Camera>("cosmo"));
+	auto& planetCam(renderer.getCamera<OrbitalSystemCamera>("planet"));
 
 	Vector3 diff(cosmoPosition - cosmoCam.position);
 	cosmoCam.position = cosmoPosition;
@@ -285,7 +289,9 @@ void MainWin::setCosmoPosition(Vector3 cosmoPosition)
 
 QString MainWin::getPlanetTarget() const
 {
-	return getCamera<OrbitalSystemCamera>("planet").target->getName().c_str();
+	return renderer.getCamera<OrbitalSystemCamera>("planet")
+	    .target->getName()
+	    .c_str();
 }
 
 void MainWin::setPlanetTarget(QString const& name)
@@ -295,20 +301,20 @@ void MainWin::setPlanetTarget(QString const& name)
 	{
 		if(QString(ptr->getName().c_str()) == name)
 		{
-			getCamera<OrbitalSystemCamera>("planet").target = ptr;
+			renderer.getCamera<OrbitalSystemCamera>("planet").target = ptr;
 		}
 	}
 }
 
 Vector3 MainWin::getPlanetPosition() const
 {
-	return getCamera<OrbitalSystemCamera>("planet").relativePosition;
+	return renderer.getCamera<OrbitalSystemCamera>("planet").relativePosition;
 }
 
 void MainWin::setPlanetPosition(Vector3 planetPosition)
 {
-	auto& cosmoCam(getCamera<Camera>("cosmo"));
-	auto& planetCam(getCamera<OrbitalSystemCamera>("planet"));
+	auto& cosmoCam(renderer.getCamera<Camera>("cosmo"));
+	auto& planetCam(renderer.getCamera<OrbitalSystemCamera>("planet"));
 
 	Vector3 diff(planetPosition - planetCam.relativePosition);
 	planetCam.relativePosition = planetPosition;
@@ -317,14 +323,14 @@ void MainWin::setPlanetPosition(Vector3 planetPosition)
 
 void MainWin::setCamPitch(float pitch)
 {
-	getCamera<Camera>("cosmo").pitch               = pitch;
-	getCamera<OrbitalSystemCamera>("planet").pitch = pitch;
+	renderer.getCamera<Camera>("cosmo").pitch               = pitch;
+	renderer.getCamera<OrbitalSystemCamera>("planet").pitch = pitch;
 }
 
 void MainWin::setCamYaw(float yaw)
 {
-	getCamera<Camera>("cosmo").yaw               = yaw;
-	getCamera<OrbitalSystemCamera>("planet").yaw = yaw;
+	renderer.getCamera<Camera>("cosmo").yaw               = yaw;
+	renderer.getCamera<OrbitalSystemCamera>("planet").yaw = yaw;
 }
 
 QString MainWin::getClosestCommonAncestorName(
@@ -451,12 +457,12 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 			else if(a.id == "toggleorbits")
 			{
 				CelestialBodyRenderer::renderOrbits
-				    = !CelestialBodyRenderer::renderOrbits;
+				    = CelestialBodyRenderer::renderOrbits > 0.f ? 0.f : 1.f;
 			}
 			else if(a.id == "togglelabels")
 			{
 				CelestialBodyRenderer::renderLabels
-				    = !CelestialBodyRenderer::renderLabels;
+				    = CelestialBodyRenderer::renderLabels > 0.f ? 0.f : 1.f;
 			}
 			else if(a.id == "toggledm")
 			{
@@ -539,10 +545,10 @@ void MainWin::mouseMoveEvent(QMouseEvent* e)
 	}
 	float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
 	float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
-	auto& cam(getCamera<Camera>("cosmo"));
+	auto& cam(renderer.getCamera<Camera>("cosmo"));
 	cam.yaw += dx * 3.14f / 3.f;
 	cam.pitch += dy * 3.14f / 3.f;
-	auto& cam2(getCamera<OrbitalSystemCamera>("planet"));
+	auto& cam2(renderer.getCamera<OrbitalSystemCamera>("planet"));
 	cam2.yaw += dx * 3.14f / 3.f;
 	cam2.pitch += dy * 3.14f / 3.f;
 	QCursor::setPos(width() / 2, height() / 2);
@@ -622,9 +628,11 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 					}
 					case VRHandler::Button::TRIGGER:
 						CelestialBodyRenderer::renderLabels
-						    = !CelestialBodyRenderer::renderLabels;
+						    = CelestialBodyRenderer::renderLabels > 0.f ? 0.f
+						                                                : 1.f;
 						CelestialBodyRenderer::renderOrbits
-						    = !CelestialBodyRenderer::renderOrbits;
+						    = CelestialBodyRenderer::renderOrbits > 0.f ? 0.f
+						                                                : 1.f;
 						// toggleGrid();
 						break;
 					case VRHandler::Button::MENU:
@@ -639,7 +647,8 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 		}
 
 		movementControls->vrEvent(
-		    e, getCamera("cosmo").seatedTrackedSpaceToWorldTransform());
+		    e,
+		    renderer.getCamera("cosmo").seatedTrackedSpaceToWorldTransform());
 	}
 	AbstractMainWin::vrEvent(e);
 }
@@ -656,7 +665,9 @@ void MainWin::initLibraries()
 
 void MainWin::initScene()
 {
-	grid = new Grid;
+	toneMappingModel->exposure     = 0.3f;
+	toneMappingModel->dynamicrange = 10000.f;
+	grid                           = new Grid;
 
 	auto cam            = new Camera(&vrHandler);
 	cam->seatedVROrigin = false;
@@ -735,13 +746,13 @@ void MainWin::initScene()
 
 	setCosmoLum(getCosmoLum() / (cam->scale * cam->scale));
 
-	removeSceneRenderPath("default");
+	renderer.removeSceneRenderPath("default");
 
-	appendSceneRenderPath("cosmo", RenderPath(cam));
-	appendSceneRenderPath("planet", RenderPath(camPlanet));
+	renderer.appendSceneRenderPath("cosmo", Renderer::RenderPath(cam));
+	renderer.appendSceneRenderPath("planet", Renderer::RenderPath(camPlanet));
 
 	// we will draw them ourselves
-	pathIdRenderingControllers = "";
+	renderer.pathIdRenderingControllers = "";
 
 	loaded = true;
 
@@ -813,7 +824,7 @@ void MainWin::initScene()
 	lenseDistortionMap = GLHandler::newTexture(
 	    "data/virup/images/pointmass-distortion.png", false);
 
-	appendPostProcessingShader("lensing", "lensing");
+	renderer.appendPostProcessingShader("lensing", "lensing");
 
 	// TRANSITIONS
 	dialog = new QDialog;
@@ -946,7 +957,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 	if(pathId == "planet")
 	{
 		auto& cam      = dynamic_cast<OrbitalSystemCamera&>(camera);
-		auto& cosmoCam = getCamera<Camera>("cosmo");
+		auto& cosmoCam = renderer.getCamera<Camera>("cosmo");
 		if(vrHandler)
 		{
 			debugText->getModel() = cam.hmdSpaceToWorldTransform();
@@ -1030,7 +1041,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 		else
 		{
 			systemRenderer->render(camera);
-			renderVRControls();
+			renderer.renderVRControls();
 			systemRenderer->renderTransparent(camera);
 			if(timeSinceTextUpdate < 5.f)
 			{
@@ -1065,7 +1076,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 
 	if(!OctreeLOD::renderPlanetarySystem)
 	{
-		renderVRControls();
+		renderer.renderVRControls();
 	}
 	auto& cam(dynamic_cast<Camera const&>(camera));
 
@@ -1075,7 +1086,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	method->render(cam);
 
 	// TODO(florian) better than this
-	if(CelestialBodyRenderer::renderLabels)
+	if(CelestialBodyRenderer::renderLabels > 0.f)
 	{
 		for(auto cosmoLabel : cosmoLabels)
 		{
@@ -1100,10 +1111,11 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	          .length();
 }
 
-void MainWin::applyPostProcShaderParams(QString const& id,
-                                        GLHandler::ShaderProgram shader) const
+void MainWin::applyPostProcShaderParams(
+    QString const& id, GLHandler::ShaderProgram shader,
+    GLHandler::RenderTarget const& currentTarget) const
 {
-	AbstractMainWin::applyPostProcShaderParams(id, shader);
+	AbstractMainWin::applyPostProcShaderParams(id, shader, currentTarget);
 	if(id == "lensing")
 	{
 		float aspectRatio(width());
@@ -1127,10 +1139,11 @@ void MainWin::applyPostProcShaderParams(QString const& id,
 }
 
 std::vector<GLHandler::Texture> MainWin::getPostProcessingUniformTextures(
-    QString const& id, GLHandler::ShaderProgram shader) const
+    QString const& id, GLHandler::ShaderProgram shader,
+    GLHandler::RenderTarget const& currentTarget) const
 {
-	auto abstractResult(
-	    AbstractMainWin::getPostProcessingUniformTextures(id, shader));
+	auto abstractResult(AbstractMainWin::getPostProcessingUniformTextures(
+	    id, shader, currentTarget));
 	if(!abstractResult.empty())
 	{
 		return abstractResult;
@@ -1149,18 +1162,20 @@ void MainWin::printPositionInDataSpace(Side controller) const
 	// world space first
 	if(cont != nullptr)
 	{
-		position = getCamera("cosmo").seatedTrackedSpaceToWorldTransform()
-		           * cont->getPosition();
+		position
+		    = renderer.getCamera("cosmo").seatedTrackedSpaceToWorldTransform()
+		      * cont->getPosition();
 	}
 	else
 	{
-		position
-		    = getCamera("cosmo").hmdScaledSpaceToWorldTransform() * position;
+		position = renderer.getCamera("cosmo").hmdScaledSpaceToWorldTransform()
+		           * position;
 	}
 
 	// then data space
-	position = Utils::toQt(getCamera<Camera>("cosmo").worldToDataPosition(
-	    Utils::fromQt(position)));
+	position
+	    = Utils::toQt(renderer.getCamera<Camera>("cosmo").worldToDataPosition(
+	        Utils::fromQt(position)));
 	QString posstr;
 	&posstr << position;
 
