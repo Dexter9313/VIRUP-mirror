@@ -120,20 +120,28 @@ class GLHandler : public QObject
 		friend GLHandler;
 		RenderTarget(unsigned int width, unsigned int height)
 		    : width(width)
-		    , height(height){};
+		    , height(height)
+		    , depth(1){};
+		RenderTarget(unsigned int width, unsigned int height,
+		             unsigned int depth)
+		    : width(width)
+		    , height(height)
+		    , depth(depth){};
 		RenderTarget(GLuint _0, Texture _1, GLuint _2, unsigned int _3,
-		             unsigned int _4)
+		             unsigned int _4, unsigned int _5 = 1)
 		    : frameBuffer(_0)
 		    , texColorBuffer(_1)
 		    , renderBuffer(_2)
 		    , width(_3)
-		    , height(_4){};
+		    , height(_4)
+		    , depth(_5){};
 		GLuint frameBuffer = 0;
 		// if depth map, will be the depth buffer instead
 		Texture texColorBuffer = {};
 		GLuint renderBuffer    = 0;
 		unsigned int width;
 		unsigned int height;
+		unsigned int depth;
 		bool isDepthMap = false;
 
 	  public:
@@ -155,6 +163,7 @@ class GLHandler : public QObject
 		 * @brief Assignment operator.
 		 */
 		RenderTarget& operator=(RenderTarget const&) = default;
+		QSize getSize() const { return QSize(width, height); };
 	};
 
 	/** @ingroup pywrap
@@ -179,6 +188,8 @@ class GLHandler : public QObject
 	{
 		POINTS         = GL_POINTS,
 		LINES          = GL_LINES,
+		LINE_STRIP     = GL_LINE_STRIP,
+		LINE_LOOP      = GL_LINE_LOOP,
 		TRIANGLES      = GL_TRIANGLES,
 		TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
 		AUTO // if no ebo, POINTS, else TRIANGLES
@@ -195,6 +206,7 @@ class GLHandler : public QObject
 	 */
 	enum class GeometricSpace
 	{
+		CLIP,
 		WORLD,
 		CAMERA,
 		SEATEDTRACKED,
@@ -253,11 +265,9 @@ class GLHandler : public QObject
 	 * This default render target format will be used in
 	 * GLHandler#newRenderTarget if no format is provided. This is mostly used
 	 * to ensure that any part of the engine instantiating a new render target
-	 * uses this particular format (if HDR rendering is enabled or disabled for
-	 * exemple).
+	 * uses this particular format.
 	 *
-	 * By default, if HDR rendering if off, will contain GL_RGBA8, and if HDR
-	 * rendering is on, will contain GL_RGBA16F.
+	 * By default, contains GL_RGBA32F.
 	 */
 	static GLint& defaultRenderTargetFormat();
 
@@ -279,6 +289,8 @@ class GLHandler : public QObject
 	static void setPointSize(unsigned int size);
 
 	// RENDERING
+	static RenderTarget newRenderTarget1D(unsigned int width);
+	static RenderTarget newRenderTarget1D(unsigned int width, GLint format);
 	/**
 	 * @brief Calls @ref newRenderTarget(@p width, @p height, @ref
 	 * defaultRenderTargetFormat()).
@@ -298,6 +310,18 @@ class GLHandler : public QObject
 	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
 	                                    GLint format, bool cubemap = false);
 
+	static RenderTarget newRenderTargetMultisample(unsigned int width,
+	                                               unsigned int height,
+	                                               unsigned int samples,
+	                                               GLint format);
+
+	static RenderTarget newRenderTarget3D(unsigned int width,
+	                                      unsigned int height,
+	                                      unsigned int depth);
+	static RenderTarget newRenderTarget3D(unsigned int width,
+	                                      unsigned int height,
+	                                      unsigned int depth, GLint format);
+
 	static RenderTarget newDepthMap(unsigned int width, unsigned int height,
 	                                bool cubemap = false);
 	/**
@@ -313,6 +337,10 @@ class GLHandler : public QObject
 	 */
 	static void blitColorBuffer(RenderTarget const& from,
 	                            RenderTarget const& to);
+	static void blitColorBuffer(RenderTarget const& from,
+	                            RenderTarget const& to, int srcX0, int srcY0,
+	                            int srcX1, int srcY1, int dstX0, int dstY0,
+	                            int dstX1, int dstY1);
 	/**
 	 * @brief Blits one depth buffer from a render target to another one's.
 	 */
@@ -333,12 +361,14 @@ class GLHandler : public QObject
 	static void beginRendering(GLHandler::RenderTarget const& renderTarget
 	                           = {QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()},
-	                           CubeFace face = CubeFace::FRONT);
+	                           CubeFace face = CubeFace::FRONT,
+	                           GLint layer   = 0);
 	static void beginRendering(GLbitfield clearMask,
 	                           GLHandler::RenderTarget const& renderTarget
 	                           = {QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()},
-	                           CubeFace face = CubeFace::FRONT);
+	                           CubeFace face = CubeFace::FRONT,
+	                           GLint layer   = 0);
 	/**
 	 * @brief Renders @p from's color attachment onto a quad using a
 	 * post-processing @p shader. The final rendering gets stored on the @p to
@@ -364,6 +394,11 @@ class GLHandler : public QObject
 	                        = {QSettings().value("window/width").toUInt(),
 	                           QSettings().value("window/height").toUInt()},
 	                        std::vector<Texture> const& uniformTextures = {});
+	static void
+	    renderFromScratch(ShaderProgram shader,
+	                      RenderTarget const& to
+	                      = {QSettings().value("window/width").toUInt(),
+	                         QSettings().value("window/height").toUInt()});
 
 	static RenderTarget getScreenRenderTarget()
 	{
@@ -371,11 +406,10 @@ class GLHandler : public QObject
 		        QSettings().value("window/height").toUInt()};
 	};
 
-	static void
-	    generateEnvironmentMap(GLHandler::RenderTarget const& renderTarget,
-	                           std::function<void()> const& renderFunction,
-	                           QVector3D const& position
-	                           = QVector3D(0.f, 0.f, 0.f));
+	static void generateEnvironmentMap(
+	    GLHandler::RenderTarget const& renderTarget,
+	    std::function<void(bool, QMatrix4x4, QMatrix4x4)> const& renderFunction,
+	    QVector3D const& shift = QVector3D(0, 0, 0));
 	/**
 	 * @brief Shows a @p renderTarget content on screen
 	 *
@@ -789,12 +823,26 @@ class GLHandler : public QObject
 	    newTexture1D(unsigned int width, GLvoid const* data = nullptr,
 	                 GLint internalFormat = GL_SRGB8_ALPHA8,
 	                 GLenum format = GL_RGBA, GLenum target = GL_TEXTURE_1D,
-	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE);
+	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE,
+	                 GLenum type = GL_UNSIGNED_BYTE);
 	static Texture newTexture2D(
 	    unsigned int width, unsigned int height, GLvoid const* data = nullptr,
 	    GLint internalFormat = GL_SRGB8_ALPHA8, GLenum format = GL_RGBA,
 	    GLenum target = GL_TEXTURE_2D, GLint filter = GL_LINEAR,
 	    GLint wrap = GL_CLAMP_TO_EDGE, GLenum type = GL_UNSIGNED_BYTE);
+	static Texture newTextureMultisample(unsigned int width,
+	                                     unsigned int height,
+	                                     unsigned int samples,
+	                                     GLint internalFormat = GL_SRGB8_ALPHA8,
+	                                     GLint filter         = GL_LINEAR,
+	                                     GLint wrap = GL_CLAMP_TO_EDGE);
+	static Texture
+	    newTexture3D(unsigned int width, unsigned int height,
+	                 unsigned int depth, GLvoid const* data = nullptr,
+	                 GLint internalFormat = GL_SRGB8_ALPHA8,
+	                 GLenum format = GL_RGBA, GLenum target = GL_TEXTURE_3D,
+	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE,
+	                 GLenum type = GL_UNSIGNED_BYTE);
 	static Texture newTextureCubemap(
 	    unsigned int side,
 	    std::array<GLvoid const*, 6> data
@@ -803,6 +851,17 @@ class GLHandler : public QObject
 	    GLenum target = GL_TEXTURE_CUBE_MAP, GLint filter = GL_LINEAR,
 	    GLint wrap = GL_CLAMP_TO_EDGE);
 	static GLuint getGLTexture(Texture const& tex) { return tex.glTexture; };
+	// level = level of mipmapping
+	static QSize getTextureSize(Texture const& tex, unsigned int level = 0);
+	static void generateMipmap(Texture const& tex);
+	static unsigned int getHighestMipmapLevel(Texture const& tex);
+	static QImage getTextureContentAsImage(Texture const& tex,
+	                                       unsigned int level = 0);
+	// allocates buff ; don't forget to delete ; returns allocated size (zero if
+	// error)
+	static unsigned int getTextureContentAsData(GLfloat** buff,
+	                                            Texture const& tex,
+	                                            unsigned int level = 0);
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
 

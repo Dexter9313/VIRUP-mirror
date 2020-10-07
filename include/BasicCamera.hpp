@@ -104,6 +104,13 @@ class BasicCamera : public QObject
 	 */
 	Q_PROPERTY(QMatrix4x4 screentoworldtransform READ screenToWorldTransform)
 	/**
+	 * @brief Knowing the FOV of the camera, computes the solid angle of one
+	 * pixel in steradians.
+	 *
+	 * @accessors pixelSolidAngle()
+	 */
+	Q_PROPERTY(float pixelSolideAngle READ pixelSolidAngle)
+	/**
 	 * @brief If true, VR origin is in seated coordinates. If false in standing
 	 * coordinates.
 	 */
@@ -192,6 +199,15 @@ class BasicCamera : public QObject
 	 * @getter{screentoworldtransform}
 	 */
 	QMatrix4x4 screenToWorldTransform() const;
+	/**
+	 * @getter{pixelSolidAngle}
+	 */
+	float pixelSolidAngle() const;
+	void setWindowSize(QSize const& windowSize)
+	{
+		this->windowSize = windowSize;
+	};
+
 	/**
 	 * @brief Destroys a @ref BasicCamera instance, freeing its resources.
 	 */
@@ -435,6 +451,8 @@ class BasicCamera : public QObject
 	 * 0</code> if and only if v is at the inner side of clippingPlanes[i]).
 	 */
 	std::array<Plane, 6> clippingPlanes;
+
+	QSize windowSize;
 };
 
 #include "vr/VRHandler.hpp"

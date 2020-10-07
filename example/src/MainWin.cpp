@@ -18,8 +18,8 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	}
 	else if(a.id == "togglevrorigin")
 	{
-		getCamera("default").seatedVROrigin
-		    = !getCamera("default").seatedVROrigin;
+		renderer.getCamera("default").seatedVROrigin
+		    = !renderer.getCamera("default").seatedVROrigin;
 	}
 	AbstractMainWin::actionEvent(a, pressed);
 }
@@ -27,8 +27,8 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 void MainWin::initScene()
 {
 	// SKYBOX
-	sbShader = GLHandler::newShader("skybox");
-	skybox   = Primitives::newUnitCube(sbShader);
+	sbShader.load("skybox");
+	skybox = Primitives::newUnitCube(sbShader.toGLHandler());
 
 	std::array<const char*, 6> paths = {};
 	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::BACK))
@@ -45,7 +45,7 @@ void MainWin::initScene()
 	    = "data/example/images/ame_ash/ashcanyon_up.tga";
 	sbTexture = GLHandler::newTexture(paths);
 
-	shaderProgram = GLHandler::newShader("colorpervert");
+	shaderProgram.load("colorpervert");
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 
@@ -67,32 +67,31 @@ void MainWin::initScene()
 	    1, 2, 3  // second Triangle
 	};
 	mesh = GLHandler::newMesh();
-	GLHandler::setVertices(mesh, vertices, shaderProgram, {{"position", 3}},
-	                       indices);
-	GLHandler::setShaderUnusedAttributesValues(shaderProgram,
+	GLHandler::setVertices(mesh, vertices, shaderProgram.toGLHandler(),
+	                       {{"position", 3}}, indices);
+	GLHandler::setShaderUnusedAttributesValues(shaderProgram.toGLHandler(),
 	                                           {{"color", {1.0, 1.0, 0.0}}});
 
 	// create cube
 	movingCube = new MovingCube;
 
 	// create points
-	pointsMesh   = GLHandler::newMesh();
-	pointsShader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(pointsShader, "alpha", 1.0f);
-	GLHandler::setShaderParam(pointsShader, "color",
-	                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
+	pointsMesh = GLHandler::newMesh();
+	pointsShader.load("default");
+	pointsShader.setUniform("alpha", 1.0f);
+	pointsShader.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	std::vector<float> points = {0, 0, 0};
-	GLHandler::setVertices(pointsMesh, points, pointsShader, {{"position", 3}});
+	GLHandler::setVertices(pointsMesh, points, pointsShader.toGLHandler(),
+	                       {{"position", 3}});
 
-	sphereShader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(sphereShader, "alpha", 1.0f);
-	GLHandler::setShaderParam(sphereShader, "color",
-	                          QColor::fromRgbF(0.5f, 0.5f, 1.0f));
-	sphere = Primitives::newUnitSphere(sphereShader, 100, 100);
+	sphereShader.load("default");
+	sphereShader.setUniform("alpha", 1.0f);
+	sphereShader.setUniform("color", QColor::fromRgbF(0.5f, 0.5f, 1.0f));
+	sphere = Primitives::newUnitSphere(sphereShader.toGLHandler(), 100, 100);
 
-	playareaShader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(playareaShader, "color", QColor(255, 0, 0));
-	GLHandler::setShaderParam(playareaShader, "alpha", 1.f);
+	playareaShader.load("default");
+	playareaShader.setUniform("color", QColor(255, 0, 0));
+	playareaShader.setUniform("alpha", 1.f);
 	playarea = GLHandler::newMesh();
 	if(vrHandler)
 	{
@@ -104,7 +103,7 @@ void MainWin::initScene()
 		    playareaquad[3].x(), playareaquad[3].y(), playareaquad[3].z(),
 		};
 		indices = {0, 1, 1, 2, 2, 3, 3, 0};
-		GLHandler::setVertices(playarea, vertices, playareaShader,
+		GLHandler::setVertices(playarea, vertices, playareaShader.toGLHandler(),
 		                       {{"position", 3}}, indices);
 	}
 
@@ -133,9 +132,9 @@ void MainWin::initScene()
 	widget3d->getModel().rotate(45.f, 1.f, 0.f);
 	widget3d->getModel().translate(0.6f, 0.f, 0.5f);
 
-	getCamera("default").setEyeDistanceFactor(1.0f);
+	renderer.getCamera("default").setEyeDistanceFactor(1.0f);
 
-	appendPostProcessingShader("distort", "distort");
+	renderer.appendPostProcessingShader("distort", "distort");
 
 	timer.start();
 }
@@ -206,37 +205,29 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 {
 	GLHandler::useTextures({sbTexture});
 	GLHandler::setBackfaceCulling(false);
-	GLHandler::setUpRender(sbShader, QMatrix4x4(),
+	GLHandler::setUpRender(sbShader.toGLHandler(), QMatrix4x4(),
 	                       GLHandler::GeometricSpace::SKYBOX);
 	GLHandler::render(skybox, GLHandler::PrimitiveType::TRIANGLE_STRIP);
 	GLHandler::setBackfaceCulling(true);
 	GLHandler::clearDepthBuffer();
-	if(vrHandler)
-	{
-		vrHandler.applyHiddenAreaDepth(vrHandler.getCurrentRenderingEye());
-	}
 
 	QMatrix4x4 modelSphere;
 	modelSphere.translate(-1.5, 0, 0);
-	GLHandler::setUpRender(sphereShader, modelSphere,
+	GLHandler::setUpRender(sphereShader.toGLHandler(), modelSphere,
 	                       GLHandler::GeometricSpace::SKYBOX);
 	GLHandler::render(sphere);
 	GLHandler::clearDepthBuffer();
-	if(vrHandler)
-	{
-		vrHandler.applyHiddenAreaDepth(vrHandler.getCurrentRenderingEye());
-	}
 
 	movingCube->render();
 
-	GLHandler::setUpRender(shaderProgram);
+	GLHandler::setUpRender(shaderProgram.toGLHandler());
 	GLHandler::render(mesh);
-	GLHandler::setUpRender(pointsShader);
+	GLHandler::setUpRender(pointsShader.toGLHandler());
 	GLHandler::setPointSize(8);
 	GLHandler::render(pointsMesh);
 	GLHandler::setPointSize(1);
 
-	GLHandler::setUpRender(playareaShader, QMatrix4x4(),
+	GLHandler::setUpRender(playareaShader.toGLHandler(), QMatrix4x4(),
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
 	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
 
@@ -257,10 +248,11 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	text->render();
 }
 
-void MainWin::applyPostProcShaderParams(QString const& id,
-                                        GLHandler::ShaderProgram shader) const
+void MainWin::applyPostProcShaderParams(
+    QString const& id, GLHandler::ShaderProgram shader,
+    GLHandler::RenderTarget const& currentTarget) const
 {
-	AbstractMainWin::applyPostProcShaderParams(id, shader);
+	AbstractMainWin::applyPostProcShaderParams(id, shader, currentTarget);
 	if(id == "distort")
 	{
 		GLHandler::setShaderParam(shader, "BarrelPower", barrelPower);
@@ -271,15 +263,12 @@ MainWin::~MainWin()
 {
 	GLHandler::deleteTexture(sbTexture);
 	GLHandler::deleteMesh(skybox);
-	GLHandler::deleteShader(sbShader);
 
 	GLHandler::deleteMesh(mesh);
 
 	GLHandler::deleteMesh(pointsMesh);
-	GLHandler::deleteShader(pointsShader);
 
 	GLHandler::deleteMesh(playarea);
-	GLHandler::deleteShader(playareaShader);
 
 	delete movingCube;
 

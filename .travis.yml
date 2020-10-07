@@ -57,8 +57,9 @@ install:
     # install openvr
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         if [[ "$CACHED" = false ]]; then
-            wget --content-disposition https://github.com/ValveSoftware/openvr/raw/master/bin/linux64/libopenvr_api.so ;
-            wget --content-disposition https://raw.githubusercontent.com/ValveSoftware/openvr/master/headers/openvr.h ;
+            OPENVR_COMMIT=0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7 ;
+            wget --content-disposition https://github.com/ValveSoftware/openvr/raw/$OPENVR_COMMIT/bin/linux64/libopenvr_api.so ;
+            wget --content-disposition https://raw.githubusercontent.com/ValveSoftware/openvr/$OPENVR_COMMIT/headers/openvr.h ;
         fi;
         sudo cp ./libopenvr_api.so /usr/lib ;
         sudo cp ./openvr.h /usr/include ;

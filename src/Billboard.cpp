@@ -19,16 +19,25 @@
 #include "Billboard.hpp"
 
 Billboard::Billboard(const char* texPath)
+    : Billboard(texPath, GLHandler::newShader("billboard"))
+{
+}
+Billboard::Billboard(QImage const& image)
+    : Billboard(image, GLHandler::newShader("billboard"))
+{
+}
+
+Billboard::Billboard(const char* texPath, GLHandler::ShaderProgram shader)
     : tex(GLHandler::newTexture(texPath))
-    , shader(GLHandler::newShader("billboard"))
+    , shader(shader)
 {
 	quad
 	    = Primitives::newQuad(shader, GLHandler::PrimitiveType::TRIANGLE_STRIP);
 }
 
-Billboard::Billboard(QImage const& image)
+Billboard::Billboard(QImage const& image, GLHandler::ShaderProgram shader)
     : tex(GLHandler::newTexture(image))
-    , shader(GLHandler::newShader("billboard"))
+    , shader(shader)
 {
 	quad
 	    = Primitives::newQuad(shader, GLHandler::PrimitiveType::TRIANGLE_STRIP);

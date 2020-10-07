@@ -88,6 +88,7 @@ class AsyncTexture
 	bool isLoaded() const { return loaded; };
 	GLHandler::Texture getDefaultTexture() const { return defaultTex; };
 	GLHandler::Texture getTexture();
+	QColor getAverageColor() const { return averageColor; };
 	~AsyncTexture();
 
 	static void garbageCollect(bool force = false);
@@ -102,6 +103,8 @@ class AsyncTexture
 	bool loaded    = false;
 	bool emptyPath = false;
 	bool sRGB;
+
+	QColor averageColor;
 
 	// never wait for futures to finish within destructor ! if you need to
 	// release resources and the future didn't finish, push it here and other

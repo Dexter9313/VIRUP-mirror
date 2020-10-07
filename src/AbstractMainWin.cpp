@@ -13,16 +13,6 @@ AbstractMainWin::AbstractMainWin()
 
 	m_context.setFormat(format);
 	m_context.create();
-
-	if(hdr)
-	{
-		GLHandler::defaultRenderTargetFormat() = GL_RGBA16F;
-	}
-
-	PythonQtHandler::init();
-	PythonQtHandler::addClass<int>("Side");
-	PythonQtHandler::addObject("Side", new PySide);
-	PythonQtHandler::addObject("GLHandler", new GLHandler);
 }
 
 bool AbstractMainWin::isFullscreen() const
@@ -51,6 +41,12 @@ void AbstractMainWin::setFullscreen(bool fullscreen)
 	{
 		show();
 	}
+}
+
+void AbstractMainWin::reloadPythonEngine()
+{
+	reloadPy = true;
+	PythonQtHandler::closeConsole();
 }
 
 void AbstractMainWin::toggleFullscreen()
@@ -86,6 +82,8 @@ void AbstractMainWin::setVR(bool vr)
 		    "if \"VRHandler\" in dir():\n\tdel VRHandler");
 	}
 	QSettings().setValue("vr/enabled", vrIsEnabled());
+
+	reloadBloomTargets();
 }
 
 void AbstractMainWin::toggleVR()
@@ -95,7 +93,7 @@ void AbstractMainWin::toggleVR()
 
 void AbstractMainWin::takeScreenshot(QString path) const
 {
-	QImage screenshot(GLHandler::generateScreenshot());
+	QImage screenshot(renderer.getLastFrame());
 	if(path == "")
 	{
 		path = QFileDialog::getSaveFileName(
@@ -103,7 +101,7 @@ void AbstractMainWin::takeScreenshot(QString path) const
 		    QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
 		    tr("Images (*.png *.xpm *.jpg)"));
 	}
-	screenshot.mirrored(false, true).save(path);
+	screenshot.save(path);
 }
 
 bool AbstractMainWin::event(QEvent* e)
@@ -123,6 +121,11 @@ bool AbstractMainWin::event(QEvent* e)
 		PythonQtHandler::closeConsole();
 	}
 	return QWindow::event(e);
+}
+
+void AbstractMainWin::resizeEvent(QResizeEvent* /*ev*/)
+{
+	renderer.windowResized();
 }
 
 void AbstractMainWin::keyPressEvent(QKeyEvent* e)
@@ -243,7 +246,7 @@ void AbstractMainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 
 	if(a.id == "toggledbgcam")
 	{
-		dbgCamera->toggle();
+		renderer.getDebugCamera().toggle();
 	}
 	else if(a.id == "togglewireframe")
 	{
@@ -265,6 +268,67 @@ void AbstractMainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	{
 		toggleFullscreen();
 	}
+	else if(a.id == "autoexposure")
+	{
+		toneMappingModel->autoexposure = !toneMappingModel->autoexposure;
+		if(toneMappingModel->autoexposure)
+		{
+			toneMappingModel->dynamicrange      = 1e4f;
+			toneMappingModel->autoexposurecoeff = 1.f;
+		}
+	}
+	else if(a.id == "exposureup")
+	{
+		if(toneMappingModel->autoexposure)
+		{
+			toneMappingModel->autoexposurecoeff *= 1.5f;
+		}
+		else
+		{
+			toneMappingModel->exposure *= 1.5f;
+		}
+	}
+	else if(a.id == "exposuredown")
+	{
+		if(toneMappingModel->autoexposure)
+		{
+			toneMappingModel->autoexposurecoeff /= 1.5f;
+		}
+		else
+		{
+			toneMappingModel->exposure /= 1.5f;
+		}
+	}
+	else if(a.id == "dynamicrangeup")
+	{
+		if(toneMappingModel->dynamicrange < 1e37)
+		{
+			toneMappingModel->dynamicrange *= 10.f;
+			if(toneMappingModel->autoexposure)
+			{
+				toneMappingModel->autoexposurecoeff *= 10.f;
+			}
+			else
+			{
+				toneMappingModel->exposure *= 10.f;
+			}
+		}
+	}
+	else if(a.id == "dynamicrangedown")
+	{
+		if(toneMappingModel->dynamicrange > 1.f)
+		{
+			toneMappingModel->dynamicrange /= 10.f;
+			if(toneMappingModel->autoexposure)
+			{
+				toneMappingModel->autoexposurecoeff /= 10.f;
+			}
+			else
+			{
+				toneMappingModel->exposure /= 10.f;
+			}
+		}
+	}
 	else if(a.id == "quit")
 	{
 		close();
@@ -285,101 +349,26 @@ void AbstractMainWin::setupPythonAPI()
 	PythonQtHandler::addObject("HydrogenVR", this);
 }
 
-void AbstractMainWin::renderVRControls() const
-{
-	if(vrHandler)
-	{
-		vrHandler.renderControllers();
-		vrHandler.renderHands();
-	}
-}
-
-BasicCamera const& AbstractMainWin::getCamera(QString const& pathId) const
-{
-	for(auto const& pair : sceneRenderPipeline)
-	{
-		if(pair.first == pathId)
-		{
-			return *(pair.second.camera);
-		}
-	}
-	throw(std::domain_error(std::string("Path id doesn't exist.")
-	                        + pathId.toStdString()));
-}
-
-BasicCamera& AbstractMainWin::getCamera(QString const& pathId)
-{
-	for(auto const& pair : sceneRenderPipeline)
-	{
-		if(pair.first == pathId)
-		{
-			return *(pair.second.camera);
-		}
-	}
-	throw(std::domain_error(std::string("Path id doesn't exist.")
-	                        + pathId.toStdString()));
-}
-
-void AbstractMainWin::appendSceneRenderPath(QString const& id, RenderPath path)
-{
-	sceneRenderPipeline_.append(QPair<QString, RenderPath>(id, path));
-}
-
-void AbstractMainWin::insertSceneRenderPath(QString const& id, RenderPath path,
-                                            unsigned int pos)
-{
-	sceneRenderPipeline_.insert(pos, QPair<QString, RenderPath>(id, path));
-}
-
-void AbstractMainWin::removeSceneRenderPath(QString const& id)
-{
-	for(int i(0); i < sceneRenderPipeline_.size(); ++i)
-	{
-		if(sceneRenderPipeline_[i].first == id)
-		{
-			delete sceneRenderPipeline_[i].second.camera;
-			sceneRenderPipeline_.removeAt(i);
-			break;
-		}
-	}
-}
-
-void AbstractMainWin::appendPostProcessingShader(
-    QString const& id, QString const& fragment,
-    QMap<QString, QString> const& defines)
-{
-	postProcessingPipeline_.append(QPair<QString, GLHandler::ShaderProgram>(
-	    id, GLHandler::newShader("postprocess", fragment, defines)));
-}
-
-void AbstractMainWin::insertPostProcessingShader(QString const& id,
-                                                 QString const& fragment,
-                                                 unsigned int pos)
-{
-	postProcessingPipeline_.insert(
-	    pos, QPair<QString, GLHandler::ShaderProgram>(
-	             id, GLHandler::newShader("postprocess", fragment)));
-}
-
-void AbstractMainWin::removePostProcessingShader(QString const& id)
-{
-	for(int i(0); i < postProcessingPipeline_.size(); ++i)
-	{
-		if(postProcessingPipeline_[i].first == id)
-		{
-			postProcessingPipeline_.removeAt(i);
-			break;
-		}
-	}
-}
-
 void AbstractMainWin::applyPostProcShaderParams(
-    QString const& id, GLHandler::ShaderProgram shader) const
+    QString const& id, GLHandler::ShaderProgram shader,
+    GLHandler::RenderTarget const& /*currentTarget*/) const
 {
 	if(id == "colors")
 	{
 		GLHandler::setShaderParam(shader, "gamma", gamma);
-		GLHandler::setShaderParam(shader, "hdr", static_cast<float>(hdr));
+	}
+	else if(id == "exposure")
+	{
+		GLHandler::setShaderParam(shader, "exposure",
+		                          toneMappingModel->exposure);
+		GLHandler::setShaderParam(shader, "dynamicrange",
+		                          toneMappingModel->dynamicrange);
+		GLHandler::setShaderParam(shader, "purkinje",
+		                          toneMappingModel->purkinje ? 1.f : 0.f);
+	}
+	else if(id == "bloom")
+	{
+		GLHandler::setShaderParam(shader, "highlumtex", 1);
 	}
 	else
 	{
@@ -392,35 +381,37 @@ void AbstractMainWin::applyPostProcShaderParams(
 
 std::vector<GLHandler::Texture>
     AbstractMainWin::getPostProcessingUniformTextures(
-        QString const& /*id*/, GLHandler::ShaderProgram /*shader*/) const
+        QString const& id, GLHandler::ShaderProgram /*shader*/,
+        GLHandler::RenderTarget const& currentTarget) const
 {
-	return {};
-}
-
-void AbstractMainWin::reloadPostProcessingTargets()
-{
-	GLHandler::defaultRenderTargetFormat() = hdr ? GL_RGBA16F : GL_RGBA;
-
-	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
-	postProcessingTargets[0] = GLHandler::newRenderTarget(width(), height());
-	postProcessingTargets[1] = GLHandler::newRenderTarget(width(), height());
-
-	if(vrHandler)
+	if(id == "bloom")
 	{
-		vrHandler.reloadPostProcessingTargets();
+		if(bloom)
+		{
+			// high luminosity pass
+			GLHandler::ShaderProgram hlshader(
+			    GLHandler::newShader("postprocess", "highlumpass"));
+			GLHandler::postProcess(hlshader, currentTarget, bloomTargets[0]);
+			GLHandler::deleteShader(hlshader);
+
+			// blurring
+			GLHandler::ShaderProgram blurshader(
+			    GLHandler::newShader("postprocess", "blur"));
+			for(unsigned int i = 0; i < 6; i++)
+			{
+				GLHandler::setShaderParam(blurshader, "horizontal",
+				                          static_cast<float>(i % 2));
+				GLHandler::postProcess(blurshader, bloomTargets.at(i % 2),
+				                       bloomTargets.at((i + 1) % 2));
+			}
+			GLHandler::deleteShader(blurshader);
+
+			return {GLHandler::getColorAttachmentTexture(bloomTargets[0])};
+		}
+		GLHandler::beginRendering(bloomTargets[0]);
+		return {GLHandler::getColorAttachmentTexture(bloomTargets[0])};
 	}
-}
-
-void AbstractMainWin::setHDR(bool hdr)
-{
-	this->hdr = hdr;
-	reloadPostProcessingTargets();
-}
-
-void AbstractMainWin::toggleHDR()
-{
-	setHDR(!getHDR());
+	return {};
 }
 
 void AbstractMainWin::toggleWireframe()
@@ -433,10 +424,14 @@ void AbstractMainWin::initializeGL()
 	m_context.makeCurrent(this);
 	// Init GL
 	GLHandler::init();
+	// Init Renderer
+	renderer.init(this, &vrHandler);
+	// Init ToneMappingModel
+	toneMappingModel = new ToneMappingModel(&vrHandler);
+	// Init PythonQt
+	initializePythonQt();
 	// Init VR
 	setVR(QSettings().value("vr/enabled").toBool());
-	// Init Python API
-	setupPythonAPI();
 	// Init libraries
 	initLibraries();
 
@@ -444,27 +439,71 @@ void AbstractMainWin::initializeGL()
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
 	         << format().minorVersion() << '\n';
 
-	dbgCamera = new DebugCamera(&vrHandler);
-	dbgCamera->lookAt({2, 0, 2}, {0, 0, 0}, {0, 0, 1});
-	dbgCamera->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                         / static_cast<float>(height()));
-
-	auto defaultCam = new BasicCamera(&vrHandler);
-	defaultCam->lookAt({1, 1, 1}, {0, 0, 0}, {0, 0, 1});
-	defaultCam->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                          / static_cast<float>(height()));
-	appendSceneRenderPath("default", RenderPath(defaultCam));
-
 	if(vrHandler)
 	{
 		vrHandler.resetPos();
 	}
 
-	postProcessingTargets[0] = GLHandler::newRenderTarget(width(), height());
-	postProcessingTargets[1] = GLHandler::newRenderTarget(width(), height());
+	// BLOOM
+	if(!vrHandler)
+	{
+		bloomTargets[0]
+		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
+		bloomTargets[1]
+		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
+	}
+	else
+	{
+		QSize size(vrHandler.getEyeRenderTargetSize());
+		bloomTargets[0] = GLHandler::newRenderTarget(size.width(),
+		                                             size.height(), GL_RGBA32F);
+		bloomTargets[1] = GLHandler::newRenderTarget(size.width(),
+		                                             size.height(), GL_RGBA32F);
+	}
 
 	// let user init
 	initScene();
+
+	// Init Python engine
+	setupPythonScripts();
+
+	renderer.appendPostProcessingShader("exposure", "exposure");
+	renderer.appendPostProcessingShader("bloom", "bloom");
+	// make sure gamma correction is applied last
+	if(QSettings().value("graphics/dithering").toBool())
+	{
+		renderer.appendPostProcessingShader("colors", "colors",
+		                                    {{"DITHERING", "0"}});
+	}
+	else
+	{
+		renderer.appendPostProcessingShader("colors", "colors");
+	}
+
+	frameTimer.start();
+	initialized = true;
+}
+
+void AbstractMainWin::initializePythonQt()
+{
+	PythonQtHandler::init();
+	PythonQtHandler::addClass<int>("Side");
+	PythonQtHandler::addObject("Side", new PySide);
+	PythonQtHandler::addObject("GLHandler", new GLHandler);
+	PythonQtHandler::addObject("ToneMappingModel", toneMappingModel);
+}
+
+void AbstractMainWin::reloadPythonQt()
+{
+	PythonQtHandler::clean();
+	initializePythonQt();
+	setupPythonScripts();
+	reloadPy = false;
+}
+
+void AbstractMainWin::setupPythonScripts()
+{
+	setupPythonAPI();
 
 	QString mainScriptPath(QSettings().value("scripting/rootdir").toString()
 	                       + "/main.py");
@@ -474,88 +513,6 @@ void AbstractMainWin::initializeGL()
 	}
 
 	PythonQtHandler::evalScript("if \"initScene\" in dir():\n\tinitScene()");
-
-	// make sure gamma correction is applied last
-	if(QSettings().value("graphics/dithering").toBool())
-	{
-		appendPostProcessingShader("colors", "colors", {{"DITHERING", "0"}});
-	}
-	else
-	{
-		appendPostProcessingShader("colors", "colors");
-	}
-
-	frameTimer.start();
-	initialized = true;
-}
-
-void AbstractMainWin::vrRenderSinglePath(RenderPath& renderPath,
-                                         QString const& pathId, bool debug,
-                                         bool debugInHeadset)
-{
-	GLHandler::glf().glClear(renderPath.clearMask);
-	renderPath.camera->update();
-	dbgCamera->update();
-
-	if(debug && debugInHeadset)
-	{
-		dbgCamera->uploadMatrices();
-	}
-	else
-	{
-		renderPath.camera->uploadMatrices();
-	}
-	if(pathIdRenderingControllers == pathId && renderControllersBeforeScene)
-	{
-		renderVRControls();
-	}
-	// render scene
-	if(wireframe)
-	{
-		GLHandler::beginWireframe();
-	}
-	renderScene(*renderPath.camera, pathId);
-	if(pathIdRenderingControllers == pathId && !renderControllersBeforeScene)
-	{
-		renderVRControls();
-	}
-	PythonQtHandler::evalScript(
-	    "if \"renderScene\" in dir():\n\trenderScene()");
-	if(debug && debugInHeadset)
-	{
-		dbgCamera->renderCamera(renderPath.camera);
-	}
-	if(wireframe)
-	{
-		GLHandler::endWireframe();
-	}
-}
-
-void AbstractMainWin::vrRender(Side side, bool debug, bool debugInHeadset)
-{
-	vrHandler.beginRendering(side);
-
-	for(auto pair : sceneRenderPipeline_)
-	{
-		vrRenderSinglePath(pair.second, pair.first, debug, debugInHeadset);
-	}
-
-	// do all postprocesses including last one
-	int i(0);
-	for(; i < postProcessingPipeline_.size(); ++i)
-	{
-		applyPostProcShaderParams(postProcessingPipeline_[i].first,
-		                          postProcessingPipeline_[i].second);
-		auto texs = getPostProcessingUniformTextures(
-		    postProcessingPipeline_[i].first,
-		    postProcessingPipeline_[i].second);
-		GLHandler::postProcess(
-		    postProcessingPipeline_[i].second,
-		    vrHandler.getPostProcessingTarget(i % 2, side),
-		    vrHandler.getPostProcessingTarget((i + 1) % 2, side), texs);
-	}
-
-	vrHandler.submitRendering(side, i % 2);
 }
 
 void AbstractMainWin::paintGL()
@@ -572,10 +529,17 @@ void AbstractMainWin::paintGL()
 	setTitle(QString(PROJECT_NAME) + " - "
 	         + QString::number(round(1.f / frameTiming)) + " FPS");
 
+	if(reloadPy)
+	{
+		reloadPythonQt();
+	}
 	if(vrHandler)
 	{
 		frameTiming_ = vrHandler.getFrameTiming() / 1000.f;
 	}
+
+	toneMappingModel->autoUpdateExposure(
+	    renderer.getLastFrameAverageLuminance(), frameTiming);
 
 	// handle VR events if any
 	if(vrHandler)
@@ -588,148 +552,96 @@ void AbstractMainWin::paintGL()
 		delete e;
 	}
 	// let user update before rendering
-	for(auto const& pair : sceneRenderPipeline_)
+	for(auto const& pair : renderer.sceneRenderPipeline)
 	{
 		updateScene(*pair.second.camera, pair.first);
 	}
 	PythonQtHandler::evalScript(
 	    "if \"updateScene\" in dir():\n\tupdateScene()");
 
-	bool debug(dbgCamera->isEnabled());
-	bool debugInHeadset(dbgCamera->debugInHeadset());
-	bool renderingCamIsDebug(debug
-	                         && ((debugInHeadset && vrHandler) || !vrHandler));
-	bool thirdRender(QSettings().value("vr/thirdrender").toBool());
-
-	// main render logic
-	if(vrHandler)
-	{
-		vrHandler.prepareRendering();
-
-		vrRender(Side::LEFT, debug, debugInHeadset);
-		vrRender(Side::RIGHT, debug, debugInHeadset);
-
-		if(!thirdRender && (!debug || debugInHeadset))
-		{
-			vrHandler.displayOnCompanion(width(), height());
-		}
-		else if(debug && !debugInHeadset)
-		{
-			renderingCamIsDebug = true;
-		}
-	}
-	// if no VR or debug not in headset, render 2D
-	if((!vrHandler || thirdRender) || (debug && !debugInHeadset))
-	{
-		if(postProcessingPipeline_.empty())
-		{
-			GLHandler::beginRendering();
-		}
-		else
-		{
-			GLHandler::beginRendering(postProcessingTargets[0]);
-		}
-
-		for(auto pair : sceneRenderPipeline_)
-		{
-			pair.second.camera->update2D();
-			dbgCamera->update();
-			if(renderingCamIsDebug)
-			{
-				dbgCamera->uploadMatrices();
-			}
-			else
-			{
-				pair.second.camera->uploadMatrices();
-			}
-			// render scene
-			if(wireframe)
-			{
-				GLHandler::beginWireframe();
-			}
-			renderScene(*pair.second.camera, pair.first);
-			PythonQtHandler::evalScript(
-			    "if \"renderScene\" in dir():\n\trenderScene()");
-			if(debug)
-			{
-				dbgCamera->renderCamera(pair.second.camera);
-			}
-			if(wireframe)
-			{
-				GLHandler::endWireframe();
-			}
-		}
-
-		// do all postprocesses except last one
-		for(int i(0); i < postProcessingPipeline_.size() - 1; ++i)
-		{
-			applyPostProcShaderParams(postProcessingPipeline_[i].first,
-			                          postProcessingPipeline_[i].second);
-			auto texs = getPostProcessingUniformTextures(
-			    postProcessingPipeline_[i].first,
-			    postProcessingPipeline_[i].second);
-			GLHandler::postProcess(postProcessingPipeline_[i].second,
-			                       postProcessingTargets.at(i % 2),
-			                       postProcessingTargets.at((i + 1) % 2), texs);
-		}
-		// render last one on screen target
-		if(!postProcessingPipeline_.empty())
-		{
-			int i = postProcessingPipeline_.size() - 1;
-			applyPostProcShaderParams(postProcessingPipeline_[i].first,
-			                          postProcessingPipeline_[i].second);
-			auto texs = getPostProcessingUniformTextures(
-			    postProcessingPipeline_[i].first,
-			    postProcessingPipeline_[i].second);
-			GLHandler::postProcess(postProcessingPipeline_[i].second,
-			                       postProcessingTargets.at(i % 2),
-			                       GLHandler::getScreenRenderTarget(), texs);
-		}
-	}
+	// Render frame
+	renderer.renderFrame();
 
 	// garbage collect some resources
 	AsyncTexture::garbageCollect();
 	AsyncMesh::garbageCollect();
 
+	if(videomode)
+	{
+		QImage frame(renderer.getLastFrame());
+		QString number
+		    = QString("%1").arg(currentVideoFrame, 5, 10, QChar('0'));
+
+		QString subdir;
+		switch(renderer.projection)
+		{
+			case Renderer::Projection::DEFAULT:
+				subdir = "2D";
+				break;
+			case Renderer::Projection::PANORAMA360:
+				subdir = "PANORAMA360";
+				break;
+			case Renderer::Projection::VR360:
+				subdir = "VR360";
+				break;
+		}
+
+		QString res = QString::number(renderer.getSize().width()) + "x"
+		              + QString::number(renderer.getSize().height());
+		if(currentVideoFrame == 0)
+		{
+			QDir viddir(QSettings().value("window/viddir").toString());
+			viddir.mkdir(subdir);
+			QDir projdir(QSettings().value("window/viddir").toString() + "/"
+			             + subdir);
+			projdir.mkdir(res);
+		}
+
+		QString framePath(QSettings().value("window/viddir").toString() + "/"
+		                  + subdir + "/" + res + "/frame" + number + ".png");
+		QThreadPool::globalInstance()->start(new ImageWriter(framePath, frame));
+
+		currentVideoFrame++;
+	}
+
 	// Trigger a repaint immediatly
 	m_context.swapBuffers(this);
 }
 
-void AbstractMainWin::resizeGL(int w, int h)
-{
-	QSettings().setValue("window/width", w);
-	QSettings().setValue("window/height", h);
-	for(auto pair : sceneRenderPipeline_)
-	{
-		pair.second.camera->setPerspectiveProj(
-		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
-	}
-	dbgCamera->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                         / static_cast<float>(height()));
-}
-
 AbstractMainWin::~AbstractMainWin()
 {
+	delete toneMappingModel;
+	GLHandler::deleteRenderTarget(bloomTargets[0]);
+	GLHandler::deleteRenderTarget(bloomTargets[1]);
+
 	// force garbage collect some resources
 	AsyncTexture::garbageCollect(true);
 	AsyncMesh::garbageCollect(true);
 
 	PythonQtHandler::evalScript(
 	    "if \"cleanUpScene\" in dir():\n\tcleanUpScene()");
-	for(const QPair<QString, GLHandler::ShaderProgram>& p :
-	    postProcessingPipeline_)
-	{
-		GLHandler::deleteShader(p.second);
-	}
-	for(auto const& pair : sceneRenderPipeline_)
-	{
-		delete pair.second.camera;
-	}
-	delete dbgCamera;
-
-	GLHandler::deleteRenderTarget(postProcessingTargets[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargets[1]);
-
+	renderer.clean();
 	vrHandler.close();
 	PythonQtHandler::clean();
+}
+
+void AbstractMainWin::reloadBloomTargets()
+{
+	GLHandler::deleteRenderTarget(bloomTargets[0]);
+	GLHandler::deleteRenderTarget(bloomTargets[1]);
+	if(!vrHandler)
+	{
+		bloomTargets[0]
+		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
+		bloomTargets[1]
+		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
+	}
+	else
+	{
+		QSize size(vrHandler.getEyeRenderTargetSize());
+		bloomTargets[0] = GLHandler::newRenderTarget(size.width(),
+		                                             size.height(), GL_RGBA32F);
+		bloomTargets[1] = GLHandler::newRenderTarget(size.width(),
+		                                             size.height(), GL_RGBA32F);
+	}
 }

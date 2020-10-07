@@ -67,6 +67,7 @@ class VRHandler : public QObject
 	float getFrameTiming() const;
 	const Controller* getController(Side side) const;
 	const Hand* getHand(Side side) const;
+	float getRenderTargetAverageLuminance(Side eye) const;
 	// same order as in HmdQuad_t struct
 	QMatrix4x4 getSeatedToStandingAbsoluteTrackingPos() const;
 	QSizeF getPlayAreaSize() const;
@@ -104,10 +105,6 @@ class VRHandler : public QObject
 	    tracked_device_pose_matrix;
 	vr::IVRRenderModels* vr_render_models;
 
-	// Target for rendering the hidden area mesh
-	GLHandler::RenderTarget hiddenAreaTarget[2];
-	bool postProcessed = false;
-
 	Controller* leftController  = nullptr;
 	Controller* rightController = nullptr;
 
@@ -120,6 +117,7 @@ class VRHandler : public QObject
 	unsigned int submittedIndex = 0;
 	GLHandler::RenderTarget postProcessingTargetsLeft[2];
 	GLHandler::RenderTarget postProcessingTargetsRight[2];
+	QSize currentTargetSize;
 
 	Side currentRenderingEye = Side::LEFT;
 

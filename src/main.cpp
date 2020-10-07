@@ -10,8 +10,13 @@
 #include "Launcher.hpp"
 #include "MainWin.hpp"
 
+void log(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+
 int main(int argc, char* argv[])
 {
+	// setup logging
+	qInstallMessageHandler(log);
+
 	// Set config file names for QSettings
 	QCoreApplication::setOrganizationName(PROJECT_NAME);
 	QCoreApplication::setApplicationName("config");
@@ -74,4 +79,39 @@ int main(int argc, char* argv[])
 	// start event loop
 	QCoreApplication::postEvent(&w, new QEvent(QEvent::UpdateRequest));
 	return QApplication::exec();
+}
+
+void log(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
+	QByteArray localMsg   = msg.toLocal8Bit();
+	const char* file      = context.file != nullptr ? context.file : "";
+	const char* shortFile = file;
+	if(strlen(shortFile) > strlen(BUILD_SRC_DIR) + 1)
+	{
+		shortFile += strlen(BUILD_SRC_DIR) + 1;
+	}
+	const char* function = context.function != nullptr ? context.function : "";
+
+	std::string messageTypeStr;
+	switch(type)
+	{
+		case QtDebugMsg:
+			messageTypeStr = "Debug";
+			break;
+		case QtInfoMsg:
+			messageTypeStr = "Info";
+			break;
+		case QtWarningMsg:
+			messageTypeStr = "Warning";
+			break;
+		case QtCriticalMsg:
+			messageTypeStr = "Critical";
+			break;
+		case QtFatalMsg:
+			messageTypeStr = "Fatal";
+			break;
+	}
+	std::cerr << messageTypeStr << " (" << shortFile << ":" << context.line
+	          << ", " << function << "):" << std::endl
+	          << "\t" << localMsg.constData() << std::endl;
 }

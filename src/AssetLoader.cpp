@@ -51,7 +51,6 @@ float AssetLoader::loadFile(QString modelName,
 	std::string directory = path.substr(0, path.find_last_of('/'));
 
 	Assimp::Importer importer;
-	qDebug() << path.c_str();
 	const aiScene* scene = importer.ReadFile(
 	    path, static_cast<unsigned int>(aiProcess_Triangulate)
 	              | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices

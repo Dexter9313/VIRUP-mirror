@@ -29,6 +29,7 @@ QList<QPair<at::WorkerThread*, GLHandler::PixelBufferObject>>&
 AsyncTexture::AsyncTexture(QString const& path, QColor const& defaultColor,
                            bool sRGB)
     : sRGB(sRGB)
+    , averageColor(defaultColor)
 {
 	unsigned char color[4];
 	color[0]   = defaultColor.red();
@@ -57,6 +58,7 @@ AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
                            unsigned int height, QColor const& defaultColor,
                            bool sRGB)
     : sRGB(sRGB)
+    , averageColor(defaultColor)
 {
 	unsigned char color[4];
 	color[0]   = defaultColor.red();
@@ -97,6 +99,10 @@ GLHandler::Texture AsyncTexture::getTexture()
 
 	tex = GLHandler::copyPBOToTex(pbo, sRGB);
 	GLHandler::deletePixelBufferObject(pbo);
+	GLHandler::generateMipmap(tex);
+	unsigned int lastMipmap(GLHandler::getHighestMipmapLevel(tex));
+	averageColor
+	    = GLHandler::getTextureContentAsImage(tex, lastMipmap).pixelColor(0, 0);
 	delete thread;
 	loaded = true;
 

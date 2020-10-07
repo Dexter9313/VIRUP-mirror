@@ -24,15 +24,26 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	// NOLINTNEXTLINE(hicpp-no-array-decay)
 	qDebug() << QString("Config file :") + QSettings().fileName();
 	addGroup("window", tr("Window"));
-	addUIntSetting("width", 1500, tr("Window Width"), 0, 10000);
-	addUIntSetting("height", 800, tr("Window Height"), 0, 10000);
+	addUIntSetting("width", 1500, tr("Window Width"), 0, 17000);
+	addUIntSetting("height", 800, tr("Window Height"), 0, 17000);
 	addBoolSetting("fullscreen", false, tr("Window Fullscreen"));
+	addBoolSetting("forcerenderresolution", false,
+	               tr("Force Rendering Resolution"));
+	addUIntSetting("forcewidth", 1500, tr("Forced Rendering Width"), 0, 17000);
+	addUIntSetting("forceheight", 800, tr("Forced Rendering Height"), 0, 17000);
 	addLanguageSetting();
+	addDirPathSetting(
+	    "viddir",
+	    QFileInfo(QSettings().fileName()).absoluteDir().absolutePath()
+	        + "/systems/",
+	    tr("Video Frames Output Directory"));
 
 	addGroup("graphics", tr("Graphics"));
+	addUIntSetting("antialiasing", 0, tr("Anti-aliasing"), 0, 3);
 	addUIntSetting("shadowsquality", 1, tr("Shadows Quality"), 1, 5);
 	addUIntSetting("smoothshadows", 0, tr("Shadow Smoothing Quality"), 0, 5);
 	addBoolSetting("dithering", true, tr("Enable Dithering"));
+	addBoolSetting("bloom", true, tr("Bloom"));
 
 	InputManager inputManager;
 	addGroup("controls", tr("Controls"));

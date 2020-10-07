@@ -7,6 +7,7 @@
 #include "Billboard.hpp"
 #include "Model.hpp"
 #include "Primitives.hpp"
+#include "ShaderProgram.hpp"
 #include "Text3D.hpp"
 #include "Widget3D.hpp"
 #include "movingcube/MovingCube.hpp"
@@ -35,26 +36,27 @@ class MainWin : public AbstractMainWin
 	                         QString const& pathId) override;
 
 	virtual void applyPostProcShaderParams(
-	    QString const& id, GLHandler::ShaderProgram shader) const override;
+	    QString const& id, GLHandler::ShaderProgram shader,
+	    GLHandler::RenderTarget const& currentTarget) const override;
 
   private:
-	GLHandler::ShaderProgram sbShader;
+	ShaderProgram sbShader;
 	GLHandler::Mesh skybox;
 	GLHandler::Texture sbTexture;
 
 	GLHandler::Mesh mesh;
-	GLHandler::ShaderProgram shaderProgram;
+	ShaderProgram shaderProgram;
 
 	GLHandler::Mesh pointsMesh;
-	GLHandler::ShaderProgram pointsShader;
+	ShaderProgram pointsShader;
 
 	MovingCube* movingCube;
 
 	GLHandler::Mesh sphere;
-	GLHandler::ShaderProgram sphereShader;
+	ShaderProgram sphereShader;
 
 	GLHandler::Mesh playarea;
-	GLHandler::ShaderProgram playareaShader;
+	ShaderProgram playareaShader;
 
 	Model* model;
 	Light* light;

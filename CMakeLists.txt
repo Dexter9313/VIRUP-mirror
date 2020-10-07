@@ -74,6 +74,7 @@ endif()
 add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
 add_definitions(-DPROJECT_DIRECTORY="${PROJECT_DIRECTORY}")
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
+add_definitions(-DBUILD_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 message(STATUS "Project name: ${PROJECT_NAME}")
 message(STATUS "Project dir: ${PROJECT_DIRECTORY}")
@@ -185,7 +186,13 @@ endif()
 
 #Python
 if((PYTHONQT_FOUND) OR (PYTHONQT_QTALL_FOUND))
-	find_package(PythonLibs)
+	if(PYTHONQT_PYTHON2)
+		find_package(Python2 COMPONENTS Development)
+		set(PYTHON_INCLUDE_DIRS ${Python2_INCLUDE_DIRS})
+		set(PYTHON_LIBRARIES ${Python2_LIBRARIES})
+	else()
+		find_package(PythonLibs)
+	endif()
 endif()
 
 #Additional
