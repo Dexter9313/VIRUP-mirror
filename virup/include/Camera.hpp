@@ -45,12 +45,14 @@ class Camera : public BasicCamera
 	Q_OBJECT
   public:
 	Camera(VRHandler const* vrHandler);
-	virtual void update() override;
-	virtual void update2D() override;
 	Vector3 dataToWorldPosition(Vector3 const& data) const;
 	QMatrix4x4 dataToWorldTransform() const;
 	Vector3 worldToDataPosition(Vector3 const& world) const;
 	QMatrix4x4 worldToDataTransform() const;
+	Vector3 getHeadShift() const;
+	// take head shift into account
+	Vector3 getTruePosition() const;
+	void updateTargetFPS();
 	bool shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model,
 	                    bool depthClamp = false) const;
 
@@ -69,9 +71,6 @@ class Camera : public BasicCamera
 	float getTargetFPS() const { return targetFPS; };
 	void setTargetFPS(float targetFPS) { this->targetFPS = targetFPS; };
 	float getCurrentFrameTiming() const { return currentFrameTiming; };
-
-  private:
-	void updateTargetFPS();
 };
 
 #endif // CAMERA_H

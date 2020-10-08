@@ -5,18 +5,6 @@ Camera::Camera(VRHandler const* vrHandler)
 {
 }
 
-void Camera::update()
-{
-	updateTargetFPS();
-	BasicCamera::update();
-}
-
-void Camera::update2D()
-{
-	updateTargetFPS();
-	BasicCamera::update2D();
-}
-
 Vector3 Camera::dataToWorldPosition(Vector3 const& data) const
 {
 	Vector3 result(data);
@@ -78,6 +66,24 @@ void Camera::updateTargetFPS()
 	{
 		targetFPS = 60.f;
 	}
+}
+
+Vector3 Camera::getHeadShift() const
+{
+	QMatrix4x4 eyeViewMatrix;
+	if(*vrHandler)
+	{
+		eyeViewMatrix
+		    = vrHandler->getEyeViewMatrix(vrHandler->getCurrentRenderingEye());
+	}
+	return Utils::fromQt(QVector3D(
+	           (hmdScaledToWorld * eyeViewMatrix.inverted()).column(3)))
+	       / scale;
+}
+
+Vector3 Camera::getTruePosition() const
+{
+	return position + getHeadShift();
 }
 
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes/

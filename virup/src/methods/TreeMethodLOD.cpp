@@ -254,11 +254,17 @@ std::pair<float, std::string> humanReadable(int64_t bytes)
 
 void TreeMethodLOD::render(Camera const& camera)
 {
+	render(camera, camera.dataToWorldTransform(),
+	       Utils::toQt(camera.getTruePosition()));
+}
+
+void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
+                           QVector3D const& campos)
+{
 	if(setPointSize)
 	{
 		GLHandler::setPointSize(1);
 	}
-	QMatrix4x4 model(camera.dataToWorldTransform());
 	/*struct timeval tf;
 	gettimeofday(&tf, NULL);
 	uint64_t dt = (tf.tv_sec * 1000000) + tf.tv_usec - t0.tv_usec
@@ -290,23 +296,21 @@ void TreeMethodLOD::render(Camera const& camera)
 		currentTanAngle = 1.2f;
 	}
 
-	GLHandler::beginTransparent(GL_SRC_ALPHA, GL_ONE);
+	GLHandler::beginTransparent(GL_ONE, GL_ONE);
 	GLHandler::setShaderParam(shaderProgram, "color",
 	                          QVector3D(1.0f, 1.0f, 1.0f));
 	GLHandler::setUpRender(shaderProgram, model);
 	GLHandler::setShaderParam(shaderProgram, "pixelSolidAngle",
 	                          camera.pixelSolidAngle());
-	GLHandler::setShaderParam(shaderProgram, "view",
-	                          camera.hmdScaledSpaceToWorldTransform().inverted()
-	                              * model);
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
 	    QSettings().value("data/gazcolor").value<QColor>());
 	unsigned int rendered = 0;
 	if(gazTree != nullptr)
 	{
-		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera,
-		                                         100000000, false, getAlpha());
+		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, model,
+		                                         campos, 100000000, false,
+		                                         getAlpha());
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
@@ -314,7 +318,8 @@ void TreeMethodLOD::render(Camera const& camera)
 	if(starsTree != nullptr)
 	{
 		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera,
-		                                           100000000, true, getAlpha());
+		                                           model, campos, 100000000,
+		                                           true, getAlpha());
 	}
 	GLHandler::setShaderParam(
 	    shaderProgram, "color",
@@ -322,7 +327,8 @@ void TreeMethodLOD::render(Camera const& camera)
 	if(darkMatterTree != nullptr && showdm)
 	{
 		rendered += darkMatterTree->renderAboveTanAngle(
-		    currentTanAngle, camera, 100000000, false, getAlpha());
+		    currentTanAngle, camera, model, campos, 100000000, false,
+		    getAlpha());
 	}
 	GLHandler::endTransparent();
 

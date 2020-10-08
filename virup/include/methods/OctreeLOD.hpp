@@ -33,6 +33,8 @@ class OctreeLOD : public Octree
 	std::istream* getFile() { return file; };
 	bool preloadLevel(unsigned int lvlToLoad);
 	unsigned int renderAboveTanAngle(float tanAngle, Camera const& camera,
+	                                 QMatrix4x4 const& globalModel,
+	                                 QVector3D const& globalCampos,
 	                                 unsigned int maxPoints, bool isStarField,
 	                                 float alpha);
 	~OctreeLOD();

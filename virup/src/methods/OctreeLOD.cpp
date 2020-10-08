@@ -193,11 +193,12 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 
 unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
                                             Camera const& camera,
+                                            QMatrix4x4 const& globalModel,
+                                            QVector3D const& globalCampos,
                                             unsigned int maxPoints,
                                             bool isStarField, float alpha)
 {
-	QMatrix4x4 model(camera.dataToWorldTransform());
-	if(camera.shouldBeCulled(bbox, model, true) && lvl > 0)
+	if(camera.shouldBeCulled(bbox, globalModel, true) && lvl > 0)
 	{
 		if(usedMem() > (memLimit() * 80) / 100)
 		{
@@ -219,7 +220,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		}*/
 	}
 
-	if(currentTanAngle(camera, model) > tanAngle && !isLeaf())
+	if(currentTanAngle(camera, globalModel) > tanAngle && !isLeaf())
 	{
 		unsigned int remaining = maxPoints;
 		// RENDER SUBTREES
@@ -228,7 +229,8 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 			if(oct != nullptr)
 			{
 				remaining -= dynamic_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
-				    tanAngle, camera, remaining, isStarField, alpha);
+				    tanAngle, camera, globalModel, globalCampos, remaining,
+				    isStarField, alpha);
 			}
 		}
 		return maxPoints - remaining;
@@ -248,9 +250,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 
 	if(isLeaf())
 	{
-		QVector3D camposQt = camera.hmdScaledSpaceToWorldTransform()
-		                     * QVector3D(0.f, 0.f, 0.f);
-		Vector3 campos(camera.worldToDataPosition(Utils::fromQt(camposQt)));
+		Vector3 campos(Utils::fromQt(globalCampos));
 
 		// see if useful for optimization or not... 100 is too much for Eagle
 		// data (won't trigger until precision problems already appear)
@@ -350,15 +350,13 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 	if(dataSize / dimPerVertex <= maxPoints)
 	{
 		QMatrix4x4 model;
-		model.scale(camera.scale);
-		model.translate(Utils::toQt(localTranslation - camera.position));
+		model.translate(Utils::toQt(localTranslation));
 
 		GLHandler::setShaderParam(*shaderProgram, "alpha",
 		                          alpha * totalDataSize / dataSize);
-		GLHandler::setShaderParam(
-		    *shaderProgram, "view",
-		    camera.hmdScaledSpaceToWorldTransform().inverted() * model);
-		GLHandler::setUpRender(*shaderProgram, model);
+		GLHandler::setShaderParam(*shaderProgram, "campos",
+		                          model.inverted() * globalCampos);
+		GLHandler::setUpRender(*shaderProgram, globalModel * model);
 		GLHandler::render(mesh);
 		return dataSize / dimPerVertex;
 	}

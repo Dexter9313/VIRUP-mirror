@@ -892,6 +892,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 	{
 		auto& cam(dynamic_cast<Camera&>(camera));
 		cam.currentFrameTiming = frameTiming;
+		cam.updateTargetFPS();
 
 		/*float distPeriod = 60.f, anglePeriod = 10.f;
 		integralDt += dt;
