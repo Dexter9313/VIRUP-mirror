@@ -512,6 +512,18 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	AbstractMainWin::actionEvent(a, pressed);
 }
 
+bool MainWin::event(QEvent* e)
+{
+	if(e->type() == QEvent::Type::Close)
+	{
+		if(dialog != nullptr)
+		{
+			dialog->close();
+		}
+	}
+	return AbstractMainWin::event(e);
+}
+
 void MainWin::mousePressEvent(QMouseEvent* e)
 {
 	if(e->button() == Qt::MouseButton::LeftButton)

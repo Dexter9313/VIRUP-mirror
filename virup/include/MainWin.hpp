@@ -309,6 +309,7 @@ class MainWin : public AbstractMainWin
 
   protected:
 	virtual void actionEvent(BaseInputManager::Action a, bool pressed) override;
+	virtual bool event(QEvent* e) override;
 	virtual void mousePressEvent(QMouseEvent* e) override;
 	virtual void mouseReleaseEvent(QMouseEvent* e) override;
 	virtual void mouseMoveEvent(QMouseEvent* e) override;
