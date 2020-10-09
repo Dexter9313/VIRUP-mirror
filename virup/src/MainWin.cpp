@@ -3,7 +3,7 @@
 MainWin::MainWin()
 {
 	srand(time(nullptr));
-	OctreeLOD::solarSystemDataPos() = solarSystemDataPos;
+	OctreeLOD::solarSystemDataPos() = Vector3(8.29995608, 0.0, -0.027);
 }
 
 void MainWin::loadSolarSystem()
@@ -98,7 +98,11 @@ void MainWin::loadNewSystem()
 		delete orbitalSystem;
 	}
 
-	if(((OctreeLOD::planetarySysInitData() - solarSystemDataPos).length() < 1e-6
+	if(((Utils::fromQt(cosmologicalSim->getRelToAbsTransform()
+	                   * Utils::toQt(OctreeLOD::planetarySysInitData()))
+	     - solarSystemDataPos)
+	            .length()
+	        < 1e-6
 	    && planetarySystemName == "")
 	   || planetarySystemName == "Solar System")
 	{
@@ -692,10 +696,10 @@ void MainWin::initScene()
 	    QSettings().value("data/loaddarkmatter").toBool()
 	        ? QSettings().value("data/darkmatterfile").toString().toStdString()
 	        : "");
-	cosmologicalSim->referenceFrame = UniverseElement::ReferenceFrame::ECLIPTIC;
+	cosmologicalSim->referenceFrame = UniverseElement::ReferenceFrame::GALACTIC;
 	cosmologicalSim->unit           = 1.0;
-	cosmologicalSim->solarsystemPosition = Vector3();
-	// cosmologicalSim->solarsystemPosition = Vector3(-8.29995608, 0.0, 0.027);
+	cosmologicalSim->solarsystemPosition = Vector3(8.29995608, 0.0, -0.027);
+
 
 	// PLANETS LOADING
 	debugText = new Text3D(textWidth, textHeight);
@@ -914,7 +918,9 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 		{
 			return;
 		}
-		if(lastData != OctreeLOD::planetarySysInitData())
+		if(lastData
+		   != Utils::fromQt(cosmologicalSim->getRelToAbsTransform()
+		                    * Utils::toQt(OctreeLOD::planetarySysInitData())))
 		{
 			planetarySystemName = "";
 			loadNewSystem();
@@ -924,7 +930,9 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 			loadNewSystem();
 		}
 
-		lastData   = OctreeLOD::planetarySysInitData();
+		lastData
+		    = Utils::fromQt(cosmologicalSim->getRelToAbsTransform()
+		                    * Utils::toQt(OctreeLOD::planetarySysInitData()));
 		sysInWorld = cosmoCam.dataToWorldPosition(lastData);
 
 		CelestialBodyRenderer::overridenScale = mtokpc * cosmoCam.scale;
@@ -1034,7 +1042,8 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	GLHandler::glf().glDisable(GL_DEPTH_CLAMP);
 
 	// update here because depends on eye
-	QVector3D pos(Utils::toQt(cam.dataToWorldPosition(Vector3(0.0, 0.0, 0.0))));
+	QVector3D pos(
+	    Utils::toQt(cam.dataToWorldPosition(Vector3(0.43, 8.24, 0.81))));
 	lenseScreenCoord = camera.project(pos);
 	lenseScreenCoord /= lenseScreenCoord.w();
 	lenseDist
