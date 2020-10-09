@@ -80,7 +80,7 @@ def interpolateSpatialData(s0, s1, t, simTime0, simTime1):
     scale=1.0 / interpolateLog(s0.scale, s1.scale, t)
 
     dist=(s0.cosmoPos - s1.cosmoPos).length() * 3.086e+19
-    if s0.systemName != s1.systemName and dist != 0.0:
+    if s0.systemName != s1.systemName and dist > 1e9:
         if t <= 0.25:
             inter0=SpatialData(s0.cosmoPos, dist)
             result=interpolateSpatialData(s0, inter0, t*4, simTime0, simTime0)
