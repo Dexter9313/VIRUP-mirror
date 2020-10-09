@@ -195,22 +195,23 @@ scenes = [
 
 id = 0
 disableanimations = False
+personheight=1.5
 
 def getCosmoShift():
     try:
         VRHandler
     except NameError:
-        return Vector3(1.125*3.24078e-20 / VIRUP.scale, 0, 0)
+        return Vector3(personheight*3.24078e-20 / VIRUP.scale, 0, 0)
     else:
-        return Vector3(0, 0, -1.125*3.24078e-20 / VIRUP.scale)
+        return Vector3(0, 0, -personheight*3.24078e-20 / VIRUP.scale)
 
 def getPlanetShift():
     try:
         VRHandler
     except NameError:
-        return Vector3(1.125 / VIRUP.scale, 0, 0)
+        return Vector3(personheight / VIRUP.scale, 0, 0)
     else:
-        return Vector3(0, 0, -1.125 / VIRUP.scale)
+        return Vector3(0, 0, -personheight / VIRUP.scale)
 
 def setSceneId(newid):
     global timer
