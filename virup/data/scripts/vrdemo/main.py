@@ -157,40 +157,40 @@ solareclipsedt = QDateTime(QDate(2019, 7, 2), QTime(22, 18, 00))
 scenes = [
     # International Space Station
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 100, 'ISS', 'Solar System'),
-          TemporalData(1.0), UI(0.167)),
+          TemporalData(1.0), UI(0.000167)),
     # Earth-Moon dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 15000000, 'Earth', 'Solar System'),
-          TemporalData(1.0, solareclipsedt), UI(0.167)),
+          TemporalData(1.0, solareclipsedt), UI(0.000167)),
     # Earth-Moon dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 350000000, 'Earth', 'Solar System'),
-          TemporalData(1.0, solareclipsedt), UI(0.167)),
+          TemporalData(1.0, solareclipsedt), UI(0.000167)),
     # Phobos
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 30000, 'Phobos', 'Solar System'),
-          TemporalData(1.0), UI(0.167)),
+          TemporalData(1.0), UI(0.000167)),
     # Saturn moons dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 2000000000, 'Saturn', 'Solar System'),
-          TemporalData(100000.0), UI(0.167, True, True)),
+          TemporalData(100000.0), UI(0.000167, True, True)),
     # Enceladus
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 1000000, 'Enceladus',  'Solar System'),
-          TemporalData(1.0), UI(0.167)),
+          TemporalData(1.0), UI(0.000167)),
     # Solar System dynamics
     Scene(SpatialData(Vector3(8.29995608, 0.0, -0.027), 5.65181e+12, 'Sun', 'Solar System'),
           TemporalData(10000000.0), UI(0.167, True, True)),
     # Kepler-11 general area
     Scene(SpatialData(Vector3(8.094034192480557, -0.5269932753083851, -0.13332218244029664), 5e+10, 'Kepler-11', 'Kepler-11'),
-           TemporalData(50000), UI(0.167, True, True)),
+           TemporalData(50000), UI(0.000167, True, True)),
     # Milky Way
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 6.171e+20),
-           TemporalData(), UI(18.1)),
+           TemporalData(), UI(0.0181)),
     # Black Hole
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 1.0e+14),
-           TemporalData(), UI(18.1)),
+           TemporalData(), UI(0.0181)),
     # Local Group
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 2.469e+22),
-           TemporalData(), UI(55800.0, False, True, True)),
+           TemporalData(), UI(55.8, False, True, True)),
     # Whole cube
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 1.2e+24),
-           TemporalData(), UI(1015000.0, False, False, True)),
+           TemporalData(), UI(1015.0, False, False, True)),
 ]
 
 id = 0
