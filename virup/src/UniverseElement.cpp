@@ -18,6 +18,17 @@
 
 #include "UniverseElement.hpp"
 
+QMatrix4x4 UniverseElement::getRelToAbsTransform() const
+{
+	QMatrix4x4 relToAbsTransform;
+	relToAbsTransform.scale(unit);
+	relToAbsTransform.translate(-1.0 * Utils::toQt(solarsystemPosition));
+	relToAbsTransform = transform(referenceFrame, ReferenceFrame::ECLIPTIC)
+	                    * relToAbsTransform;
+
+	return relToAbsTransform;
+}
+
 QMatrix4x4 const& UniverseElement::equatorialToEcliptic()
 {
 	static QMatrix4x4 equatorialToEcliptic
@@ -65,12 +76,7 @@ QMatrix4x4 UniverseElement::transform(ReferenceFrame from, ReferenceFrame to)
 void UniverseElement::getModelAndCampos(Camera const& camera, QMatrix4x4& model,
                                         QVector3D& campos)
 {
-	QMatrix4x4 relToAbsTransform;
-	relToAbsTransform.scale(unit);
-	relToAbsTransform.translate(-1.0 * Utils::toQt(solarsystemPosition));
-	relToAbsTransform = transform(referenceFrame, ReferenceFrame::ECLIPTIC)
-	                    * relToAbsTransform;
-
+	auto relToAbsTransform(getRelToAbsTransform());
 	model = camera.dataToWorldTransform() * relToAbsTransform;
 
 	campos

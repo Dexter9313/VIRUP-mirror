@@ -253,12 +253,12 @@ void MainWin::setSimulationTime(QDateTime const& simulationTime)
 
 float MainWin::getCosmoLum() const
 {
-	return method->getAlpha();
+	return cosmologicalSim->brightnessMultiplier;
 }
 
 void MainWin::setCosmoLum(float cosmoLum)
 {
-	method->setAlpha(cosmoLum);
+	cosmologicalSim->brightnessMultiplier = cosmoLum;
 }
 
 double MainWin::getScale() const
@@ -466,7 +466,7 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 			}
 			else if(a.id == "toggledm")
 			{
-				method->toggleDarkMatter();
+				cosmologicalSim->trees.toggleDarkMatter();
 			}
 			else if(a.id == "togglegrid")
 			{
@@ -685,63 +685,17 @@ void MainWin::initScene()
 	cam->seatedVROrigin = false;
 	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
 	                                   / static_cast<float>(height()));
-	// METHOD LOADING
-	QStringList argv = QCoreApplication::arguments();
-	int argc         = argv.size();
-	unsigned int numberOfVertices(500000), seed(time(nullptr));
-	QString methodStr("");
-
-	if(argc > 1)
-	{
-		methodStr = argv[1];
-	}
-
-	if(methodStr == "--base")
-	{
-		method = new BaseLineMethod();
-	}
-	else if(methodStr == "--basetex")
-	{
-		method = new BaseLineMethodTex();
-	}
-	else if(methodStr == "--treetex")
-	{
-		method = new TreeMethodTex();
-	}
-	else // if(methodStr == "--treelod")
-	{
-		method = new TreeMethodLOD();
-	}
-
-	std::cout << "Method : " << method->getName() << std::endl;
-	std::cout << "Seed : " << seed << std::endl;
-
-	if(argc > 3)
-	{
-		seed = argv[3].toInt();
-	}
-	if(argc > 2)
-	{
-		std::vector<float> vertices[3];
-		numberOfVertices = argv[2].toInt();
-		vertices[0]      = generateVertices(numberOfVertices / 3, seed);
-		vertices[1]      = generateVertices(numberOfVertices / 3, seed);
-		vertices[2]      = generateVertices(
-            numberOfVertices - 2 * (numberOfVertices / 3), seed);
-		method->init(vertices[0], vertices[1], vertices[2]);
-	}
-	else
-	{
-		method->init(
-		    QSettings().value("data/gazfile").toString().toStdString(),
-		    QSettings().value("data/starsfile").toString().toStdString(),
-		    QSettings().value("data/loaddarkmatter").toBool()
-		        ? QSettings()
-		              .value("data/darkmatterfile")
-		              .toString()
-		              .toStdString()
-		        : "");
-	}
+	// COSMO LOADING
+	cosmologicalSim = new CosmologicalSimulation(
+	    QSettings().value("data/gazfile").toString().toStdString(),
+	    QSettings().value("data/starsfile").toString().toStdString(),
+	    QSettings().value("data/loaddarkmatter").toBool()
+	        ? QSettings().value("data/darkmatterfile").toString().toStdString()
+	        : "");
+	cosmologicalSim->referenceFrame = UniverseElement::ReferenceFrame::ECLIPTIC;
+	cosmologicalSim->unit           = 1.0;
+	cosmologicalSim->solarsystemPosition = Vector3();
+	// cosmologicalSim->solarsystemPosition = Vector3(-8.29995608, 0.0, 0.027);
 
 	// PLANETS LOADING
 	debugText = new Text3D(textWidth, textHeight);
@@ -754,7 +708,7 @@ void MainWin::initScene()
 	debugText->setText("");
 
 	movementControls = new MovementControls(
-	    vrHandler, method->getDataBoundingBox(), cam, camPlanet);
+	    vrHandler, cosmologicalSim->getBoundingBox(), cam, camPlanet);
 
 	setCosmoLum(getCosmoLum() / (cam->scale * cam->scale));
 
@@ -1096,7 +1050,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	GLHandler::glf().glDepthFunc(GL_LEQUAL);
 	GLHandler::glf().glEnable(GL_DEPTH_CLAMP);
 	GLHandler::glf().glEnable(GL_CLIP_DISTANCE0);
-	method->render(cam);
+	cosmologicalSim->render(cam, toneMappingModel);
 
 	// TODO(florian) better than this
 	if(CelestialBodyRenderer::renderLabels > 0.f)
@@ -1231,7 +1185,7 @@ MainWin::~MainWin()
 	delete orbitalSystem;
 	delete debugText;
 	delete movementControls;
-	delete method;
+	delete cosmologicalSim;
 	delete grid;
 
 	GLHandler::deleteMesh(szMesh);

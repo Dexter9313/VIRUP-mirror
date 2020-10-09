@@ -33,9 +33,11 @@ class UniverseElement
 		GALACTIC,
 	};
 
-	UniverseElement() = default;
+	UniverseElement()                   = default;
+	virtual BBox getBoundingBox() const = 0;
+	QMatrix4x4 getRelToAbsTransform() const;
 	virtual void render(Camera const& camera, ToneMappingModel const* tmm) = 0;
-	virtual ~UniverseElement();
+	virtual ~UniverseElement() = default;
 
 	float brightnessMultiplier = 1.f;
 

@@ -12,12 +12,9 @@
 #include "AbstractMainWin.hpp"
 #include "Text3D.hpp"
 
+#include "CosmologicalSimulation.hpp"
 #include "Grid.hpp"
 #include "MovementControls.hpp"
-#include "methods/BaseLineMethod.hpp"
-#include "methods/BaseLineMethodTex.hpp"
-#include "methods/TreeMethodLOD.hpp"
-#include "methods/TreeMethodTex.hpp"
 
 #include "graphics/OrbitalSystemCamera.hpp"
 #include "graphics/renderers/OrbitalSystemRenderer.hpp"
@@ -237,13 +234,16 @@ class MainWin : public AbstractMainWin
 	/**
 	 * @getter{darkmatterEnabled}
 	 */
-	bool darkmatterEnabled() const { return method->isDarkMatterEnabled(); };
+	bool darkmatterEnabled() const
+	{
+		return cosmologicalSim->trees.isDarkMatterEnabled();
+	};
 	/**
 	 * @setter{darkmatterEnabled, darkmatterEnabled}
 	 */
 	void setDarkmatterEnabled(bool enabled)
 	{
-		method->setDarkMatterEnabled(enabled);
+		cosmologicalSim->trees.setDarkMatterEnabled(enabled);
 	};
 	/**
 	 * @getter{gridEnabled}
@@ -346,8 +346,8 @@ class MainWin : public AbstractMainWin
 	static std::vector<float> generateVertices(unsigned int number,
 	                                           unsigned int seed);
 
-	bool loaded    = false;
-	Method* method = nullptr;
+	bool loaded                             = false;
+	CosmologicalSimulation* cosmologicalSim = nullptr;
 
 	Grid* grid    = nullptr;
 	bool showGrid = QSettings().value("misc/showgrid").toBool();
