@@ -392,10 +392,6 @@ class MainWin : public AbstractMainWin
 
 	bool forceUpdateFromCosmo = true;
 
-	// SAFE ZONE
-	GLHandler::ShaderProgram szShader = {};
-	GLHandler::Mesh szMesh            = {};
-
 	// LENSING
 	GLHandler::Texture lenseDistortionMap = {};
 	QVector4D lenseScreenCoord;
