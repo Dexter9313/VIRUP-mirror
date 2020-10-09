@@ -91,6 +91,7 @@ Vector3 Camera::getTruePosition() const
 bool Camera::shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model,
                             bool depthClamp) const
 {
+	return false;
 	bool result = false;
 	// for each plane do ...
 	for(unsigned int i(0); i < 6; ++i)
