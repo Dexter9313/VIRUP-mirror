@@ -220,7 +220,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		}*/
 	}
 
-	if(currentTanAngle(camera, globalModel) > tanAngle && !isLeaf())
+	if(currentTanAngle(camera, globalCampos) > tanAngle && !isLeaf())
 	{
 		unsigned int remaining = maxPoints;
 		// RENDER SUBTREES
@@ -383,17 +383,9 @@ void OctreeLOD::computeBBox()
 }
 
 float OctreeLOD::currentTanAngle(Camera const& camera,
-                                 QMatrix4x4 const& model) const
+                                 QVector3D const& campos) const
 {
-	if(camera.shouldBeCulled(bbox, model, true))
-	{
-		return 0.f;
-	}
-
-	return bbox.diameter * model.column(0).x()
-	       / (model * bbox.mid)
-	             .distanceToPoint(camera.hmdScaledSpaceToWorldTransform()
-	                              * QVector3D(0.f, 0.f, 0.f));
+	return bbox.diameter / campos.distanceToPoint(bbox.mid);
 }
 
 void OctreeLOD::ramToVideo()
