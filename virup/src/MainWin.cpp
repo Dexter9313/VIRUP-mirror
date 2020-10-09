@@ -743,11 +743,10 @@ void MainWin::initScene()
 				Vector3 dataPos(fields[1].toDouble(), fields[2].toDouble(),
 				                fields[3].toDouble());
 
-				auto labelText = new Text3D(200, 200);
-				labelText->setColor(QColor(255, 0, 0));
-				labelText->setSuperSampling(2.f);
-				labelText->setFlags(Qt::AlignCenter);
-				labelText->setText(label);
+				dataPos = Utils::fromQt(cosmologicalSim->getRelToAbsTransform()
+				                        * Utils::toQt(dataPos));
+
+				auto labelText = new LabelRenderer(label, QColor(255, 0, 0));
 				cosmoLabels.emplace_back(dataPos, labelText);
 			}
 		}
@@ -884,7 +883,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 			model.scale(rescale * camRelPos.length() * cam.scale / 3.0);
 			model.rotate(yaw * 180.f / M_PI + 90.f, 0.0, 0.0, 1.0);
 			model.rotate(pitch * 180.f / M_PI + 90.f, 1.0, 0.0, 0.0);
-			cosmoLabel.second->getModel() = model;
+			cosmoLabel.second->updateModel(model);
 		}
 		movementControls->update(frameTiming);
 		int currentScene(PythonQtHandler::getVariable("id").toInt());
@@ -1063,7 +1062,8 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 			{
 				continue;
 			}
-			cosmoLabel.second->render();
+			cosmoLabel.second->render(toneMappingModel->exposure,
+			                          toneMappingModel->dynamicrange);
 		}
 	}
 	GLHandler::glf().glDisable(GL_CLIP_DISTANCE0);

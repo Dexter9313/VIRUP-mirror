@@ -379,7 +379,7 @@ class MainWin : public AbstractMainWin
 	Vector3 m31DataPos = Vector3(382.92994334, -617.94616647, 288.2071201);
 	*/
 	Vector3 solarSystemDataPos = Vector3(8.29995608, 0.0, -0.027);
-	std::vector<std::pair<Vector3, Text3D*>> cosmoLabels;
+	std::vector<std::pair<Vector3, LabelRenderer*>> cosmoLabels;
 
 	// TEMP
 	const int textWidth  = 225;
