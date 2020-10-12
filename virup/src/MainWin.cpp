@@ -700,7 +700,6 @@ void MainWin::initScene()
 	cosmologicalSim->unit           = 1.0;
 	cosmologicalSim->solarsystemPosition = Vector3(8.29995608, 0.0, -0.027);
 
-
 	// PLANETS LOADING
 	debugText = new Text3D(textWidth, textHeight);
 	debugText->setFlags(Qt::AlignCenter);

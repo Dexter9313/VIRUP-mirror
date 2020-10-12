@@ -64,7 +64,7 @@ class OctreeLOD : public Octree
 	GLHandler::ShaderProgram const* shaderProgram;
 
 	void computeBBox();
-	float currentTanAngle(Camera const& camera, QVector3D const& campos) const;
+	float currentTanAngle(QVector3D const& campos) const;
 	void ramToVideo();
 
 	/* PRECISION ENHANCEMENT */
