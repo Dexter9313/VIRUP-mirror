@@ -1,6 +1,6 @@
 #include "BasicCamera.hpp"
 
-BasicCamera::BasicCamera(VRHandler const* vrHandler)
+BasicCamera::BasicCamera(VRHandler const& vrHandler)
     : vrHandler(vrHandler)
     , eyeDistanceFactor(1.0f)
 {
@@ -47,40 +47,40 @@ QVector4D BasicCamera::project(QVector4D const& vertex) const
 
 void BasicCamera::update()
 {
-	if(*vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		// proj
-		projLeft = vrHandler->getProjectionMatrix(
+		projLeft = vrHandler.getProjectionMatrix(
 		    Side::LEFT, 0.1f * eyeDistanceFactor, 10000.f * eyeDistanceFactor);
-		projRight = vrHandler->getProjectionMatrix(
+		projRight = vrHandler.getProjectionMatrix(
 		    Side::RIGHT, 0.1f * eyeDistanceFactor, 10000.f * eyeDistanceFactor);
 
 		projLeft = projLeft
-		           * eyeDist(vrHandler->getEyeViewMatrix(Side::LEFT),
+		           * eyeDist(vrHandler.getEyeViewMatrix(Side::LEFT),
 		                     eyeDistanceFactor);
 		projRight = projRight
-		            * eyeDist(vrHandler->getEyeViewMatrix(Side::RIGHT),
+		            * eyeDist(vrHandler.getEyeViewMatrix(Side::RIGHT),
 		                      eyeDistanceFactor);
 
-		Side currentRenderingEye(vrHandler->getCurrentRenderingEye());
+		Side currentRenderingEye(vrHandler.getCurrentRenderingEye());
 
 		QMatrix4x4* projEye
 		    = (currentRenderingEye == Side::LEFT) ? &projLeft : &projRight;
 
 		// prog * view
-		QMatrix4x4 hmdMat(vrHandler->getHMDPosMatrix().inverted());
+		QMatrix4x4 hmdMat(vrHandler.getHMDPosMatrix().inverted());
 
 		fullSeatedTrackedSpaceTransform
 		    = *projEye * eyeDistanceCorrection * hmdMat;
 		fullStandingTrackedSpaceTransform
 		    = fullSeatedTrackedSpaceTransform
-		      * vrHandler->getSeatedToStandingAbsoluteTrackingPos().inverted();
+		      * vrHandler.getSeatedToStandingAbsoluteTrackingPos().inverted();
 		fullHmdSpaceTransform = *projEye * eyeDistanceCorrection;
 
 		if(!seatedVROrigin)
 		{
 			hmdMat = hmdMat
-			         * vrHandler->getSeatedToStandingAbsoluteTrackingPos()
+			         * vrHandler.getSeatedToStandingAbsoluteTrackingPos()
 			               .inverted();
 		}
 
@@ -94,10 +94,9 @@ void BasicCamera::update()
 		fullCameraSpaceTransform = *projEye * hmdMat;
 
 		fullSkyboxSpaceTransform
-		    = vrHandler->getProjectionMatrix(currentRenderingEye, 0.1f, 10000.f)
-		      * noTrans(vrHandler->getEyeViewMatrix(currentRenderingEye))
-		      * noTrans(vrHandler->getHMDPosMatrix().inverted())
-		      * noTrans(view);
+		    = vrHandler.getProjectionMatrix(currentRenderingEye, 0.1f, 10000.f)
+		      * noTrans(vrHandler.getEyeViewMatrix(currentRenderingEye))
+		      * noTrans(vrHandler.getHMDPosMatrix().inverted()) * noTrans(view);
 
 		updateClippingPlanes();
 
@@ -152,10 +151,10 @@ void BasicCamera::updateClippingPlanes()
 QVector3D BasicCamera::getWorldSpacePosition() const
 {
 	QMatrix4x4 eyeViewMatrix;
-	if(*vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		eyeViewMatrix
-		    = vrHandler->getEyeViewMatrix(vrHandler->getCurrentRenderingEye());
+		    = vrHandler.getEyeViewMatrix(vrHandler.getCurrentRenderingEye());
 	}
 
 	return QVector3D((hmdScaledToWorld * eyeViewMatrix.inverted()).column(3));
@@ -187,7 +186,7 @@ QMatrix4x4 BasicCamera::hmdSpaceToWorldTransform() const
 
 QMatrix4x4 BasicCamera::hmdScaledSpaceToWorldTransform() const
 {
-	if(*vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		return hmdScaledToWorld;
 	}
@@ -201,10 +200,11 @@ QMatrix4x4 BasicCamera::screenToWorldTransform() const
 
 float BasicCamera::pixelSolidAngle() const
 {
-	QMatrix4x4 p(*vrHandler ? vrHandler->getProjectionMatrix(
-	                              Side::LEFT, 0.1f * eyeDistanceFactor,
-	                              10000.f * eyeDistanceFactor)
-	                        : proj);
+	QMatrix4x4 p(vrHandler.isEnabled()
+	                 ? vrHandler.getProjectionMatrix(
+	                       Side::LEFT, 0.1f * eyeDistanceFactor,
+	                       10000.f * eyeDistanceFactor)
+	                 : proj);
 	double radPerPix = atan(1.0f / p.column(1)[1]) * 2.0 / windowSize.height();
 	// https://en.wikipedia.org/wiki/Solid_angle#Pyramid
 	return 4.0 * asin(sin(radPerPix / 2.0) * sin(radPerPix / 2.0));

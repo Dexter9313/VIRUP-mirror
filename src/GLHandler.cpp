@@ -795,7 +795,6 @@ GLuint GLHandler::loadShader(QString const& path, GLenum shaderType,
 	glf().glGetShaderInfoLog(shader, 512, nullptr, &buffer[0]);
 	if(status != GL_TRUE)
 	{
-		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		qWarning() << "SHADER ERROR (" << path << "-" << shader
 		           << ") :" << &buffer[0] << '\n';
 	}
@@ -1005,7 +1004,6 @@ GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
 	QImage img_data;
 	if(!img_data.load(texturePath))
 	{
-		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		qWarning() << "Could not load Texture \"" << texturePath << "\""
 		           << '\n';
 		return {};
@@ -1036,7 +1034,6 @@ GLHandler::Texture
 	{
 		if(!images.at(i).load(texturesPaths.at(i)))
 		{
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
 			qWarning() << "Could not load Texture \"" << texturesPaths.at(i)
 			           << "\"" << '\n';
 			return {};
@@ -1157,6 +1154,7 @@ GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
 	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
 	glf().glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
 	glf().glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
+	glf().glTexParameteri(target, GL_TEXTURE_WRAP_R, wrap);
 	/*GLfloat fLargest;
 	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
 	glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
@@ -1343,6 +1341,39 @@ unsigned int GLHandler::getTextureContentAsData(GLfloat** buff,
 		glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_FLOAT, *buff);
 	}
 	return numFloats;
+}
+
+float GLHandler::getTextureAverageLuminance(Texture const& tex)
+{
+	GLHandler::generateMipmap(tex);
+	unsigned int lvl = GLHandler::getHighestMipmapLevel(tex) - 3;
+	auto size        = GLHandler::getTextureSize(tex, lvl);
+	GLfloat* buff;
+	unsigned int allocated(GLHandler::getTextureContentAsData(&buff, tex, lvl));
+	float lastFrameAverageLuminance = 0.f;
+	if(allocated > 0)
+	{
+		float coeffSum = 0.f;
+		float halfWidth((size.width() - 1) / 2.f);
+		float halfHeight((size.height() - 1) / 2.f);
+		for(int i(0); i < size.width(); ++i)
+		{
+			for(int j(0); j < size.height(); ++j)
+			{
+				unsigned int id(j * size.width() + i);
+				float lum(0.2126 * buff[4 * id] + 0.7152 * buff[4 * id + 1]
+				          + 0.0722 * buff[4 * id + 2]);
+				float coeff
+				    = exp(-1 * pow((i - halfWidth) * 4.5 / halfWidth, 2));
+				coeff *= exp(-1 * pow((j - halfHeight) * 4.5 / halfHeight, 2));
+				coeffSum += coeff;
+				lastFrameAverageLuminance += coeff * lum;
+			}
+		}
+		lastFrameAverageLuminance /= coeffSum;
+		delete[] buff;
+	}
+	return lastFrameAverageLuminance;
 }
 
 void GLHandler::useTextures(std::vector<Texture> const& textures)

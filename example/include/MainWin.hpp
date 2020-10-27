@@ -21,6 +21,9 @@ class MainWin : public AbstractMainWin
 
   protected:
 	virtual void actionEvent(BaseInputManager::Action a, bool pressed) override;
+	virtual void mousePressEvent(QMouseEvent* e) override;
+	virtual void mouseReleaseEvent(QMouseEvent* e) override;
+	virtual void mouseMoveEvent(QMouseEvent* e) override;
 
 	// declare drawn resources
 	virtual void initScene() override;
@@ -67,6 +70,11 @@ class MainWin : public AbstractMainWin
 	Widget3D* widget3d;
 
 	float barrelPower = 1.01f;
+
+	bool moveView = false;
+	QPoint cursorPosBackup;
+	float yaw;
+	float pitch;
 
 	QElapsedTimer timer;
 };

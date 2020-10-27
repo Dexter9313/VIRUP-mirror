@@ -18,7 +18,7 @@
 
 #include "DebugCamera.hpp"
 
-DebugCamera::DebugCamera(VRHandler const* vrHandler)
+DebugCamera::DebugCamera(VRHandler const& vrHandler)
     : BasicCamera(vrHandler)
     , camMesh(GLHandler::newMesh())
     , camMeshShader(GLHandler::newShader("default"))
@@ -68,7 +68,7 @@ void DebugCamera::update()
 
 void DebugCamera::renderCamera(BasicCamera const* cam)
 {
-	if(*vrHandler && followHMD())
+	if(vrHandler.isEnabled() && followHMD())
 	{
 		GLHandler::setShaderParam(camMeshShader, "color",
 		                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));

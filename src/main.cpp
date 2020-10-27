@@ -102,13 +102,13 @@ void log(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 			messageTypeStr = "Info";
 			break;
 		case QtWarningMsg:
-			messageTypeStr = "Warning";
+			messageTypeStr = "\033[1;33mWarning\033[0m";
 			break;
 		case QtCriticalMsg:
-			messageTypeStr = "Critical";
+			messageTypeStr = "\033[31mCritical\033[0m";
 			break;
 		case QtFatalMsg:
-			messageTypeStr = "Fatal";
+			messageTypeStr = "\033[31mFatal\033[0m";
 			break;
 	}
 	std::cerr << messageTypeStr << " (" << shortFile << ":" << context.line

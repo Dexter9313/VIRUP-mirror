@@ -1,6 +1,6 @@
-#include "vr/VRHandler.hpp"
+#include "vr/OpenVRHandler.hpp"
 
-bool VRHandler::init()
+bool OpenVRHandler::init()
 {
 	if(!vr::VR_IsRuntimeInstalled())
 	{
@@ -19,15 +19,12 @@ bool VRHandler::init()
 	{
 		char rtPath[1024];
 		uint32_t unRequiredSize;
-		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		if(vr::VR_GetRuntimePath(rtPath, sizeof(rtPath), &unRequiredSize)
 		   && unRequiredSize < sizeof(rtPath))
 		{
-			std::cout << "Starting SteamVR..." << std::endl;
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
-			std::cout << "Runtime path : " << rtPath << std::endl;
+			qDebug() << "Starting SteamVR...";
+			qDebug() << QString("Runtime path : ") + rtPath;
 			QProcess vrstartup;
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
 			cmd = QString(rtPath);
 			if(cmd.at(cmd.length() - 1) != '/')
 			{
@@ -47,30 +44,29 @@ bool VRHandler::init()
 	if(eError != vr::VRInitError_None)
 	{
 		vr_pointer = nullptr;
-		std::cerr << "Unable to init VR runtime: "
-		          << VR_GetVRInitErrorAsEnglishDescription(eError) << std::endl;
+		qCritical() << "Unable to init VR runtime: "
+		            << VR_GetVRInitErrorAsEnglishDescription(eError);
 		return false;
 	}
-	std::cout << "VR runtime initialized..." << std::endl;
+	qDebug() << "VR runtime initialized...";
 	if((vr_compositor = vr::VRCompositor()) == nullptr)
 	{
-		std::cerr
-		    << "Compositor initialization failed. See log file for details"
-		    << std::endl;
+		qCritical()
+		    << "Compositor initialization failed. See log file for details";
 		return false;
 	}
-	std::cout << "VR compositor initialized..." << std::endl;
+	qDebug() << "VR compositor initialized...";
 
 	vr_render_models = static_cast<vr::IVRRenderModels*>(
 	    vr::VR_GetGenericInterface(vr::IVRRenderModels_Version, &eError));
 	if(vr_render_models == nullptr)
 	{
 		vr::VR_Shutdown();
-		std::cerr << "Couldn't load generic render models" << std::endl;
+		qCritical() << "Couldn't load generic render models";
 	}
 	else
 	{
-		std::cout << "Render models loaded successfully" << std::endl;
+		qDebug() << "Render models loaded successfully";
 	}
 
 	reloadPostProcessingTargets();
@@ -78,11 +74,11 @@ bool VRHandler::init()
 #ifdef LEAP_MOTION
 	if(leapController.isConnected())
 	{
-		std::cout << "Leap controller connected !" << std::endl;
+		qDebug() << "Leap controller connected !";
 	}
 	else
 	{
-		std::cout << "No Leap controller connected." << std::endl;
+		qDebug() << "No Leap controller connected.";
 	}
 #endif
 
@@ -95,26 +91,24 @@ bool VRHandler::init()
 	return true;
 }
 
-QSize VRHandler::getEyeRenderTargetSize() const
+QSize OpenVRHandler::getEyeRenderTargetSize() const
 {
 	unsigned int w, h;
 	vr_pointer->GetRecommendedRenderTargetSize(&w, &h);
 	return {static_cast<int>(w), static_cast<int>(h)};
 }
 
-QMatrix4x4 VRHandler::getEyeViewMatrix(Side eye) const
+float OpenVRHandler::getFrameTiming() const
 {
-	return toQt(vr_pointer->GetEyeToHeadTransform(getEye(eye))).inverted();
+	vr::Compositor_FrameTiming result = {};
+	result.m_nSize                    = sizeof(vr::Compositor_FrameTiming);
+	vr_compositor->GetFrameTiming(&result);
+
+	// see https://developer.valvesoftware.com/wiki/SteamVR/Frame_Timing
+	return result.m_flTotalRenderGpuMs + 11 * (result.m_nNumFramePresents - 1);
 }
 
-QMatrix4x4 VRHandler::getProjectionMatrix(Side eye, float nearPlan,
-                                          float farPlan) const
-{
-	return toQt(
-	    vr_pointer->GetProjectionMatrix(getEye(eye), nearPlan, farPlan));
-}
-
-const Controller* VRHandler::getController(Side side) const
+const Controller* OpenVRHandler::getController(Side side) const
 {
 	switch(side)
 	{
@@ -127,7 +121,7 @@ const Controller* VRHandler::getController(Side side) const
 	}
 }
 
-const Hand* VRHandler::getHand(Side side) const
+const Hand* OpenVRHandler::getHand(Side side) const
 {
 	switch(side)
 	{
@@ -149,56 +143,28 @@ const Hand* VRHandler::getHand(Side side) const
 	return nullptr;
 }
 
-float VRHandler::getRenderTargetAverageLuminance(Side eye) const
+float OpenVRHandler::getRenderTargetAverageLuminance(Side eye) const
 {
 	auto tex = GLHandler::getColorAttachmentTexture(
 	    eye == Side::LEFT ? postProcessingTargetsLeft[0]
 	                      : postProcessingTargetsRight[0]);
-	GLHandler::generateMipmap(tex);
-	unsigned int lvl = GLHandler::getHighestMipmapLevel(tex) - 3;
-	auto size        = GLHandler::getTextureSize(tex, lvl);
-	GLfloat* buff;
-	unsigned int allocated(GLHandler::getTextureContentAsData(&buff, tex, lvl));
-	float lastFrameAverageLuminance = 0.f;
-	if(allocated > 0)
-	{
-		float coeffSum = 0.f;
-		float halfWidth((size.width() - 1) / 2.f);
-		float halfHeight((size.height() - 1) / 2.f);
-		for(int i(0); i < size.width(); ++i)
-		{
-			for(int j(0); j < size.height(); ++j)
-			{
-				unsigned int id(j * size.width() + i);
-				float lum(0.2126 * buff[4 * id] + 0.7152 * buff[4 * id + 1]
-				          + 0.0722 * buff[4 * id + 2]);
-				float coeff
-				    = exp(-1 * pow((i - halfWidth) * 4.5 / halfWidth, 2));
-				coeff *= exp(-1 * pow((j - halfHeight) * 4.5 / halfHeight, 2));
-				coeffSum += coeff;
-				lastFrameAverageLuminance += coeff * lum;
-			}
-		}
-		lastFrameAverageLuminance /= coeffSum;
-		delete buff;
-	}
-	return lastFrameAverageLuminance
+	return GLHandler::getTextureAverageLuminance(tex)
 	       * 1.041f; // compensate for hidden area mesh
 }
 
-QMatrix4x4 VRHandler::getSeatedToStandingAbsoluteTrackingPos() const
+QMatrix4x4 OpenVRHandler::getSeatedToStandingAbsoluteTrackingPos() const
 {
 	return toQt(vr_pointer->GetSeatedZeroPoseToStandingAbsoluteTrackingPose());
 }
 
-QSizeF VRHandler::getPlayAreaSize() const
+QSizeF OpenVRHandler::getPlayAreaSize() const
 {
 	float width(0.f), height(0.f);
 	vr::VRChaperone()->GetPlayAreaSize(&width, &height);
 	return {width, height};
 }
 
-std::vector<QVector3D> VRHandler::getPlayAreaQuad() const
+std::vector<QVector3D> OpenVRHandler::getPlayAreaQuad() const
 {
 	vr::HmdQuad_t rect = {};
 	vr::VRChaperone()->GetPlayAreaRect(&rect);
@@ -210,14 +176,6 @@ std::vector<QVector3D> VRHandler::getPlayAreaQuad() const
 	result.push_back(toQt(rect.vCorners[3]));
 
 	return result;
-}
-
-void VRHandler::resetPos()
-{
-	vr::VRChaperone()->ResetZeroPose(
-	    vr::ETrackingUniverseOrigin::TrackingUniverseSeated);
-	vr_compositor->SetTrackingSpace(
-	    vr::ETrackingUniverseOrigin::TrackingUniverseSeated);
 }
 
 //-----------------------------------------------------------------------------
@@ -262,7 +220,7 @@ std::string GetTrackedDeviceClassString(vr::ETrackedDeviceClass td_class)
 
 	return str_td_class;
 }
-void VRHandler::prepareRendering()
+void OpenVRHandler::prepareRendering()
 {
 	vr::EVRCompositorError error = vr::VRCompositor()->WaitGetPoses(
 	    &tracked_device_pose[0], vr::k_unMaxTrackedDeviceCount, nullptr, 0);
@@ -314,11 +272,11 @@ void VRHandler::prepareRendering()
 
 	if(error != vr::VRCompositorError_None)
 	{
-		std::cerr << "ERROR in prepare: " << error << std::endl;
+		qCritical() << QString("ERROR in prepare: ") + error;
 	}
 }
 
-void VRHandler::beginRendering(Side eye)
+void OpenVRHandler::beginRendering(Side eye)
 {
 	GLHandler::beginRendering(eye == Side::LEFT
 	                              ? postProcessingTargetsLeft[0]
@@ -326,7 +284,7 @@ void VRHandler::beginRendering(Side eye)
 	currentRenderingEye = eye;
 }
 
-void VRHandler::renderControllers() const
+void OpenVRHandler::renderControllers() const
 {
 	if(leftController != nullptr)
 	{
@@ -338,7 +296,7 @@ void VRHandler::renderControllers() const
 	}
 }
 
-void VRHandler::renderHands() const
+void OpenVRHandler::renderHands() const
 {
 	if(leftHand->isValid())
 	{
@@ -350,7 +308,7 @@ void VRHandler::renderHands() const
 	}
 }
 
-void VRHandler::reloadPostProcessingTargets()
+void OpenVRHandler::reloadPostProcessingTargets()
 {
 	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargetsRight[0]);
@@ -418,7 +376,7 @@ void VRHandler::reloadPostProcessingTargets()
 	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
-void VRHandler::submitRendering(Side eye, unsigned int i)
+void OpenVRHandler::submitRendering(Side eye, unsigned int i)
 {
 	submittedIndex = i % 2;
 	GLHandler::RenderTarget const& frame
@@ -431,12 +389,12 @@ void VRHandler::submitRendering(Side eye, unsigned int i)
 	vr::EVRCompositorError error = vr_compositor->Submit(getEye(eye), &texture);
 	if(error != vr::VRCompositorError_None)
 	{
-		std::cerr << "ERROR in submit: " << error << std::endl;
+		qCritical() << QString("ERROR in submit: ") + error;
 	}
 }
 
-void VRHandler::displayOnCompanion(unsigned int companionWidth,
-                                   unsigned int companionHeight) const
+void OpenVRHandler::displayOnCompanion(unsigned int companionWidth,
+                                       unsigned int companionHeight) const
 {
 	GLHandler::showOnScreen(getPostProcessingTarget(submittedIndex, Side::LEFT),
 	                        0, 0, static_cast<int>(companionWidth / 2),
@@ -447,17 +405,7 @@ void VRHandler::displayOnCompanion(unsigned int companionWidth,
 	    static_cast<int>(companionWidth), static_cast<int>(companionHeight));
 }
 
-float VRHandler::getFrameTiming() const
-{
-	vr::Compositor_FrameTiming result = {};
-	result.m_nSize                    = sizeof(vr::Compositor_FrameTiming);
-	vr_compositor->GetFrameTiming(&result);
-
-	// see https://developer.valvesoftware.com/wiki/SteamVR/Frame_Timing
-	return result.m_flTotalRenderGpuMs + 11 * (result.m_nNumFramePresents - 1);
-}
-
-bool VRHandler::pollEvent(Event* e)
+bool OpenVRHandler::pollEvent(Event* e)
 {
 	vr::VREvent_t vrevent = {};
 
@@ -515,7 +463,7 @@ bool VRHandler::pollEvent(Event* e)
 	return false;
 }
 
-void VRHandler::close()
+void OpenVRHandler::close()
 {
 	if(vr_pointer == nullptr)
 	{
@@ -532,17 +480,32 @@ void VRHandler::close()
 	GLHandler::deleteRenderTarget(postProcessingTargetsRight[0]);
 	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[1]);
 	GLHandler::deleteRenderTarget(postProcessingTargetsRight[1]);
-	std::cout << "Closing VR runtime..." << std::endl;
+	qDebug() << "Closing VR runtime...";
 	vr::VR_Shutdown();
 	vr_pointer = nullptr;
 }
 
-VRHandler::~VRHandler()
+QMatrix4x4 OpenVRHandler::getEyeViewMatrix(Side eye) const
 {
-	close();
+	return toQt(vr_pointer->GetEyeToHeadTransform(getEye(eye))).inverted();
 }
 
-void VRHandler::updateController(Side side, int nDevice)
+QMatrix4x4 OpenVRHandler::getProjectionMatrix(Side eye, float nearPlan,
+                                              float farPlan) const
+{
+	return toQt(
+	    vr_pointer->GetProjectionMatrix(getEye(eye), nearPlan, farPlan));
+}
+
+void OpenVRHandler::resetPos()
+{
+	vr::VRChaperone()->ResetZeroPose(
+	    vr::ETrackingUniverseOrigin::TrackingUniverseSeated);
+	vr_compositor->SetTrackingSpace(
+	    vr::ETrackingUniverseOrigin::TrackingUniverseSeated);
+}
+
+void OpenVRHandler::updateController(Side side, int nDevice)
 {
 	Controller** controller;
 	if(side == Side::LEFT)
@@ -560,15 +523,14 @@ void VRHandler::updateController(Side side, int nDevice)
 
 	if(*controller != nullptr && nDevice == -1)
 	{
-		std::cout << "Disconnecting " << sideToStr(side) << " controller..."
-		          << std::endl;
+		qDebug() << QString("Disconnecting ") + sideToStr(side)
+		                + " controller...";
 		delete *controller;
 		*controller = nullptr;
 	}
 	else if(*controller == nullptr && nDevice != -1)
 	{
-		std::cout << "Connecting " << sideToStr(side) << " controller..."
-		          << std::endl;
+		qDebug() << QString("Connecting ") + sideToStr(side) + " controller...";
 		*controller = new Controller(vr_pointer, nDevice, side);
 	}
 	else if(*controller != nullptr)
@@ -581,7 +543,7 @@ void VRHandler::updateController(Side side, int nDevice)
 	    *controller);
 }
 
-void VRHandler::updateHands()
+void OpenVRHandler::updateHands()
 {
 	leftHand->invalidate();
 	rightHand->invalidate();
@@ -605,12 +567,12 @@ void VRHandler::updateHands()
 #endif
 }
 
-QVector3D VRHandler::toQt(const vr::HmdVector3_t& vector)
+QVector3D OpenVRHandler::toQt(const vr::HmdVector3_t& vector)
 {
 	return {vector.v[0], vector.v[1], vector.v[2]};
 }
 
-QMatrix4x4 VRHandler::toQt(const vr::HmdMatrix34_t& matrix)
+QMatrix4x4 OpenVRHandler::toQt(const vr::HmdMatrix34_t& matrix)
 {
 	return {matrix.m[0][0], matrix.m[0][1], matrix.m[0][2], matrix.m[0][3],
 	        matrix.m[1][0], matrix.m[1][1], matrix.m[1][2], matrix.m[1][3],
@@ -618,7 +580,7 @@ QMatrix4x4 VRHandler::toQt(const vr::HmdMatrix34_t& matrix)
 	        0.0f,           0.0f,           0.0f,           1.0f};
 }
 
-QMatrix4x4 VRHandler::toQt(const vr::HmdMatrix44_t& matrix)
+QMatrix4x4 OpenVRHandler::toQt(const vr::HmdMatrix44_t& matrix)
 {
 	return {matrix.m[0][0], matrix.m[0][1], matrix.m[0][2], matrix.m[0][3],
 	        matrix.m[1][0], matrix.m[1][1], matrix.m[1][2], matrix.m[1][3],
@@ -626,7 +588,7 @@ QMatrix4x4 VRHandler::toQt(const vr::HmdMatrix44_t& matrix)
 	        matrix.m[3][0], matrix.m[3][1], matrix.m[3][2], matrix.m[3][3]};
 }
 
-VRHandler::Button VRHandler::getButton(int openvrButton)
+OpenVRHandler::Button OpenVRHandler::getButton(int openvrButton)
 {
 	switch(openvrButton)
 	{

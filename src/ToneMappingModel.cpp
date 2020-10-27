@@ -18,7 +18,7 @@
 
 #include "ToneMappingModel.hpp"
 
-ToneMappingModel::ToneMappingModel(VRHandler const* vrHandler)
+ToneMappingModel::ToneMappingModel(VRHandler const& vrHandler)
     : vrHandler(vrHandler)
 {
 	double inter(getConeRodIntersectionTime(0.0));
@@ -42,7 +42,7 @@ void ToneMappingModel::autoUpdateExposure(float averageLuminance,
 	           : (averageLuminance < 1.0 ? 0.002 : averageLuminance / 500.0));
 	aec *= autoexposurecoeff;
 
-	const float limit(*vrHandler ? 350.0 * aec : 1000.0 * aec);
+	const float limit(vrHandler.isEnabled() ? 350.0 * aec : 1000.0 * aec);
 	averageLuminance *= exposure;
 
 	// simple model if all goes wrong
@@ -121,11 +121,11 @@ void ToneMappingModel::autoUpdateExposure(float averageLuminance,
 	time += frameTiming;
 
 	// 1 / (min scotopic vision)
-	if(!*vrHandler && exposure > 2e4f)
+	if(!vrHandler.isEnabled() && exposure > 2e4f)
 	{
 		exposure = 2e4f;
 	}
-	else if(*vrHandler && exposure > 5e3f)
+	else if(vrHandler.isEnabled() && exposure > 5e3f)
 	{
 		exposure = 5e3f;
 	}

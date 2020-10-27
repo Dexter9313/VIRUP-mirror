@@ -25,6 +25,7 @@
 #include <QCompleter>
 #include <QDateTime>
 #include <QDateTimeEdit>
+#include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFileSystemModel>
 #include <QFormLayout>
@@ -59,6 +60,11 @@ class SettingsWidget : public QTabWidget
 	void addUIntSetting(QString const& name, unsigned int defaultVal,
 	                    QString const& label, unsigned int minVal = 0,
 	                    unsigned int maxVal = 99);
+	void addIntSetting(QString const& name, int defaultVal,
+	                   QString const& label, int minVal = 0, int maxVal = 99);
+	void addDoubleSetting(QString const& name, double defaultVal,
+	                      QString const& label, double minVal = 0,
+	                      double maxVal = 99, unsigned int decimals = 1);
 	void addStringSetting(QString const& name, QString const& defaultVal,
 	                      QString const& label);
 	void addFilePathSetting(QString const& name, QString const& defaultVal,

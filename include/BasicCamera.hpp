@@ -146,7 +146,7 @@ class BasicCamera : public QObject
 	 * @param vrHandler The engine's @ref VRHandler, wether it is active or not.
 	 * It is mostly used to get VR transformations.
 	 */
-	explicit BasicCamera(VRHandler const* vrHandler);
+	explicit BasicCamera(VRHandler const& vrHandler);
 	/**
 	 * @getter{viewmatrix}
 	 */
@@ -305,7 +305,7 @@ class BasicCamera : public QObject
 	/**
 	 * @brief Read-only pointer on @ref AbstractMainWin#vrHandler.
 	 */
-	VRHandler const* vrHandler;
+	VRHandler const& vrHandler;
 	/**
 	 * @brief Direct access to the @ref eyedistancefactor property.
 	 */

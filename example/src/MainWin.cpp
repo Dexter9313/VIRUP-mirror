@@ -24,6 +24,44 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 	AbstractMainWin::actionEvent(a, pressed);
 }
 
+void MainWin::mousePressEvent(QMouseEvent* e)
+{
+	if(e->button() == Qt::MouseButton::LeftButton)
+	{
+		moveView = true;
+		QCursor c(cursor());
+		c.setShape(Qt::CursorShape::BlankCursor);
+		cursorPosBackup = QCursor::pos();
+		QCursor::setPos(width() / 2, height() / 2);
+		setCursor(c);
+	}
+}
+
+void MainWin::mouseReleaseEvent(QMouseEvent* e)
+{
+	if(e->button() == Qt::MouseButton::LeftButton)
+	{
+		moveView = false;
+		QCursor c(cursor());
+		c.setShape(Qt::CursorShape::ArrowCursor);
+		QCursor::setPos(cursorPosBackup);
+		setCursor(c);
+	}
+}
+
+void MainWin::mouseMoveEvent(QMouseEvent* e)
+{
+	if(!isActive() || /*vrHandler->isEnabled() ||*/ !moveView)
+	{
+		return;
+	}
+	float dx = (static_cast<float>(width()) / 2 - e->globalX()) / width();
+	float dy = (static_cast<float>(height()) / 2 - e->globalY()) / height();
+	yaw += dx * 3.14f / 3.f;
+	pitch += dy * 3.14f / 3.f;
+	QCursor::setPos(width() / 2, height() / 2);
+}
+
 void MainWin::initScene()
 {
 	// SKYBOX
@@ -93,9 +131,9 @@ void MainWin::initScene()
 	playareaShader.setUniform("color", QColor(255, 0, 0));
 	playareaShader.setUniform("alpha", 1.f);
 	playarea = GLHandler::newMesh();
-	if(vrHandler)
+	if(vrHandler->isEnabled())
 	{
-		auto playareaquad(vrHandler.getPlayAreaQuad());
+		auto playareaquad(vrHandler->getPlayAreaQuad());
 		vertices = {
 		    playareaquad[0].x(), playareaquad[0].y(), playareaquad[0].z(),
 		    playareaquad[1].x(), playareaquad[1].y(), playareaquad[1].z(),
@@ -141,10 +179,17 @@ void MainWin::initScene()
 
 void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 {
-	Controller const* cont(vrHandler.getController(Side::LEFT));
+	if(networkManager.isServer())
+	{
+		QVector3D lookDir(-cosf(yaw) * cosf(pitch), -sinf(yaw) * cosf(pitch),
+		                  sinf(pitch));
+		camera.setView({1, 1, 1}, lookDir, {0, 0, 1});
+	}
+
+	Controller const* cont(vrHandler->getController(Side::LEFT));
 	if(cont == nullptr)
 	{
-		cont = vrHandler.getController(Side::RIGHT);
+		cont = vrHandler->getController(Side::RIGHT);
 	}
 	if(cont != nullptr)
 	{
@@ -160,7 +205,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 		}
 	}
 
-	Hand const* leftHand(vrHandler.getHand(Side::LEFT));
+	Hand const* leftHand(vrHandler->getHand(Side::LEFT));
 	if(leftHand != nullptr)
 	{
 		if(leftHand->isClosed())
@@ -183,7 +228,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 	light->color
 	    = QColor(128 + 127 * cos(secs / 2.0), 128 + 127 * sin(secs / 2.0), 0);
 	light->color = QColor(255, 255, 255);
-	if(vrHandler)
+	if(vrHandler->isEnabled())
 	{
 		modelModel.translate(0.f, 1.4f * model->getBoundingSphereRadius(), 0.f);
 		modelModel.rotate(180.f, QVector3D(0.f, 1.f, 0.f));
@@ -231,7 +276,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
 	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
 
-	if(vrHandler)
+	if(vrHandler->isEnabled())
 	{
 		model->render(camera.standingTrackedSpaceToWorldTransform().inverted()
 		                  * camera.getWorldSpacePosition(),

@@ -21,7 +21,6 @@
 SettingsWidget::SettingsWidget(QWidget* parent)
     : QTabWidget(parent)
 {
-	// NOLINTNEXTLINE(hicpp-no-array-decay)
 	qDebug() << QString("Config file :") + QSettings().fileName();
 	addGroup("window", tr("Window"));
 	addUIntSetting("width", 1500, tr("Window Width"), 0, 17000);
@@ -66,9 +65,17 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 
 	addGroup("vr", tr("Virtual Reality"));
 	addBoolSetting("enabled", true, tr("Enable VR"));
+	addBoolSetting("mode", true, tr("OpenVR (Stereo Beamer Mode if no)"));
 	addBoolSetting(
 	    "thirdrender", false,
 	    tr("Force 2D render on screen\n(will decrease performance !)"));
+
+	addGroup("network", tr("Network"));
+	addBoolSetting("server", true, tr("Server"));
+	addStringSetting("ip", "127.0.0.1", tr("IP address of server (if client)"));
+	addUIntSetting("port", 5000, tr("IP port"), 1025, 49999);
+	addIntSetting("angleshift", 0,
+	              tr("Angle shift compared to server (degrees)"), -180, 180);
 
 	addGroup("scripting", tr("Scripting"));
 	addDirPathSetting(
@@ -169,7 +176,52 @@ void SettingsWidget::addUIntSetting(QString const& name,
 	sbox->setValue(settings.value(fullName).toUInt());
 
 	connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+	        this,
+	        [this, fullName](unsigned int v) { updateValue(fullName, v); });
+
+	currentForm->addRow(label + " :", sbox);
+}
+
+void SettingsWidget::addIntSetting(QString const& name, int defaultVal,
+                                   QString const& label, int minVal, int maxVal)
+{
+	QString fullName(currentGroup + '/' + name);
+
+	if(!settings.contains(fullName))
+	{
+		settings.setValue(fullName, defaultVal);
+	}
+
+	auto sbox = new QSpinBox(this);
+	sbox->setRange(minVal, maxVal);
+	sbox->setValue(settings.value(fullName).toInt());
+
+	connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 	        this, [this, fullName](int v) { updateValue(fullName, v); });
+
+	currentForm->addRow(label + " :", sbox);
+}
+
+void SettingsWidget::addDoubleSetting(QString const& name, double defaultVal,
+                                      QString const& label, double minVal,
+                                      double maxVal, unsigned int decimals)
+{
+	QString fullName(currentGroup + '/' + name);
+
+	if(!settings.contains(fullName))
+	{
+		settings.setValue(fullName, defaultVal);
+	}
+
+	auto sbox = new QDoubleSpinBox(this);
+	sbox->setRange(minVal, maxVal);
+	sbox->setDecimals(decimals);
+	sbox->setValue(settings.value(fullName).toDouble());
+
+	connect(sbox,
+	        static_cast<void (QDoubleSpinBox::*)(double)>(
+	            &QDoubleSpinBox::valueChanged),
+	        this, [this, fullName](double v) { updateValue(fullName, v); });
 
 	currentForm->addRow(label + " :", sbox);
 }

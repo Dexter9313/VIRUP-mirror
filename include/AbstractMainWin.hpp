@@ -19,11 +19,13 @@
 #include "DebugCamera.hpp"
 #include "GLHandler.hpp"
 #include "InputManager.hpp"
+#include "NetworkManager.hpp"
 #include "PythonQtHandler.hpp"
 #include "Renderer.hpp"
 #include "ShaderProgram.hpp"
 #include "ToneMappingModel.hpp"
-#include "vr/VRHandler.hpp"
+#include "vr/OpenVRHandler.hpp"
+#include "vr/StereoBeamerHandler.hpp"
 
 /** @ingroup pycall
  *
@@ -313,13 +315,17 @@ class AbstractMainWin : public QWindow
 	 */
 	InputManager inputManager;
 	/**
+	 * @brief The engine's only @ref VRHandler.
+	 */
+	VRHandler* vrHandler
+	    = QSettings().value("vr/mode").toBool()
+	          ? static_cast<VRHandler*>(new OpenVRHandler)
+	          : static_cast<VRHandler*>(new StereoBeamerHandler);
+	/**
 	 * @brief The engine's only @ref Renderer.
 	 */
 	Renderer renderer;
-	/**
-	 * @brief The engine's only @ref VRHandler.
-	 */
-	VRHandler vrHandler;
+	NetworkManager networkManager;
 	/**
 	 * @brief Last frame time to render in seconds.
 	 *

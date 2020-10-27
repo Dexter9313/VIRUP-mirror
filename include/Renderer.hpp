@@ -47,8 +47,8 @@ class Renderer
 		BasicCamera* camera;
 	};
 
-	Renderer() = default;
-	void init(AbstractMainWin* window, VRHandler* vrHandler);
+	Renderer(AbstractMainWin& window, VRHandler& vrHandler);
+	void init();
 	void windowResized();
 	QSize getSize() const;
 	float getAspectRatio() const;
@@ -181,13 +181,12 @@ class Renderer
   private:
 	bool initialized = false;
 
-	AbstractMainWin* window = nullptr;
-
 	void vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 	                        bool debug, bool debugInHeadset);
 	void vrRender(Side side, bool debug, bool debugInHeadset);
 
-	VRHandler* vrHandler   = nullptr;
+	AbstractMainWin& window;
+	VRHandler& vrHandler;
 	DebugCamera* dbgCamera = nullptr;
 
 	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;

@@ -862,6 +862,7 @@ class GLHandler : public QObject
 	static unsigned int getTextureContentAsData(GLfloat** buff,
 	                                            Texture const& tex,
 	                                            unsigned int level = 0);
+	static float getTextureAverageLuminance(Texture const& tex);
 	static void useTextures(std::vector<Texture> const& textures);
 	static void deleteTexture(Texture const& texture);
 

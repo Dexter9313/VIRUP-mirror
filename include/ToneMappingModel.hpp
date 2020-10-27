@@ -74,7 +74,7 @@ class ToneMappingModel : public QObject
 	Q_PROPERTY(float autoexposuretimecoeff MEMBER autoexposuretimecoeff)
 
   public:
-	ToneMappingModel(VRHandler const* vrHandler);
+	ToneMappingModel(VRHandler const& vrHandler);
 	void autoUpdateExposure(float averageLuminance, float frameTiming);
 
 	float exposure     = 1.f;
@@ -86,7 +86,7 @@ class ToneMappingModel : public QObject
 	float autoexposuretimecoeff = 1.f;
 
   private:
-	VRHandler const* vrHandler;
+	VRHandler const& vrHandler;
 
 	/*
 	 * BEG AUTOEXPOSURE MODEL

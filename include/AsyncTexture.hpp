@@ -64,7 +64,6 @@ class WorkerThread : public QThread
 		QImage img(imReader.read());
 		if(img.isNull())
 		{
-			// NOLINTNEXTLINE(hicpp-no-array-decay)
 			qWarning() << "Could not load Texture '" + path
 			                  + "' : " + imReader.errorString();
 			return;

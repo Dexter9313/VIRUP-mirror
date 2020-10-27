@@ -217,7 +217,7 @@ Checks:          "abseil-string-find-startswith, \
     hicpp-multiway-paths-covered, \
     hicpp-named-parameter, \
     hicpp-new-delete-operators, \
-    hicpp-no-array-decay, \
+    -hicpp-no-array-decay, \ # qDebug() family spits one out at every call
     hicpp-no-assembler, \
     hicpp-no-malloc, \
     hicpp-noexcept-move, \
