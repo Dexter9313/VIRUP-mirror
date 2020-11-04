@@ -18,6 +18,8 @@
 
 #include "MovementControls.hpp"
 
+#include "vr/Controller.hpp"
+
 MovementControls::MovementControls(VRHandler const& vrHandler, BBox dataBBox,
                                    Camera* cosmoCam,
                                    OrbitalSystemCamera* planetCam)
@@ -408,7 +410,7 @@ void MovementControls::updateCube(double frameTiming)
 	}
 
 	// apply keyboard controls
-	if(!vrHandler)
+	if(!vrHandler.isEnabled())
 	{
 		cosmoCam->position += frameTiming
 		                      * Utils::fromQt(cosmoCam->getView().inverted()

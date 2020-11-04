@@ -1,6 +1,6 @@
 #include "Camera.hpp"
 
-Camera::Camera(VRHandler const* vrHandler)
+Camera::Camera(VRHandler const& vrHandler)
     : BasicCamera(vrHandler)
 {
 }
@@ -58,7 +58,7 @@ void Camera::updateTargetFPS()
 	setView(QVector3D(0.f, 0.f, 0.f), getLookDirection(),
 	        QVector3D(0.f, 0.f, 1.f));
 
-	if(*vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		targetFPS = 100.f; // small margin to avoid frame drops
 	}
@@ -71,10 +71,10 @@ void Camera::updateTargetFPS()
 Vector3 Camera::getHeadShift() const
 {
 	QMatrix4x4 eyeViewMatrix;
-	if(*vrHandler)
+	if(vrHandler.isEnabled())
 	{
 		eyeViewMatrix
-		    = vrHandler->getEyeViewMatrix(vrHandler->getCurrentRenderingEye());
+		    = vrHandler.getEyeViewMatrix(vrHandler.getCurrentRenderingEye());
 	}
 	return Utils::fromQt(QVector3D(
 	           (hmdScaledToWorld * eyeViewMatrix.inverted()).column(3)))

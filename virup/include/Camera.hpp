@@ -44,7 +44,7 @@ class Camera : public BasicCamera
 {
 	Q_OBJECT
   public:
-	Camera(VRHandler const* vrHandler);
+	Camera(VRHandler const& vrHandler);
 	Vector3 dataToWorldPosition(Vector3 const& data) const;
 	QMatrix4x4 dataToWorldTransform() const;
 	Vector3 worldToDataPosition(Vector3 const& world) const;

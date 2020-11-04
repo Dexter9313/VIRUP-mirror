@@ -76,7 +76,7 @@ void MainWin::loadSolarSystem()
 	if(camPlanet == nullptr)
 	{
 		camPlanet
-		    = new OrbitalSystemCamera(&vrHandler, toneMappingModel->exposure,
+		    = new OrbitalSystemCamera(*vrHandler, toneMappingModel->exposure,
 		                              toneMappingModel->dynamicrange);
 		camPlanet->seatedVROrigin = false;
 		camPlanet->setPerspectiveProj(
@@ -229,7 +229,7 @@ void MainWin::loadNewSystem()
 	if(camPlanet == nullptr)
 	{
 		camPlanet
-		    = new OrbitalSystemCamera(&vrHandler, toneMappingModel->exposure,
+		    = new OrbitalSystemCamera(*vrHandler, toneMappingModel->exposure,
 		                              toneMappingModel->dynamicrange);
 		camPlanet->seatedVROrigin = false;
 		camPlanet->setPerspectiveProj(
@@ -453,9 +453,9 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 			else if(a.id == "resetvrpos")
 			{
 				// integralDt    = 0;
-				if(vrHandler)
+				if(vrHandler->isEnabled())
 				{
-					vrHandler.resetPos();
+					vrHandler->resetPos();
 				}
 			}
 			else if(a.id == "toggleorbits")
@@ -555,7 +555,7 @@ void MainWin::mouseReleaseEvent(QMouseEvent* e)
 
 void MainWin::mouseMoveEvent(QMouseEvent* e)
 {
-	if(!isActive() || vrHandler || !loaded || !moveView)
+	if(!isActive() || vrHandler->isEnabled() || !loaded || !moveView)
 	{
 		return;
 	}
@@ -590,7 +590,8 @@ void MainWin::vrEvent(VRHandler::Event const& e)
 				{
 					case VRHandler::Button::TOUCHPAD:
 					{
-						Controller const* ctrl(vrHandler.getController(e.side));
+						Controller const* ctrl(
+						    vrHandler->getController(e.side));
 						if(ctrl != nullptr)
 						{
 							QVector2D padCoords(ctrl->getPadCoords());
@@ -685,7 +686,7 @@ void MainWin::initScene()
 	toneMappingModel->dynamicrange = 10000.f;
 	grid                           = new Grid;
 
-	auto cam            = new Camera(&vrHandler);
+	auto cam            = new Camera(*vrHandler);
 	cam->seatedVROrigin = false;
 	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
 	                                   / static_cast<float>(height()));
@@ -711,7 +712,7 @@ void MainWin::initScene()
 	debugText->setText("");
 
 	movementControls = new MovementControls(
-	    vrHandler, cosmologicalSim->getBoundingBox(), cam, camPlanet);
+	    *vrHandler, cosmologicalSim->getBoundingBox(), cam, camPlanet);
 
 	setCosmoLum(getCosmoLum() / (cam->scale * cam->scale));
 
@@ -815,7 +816,10 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 	{
 		auto& cam(dynamic_cast<Camera&>(camera));
 		cam.currentFrameTiming = frameTiming;
-		cam.updateTargetFPS();
+		if(networkManager.isServer())
+		{
+			cam.updateTargetFPS();
+		}
 
 		/*float distPeriod = 60.f, anglePeriod = 10.f;
 		integralDt += dt;
@@ -855,7 +859,10 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 			model.rotate(pitch * 180.f / M_PI + 90.f, 1.0, 0.0, 0.0);
 			cosmoLabel.second->updateModel(model);
 		}
-		movementControls->update(frameTiming);
+		if(networkManager.isServer())
+		{
+			movementControls->update(frameTiming);
+		}
 		int currentScene(PythonQtHandler::getVariable("id").toInt());
 		for(int i(0); i < static_cast<int>(buttons.size()); ++i)
 		{
@@ -894,7 +901,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 	{
 		auto& cam      = dynamic_cast<OrbitalSystemCamera&>(camera);
 		auto& cosmoCam = renderer.getCamera<Camera>("cosmo");
-		if(vrHandler)
+		if(vrHandler->isEnabled())
 		{
 			debugText->getModel() = cam.hmdSpaceToWorldTransform();
 			debugText->getModel().translate(QVector3D(0.0f, -0.075f, -0.20f));
@@ -994,10 +1001,10 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 		}
 		movementControls->renderGuides();
 
-		if(vrHandler)
+		if(vrHandler->isEnabled())
 		{
 			QMatrix4x4 model;
-			QSizeF playAreaSize(vrHandler.getPlayAreaSize());
+			QSizeF playAreaSize(vrHandler->getPlayAreaSize());
 			if(playAreaSize.width() > playAreaSize.height())
 			{
 				model.translate(-0.5f * playAreaSize.width() + 0.45, 0.f, 0.f);
@@ -1059,9 +1066,9 @@ void MainWin::applyPostProcShaderParams(
 	{
 		float aspectRatio(width());
 		aspectRatio /= height();
-		if(vrHandler)
+		if(vrHandler->isEnabled())
 		{
-			QSize rtSize(vrHandler.getEyeRenderTargetSize());
+			QSize rtSize(vrHandler->getEyeRenderTargetSize());
 			aspectRatio = rtSize.width();
 			aspectRatio /= rtSize.height();
 		}
@@ -1097,7 +1104,7 @@ std::vector<GLHandler::Texture> MainWin::getPostProcessingUniformTextures(
 void MainWin::printPositionInDataSpace(Side controller) const
 {
 	QVector3D position(0.f, 0.f, 0.f);
-	Controller const* cont(vrHandler.getController(controller));
+	Controller const* cont(vrHandler->getController(controller));
 	// world space first
 	if(cont != nullptr)
 	{
