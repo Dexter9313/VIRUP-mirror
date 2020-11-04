@@ -27,6 +27,7 @@ MovementControls::MovementControls(VRHandler const& vrHandler, BBox dataBBox,
     , dataBBox(dataBBox)
     , cosmoCam(cosmoCam)
     , planetCam(planetCam)
+    , guideShader("default")
 {
 	if((dataBBox.maxx - dataBBox.minx >= dataBBox.maxy - dataBBox.miny)
 	   && (dataBBox.maxx - dataBBox.minx >= dataBBox.maxz - dataBBox.minz))
@@ -45,11 +46,9 @@ MovementControls::MovementControls(VRHandler const& vrHandler, BBox dataBBox,
 	cosmoCam->position[1] = dataBBox.mid.y();
 	cosmoCam->position[2] = dataBBox.mid.z();
 
-	// GUIDES
-	guideShader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(guideShader, "color", QColor(255, 128, 0));
-	GLHandler::setShaderParam(guideShader, "alpha", 0.2f);
-	guideMesh = Primitives::newUnitSphere(guideShader, 20, 20);
+	guideShader.setUniform("color", QColor(255, 128, 0));
+	guideShader.setUniform("alpha", 0.2f);
+	Primitives::setAsUnitSphere(guideMesh, guideShader, 20, 20);
 }
 
 void MovementControls::actionEvent(BaseInputManager::Action a, bool pressed)
@@ -483,13 +482,7 @@ void MovementControls::renderGuides()
 		GLHandler::beginTransparent();
 		GLHandler::setUpRender(guideShader, guideModel,
 		                       GLHandler::GeometricSpace::SEATEDTRACKED);
-		GLHandler::render(guideMesh);
+		guideMesh.render();
 		GLHandler::endTransparent();
 	}
-}
-
-MovementControls::~MovementControls()
-{
-	GLHandler::deleteMesh(guideMesh);
-	GLHandler::deleteShader(guideShader);
 }

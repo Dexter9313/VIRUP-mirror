@@ -12,8 +12,7 @@ BaseLineMethodTex::BaseLineMethodTex()
 
 void BaseLineMethodTex::render(Camera const& camera)
 {
-	GLHandler::setShaderParam(shaderProgram, "scale",
-	                          static_cast<float>(camera.scale));
+	shaderProgram.setUniform("scale", static_cast<float>(camera.scale));
 	GLHandler::useTextures({tex});
 	BaseLineMethod::render(camera);
 }

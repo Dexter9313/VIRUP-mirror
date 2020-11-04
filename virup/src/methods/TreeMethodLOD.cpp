@@ -297,14 +297,11 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 	}
 
 	GLHandler::beginTransparent(GL_ONE, GL_ONE);
-	GLHandler::setShaderParam(shaderProgram, "color",
-	                          QVector3D(1.0f, 1.0f, 1.0f));
+	shaderProgram.setUniform("color", QVector3D(1.0f, 1.0f, 1.0f));
 	GLHandler::setUpRender(shaderProgram, model);
-	GLHandler::setShaderParam(shaderProgram, "pixelSolidAngle",
-	                          camera.pixelSolidAngle());
-	GLHandler::setShaderParam(
-	    shaderProgram, "color",
-	    QSettings().value("data/gazcolor").value<QColor>());
+	shaderProgram.setUniform("pixelSolidAngle", camera.pixelSolidAngle());
+	shaderProgram.setUniform(
+	    "color", QSettings().value("data/gazcolor").value<QColor>());
 	unsigned int rendered = 0;
 	if(gazTree != nullptr)
 	{
@@ -312,18 +309,16 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 		                                         campos, 100000000, false,
 		                                         getAlpha());
 	}
-	GLHandler::setShaderParam(
-	    shaderProgram, "color",
-	    QSettings().value("data/starscolor").value<QColor>());
+	shaderProgram.setUniform(
+	    "color", QSettings().value("data/starscolor").value<QColor>());
 	if(starsTree != nullptr)
 	{
 		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera,
 		                                           model, campos, 100000000,
 		                                           true, getAlpha());
 	}
-	GLHandler::setShaderParam(
-	    shaderProgram, "color",
-	    QSettings().value("data/darkmattercolor").value<QColor>());
+	shaderProgram.setUniform(
+	    "color", QSettings().value("data/darkmattercolor").value<QColor>());
 	if(darkMatterTree != nullptr && showdm)
 	{
 		rendered += darkMatterTree->renderAboveTanAngle(

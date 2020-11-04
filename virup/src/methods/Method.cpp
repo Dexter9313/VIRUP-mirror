@@ -7,9 +7,8 @@ Method::Method(std::string const& shadersCommonName)
 
 Method::Method(std::string const& vertexShaderPath,
                std::string const& fragmentShaderPath)
+    : shaderProgram(vertexShaderPath.c_str(), fragmentShaderPath.c_str())
 {
-	shaderProgram = GLHandler::newShader(vertexShaderPath.c_str(),
-	                                     fragmentShaderPath.c_str());
 	resetAlpha();
 }
 
@@ -31,7 +30,7 @@ void Method::resetAlpha()
 void Method::setAlpha(float alpha)
 {
 	this->alpha = alpha;
-	GLHandler::setShaderParam(shaderProgram, "alpha", alpha);
+	shaderProgram.setUniform("alpha", alpha);
 }
 
 BBox Method::globalBBox(std::vector<BBox> const& bboxes)
@@ -81,9 +80,4 @@ BBox Method::globalBBox(std::vector<BBox> const& bboxes)
 	result.mid.setZ((result.maxz + result.minz) / 2.0f);
 
 	return result;
-}
-
-Method::~Method()
-{
-	GLHandler::deleteShader(shaderProgram);
 }

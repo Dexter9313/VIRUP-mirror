@@ -19,17 +19,17 @@
 #include "Grid.hpp"
 
 Grid::Grid()
+    : shader("default")
+    , scaleText3D(1024, 256)
 {
-	shader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(shader, "alpha", 0.5f);
-	GLHandler::setShaderParam(
-	    shader, "color", QSettings().value("misc/gridcolor").value<QColor>());
+	shader.setUniform("alpha", 0.5f);
+	shader.setUniform("color",
+	                  QSettings().value("misc/gridcolor").value<QColor>());
 
-	mesh = GLHandler::newMesh();
 	std::vector<float> vertices;
 	std::vector<unsigned int> elements;
 	generateGridVertices(vertices, elements);
-	GLHandler::setVertices(mesh, vertices, shader, {{"position", 3}}, elements);
+	mesh.setVertices(vertices, shader, {{"position", 3}}, elements);
 
 	scaleText3D.setColor(QColor(0, 255, 0));
 
@@ -39,7 +39,7 @@ Grid::Grid()
 void Grid::setColor(QColor const& color)
 {
 	QSettings().setValue("misc/gridcolor", color);
-	GLHandler::setShaderParam(shader, "color", color);
+	shader.setUniform("color", color);
 }
 
 void Grid::render(double scale, double height)
@@ -55,7 +55,7 @@ void Grid::render(double scale, double height)
 	GLHandler::beginTransparent();
 	GLHandler::setUpRender(shader, t,
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
-	GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
+	mesh.render(PrimitiveType::LINES);
 	GLHandler::endTransparent();
 
 	QString newScaleText(generateScaleText(10.0 * roundscale));
@@ -91,7 +91,7 @@ void Grid::render(double scale, double height)
 
     GLHandler::beginTransparent();
     GLHandler::setUpRender(shader, model * t);
-    GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
+    mesh.render(GLHandler::PrimitiveType::LINES);
     GLHandler::endTransparent();
 
     QString newScaleText(generateScaleTextCosmo(camScale));
@@ -132,7 +132,7 @@ void Grid::renderPlanet(OrbitalSystemCamera const& cam)
 
     GLHandler::beginTransparent();
     GLHandler::setUpRender(shader, model * t);
-    GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
+    mesh.render(GLHandler::PrimitiveType::LINES);
     GLHandler::endTransparent();
 
     QString newScaleText(generateScaleTextPlanet(camScale));
@@ -147,12 +147,6 @@ void Grid::renderPlanet(OrbitalSystemCamera const& cam)
     scaleText3D.getModel() = model * t * t2;
     scaleText3D.render();
 } */
-
-Grid::~Grid()
-{
-	GLHandler::deleteShader(shader);
-	GLHandler::deleteMesh(mesh);
-}
 
 void Grid::generateGridVertices(std::vector<float>& vertices,
                                 std::vector<unsigned int>& elements)

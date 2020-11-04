@@ -30,7 +30,7 @@ Vector3& OctreeLOD::solarSystemDataPos()
 // TODO just draw nothing if vertices.size() == 0 (prevents nullptr tests when
 // drawing)
 
-OctreeLOD::OctreeLOD(GLHandler::ShaderProgram const& shaderProgram, Flags flags,
+OctreeLOD::OctreeLOD(GLShaderProgram const& shaderProgram, Flags flags,
                      unsigned int lvl)
     : Octree(flags)
     , lvl(lvl)
@@ -140,7 +140,7 @@ void OctreeLOD::unload()
 	{
 		usedMem() -= dataSize * sizeof(float);
 		dataSize = 0;
-		GLHandler::deleteMesh(mesh);
+		delete mesh;
 		for(Octree* oct : children)
 		{
 			if(oct != nullptr)
@@ -302,7 +302,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 					vertexData[i + 1] -= closest[1];
 					vertexData[i + 2] -= closest[2];
 				}
-				GLHandler::updateVertices(mesh, vertexData);
+				mesh->updateVertices(vertexData);
 
 				Vector3 closestNeighbor(DBL_MAX, DBL_MAX, DBL_MAX);
 				neighborDist = DBL_MAX;
@@ -352,12 +352,10 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		QMatrix4x4 model;
 		model.translate(Utils::toQt(localTranslation));
 
-		GLHandler::setShaderParam(*shaderProgram, "alpha",
-		                          alpha * totalDataSize / dataSize);
-		GLHandler::setShaderParam(*shaderProgram, "campos",
-		                          model.inverted() * globalCampos);
+		shaderProgram->setUniform("alpha", alpha * totalDataSize / dataSize);
+		shaderProgram->setUniform("campos", model.inverted() * globalCampos);
 		GLHandler::setUpRender(*shaderProgram, globalModel * model);
-		GLHandler::render(mesh);
+		mesh->render();
 		return dataSize / dimPerVertex;
 	}
 	return 0;
@@ -389,7 +387,7 @@ float OctreeLOD::currentTanAngle(QVector3D const& campos) const
 
 void OctreeLOD::ramToVideo()
 {
-	mesh = GLHandler::newMesh();
+	mesh                                                  = new GLMesh;
 	std::vector<QPair<const char*, unsigned int>> mapping = {{"position", 3}};
 	std::vector<QPair<const char*, std::vector<float>>> unused;
 	if((getFlags() & Flags::STORE_RADIUS) != Flags::NONE)
@@ -409,8 +407,8 @@ void OctreeLOD::ramToVideo()
 		unused.emplace_back("luminosity", std::vector<float>{1.f});
 	}
 
-	GLHandler::setShaderUnusedAttributesValues(*shaderProgram, unused);
-	GLHandler::setVertices(mesh, data, *shaderProgram, mapping);
+	shaderProgram->setUnusedAttributesValues(unused);
+	mesh->setVertices(data, *shaderProgram, mapping);
 	dataSize = data.size();
 	usedMem() += dataSize * sizeof(float);
 	data.resize(0);

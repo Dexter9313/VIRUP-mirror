@@ -332,11 +332,11 @@ class MainWin : public AbstractMainWin
 	virtual void renderScene(BasicCamera const& camera,
 	                         QString const& pathId) override;
 	virtual void applyPostProcShaderParams(
-	    QString const& id, GLHandler::ShaderProgram shader,
+	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const override;
 
 	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
-	    QString const& id, GLHandler::ShaderProgram shader,
+	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const override;
 
   private:

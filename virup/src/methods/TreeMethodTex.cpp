@@ -14,8 +14,7 @@ TreeMethodTex::TreeMethodTex()
 
 void TreeMethodTex::render(Camera const& camera)
 {
-	GLHandler::setShaderParam(shaderProgram, "scale",
-	                          static_cast<float>(camera.scale));
+	shaderProgram.setUniform("scale", static_cast<float>(camera.scale));
 	GLHandler::useTextures({tex});
 	TreeMethodLOD::render(camera);
 }

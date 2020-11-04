@@ -49,7 +49,6 @@ class MovementControls
 	             QMatrix4x4 const& trackedSpaceToWorldTransform);
 	void update(double frameTiming);
 	void renderGuides();
-	~MovementControls();
 
   private:
 	void vrEventCube(VRHandler::Event const& e,
@@ -91,8 +90,8 @@ class MovementControls
 	double initScaleOrb          = 0.0;
 
 	/* GUIDES */
-	GLHandler::ShaderProgram guideShader;
-	GLHandler::Mesh guideMesh = {};
+	GLShaderProgram guideShader;
+	GLMesh guideMesh;
 	QMatrix4x4 guideModel;
 	bool displayGuide = false;
 };

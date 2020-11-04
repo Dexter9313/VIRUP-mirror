@@ -8,8 +8,8 @@
 #include "graphics/renderers/OrbitalSystemRenderer.hpp"
 
 #include "Camera.hpp"
-#include "GLHandler.hpp"
 #include "Primitives.hpp"
+#include "gl/GLHandler.hpp"
 #include "math/Vector3.hpp"
 #include "physics/blackbody.hpp"
 #include "utils.hpp"
@@ -19,8 +19,8 @@
 class OctreeLOD : public Octree
 {
   public:
-	OctreeLOD(GLHandler::ShaderProgram const& shaderProgram,
-	          Flags flags = Flags::NONE, unsigned int lvl = 0);
+	OctreeLOD(GLShaderProgram const& shaderProgram, Flags flags = Flags::NONE,
+	          unsigned int lvl = 0);
 	virtual void init(std::vector<float>& data) override;
 	virtual void init(std::istream& in) override;
 	virtual void init(int64_t file_addr, std::istream& in) override;
@@ -60,8 +60,8 @@ class OctreeLOD : public Octree
 	static int64_t& usedMem();
 	static const int64_t& memLimit();
 
-	GLHandler::Mesh mesh = {};
-	GLHandler::ShaderProgram const* shaderProgram;
+	GLMesh* mesh = nullptr;
+	GLShaderProgram const* shaderProgram;
 
 	void computeBBox();
 	float currentTanAngle(QVector3D const& campos) const;

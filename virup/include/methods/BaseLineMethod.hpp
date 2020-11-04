@@ -1,8 +1,8 @@
 #ifndef BASELINEMETHOD_H
 #define BASELINEMETHOD_H
 
-#include "GLHandler.hpp"
 #include "Method.hpp"
+#include "gl/GLHandler.hpp"
 #include "methods/OctreeLOD.hpp"
 
 class BaseLineMethod : public Method
@@ -15,7 +15,7 @@ class BaseLineMethod : public Method
 	               std::string const& fragmentShaderPath);
 	virtual BBox getDataBoundingBox() const override { return dataBBox; };
 	virtual void render(Camera const& camera) override;
-	~BaseLineMethod();
+	~BaseLineMethod() = default;
 
   public slots:
 	virtual std::string getName() const override { return "Base Line"; };
@@ -24,12 +24,11 @@ class BaseLineMethod : public Method
 	                  std::vector<float>& darkMatterVertices) override;
 	virtual void init(std::string const& gazPath, std::string const& starsPath,
 	                  std::string const& darkMatterPath) override;
-	virtual void cleanUp() override;
 
   private:
-	GLHandler::Mesh gazMesh        = {};
-	GLHandler::Mesh starsMesh      = {};
-	GLHandler::Mesh darkMatterMesh = {};
+	GLMesh gazMesh;
+	GLMesh starsMesh;
+	GLMesh darkMatterMesh;
 
 	BBox dataBBox = {};
 };

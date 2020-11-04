@@ -816,7 +816,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 	{
 		auto& cam(dynamic_cast<Camera&>(camera));
 		cam.currentFrameTiming = frameTiming;
-		if(networkManager.isServer())
+		if(networkManager->isServer())
 		{
 			cam.updateTargetFPS();
 		}
@@ -859,7 +859,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 			model.rotate(pitch * 180.f / M_PI + 90.f, 1.0, 0.0, 0.0);
 			cosmoLabel.second->updateModel(model);
 		}
-		if(networkManager.isServer())
+		if(networkManager->isServer())
 		{
 			movementControls->update(frameTiming);
 		}
@@ -1058,7 +1058,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 }
 
 void MainWin::applyPostProcShaderParams(
-    QString const& id, GLHandler::ShaderProgram shader,
+    QString const& id, GLShaderProgram const& shader,
     GLHandler::RenderTarget const& currentTarget) const
 {
 	AbstractMainWin::applyPostProcShaderParams(id, shader, currentTarget);
@@ -1073,19 +1073,18 @@ void MainWin::applyPostProcShaderParams(
 			aspectRatio /= rtSize.height();
 		}
 
-		GLHandler::setShaderParam(shader, "aspectRatio", aspectRatio);
-		GLHandler::setShaderParam(shader, "lenseSize",
-		                          static_cast<float>(1.0e14 * getScale()));
-		GLHandler::setShaderParam(shader, "lenseScreenCoord", lenseScreenCoord);
-		GLHandler::setShaderParam(shader, "lenseDist", lenseDist);
-		GLHandler::setShaderParam(shader, "radiusLimit", 0.2f);
+		shader.setUniform("aspectRatio", aspectRatio);
+		shader.setUniform("lenseSize", static_cast<float>(1.0e14 * getScale()));
+		shader.setUniform("lenseScreenCoord", lenseScreenCoord);
+		shader.setUniform("lenseDist", lenseDist);
+		shader.setUniform("radiusLimit", 0.2f);
 
-		GLHandler::setShaderParam(shader, "distortionMap", 1);
+		shader.setUniform("distortionMap", 1);
 	}
 }
 
 std::vector<GLHandler::Texture> MainWin::getPostProcessingUniformTextures(
-    QString const& id, GLHandler::ShaderProgram shader,
+    QString const& id, GLShaderProgram const& shader,
     GLHandler::RenderTarget const& currentTarget) const
 {
 	auto abstractResult(AbstractMainWin::getPostProcessingUniformTextures(

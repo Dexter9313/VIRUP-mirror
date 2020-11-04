@@ -20,24 +20,18 @@ void BaseLineMethod::init(std::vector<float>& gazVertices,
                           std::vector<float>& darkMatterVertices)
 {
 	cleanUp();
-	gazMesh        = GLHandler::newMesh();
-	starsMesh      = GLHandler::newMesh();
-	darkMatterMesh = GLHandler::newMesh();
 	size_t totalSize(0);
-	GLHandler::setVertices(gazMesh, gazVertices, shaderProgram,
-	                       {{"position", 3}, {"radius", 1}});
-	GLHandler::setShaderUnusedAttributesValues(shaderProgram,
-	                                           {{"luminosity", {1.f}}});
+	gazMesh.setVertices(gazVertices, shaderProgram,
+	                    {{"position", 3}, {"radius", 1}});
+	shaderProgram.setUnusedAttributesValues({{"luminosity", {1.f}}});
 	totalSize += gazVertices.size();
-	GLHandler::setVertices(starsMesh, starsVertices, shaderProgram,
-	                       {{"position", 3}, {"radius", 1}});
-	GLHandler::setShaderUnusedAttributesValues(shaderProgram,
-	                                           {{"luminosity", {1.f}}});
+	starsMesh.setVertices(starsVertices, shaderProgram,
+	                      {{"position", 3}, {"radius", 1}});
+	shaderProgram.setUnusedAttributesValues({{"luminosity", {1.f}}});
 	totalSize += starsVertices.size();
-	GLHandler::setVertices(darkMatterMesh, darkMatterVertices, shaderProgram,
-	                       {{"position", 3}, {"radius", 1}});
-	GLHandler::setShaderUnusedAttributesValues(shaderProgram,
-	                                           {{"luminosity", {1.f}}});
+	darkMatterMesh.setVertices(darkMatterVertices, shaderProgram,
+	                           {{"position", 3}, {"radius", 1}});
+	shaderProgram.setUnusedAttributesValues({{"luminosity", {1.f}}});
 	totalSize += darkMatterVertices.size();
 	std::cout << "VRAM Loaded with " << totalSize * sizeof(float)
 	          << " bytes worth of data" << std::endl;
@@ -48,9 +42,6 @@ void BaseLineMethod::init(std::string const& gazPath,
                           std::string const& darkMatterPath)
 {
 	cleanUp();
-	gazMesh        = GLHandler::newMesh();
-	starsMesh      = GLHandler::newMesh();
-	darkMatterMesh = GLHandler::newMesh();
 	size_t totalSize(0);
 	std::vector<BBox> bboxes;
 	if(!gazPath.empty())
@@ -63,8 +54,8 @@ void BaseLineMethod::init(std::string const& gazPath,
 		tree.readData(file);
 		bboxes.push_back(tree.getBoundingBox());
 		std::vector<float> data(tree.getData());
-		GLHandler::setVertices(gazMesh, data, shaderProgram,
-		                       {{"position", 3}, {"radius", 1}});
+		gazMesh.setVertices(data, shaderProgram,
+		                    {{"position", 3}, {"radius", 1}});
 		totalSize += data.size();
 		file.close();
 	}
@@ -78,8 +69,7 @@ void BaseLineMethod::init(std::string const& gazPath,
 		tree.readData(file);
 		bboxes.push_back(tree.getBoundingBox());
 		std::vector<float> data(tree.getData());
-		GLHandler::setVertices(starsMesh, data, shaderProgram,
-		                       {{"position", 3}});
+		starsMesh.setVertices(data, shaderProgram, {{"position", 3}});
 		totalSize += data.size();
 		file.close();
 	}
@@ -93,8 +83,7 @@ void BaseLineMethod::init(std::string const& gazPath,
 		tree.readData(file);
 		bboxes.push_back(tree.getBoundingBox());
 		std::vector<float> data(tree.getData());
-		GLHandler::setVertices(darkMatterMesh, data, shaderProgram,
-		                       {{"position", 3}});
+		darkMatterMesh.setVertices(data, shaderProgram, {{"position", 3}});
 		totalSize += data.size();
 		file.close();
 	}
@@ -107,45 +96,25 @@ void BaseLineMethod::render(Camera const& camera)
 {
 	QMatrix4x4 model(camera.dataToWorldTransform());
 
-	GLHandler::setShaderParam(
-	    shaderProgram, "alpha",
-	    static_cast<float>(camera.scale * camera.scale * getAlpha()));
-	GLHandler::setShaderParam(shaderProgram, "view",
-	                          camera.hmdScaledSpaceToWorldTransform().inverted()
-	                              * model);
+	shaderProgram.setUniform(
+	    "alpha", static_cast<float>(camera.scale * camera.scale * getAlpha()));
+	shaderProgram.setUniform(
+	    "view", camera.hmdScaledSpaceToWorldTransform().inverted() * model);
 	GLHandler::beginTransparent(GL_SRC_ALPHA, GL_ONE);
 	GLHandler::setUpRender(shaderProgram, model);
-	GLHandler::setShaderParam(
-	    shaderProgram, "color",
-	    QSettings().value("data/gazcolor").value<QColor>());
-	GLHandler::setShaderUnusedAttributesValues(shaderProgram,
-	                                           {{"luminosity", {1.f}}});
-	GLHandler::render(gazMesh);
-	GLHandler::setShaderParam(
-	    shaderProgram, "color",
-	    QSettings().value("data/starscolor").value<QColor>());
-	GLHandler::setShaderUnusedAttributesValues(
-	    shaderProgram, {{"radius", {1.f}}, {"luminosity", {1.f}}});
-	GLHandler::render(starsMesh);
-	GLHandler::setShaderParam(
-	    shaderProgram, "color",
-	    QSettings().value("data/darkmattercolor").value<QColor>());
-	GLHandler::setShaderUnusedAttributesValues(
-	    shaderProgram, {{"radius", {1.f}}, {"luminosity", {1.f}}});
-	GLHandler::render(darkMatterMesh);
+	shaderProgram.setUniform(
+	    "color", QSettings().value("data/gazcolor").value<QColor>());
+	shaderProgram.setUnusedAttributesValues({{"luminosity", {1.f}}});
+	gazMesh.render();
+	shaderProgram.setUniform(
+	    "color", QSettings().value("data/starscolor").value<QColor>());
+	shaderProgram.setUnusedAttributesValues(
+	    {{"radius", {1.f}}, {"luminosity", {1.f}}});
+	starsMesh.render();
+	shaderProgram.setUniform(
+	    "color", QSettings().value("data/darkmattercolor").value<QColor>());
+	shaderProgram.setUnusedAttributesValues(
+	    {{"radius", {1.f}}, {"luminosity", {1.f}}});
+	darkMatterMesh.render();
 	GLHandler::endTransparent();
-}
-
-void BaseLineMethod::cleanUp()
-{
-	GLHandler::deleteMesh(gazMesh);
-	GLHandler::deleteMesh(starsMesh);
-	GLHandler::deleteMesh(darkMatterMesh);
-}
-
-BaseLineMethod::~BaseLineMethod()
-{
-	GLHandler::deleteMesh(gazMesh);
-	GLHandler::deleteMesh(starsMesh);
-	GLHandler::deleteMesh(darkMatterMesh);
 }

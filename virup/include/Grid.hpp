@@ -20,8 +20,8 @@
 #define GRID_HPP
 
 #include "Camera.hpp"
-#include "GLHandler.hpp"
 #include "Text3D.hpp"
+#include "gl/GLHandler.hpp"
 #include "graphics/OrbitalSystemCamera.hpp"
 #include "graphics/renderers/CelestialBodyRenderer.hpp"
 
@@ -48,14 +48,13 @@ class Grid : public QObject
 	// void renderCosmo(Camera const& cam);
 	// void renderPlanet(OrbitalSystemCamera const& cam);
 	void render(double scale, double height);
-	~Grid();
 
   private:
-	GLHandler::ShaderProgram shader;
-	GLHandler::Mesh mesh = {};
+	GLShaderProgram shader;
+	GLMesh mesh;
 
-	QString scaleText  = QString();
-	Text3D scaleText3D = Text3D(1024, 256);
+	QString scaleText;
+	Text3D scaleText3D;
 
 	static void generateGridVertices(std::vector<float>& vertices,
 	                                 std::vector<unsigned int>& elements);

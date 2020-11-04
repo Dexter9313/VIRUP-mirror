@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "Camera.hpp"
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 #include "utils.hpp"
 
 class Method : public QObject
@@ -18,9 +18,9 @@ class Method : public QObject
 	       std::string const& fragmentShaderPath);
 	virtual BBox getDataBoundingBox() const   = 0;
 	virtual void render(Camera const& camera) = 0;
-	virtual ~Method();
+	virtual ~Method()                         = default;
 
-	GLHandler::ShaderProgram shaderProgram;
+	GLShaderProgram shaderProgram;
 
   public slots:
 	virtual std::string getName() const = 0;
