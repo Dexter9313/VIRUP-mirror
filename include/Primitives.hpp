@@ -19,34 +19,33 @@
 #ifndef PRIMITIVES_H
 #define PRIMITIVES_H
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 
 class Primitives
 {
   public:
 	Primitives() = delete;
 
-	static GLHandler::Mesh newQuad(GLHandler::ShaderProgram shader,
-	                               GLHandler::PrimitiveType primitiveType
-	                               = GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	static void setAsQuad(GLMesh& mesh, GLShaderProgram const& shader,
+	                      PrimitiveType primitiveType
+	                      = PrimitiveType::TRIANGLE_STRIP);
 
 	// dim 2
-	static GLHandler::Mesh newGrid(GLHandler::ShaderProgram shader,
-	                               unsigned int size = 1024,
-	                               GLHandler::PrimitiveType primitiveType
-	                               = GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	static void setAsGrid(GLMesh& mesh, GLShaderProgram const& shader,
+	                      unsigned int size = 1024,
+	                      PrimitiveType primitiveType
+	                      = PrimitiveType::TRIANGLE_STRIP);
 
-	static GLHandler::Mesh
-	    newUnitCube(GLHandler::ShaderProgram shader,
-	                GLHandler::PrimitiveType primitiveType
-	                = GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	static void setAsUnitCube(GLMesh& mesh, GLShaderProgram const& shader,
+	                          PrimitiveType primitiveType
+	                          = PrimitiveType::TRIANGLE_STRIP);
 
 	// TRIANGLE_STRIP NOT SUPPORTED !
-	static GLHandler::Mesh newUnitSphere(GLHandler::ShaderProgram shader,
-	                                     unsigned int latDivisions = 10,
-	                                     unsigned int lonDivisions = 10,
-	                                     GLHandler::PrimitiveType primitiveType
-	                                     = GLHandler::PrimitiveType::TRIANGLES);
+	static void setAsUnitSphere(GLMesh& mesh, GLShaderProgram const& shader,
+	                            unsigned int latDivisions = 10,
+	                            unsigned int lonDivisions = 10,
+	                            PrimitiveType primitiveType
+	                            = PrimitiveType::TRIANGLES);
 };
 
 #endif // PRIMITIVES_H

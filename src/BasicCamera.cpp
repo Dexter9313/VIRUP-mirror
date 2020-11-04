@@ -45,8 +45,9 @@ QVector4D BasicCamera::project(QVector4D const& vertex) const
 	return fullTransform * vertex;
 }
 
-void BasicCamera::update()
+void BasicCamera::update(QMatrix4x4 const& angleShiftMat)
 {
+	const QMatrix4x4 shiftedView(angleShiftMat * view);
 	if(vrHandler.isEnabled())
 	{
 		// proj
@@ -67,7 +68,7 @@ void BasicCamera::update()
 		QMatrix4x4* projEye
 		    = (currentRenderingEye == Side::LEFT) ? &projLeft : &projRight;
 
-		// prog * view
+		// prog * shiftedView
 		QMatrix4x4 hmdMat(vrHandler.getHMDPosMatrix().inverted());
 
 		fullSeatedTrackedSpaceTransform
@@ -86,7 +87,7 @@ void BasicCamera::update()
 
 		hmdMat = eyeDist(hmdMat, eyeDistanceFactor);
 		// not true ! it holds its inverse for now
-		hmdScaledToWorld = hmdMat * view;
+		hmdScaledToWorld = hmdMat * shiftedView;
 		fullTransform    = *projEye * hmdScaledToWorld;
 		// now it's the right value :)
 		hmdScaledToWorld = hmdScaledToWorld.inverted();
@@ -96,24 +97,26 @@ void BasicCamera::update()
 		fullSkyboxSpaceTransform
 		    = vrHandler.getProjectionMatrix(currentRenderingEye, 0.1f, 10000.f)
 		      * noTrans(vrHandler.getEyeViewMatrix(currentRenderingEye))
-		      * noTrans(vrHandler.getHMDPosMatrix().inverted()) * noTrans(view);
+		      * noTrans(vrHandler.getHMDPosMatrix().inverted())
+		      * noTrans(shiftedView);
 
 		updateClippingPlanes();
 
 		return;
 	}
 
-	update2D();
+	update2D(angleShiftMat);
 }
 
-void BasicCamera::update2D()
+void BasicCamera::update2D(QMatrix4x4 const& angleShiftMat)
 {
-	fullTransform                     = proj * view;
+	const QMatrix4x4 shiftedView(angleShiftMat * view);
+	fullTransform                     = proj * shiftedView;
 	fullCameraSpaceTransform          = proj;
 	fullSeatedTrackedSpaceTransform   = proj * eyeDistanceCorrection;
 	fullStandingTrackedSpaceTransform = fullSeatedTrackedSpaceTransform;
 	fullHmdSpaceTransform             = fullSeatedTrackedSpaceTransform;
-	fullSkyboxSpaceTransform          = proj * noTrans(view);
+	fullSkyboxSpaceTransform          = proj * noTrans(shiftedView);
 
 	updateClippingPlanes();
 }

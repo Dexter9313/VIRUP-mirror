@@ -19,30 +19,38 @@
 #include "movingcube/MovingCube.hpp"
 
 MovingCube::MovingCube()
+    : cubeShader("default")
 {
-	cubeShader = GLHandler::newShader("default");
-	GLHandler::setShaderParam(cubeShader, "alpha", 0.5f);
-	GLHandler::setShaderParam(cubeShader, "color",
-	                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
-	cube = createCube(cubeShader);
+	cubeShader.setUniform("alpha", 0.5f);
+	cubeShader.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
+
+	std::vector<float> vertices = cubeVertices(0);
+
+	std::vector<unsigned int> elements = {
+	    0, 1, 0, 2, 0, 4,
+
+	    7, 6, 7, 5, 7, 3,
+
+	    1, 3, 1, 5,
+
+	    2, 6, 2, 3,
+
+	    4, 6, 4, 5,
+	};
+	cube.setVertices(vertices, cubeShader, {{"position", 3}}, elements);
+
 	cubeTimer.start();
 }
 
 void MovingCube::update()
 {
-	GLHandler::updateVertices(cube, cubeVertices(cubeTimer.elapsed()));
+	cube.updateVertices(cubeVertices(cubeTimer.elapsed()));
 }
 
 void MovingCube::render()
 {
 	GLHandler::setUpRender(cubeShader);
-	GLHandler::render(cube, GLHandler::PrimitiveType::LINES);
-}
-
-MovingCube::~MovingCube()
-{
-	GLHandler::deleteMesh(cube);
-	GLHandler::deleteShader(cubeShader);
+	cube.render(PrimitiveType::LINES);
 }
 
 std::vector<float> MovingCube::cubeVertices(uint64_t dt)
@@ -72,22 +80,3 @@ std::vector<float> MovingCube::cubeVertices(uint64_t dt)
 	return result;
 }
 
-GLHandler::Mesh MovingCube::createCube(GLHandler::ShaderProgram const& shader)
-{
-	GLHandler::Mesh mesh(GLHandler::newMesh());
-	std::vector<float> vertices = cubeVertices(0);
-
-	std::vector<unsigned int> elements = {
-	    0, 1, 0, 2, 0, 4,
-
-	    7, 6, 7, 5, 7, 3,
-
-	    1, 3, 1, 5,
-
-	    2, 6, 2, 3,
-
-	    4, 6, 4, 5,
-	};
-	GLHandler::setVertices(mesh, vertices, shader, {{"position", 3}}, elements);
-	return mesh;
-}

@@ -44,9 +44,9 @@ ShaderProgram::ShaderProgram(QString const& vertexName,
 	allShaderPrograms().insert(this);
 }
 
-GLHandler::ShaderProgram ShaderProgram::toGLHandler() const
+GLShaderProgram const& ShaderProgram::toGLShaderProgram() const
 {
-	return glShader;
+	return *glShader;
 }
 
 void ShaderProgram::load(QString const& shadersCommonName,
@@ -58,12 +58,8 @@ void ShaderProgram::load(QString const& shadersCommonName,
 void ShaderProgram::load(QString const& vertexName, QString const& fragmentName,
                          QMap<QString, QString> const& defines)
 {
-	if(valid)
-	{
-		GLHandler::deleteShader(glShader);
-	}
-	glShader      = GLHandler::newShader(vertexName, fragmentName, defines);
-	valid         = true;
+	delete glShader;
+	glShader      = new GLShaderProgram(vertexName, fragmentName, defines);
 	vert          = vertexName;
 	frag          = fragmentName;
 	this->defines = defines;
@@ -152,42 +148,40 @@ void ShaderProgram::load(QString const& vertexName, QString const& fragmentName,
 
 void ShaderProgram::reload()
 {
-	if(valid)
+	if(glShader != nullptr)
 	{
-		GLHandler::deleteShader(glShader);
-		glShader = GLHandler::newShader(vert, frag, defines);
+		delete glShader;
+		glShader = new GLShaderProgram(vert, frag, defines);
 		for(auto const& pair : uniformsBackup)
 		{
 			auto type(static_cast<QMetaType::Type>(pair.second.type()));
 			switch(type)
 			{
 				case QMetaType::Int:
-					GLHandler::setShaderParam(glShader, pair.first,
-					                          pair.second.toInt());
+					glShader->setUniform(pair.first, pair.second.toInt());
 					break;
 				case QMetaType::Float:
-					GLHandler::setShaderParam(glShader, pair.first,
-					                          pair.second.toFloat());
+					glShader->setUniform(pair.first, pair.second.toFloat());
 					break;
 				case QMetaType::QVector2D:
-					GLHandler::setShaderParam(glShader, pair.first,
-					                          pair.second.value<QVector2D>());
+					glShader->setUniform(pair.first,
+					                     pair.second.value<QVector2D>());
 					break;
 				case QMetaType::QVector3D:
-					GLHandler::setShaderParam(glShader, pair.first,
-					                          pair.second.value<QVector3D>());
+					glShader->setUniform(pair.first,
+					                     pair.second.value<QVector3D>());
 					break;
 				case QMetaType::QVector4D:
-					GLHandler::setShaderParam(glShader, pair.first,
-					                          pair.second.value<QVector4D>());
+					glShader->setUniform(pair.first,
+					                     pair.second.value<QVector4D>());
 					break;
 				case QMetaType::QMatrix4x4:
-					GLHandler::setShaderParam(glShader, pair.first,
-					                          pair.second.value<QMatrix4x4>());
+					glShader->setUniform(pair.first,
+					                     pair.second.value<QMatrix4x4>());
 					break;
 				case QMetaType::QColor:
-					GLHandler::setShaderParam(glShader, pair.first,
-					                          pair.second.value<QColor>());
+					glShader->setUniform(pair.first,
+					                     pair.second.value<QColor>());
 					break;
 				default:
 					break;
@@ -206,11 +200,7 @@ void ShaderProgram::reloadAllShaderPrograms()
 
 ShaderProgram::~ShaderProgram()
 {
-	if(valid)
-	{
-		GLHandler::deleteShader(glShader);
-	}
-
+	delete glShader;
 	allShaderPrograms().erase(this);
 }
 

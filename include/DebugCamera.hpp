@@ -109,7 +109,7 @@ class DebugCamera : public BasicCamera
 	 *
 	 * See BasicCamera#update.
 	 */
-	virtual void update() override;
+	virtual void update(QMatrix4x4 const& angleShiftMat) override;
 	/**
 	 * @brief Render's the @p cam's frustum mesh.
 	 */
@@ -130,8 +130,8 @@ class DebugCamera : public BasicCamera
 	void toggleFollowHMD();
 
   private:
-	GLHandler::Mesh camMesh;
-	GLHandler::ShaderProgram camMeshShader;
+	GLMesh camMesh;
+	GLShaderProgram camMeshShader;
 };
 
 #endif // DEBUGCAMERA_H

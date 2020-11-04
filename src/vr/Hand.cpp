@@ -20,15 +20,14 @@
 
 Hand::Hand(Side side)
     : side(side)
-    , shaderProgram(GLHandler::newShader("default"))
-    , mesh(GLHandler::newMesh())
+    , shaderProgram("default")
     , _isValid(false)
     , _isFlat(false)
     , _isClosed(false)
     , _palmNormal()
     , _direction()
 {
-	GLHandler::setShaderParam(shaderProgram, "alpha", 1.f);
+	shaderProgram.setUniform("alpha", 1.f);
 	std::vector<unsigned int> ebo = {
 	    2,  3,  3,  4,                                        // thumb
 	    5,  6,  6,  7,  7,  8,                                // index
@@ -39,8 +38,7 @@ Hand::Hand(Side side)
 	};
 
 	std::vector<float> vertices(22 * 3); // 21 random positions
-	GLHandler::setVertices(mesh, vertices, shaderProgram, {{"position", 3}},
-	                       ebo);
+	mesh.setVertices(vertices, shaderProgram, {{"position", 3}}, ebo);
 
 	// transforms leap coordinates to GL coordinates
 	// account for the controller position on the headset
@@ -60,7 +58,7 @@ void Hand::update(Leap::Hand const& hand)
 		return;
 	}
 
-	GLHandler::updateVertices(mesh, getHandVBO(hand));
+	mesh.updateVertices(getHandVBO(hand));
 
 	_isFlat   = hand.grabStrength() == 0;
 	_isClosed = hand.grabStrength() == 1;
@@ -84,36 +82,30 @@ void Hand::render() const
 	                       GLHandler::GeometricSpace::HMD);
 	if(isFlat() && side == Side::LEFT)
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(1.0f, 1.0f, 0.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 0.0f));
 	}
 	else if(isFlat())
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(0.0f, 1.0f, 1.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(0.0f, 1.0f, 1.0f));
 	}
 	else if(isClosed() && side == Side::LEFT)
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(1.0f, 1.0f, 1.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	}
 	else if(isClosed())
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(1.0f, 0.0f, 1.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 1.0f));
 	}
 	else if(side == Side::LEFT)
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 	}
 	else
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QColor::fromRgbF(0.0f, 1.0f, 0.0f));
+		shaderProgram.setUniform("color", QColor::fromRgbF(0.0f, 1.0f, 0.0f));
 	}
 
-	GLHandler::render(mesh, GLHandler::PrimitiveType::LINES);
+	mesh.render(PrimitiveType::LINES);
 }
 
 #ifdef LEAP_MOTION
@@ -159,9 +151,3 @@ std::vector<float> Hand::getHandVBO(Leap::Hand const& hand)
 	return result;
 }
 #endif
-
-Hand::~Hand()
-{
-	GLHandler::deleteShader(shaderProgram);
-	GLHandler::deleteMesh(mesh);
-}

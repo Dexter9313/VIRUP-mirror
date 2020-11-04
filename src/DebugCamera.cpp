@@ -20,11 +20,9 @@
 
 DebugCamera::DebugCamera(VRHandler const& vrHandler)
     : BasicCamera(vrHandler)
-    , camMesh(GLHandler::newMesh())
-    , camMeshShader(GLHandler::newShader("default"))
+    , camMeshShader("default")
 {
-	GLHandler::setShaderParam(camMeshShader, "color",
-	                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+	camMeshShader.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 
 	std::vector<float> vertices = {
 	    -1.0f, -1.0f, -1.0f, // 0
@@ -49,20 +47,19 @@ DebugCamera::DebugCamera(VRHandler const& vrHandler)
 	    4, 6, 4, 5,
 	};
 
-	GLHandler::setVertices(camMesh, vertices, camMeshShader, {{"position", 3}},
-	                       elements);
+	camMesh.setVertices(vertices, camMeshShader, {{"position", 3}}, elements);
 }
 
-void DebugCamera::update()
+void DebugCamera::update(QMatrix4x4 const& angleShiftMat)
 {
 	// act as a 2D camera if we debug from screen only
 	if(!QSettings().value("debugcamera/debuginheadset").toBool())
 	{
-		BasicCamera::update2D();
+		BasicCamera::update2D(angleShiftMat);
 	}
 	else
 	{
-		BasicCamera::update();
+		BasicCamera::update(angleShiftMat);
 	}
 }
 
@@ -70,23 +67,20 @@ void DebugCamera::renderCamera(BasicCamera const* cam)
 {
 	if(vrHandler.isEnabled() && followHMD())
 	{
-		GLHandler::setShaderParam(camMeshShader, "color",
-		                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+		camMeshShader.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader,
 		                       cam->hmdScreenToWorldTransform(Side::LEFT));
-		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
-		GLHandler::setShaderParam(camMeshShader, "color",
-		                          QColor::fromRgbF(0.0f, 1.0f, 0.0f));
+		camMesh.render(PrimitiveType::LINES);
+		camMeshShader.setUniform("color", QColor::fromRgbF(0.0f, 1.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader,
 		                       cam->hmdScreenToWorldTransform(Side::RIGHT));
-		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
+		camMesh.render(PrimitiveType::LINES);
 	}
 	else
 	{
-		GLHandler::setShaderParam(camMeshShader, "color",
-		                          QColor::fromRgbF(1.0f, 0.0f, 0.0f));
+		camMeshShader.setUniform("color", QColor::fromRgbF(1.0f, 0.0f, 0.0f));
 		GLHandler::setUpRender(camMeshShader, cam->screenToWorldTransform());
-		GLHandler::render(camMesh, GLHandler::PrimitiveType::LINES);
+		camMesh.render(PrimitiveType::LINES);
 	}
 }
 

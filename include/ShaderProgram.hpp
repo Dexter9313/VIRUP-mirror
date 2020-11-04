@@ -22,7 +22,7 @@
 #include <map>
 #include <unordered_set>
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 
 class ShaderProgram
 {
@@ -41,22 +41,20 @@ class ShaderProgram
 	              QMap<QString, QString> const& defines = {});
 	ShaderProgram(QString const& vertexName, QString const& fragmentName,
 	              QMap<QString, QString> const& defines = {});
-	GLHandler::ShaderProgram toGLHandler() const;
+	GLShaderProgram const& toGLShaderProgram() const;
 	void load(QString const& shadersCommonName,
 	          QMap<QString, QString> const& defines = {});
 	void load(QString const& vertexName, QString const& fragmentName,
 	          QMap<QString, QString> const& defines = {});
 	void reload();
-	bool isValid() { return valid; };
 	static void reloadAllShaderPrograms();
 	template <typename T>
 	void setUniform(char const* name, T const& value);
 	~ShaderProgram();
 
   private:
-	GLHandler::ShaderProgram glShader = 0;
+	GLShaderProgram* glShader = nullptr;
 
-	bool valid = false;
 	QString vert;
 	QString frag;
 	QMap<QString, QString> defines;
@@ -73,6 +71,6 @@ template <typename T>
 void ShaderProgram::setUniform(char const* name, T const& value)
 {
 	uniformsBackup[name] = value;
-	GLHandler::setShaderParam(glShader, name, value);
+	glShader->setUniform(name, value);
 }
 #endif // SHADERPROGRAM_HPP

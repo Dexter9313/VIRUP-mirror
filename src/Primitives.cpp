@@ -18,8 +18,8 @@
 
 #include "Primitives.hpp"
 
-GLHandler::Mesh Primitives::newQuad(GLHandler::ShaderProgram shader,
-                                    GLHandler::PrimitiveType primitiveType)
+void Primitives::setAsQuad(GLMesh& mesh, GLShaderProgram const& shader,
+                           PrimitiveType primitiveType)
 {
 	std::vector<float> vertices = {
 	    -0.5f, -0.5f, // 0
@@ -28,37 +28,32 @@ GLHandler::Mesh Primitives::newQuad(GLHandler::ShaderProgram shader,
 	    0.5f,  0.5f,  // 3
 	};
 
-	GLHandler::Mesh result(GLHandler::newMesh());
-
-	if(primitiveType == GLHandler::PrimitiveType::POINTS)
+	if(primitiveType == PrimitiveType::POINTS)
 	{
-		GLHandler::setVertices(result, vertices, shader, {{"position", 3}});
-		return result;
+		mesh.setVertices(vertices, shader, {{"position", 3}});
+		return;
 	}
 
 	std::vector<unsigned int> elements;
 
-	if(primitiveType == GLHandler::PrimitiveType::LINES)
+	if(primitiveType == PrimitiveType::LINES)
 	{
 		elements = {0, 1, 1, 3, 3, 2, 2, 0};
 	}
-	else if(primitiveType == GLHandler::PrimitiveType::TRIANGLES)
+	else if(primitiveType == PrimitiveType::TRIANGLES)
 	{
 		elements = {0, 2, 1, 1, 2, 3};
 	}
-	else if(primitiveType == GLHandler::PrimitiveType::TRIANGLE_STRIP
-	        || primitiveType == GLHandler::PrimitiveType::AUTO)
+	else if(primitiveType == PrimitiveType::TRIANGLE_STRIP
+	        || primitiveType == PrimitiveType::AUTO)
 	{
 		elements = {0, 2, 1, 3};
 	}
-	GLHandler::setVertices(result, vertices, shader, {{"position", 2}},
-	                       elements);
-	return result;
+	mesh.setVertices(vertices, shader, {{"position", 2}}, elements);
 }
 
-GLHandler::Mesh Primitives::newGrid(GLHandler::ShaderProgram shader,
-                                    unsigned int size,
-                                    GLHandler::PrimitiveType primitiveType)
+void Primitives::setAsGrid(GLMesh& mesh, GLShaderProgram const& shader,
+                           unsigned int size, PrimitiveType primitiveType)
 {
 	std::vector<float> vertices;
 	for(unsigned int i(0); i < size; ++i)
@@ -70,16 +65,15 @@ GLHandler::Mesh Primitives::newGrid(GLHandler::ShaderProgram shader,
 		}
 	}
 
-	GLHandler::Mesh result(GLHandler::newMesh());
-	if(primitiveType == GLHandler::PrimitiveType::POINTS)
+	if(primitiveType == PrimitiveType::POINTS)
 	{
-		GLHandler::setVertices(result, vertices, shader, {{"position", 2}});
-		return result;
+		mesh.setVertices(vertices, shader, {{"position", 2}});
+		return;
 	}
 
 	// TODO(florian) finish this
 	std::vector<unsigned int> elements;
-	if(primitiveType == GLHandler::PrimitiveType::TRIANGLES)
+	if(primitiveType == PrimitiveType::TRIANGLES)
 	{
 		for(unsigned int i(1); i < size; ++i)
 		{
@@ -98,13 +92,11 @@ GLHandler::Mesh Primitives::newGrid(GLHandler::ShaderProgram shader,
 		}
 	}
 
-	GLHandler::setVertices(result, vertices, shader, {{"position", 2}},
-	                       elements);
-	return result;
+	mesh.setVertices(vertices, shader, {{"position", 2}}, elements);
 }
 
-GLHandler::Mesh Primitives::newUnitCube(GLHandler::ShaderProgram shader,
-                                        GLHandler::PrimitiveType primitiveType)
+void Primitives::setAsUnitCube(GLMesh& mesh, GLShaderProgram const& shader,
+                               PrimitiveType primitiveType)
 {
 	std::vector<float> vertices = {
 	    -0.5f, -0.5f, -0.5f, // 0
@@ -117,17 +109,15 @@ GLHandler::Mesh Primitives::newUnitCube(GLHandler::ShaderProgram shader,
 	    0.5f,  0.5f,  0.5f,  // 7
 	};
 
-	GLHandler::Mesh result(GLHandler::newMesh());
-
-	if(primitiveType == GLHandler::PrimitiveType::POINTS)
+	if(primitiveType == PrimitiveType::POINTS)
 	{
-		GLHandler::setVertices(result, vertices, shader, {{"position", 3}});
-		return result;
+		mesh.setVertices(vertices, shader, {{"position", 3}});
+		return;
 	}
 
 	std::vector<unsigned int> elements;
 
-	if(primitiveType == GLHandler::PrimitiveType::LINES)
+	if(primitiveType == PrimitiveType::LINES)
 	{
 		elements = {
 		    0, 1, 0, 2, 0, 4,
@@ -141,7 +131,7 @@ GLHandler::Mesh Primitives::newUnitCube(GLHandler::ShaderProgram shader,
 		    4, 6, 4, 5,
 		};
 	}
-	else if(primitiveType == GLHandler::PrimitiveType::TRIANGLES)
+	else if(primitiveType == PrimitiveType::TRIANGLES)
 	{
 		// as seen from (1, 0, 0) with up being (0, 0, 1)
 		elements = {
@@ -159,8 +149,8 @@ GLHandler::Mesh Primitives::newUnitCube(GLHandler::ShaderProgram shader,
 		    7, 5, 3, // up1
 		};
 	}
-	else if(primitiveType == GLHandler::PrimitiveType::TRIANGLE_STRIP
-	        || primitiveType == GLHandler::PrimitiveType::AUTO)
+	else if(primitiveType == PrimitiveType::TRIANGLE_STRIP
+	        || primitiveType == PrimitiveType::AUTO)
 	{
 		// see : Optimizing Triangle Strips for Fast Rendering, Francine Evans,
 		// Steven Skiena, Amitabh Varshney,
@@ -185,14 +175,13 @@ GLHandler::Mesh Primitives::newUnitCube(GLHandler::ShaderProgram shader,
 		// thus :
 		elements = {5, 4, 7, 6, 2, 4, 0, 5, 1, 7, 3, 2, 1, 0};
 	}
-	GLHandler::setVertices(result, vertices, shader, {{"position", 3}},
-	                       elements);
-	return result;
+	mesh.setVertices(vertices, shader, {{"position", 3}}, elements);
 }
 
-GLHandler::Mesh Primitives::newUnitSphere(
-    GLHandler::ShaderProgram shader, unsigned int latDivisions,
-    unsigned int lonDivisions, GLHandler::PrimitiveType primitiveType)
+void Primitives::setAsUnitSphere(GLMesh& mesh, GLShaderProgram const& shader,
+                                 unsigned int latDivisions,
+                                 unsigned int lonDivisions,
+                                 PrimitiveType primitiveType)
 {
 	std::vector<float> vertices;
 	std::vector<unsigned int> elements;
@@ -203,7 +192,7 @@ GLHandler::Mesh Primitives::newUnitSphere(
 	vertices.push_back(1.f);
 
 	// link to first latitude
-	if(primitiveType == GLHandler::PrimitiveType::TRIANGLES)
+	if(primitiveType == PrimitiveType::TRIANGLES)
 	{
 		// all except last point
 		for(unsigned int i(0); i < lonDivisions - 1; ++i)
@@ -216,7 +205,7 @@ GLHandler::Mesh Primitives::newUnitSphere(
 		elements.push_back(lonDivisions);
 		elements.push_back(1);
 	}
-	else if(primitiveType == GLHandler::PrimitiveType::LINES)
+	else if(primitiveType == PrimitiveType::LINES)
 	{
 		for(unsigned int i(0); i < lonDivisions; ++i)
 		{
@@ -239,7 +228,7 @@ GLHandler::Mesh Primitives::newUnitSphere(
 			vertices.push_back(cosLat);
 
 			// elements
-			if(primitiveType == GLHandler::PrimitiveType::TRIANGLES)
+			if(primitiveType == PrimitiveType::TRIANGLES)
 			{
 				// don't do anything on first latitude
 				if(i == 0)
@@ -268,7 +257,7 @@ GLHandler::Mesh Primitives::newUnitSphere(
 					elements.push_back(latDivisions * i + 1);
 				}
 			}
-			else if(primitiveType == GLHandler::PrimitiveType::LINES)
+			else if(primitiveType == PrimitiveType::LINES)
 			{
 				// draw latitude line
 				if(j != lonDivisions - 1) // if not last point
@@ -293,7 +282,7 @@ GLHandler::Mesh Primitives::newUnitSphere(
 
 	// link last latitude to south pole
 	unsigned int southPole(latDivisions * lonDivisions + 1);
-	if(primitiveType == GLHandler::PrimitiveType::TRIANGLES)
+	if(primitiveType == PrimitiveType::TRIANGLES)
 	{
 		for(unsigned int i(0); i < lonDivisions - 1; ++i)
 		{
@@ -305,7 +294,7 @@ GLHandler::Mesh Primitives::newUnitSphere(
 		elements.push_back(southPole - lonDivisions);
 		elements.push_back(southPole - 1);
 	}
-	else if(primitiveType == GLHandler::PrimitiveType::LINES)
+	else if(primitiveType == PrimitiveType::LINES)
 	{
 		for(unsigned int i(0); i < lonDivisions; ++i)
 		{
@@ -319,9 +308,5 @@ GLHandler::Mesh Primitives::newUnitSphere(
 	vertices.push_back(0.f);
 	vertices.push_back(-1.f);
 
-	GLHandler::Mesh result(GLHandler::newMesh());
-	GLHandler::setVertices(result, vertices, shader, {{"position", 3}},
-	                       elements);
-
-	return result;
+	mesh.setVertices(vertices, shader, {{"position", 3}}, elements);
 }

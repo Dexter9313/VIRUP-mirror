@@ -21,27 +21,31 @@
 
 #include <QElapsedTimer>
 #include <QHostAddress>
-#include <QMatrix4x4>
 #include <QNetworkDatagram>
 #include <QSettings>
 #include <QUdpSocket>
+
+#include "AbstractState.hpp"
 
 class NetworkManager : public QObject
 {
 	Q_OBJECT
   public:
-	NetworkManager();
+	// takes ownership
+	explicit NetworkManager(AbstractState* networkedState);
 	bool isServer() const { return server; };
-	void update(float frameTiming, QMatrix4x4& syncedView);
+	AbstractState* getNetworkedState() { return networkedState; };
+	void update(float frameTiming);
+	~NetworkManager() { delete networkedState; };
 
   private:
-	bool server = QSettings().value("network/server").toBool();
+	const bool server = QSettings().value("network/server").toBool();
 	QUdpSocket udpUpSocket;   // client to server
 	QUdpSocket udpDownSocket; // server to client
 	QElapsedTimer networkTimer;
 
 	// client
-	QMatrix4x4 networkedView; // variable to share
+	AbstractState* networkedState = nullptr; // state to share
 	// server
 	struct Client
 	{

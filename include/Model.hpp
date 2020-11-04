@@ -23,18 +23,17 @@
 
 #include "AssetLoader.hpp"
 #include "BasicCamera.hpp"
-#include "GLHandler.hpp"
 #include "Light.hpp"
+#include "gl/GLHandler.hpp"
 
 class Model
 {
   public:
-	// takes ownership of shader
 	explicit Model(QString const& modelName,
 	               QColor const& defaultDiffuseColor = {0xff, 0x09, 0xf7});
-	Model(QString const& modelName, GLHandler::ShaderProgram shader,
+	Model(QString const& modelName, GLShaderProgram&& shader,
 	      QColor const& defaultDiffuseColor = {0xff, 0x09, 0xf7});
-	GLHandler::ShaderProgram getShader() const { return shader; };
+	GLShaderProgram const& getShader() const { return shader; };
 	float getBoundingSphereRadius() { return boundingSphereRadius; };
 	void generateShadowMap(QMatrix4x4 const& model, Light& light);
 	// cameraPosition : in same space as geometricSpace
@@ -46,7 +45,8 @@ class Model
 	~Model();
 
   private:
-	GLHandler::ShaderProgram shader;
+	static QMap<QString, QString> setUpShaderDefines();
+	GLShaderProgram shader;
 	std::vector<AssetLoader::TexturedMesh> meshes;
 
 	float boundingSphereRadius = 0.f;

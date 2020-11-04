@@ -19,51 +19,43 @@
 #include "Model.hpp"
 
 Model::Model(QString const& modelName, QColor const& defaultDiffuseColor)
+    : shader("model", setUpShaderDefines())
 {
-	QMap<QString, QString> defines;
-	unsigned int smoothshadows(
-	    QSettings().value("graphics/smoothshadows").toUInt());
-	if(smoothshadows > 0)
-	{
-		defines["SMOOTHSHADOWS"] = QString::number(smoothshadows * 2 + 1);
-	}
-	shader = GLHandler::newShader("model", defines);
-
 	boundingSphereRadius = AssetLoader::loadModel(modelName, meshes, shader,
 	                                              defaultDiffuseColor);
 
-	GLHandler::setShaderParam(shader, "diffuse", 0);
-	GLHandler::setShaderParam(shader, "specular", 1);
-	GLHandler::setShaderParam(shader, "ambient", 2);
-	GLHandler::setShaderParam(shader, "emissive", 3);
-	GLHandler::setShaderParam(shader, "normals", 4);
-	GLHandler::setShaderParam(shader, "shininess", 5);
-	GLHandler::setShaderParam(shader, "opacity", 6);
-	GLHandler::setShaderParam(shader, "lightmap", 7);
-	GLHandler::setShaderParam(shader, "shadowmap", 8);
+	shader.setUniform("diffuse", 0);
+	shader.setUniform("specular", 1);
+	shader.setUniform("ambient", 2);
+	shader.setUniform("emissive", 3);
+	shader.setUniform("normals", 4);
+	shader.setUniform("shininess", 5);
+	shader.setUniform("opacity", 6);
+	shader.setUniform("lightmap", 7);
+	shader.setUniform("shadowmap", 8);
 }
 
-Model::Model(QString const& modelName, GLHandler::ShaderProgram shader,
+Model::Model(QString const& modelName, GLShaderProgram&& shader,
              QColor const& defaultDiffuseColor)
-    : shader(shader)
+    : shader(std::move(shader))
 {
-	boundingSphereRadius = AssetLoader::loadModel(modelName, meshes, shader,
-	                                              defaultDiffuseColor);
+	boundingSphereRadius = AssetLoader::loadModel(
+	    modelName, meshes, this->shader, defaultDiffuseColor);
 
-	GLHandler::setShaderParam(shader, "diffuse", 0);
-	GLHandler::setShaderParam(shader, "specular", 1);
-	GLHandler::setShaderParam(shader, "ambient", 2);
-	GLHandler::setShaderParam(shader, "emissive", 3);
-	GLHandler::setShaderParam(shader, "normals", 4);
-	GLHandler::setShaderParam(shader, "shininess", 5);
-	GLHandler::setShaderParam(shader, "opacity", 6);
-	GLHandler::setShaderParam(shader, "lightmap", 7);
-	GLHandler::setShaderParam(shader, "shadowmap", 8);
+	this->shader.setUniform("diffuse", 0);
+	this->shader.setUniform("specular", 1);
+	this->shader.setUniform("ambient", 2);
+	this->shader.setUniform("emissive", 3);
+	this->shader.setUniform("normals", 4);
+	this->shader.setUniform("shininess", 5);
+	this->shader.setUniform("opacity", 6);
+	this->shader.setUniform("lightmap", 7);
+	this->shader.setUniform("shadowmap", 8);
 }
 
 void Model::generateShadowMap(QMatrix4x4 const& model, Light& light)
 {
-	std::vector<GLHandler::Mesh> glMeshes;
+	std::vector<GLMesh const*> glMeshes;
 	std::vector<QMatrix4x4> models;
 	for(auto const& mesh : meshes)
 	{
@@ -77,8 +69,7 @@ void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
                    Light const& light, GLHandler::GeometricSpace geometricSpace)
 {
 	light.setUpShader(shader, boundingSphereRadius, model);
-	GLHandler::setShaderParam(shader, "cameraPosition",
-	                          model.inverted() * cameraPosition);
+	shader.setUniform("cameraPosition", model.inverted() * cameraPosition);
 
 	for(auto& mesh : meshes)
 	{
@@ -92,9 +83,9 @@ void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
 		     mesh.textures[AssetLoader::TextureType::OPACITY],
 		     mesh.textures[AssetLoader::TextureType::LIGHTMAP],
 		     light.getShadowMap()});
-		GLHandler::setShaderParam(shader, "localTransform", mesh.transform);
+		shader.setUniform("localTransform", mesh.transform);
 		GLHandler::setUpRender(shader, model * mesh.transform, geometricSpace);
-		GLHandler::render(mesh.mesh);
+		mesh.mesh->render();
 	}
 }
 
@@ -102,11 +93,22 @@ Model::~Model()
 {
 	for(auto const& mesh : meshes)
 	{
-		GLHandler::deleteMesh(mesh.mesh);
+		delete mesh.mesh;
 		for(auto pair : mesh.textures)
 		{
 			GLHandler::deleteTexture(pair.second);
 		}
 	}
-	GLHandler::deleteShader(shader);
+}
+
+QMap<QString, QString> Model::setUpShaderDefines()
+{
+	QMap<QString, QString> defines;
+	unsigned int smoothshadows(
+	    QSettings().value("graphics/smoothshadows").toUInt());
+	if(smoothshadows > 0)
+	{
+		defines["SMOOTHSHADOWS"] = QString::number(smoothshadows * 2 + 1);
+	}
+	return defines;
 }

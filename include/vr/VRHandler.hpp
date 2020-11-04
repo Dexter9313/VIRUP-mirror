@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QSize>
 
-#include "../GLHandler.hpp"
+#include "../gl/GLHandler.hpp"
 
 class Controller;
 class Hand;

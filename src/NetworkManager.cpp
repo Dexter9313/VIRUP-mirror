@@ -18,8 +18,13 @@
 
 #include "NetworkManager.hpp"
 
-NetworkManager::NetworkManager()
+NetworkManager::NetworkManager(AbstractState* networkedState)
+    : networkedState(networkedState)
 {
+	if(networkedState == nullptr)
+	{
+		return;
+	}
 	if(server)
 	{
 		udpUpSocket.bind(QHostAddress::Any,
@@ -80,30 +85,36 @@ NetworkManager::NetworkManager()
 	{
 		udpDownSocket.bind(QSettings().value("network/ip").toUInt());
 		auto socketPtr(&udpDownSocket);
-		auto netViewPtr(&networkedView);
+		auto netStatePtr(networkedState);
 		connect(socketPtr, &QAbstractSocket::readyRead,
-		        [socketPtr, netViewPtr]() {
+		        [socketPtr, netStatePtr]() {
 			        QNetworkDatagram datagram(socketPtr->receiveDatagram());
 
 			        QByteArray buf(datagram.data());
 			        QDataStream stream(&buf, QIODevice::ReadOnly);
-			        stream >> *netViewPtr;
+			        netStatePtr->readFromDataStream(stream);
 		        });
 	}
 	networkTimer.start();
 }
 
-void NetworkManager::update(float frameTiming, QMatrix4x4& syncedView)
+void NetworkManager::update(float frameTiming)
 {
+	if(networkedState == nullptr)
+	{
+		return;
+	}
 	if(server)
 	{
 		QByteArray buf;
 		QDataStream stream(&buf, QIODevice::WriteOnly);
-		stream << syncedView;
+		networkedState->writeInDataStream(stream);
+
+		// qDebug() << "Sending " + QString::number(buf.size()) + " bytes.";
 
 		for(int i(clients.size() - 1); i >= 0; --i)
 		{
-			// if havn't responded in 10 seconds, "disconnect"
+			// if hasn't responded in 10 seconds, "disconnect"
 			if(networkTimer.elapsed() - clients.at(i).lastReceivedTime > 10000)
 			{
 				qDebug() << "Client disconnected :";
@@ -134,9 +145,5 @@ void NetworkManager::update(float frameTiming, QMatrix4x4& syncedView)
 			    QSettings().value("network/port").toUInt());
 			networkTimer.restart();
 		}
-		QMatrix4x4 angleShift;
-		angleShift.rotate(QSettings().value("network/angleshift").toInt(),
-		                  QVector3D(0.f, 1.f, 0.f));
-		syncedView = angleShift * networkedView;
 	}
 }

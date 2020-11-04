@@ -50,8 +50,7 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
     , vr_pointer(vr_pointer)
     , triggerid(getAxisId(vr_pointer, nDevice, vr::k_eControllerAxis_Trigger))
     , padid(getAxisId(vr_pointer, nDevice, vr::k_eControllerAxis_TrackPad))
-    , shaderProgram(GLHandler::newShader("controllers"))
-    , mesh(GLHandler::newMesh())
+    , shaderProgram("controllers")
     , tex()
 {
 	std::string render_model_name = GetTrackedDeviceString(
@@ -61,8 +60,8 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 	vr::EVRRenderModelError error;
 	while(true)
 	{
-		std::cout << "Starting loading render model's model ("
-		          << render_model_name << ")" << std::endl;
+		qDebug() << QString("Starting loading render model's model (")
+		                + render_model_name.c_str() + ")";
 		error = vr::VRRenderModels()->LoadRenderModel_Async(
 		    render_model_name.c_str(), &model);
 		if(error != vr::VRRenderModelError_Loading)
@@ -72,14 +71,14 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 
 		QThread::sleep(1);
 	}
-	std::cout << "Render model's model succesfully loaded" << std::endl;
+	qDebug() << "Render model's model succesfully loaded";
 
 	if(error != vr::VRRenderModelError_None)
 	{
-		std::cout << "Unable to load render model " << render_model_name
-		          << ". Error code: "
-		          << vr::VRRenderModels()->GetRenderModelErrorNameFromEnum(
-		                 error);
+		qWarning() << QString("Unable to load render model ")
+		                  + render_model_name.c_str() + ". Error code: "
+		                  + vr::VRRenderModels()
+		                        ->GetRenderModelErrorNameFromEnum(error);
 		vr::VRRenderModels()->FreeRenderModel(model);
 		return;
 	}
@@ -87,8 +86,8 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 	vr::RenderModel_TextureMap_t* rm_texture;
 	while(true)
 	{
-		std::cout << "Starting loading render model's texture ("
-		          << render_model_name << ")" << std::endl;
+		qDebug() << QString("Starting loading render model's texture (")
+		                + render_model_name.c_str() + ")";
 		error = vr::VRRenderModels()->LoadTexture_Async(model->diffuseTextureId,
 		                                                &rm_texture);
 		if(error != vr::VRRenderModelError_Loading)
@@ -98,13 +97,13 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 
 		QThread::sleep(1);
 	}
-	std::cout << "Render model's texture succesfully loaded" << std::endl;
+	qDebug() << "Render model's texture succesfully loaded";
 
 	if(error != vr::VRRenderModelError_None)
 	{
-		std::cout << "Unable to load render texture id "
-		          << model->diffuseTextureId << " for render model "
-		          << render_model_name << std::endl;
+		qWarning() << QString("Unable to load render texture id ")
+		                  + model->diffuseTextureId + " for render model "
+		                  + render_model_name.c_str();
 		vr::VRRenderModels()->FreeRenderModel(model);
 		return;
 	}
@@ -165,23 +164,21 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 		elements.push_back(model->rIndexData[i]);
 	}
 
-	GLHandler::setVertices(mesh, vertices, shaderProgram,
-	                       {{"position", 3}, {"normal", 3}, {"texcoord", 2}},
-	                       elements);
+	mesh.setVertices(vertices, shaderProgram,
+	                 {{"position", 3}, {"normal", 3}, {"texcoord", 2}},
+	                 elements);
 
 	tex = GLHandler::newTexture(rm_texture->unWidth, rm_texture->unHeight,
 	                            rm_texture->rubTextureMapData);
 
-	GLHandler::setShaderParam(shaderProgram, "alpha", 1.0f);
+	shaderProgram.setUniform("alpha", 1.0f);
 	if(side == Side::LEFT)
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QVector3D(1.0f, 0.0f, 0.0f));
+		shaderProgram.setUniform("color", QVector3D(1.0f, 0.0f, 0.0f));
 	}
 	else
 	{
-		GLHandler::setShaderParam(shaderProgram, "color",
-		                          QVector3D(0.0f, 1.0f, 0.0f));
+		shaderProgram.setUniform("color", QVector3D(0.0f, 1.0f, 0.0f));
 	}
 
 	vr::VRRenderModels()->FreeRenderModel(model);
@@ -212,11 +209,5 @@ void Controller::render() const
 	GLHandler::setUpRender(shaderProgram, model,
 	                       GLHandler::GeometricSpace::SEATEDTRACKED);
 	GLHandler::useTextures({tex});
-	GLHandler::render(mesh);
-}
-
-Controller::~Controller()
-{
-	GLHandler::deleteShader(shaderProgram);
-	GLHandler::deleteMesh(mesh);
+	mesh.render();
 }

@@ -24,7 +24,7 @@
 #include <assimp/scene.h>
 #include <iostream>
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 #include "utils.hpp"
 
 class AssetLoader
@@ -56,7 +56,7 @@ class AssetLoader
 
 	struct TexturedMesh
 	{
-		GLHandler::Mesh mesh;
+		GLMesh* mesh;
 		std::map<TextureType, GLHandler::Texture> textures; // a.k.a. material
 		QMatrix4x4 transform;
 	};
@@ -68,14 +68,14 @@ class AssetLoader
 	// GLHandler resources in textured meshes are yours to free !
 	static void loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
 	                      std::vector<TexturedMesh>& meshes,
-	                      GLHandler::ShaderProgram const& shader,
+	                      GLShaderProgram const& shader,
 	                      QColor const& defaultDiffuseColor
 	                      = {0xff, 0x09, 0xf7});
 
 	// GLHandler resources in textured meshes are yours to free !
 	static float
 	    loadModel(QString const& modelName, std::vector<TexturedMesh>& meshes,
-	              GLHandler::ShaderProgram const& shader,
+	              GLShaderProgram const& shader,
 	              QColor const& defaultDiffuseColor = {0xff, 0x09, 0xf7});
 
   private:

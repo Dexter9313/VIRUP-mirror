@@ -23,8 +23,8 @@
 #include <QPainter>
 #include <QWidget>
 
-#include "GLHandler.hpp"
 #include "Primitives.hpp"
+#include "gl/GLHandler.hpp"
 
 class Widget3D
 {
@@ -43,9 +43,9 @@ class Widget3D
   private:
 	void updateTex();
 
-	GLHandler::ShaderProgram shader = GLHandler::newShader("billboard");
-	GLHandler::Mesh quad            = Primitives::newQuad(shader);
-	GLHandler::Texture tex          = GLHandler::newTexture(0, 0, nullptr);
+	GLShaderProgram shader;
+	GLMesh quad;
+	GLHandler::Texture tex = GLHandler::newTexture(0, 0, nullptr);
 
 	QMatrix4x4 model;
 

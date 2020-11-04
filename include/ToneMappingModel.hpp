@@ -21,6 +21,8 @@
 
 #include "vr/VRHandler.hpp"
 
+#include "AbstractState.hpp"
+
 /** @ingroup pycall
  *
  * @brief The model that transforms Hight Dynamic Range rendering values into
@@ -74,6 +76,30 @@ class ToneMappingModel : public QObject
 	Q_PROPERTY(float autoexposuretimecoeff MEMBER autoexposuretimecoeff)
 
   public:
+	class State : public AbstractState
+	{
+	  public:
+		State()                   = default;
+		State(State const& other) = default;
+		State(State&& other)      = default;
+		virtual void readFromDataStream(QDataStream& stream) override
+		{
+			stream >> exposure;
+			stream >> dynamicrange;
+			stream >> purkinje;
+		};
+		virtual void writeInDataStream(QDataStream& stream) override
+		{
+			stream << exposure;
+			stream << dynamicrange;
+			stream << purkinje;
+		};
+
+		float exposure     = 0.f;
+		float dynamicrange = 0.f;
+		bool purkinje      = false;
+	};
+
 	ToneMappingModel(VRHandler const& vrHandler);
 	void autoUpdateExposure(float averageLuminance, float frameTiming);
 
@@ -84,6 +110,21 @@ class ToneMappingModel : public QObject
 	bool autoexposure           = false;
 	float autoexposurecoeff     = 1.f;
 	float autoexposuretimecoeff = 1.f;
+
+	void readState(AbstractState const& s)
+	{
+		auto const& state = dynamic_cast<State const&>(s);
+		exposure          = state.exposure;
+		dynamicrange      = state.dynamicrange;
+		purkinje          = state.purkinje;
+	};
+	void writeState(AbstractState& s) const
+	{
+		auto& state        = dynamic_cast<State&>(s);
+		state.exposure     = exposure;
+		state.dynamicrange = dynamicrange;
+		state.purkinje     = purkinje;
+	};
 
   private:
 	VRHandler const& vrHandler;

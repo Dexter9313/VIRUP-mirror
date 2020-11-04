@@ -66,7 +66,8 @@ void MainWin::initScene()
 {
 	// SKYBOX
 	sbShader.load("skybox");
-	skybox = Primitives::newUnitCube(sbShader.toGLHandler());
+	skybox = new GLMesh;
+	Primitives::setAsUnitCube(*skybox, sbShader.toGLShaderProgram());
 
 	std::array<const char*, 6> paths = {};
 	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::BACK))
@@ -104,33 +105,35 @@ void MainWin::initScene()
 	    0, 1, 3, // first Triangle
 	    1, 2, 3  // second Triangle
 	};
-	mesh = GLHandler::newMesh();
-	GLHandler::setVertices(mesh, vertices, shaderProgram.toGLHandler(),
-	                       {{"position", 3}}, indices);
-	GLHandler::setShaderUnusedAttributesValues(shaderProgram.toGLHandler(),
-	                                           {{"color", {1.0, 1.0, 0.0}}});
+	mesh = new GLMesh;
+	mesh->setVertices(vertices, shaderProgram.toGLShaderProgram(),
+	                  {{"position", 3}}, indices);
+	shaderProgram.toGLShaderProgram().setUnusedAttributesValues(
+	    {{"color", {1.0, 1.0, 0.0}}});
 
 	// create cube
 	movingCube = new MovingCube;
 
 	// create points
-	pointsMesh = GLHandler::newMesh();
+	pointsMesh = new GLMesh;
 	pointsShader.load("default");
 	pointsShader.setUniform("alpha", 1.0f);
 	pointsShader.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	std::vector<float> points = {0, 0, 0};
-	GLHandler::setVertices(pointsMesh, points, pointsShader.toGLHandler(),
-	                       {{"position", 3}});
+	pointsMesh->setVertices(points, pointsShader.toGLShaderProgram(),
+	                        {{"position", 3}});
 
 	sphereShader.load("default");
 	sphereShader.setUniform("alpha", 1.0f);
 	sphereShader.setUniform("color", QColor::fromRgbF(0.5f, 0.5f, 1.0f));
-	sphere = Primitives::newUnitSphere(sphereShader.toGLHandler(), 100, 100);
+	sphere = new GLMesh;
+	Primitives::setAsUnitSphere(*sphere, sphereShader.toGLShaderProgram(), 100,
+	                            100);
 
 	playareaShader.load("default");
 	playareaShader.setUniform("color", QColor(255, 0, 0));
 	playareaShader.setUniform("alpha", 1.f);
-	playarea = GLHandler::newMesh();
+	playarea = new GLMesh;
 	if(vrHandler->isEnabled())
 	{
 		auto playareaquad(vrHandler->getPlayAreaQuad());
@@ -141,8 +144,8 @@ void MainWin::initScene()
 		    playareaquad[3].x(), playareaquad[3].y(), playareaquad[3].z(),
 		};
 		indices = {0, 1, 1, 2, 2, 3, 3, 0};
-		GLHandler::setVertices(playarea, vertices, playareaShader.toGLHandler(),
-		                       {{"position", 3}}, indices);
+		playarea->setVertices(vertices, playareaShader.toGLShaderProgram(),
+		                      {{"position", 3}}, indices);
 	}
 
 	model                = new Model("models/drone/scene.gltf");
@@ -179,12 +182,9 @@ void MainWin::initScene()
 
 void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 {
-	if(networkManager.isServer())
-	{
-		QVector3D lookDir(-cosf(yaw) * cosf(pitch), -sinf(yaw) * cosf(pitch),
-		                  sinf(pitch));
-		camera.setView({1, 1, 1}, lookDir, {0, 0, 1});
-	}
+	QVector3D lookDir(-cosf(yaw) * cosf(pitch), -sinf(yaw) * cosf(pitch),
+	                  sinf(pitch));
+	camera.setView({1, 1, 1}, lookDir, {0, 0, 1});
 
 	Controller const* cont(vrHandler->getController(Side::LEFT));
 	if(cont == nullptr)
@@ -201,7 +201,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 			points[0] = pos[0];
 			points[1] = pos[1];
 			points[2] = pos[2];
-			GLHandler::updateVertices(pointsMesh, points);
+			pointsMesh->updateVertices(points);
 		}
 	}
 
@@ -216,7 +216,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 			points[0] = pos[0];
 			points[1] = pos[1];
 			points[2] = pos[2];
-			GLHandler::updateVertices(pointsMesh, points);
+			pointsMesh->updateVertices(points);
 		}
 	}
 
@@ -250,31 +250,31 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 {
 	GLHandler::useTextures({sbTexture});
 	GLHandler::setBackfaceCulling(false);
-	GLHandler::setUpRender(sbShader.toGLHandler(), QMatrix4x4(),
+	GLHandler::setUpRender(sbShader.toGLShaderProgram(), QMatrix4x4(),
 	                       GLHandler::GeometricSpace::SKYBOX);
-	GLHandler::render(skybox, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	skybox->render(PrimitiveType::TRIANGLE_STRIP);
 	GLHandler::setBackfaceCulling(true);
 	GLHandler::clearDepthBuffer();
 
 	QMatrix4x4 modelSphere;
 	modelSphere.translate(-1.5, 0, 0);
-	GLHandler::setUpRender(sphereShader.toGLHandler(), modelSphere,
+	GLHandler::setUpRender(sphereShader.toGLShaderProgram(), modelSphere,
 	                       GLHandler::GeometricSpace::SKYBOX);
-	GLHandler::render(sphere);
+	sphere->render();
 	GLHandler::clearDepthBuffer();
 
 	movingCube->render();
 
-	GLHandler::setUpRender(shaderProgram.toGLHandler());
-	GLHandler::render(mesh);
-	GLHandler::setUpRender(pointsShader.toGLHandler());
+	GLHandler::setUpRender(shaderProgram.toGLShaderProgram());
+	mesh->render();
+	GLHandler::setUpRender(pointsShader.toGLShaderProgram());
 	GLHandler::setPointSize(8);
-	GLHandler::render(pointsMesh);
+	pointsMesh->render();
 	GLHandler::setPointSize(1);
 
-	GLHandler::setUpRender(playareaShader.toGLHandler(), QMatrix4x4(),
+	GLHandler::setUpRender(playareaShader.toGLShaderProgram(), QMatrix4x4(),
 	                       GLHandler::GeometricSpace::STANDINGTRACKED);
-	GLHandler::render(playarea, GLHandler::PrimitiveType::LINES);
+	playarea->render(PrimitiveType::LINES);
 
 	if(vrHandler->isEnabled())
 	{
@@ -294,26 +294,26 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 }
 
 void MainWin::applyPostProcShaderParams(
-    QString const& id, GLHandler::ShaderProgram shader,
+    QString const& id, GLShaderProgram const& shader,
     GLHandler::RenderTarget const& currentTarget) const
 {
 	AbstractMainWin::applyPostProcShaderParams(id, shader, currentTarget);
 	if(id == "distort")
 	{
-		GLHandler::setShaderParam(shader, "BarrelPower", barrelPower);
+		shader.setUniform("BarrelPower", barrelPower);
 	}
 }
 
 MainWin::~MainWin()
 {
 	GLHandler::deleteTexture(sbTexture);
-	GLHandler::deleteMesh(skybox);
+	delete skybox;
 
-	GLHandler::deleteMesh(mesh);
+	delete mesh;
 
-	GLHandler::deleteMesh(pointsMesh);
+	delete pointsMesh;
 
-	GLHandler::deleteMesh(playarea);
+	delete playarea;
 
 	delete movingCube;
 

@@ -22,11 +22,11 @@ Light::Light()
     : direction(-1.f, 0.f, 0.f)
     , color(255, 255, 255)
     , ambiantFactor(0.05f)
+    , shadowShader("shadow")
 {
 	unsigned int resolution(
 	    1u << (9 + QSettings().value("graphics/shadowsquality").toUInt()));
-	shadowMap    = GLHandler::newDepthMap(resolution, resolution);
-	shadowShader = GLHandler::newShader("shadow");
+	shadowMap = GLHandler::newDepthMap(resolution, resolution);
 }
 
 QMatrix4x4 Light::getTransformation(float boundingSphereRadius,
@@ -49,19 +49,17 @@ QMatrix4x4 Light::getTransformation(float boundingSphereRadius,
 	return lightSpace;
 }
 
-void Light::setUpShader(GLHandler::ShaderProgram const& shader,
+void Light::setUpShader(GLShaderProgram const& shader,
                         float boundingSphereRadius,
                         QMatrix4x4 const& model) const
 {
 	QVector3D relDir = QVector3D(model.inverted() * QVector4D(direction, 0.f));
-	GLHandler::setShaderParam(shader, "lightDirection", relDir.normalized());
-	GLHandler::setShaderParam(shader, "lightColor", color);
-	GLHandler::setShaderParam(shader, "lightAmbiantFactor", ambiantFactor);
-	GLHandler::setShaderParam(
-	    shader, "lightspace",
-	    getTransformation(boundingSphereRadius, model, true));
-	GLHandler::setShaderParam(shader, "boundingSphereRadius",
-	                          boundingSphereRadius);
+	shader.setUniform("lightDirection", relDir.normalized());
+	shader.setUniform("lightColor", color);
+	shader.setUniform("lightAmbiantFactor", ambiantFactor);
+	shader.setUniform("lightspace",
+	                  getTransformation(boundingSphereRadius, model, true));
+	shader.setUniform("boundingSphereRadius", boundingSphereRadius);
 }
 
 GLHandler::Texture Light::getShadowMap() const
@@ -69,7 +67,7 @@ GLHandler::Texture Light::getShadowMap() const
 	return GLHandler::getColorAttachmentTexture(shadowMap);
 }
 
-void Light::generateShadowMap(std::vector<GLHandler::Mesh> const& meshes,
+void Light::generateShadowMap(std::vector<GLMesh const*> const& meshes,
                               float boundingSphereRadius,
                               std::vector<QMatrix4x4> const& models,
                               QMatrix4x4 const& model)
@@ -81,15 +79,13 @@ void Light::generateShadowMap(std::vector<GLHandler::Mesh> const& meshes,
 	QMatrix4x4 lightSpace(getTransformation(boundingSphereRadius, model));
 	for(unsigned int i(0); i < meshes.size(); ++i)
 	{
-		GLHandler::setShaderParam(shadowShader, "camera",
-		                          lightSpace * models[i]);
-		GLHandler::render(meshes[i]);
+		shadowShader.setUniform("camera", lightSpace * models[i]);
+		meshes[i]->render();
 	}
 	GLHandler::setBackfaceCulling(true);
 }
 
 Light::~Light()
 {
-	GLHandler::deleteShader(shadowShader);
 	GLHandler::deleteRenderTarget(shadowMap);
 }

@@ -351,38 +351,35 @@ void AbstractMainWin::setupPythonAPI()
 }
 
 void AbstractMainWin::applyPostProcShaderParams(
-    QString const& id, GLHandler::ShaderProgram shader,
+    QString const& id, GLShaderProgram const& shader,
     GLHandler::RenderTarget const& /*currentTarget*/) const
 {
 	if(id == "colors")
 	{
-		GLHandler::setShaderParam(shader, "gamma", gamma);
+		shader.setUniform("gamma", gamma);
 	}
 	else if(id == "exposure")
 	{
-		GLHandler::setShaderParam(shader, "exposure",
-		                          toneMappingModel->exposure);
-		GLHandler::setShaderParam(shader, "dynamicrange",
-		                          toneMappingModel->dynamicrange);
-		GLHandler::setShaderParam(shader, "purkinje",
-		                          toneMappingModel->purkinje ? 1.f : 0.f);
+		shader.setUniform("exposure", toneMappingModel->exposure);
+		shader.setUniform("dynamicrange", toneMappingModel->dynamicrange);
+		shader.setUniform("purkinje", toneMappingModel->purkinje ? 1.f : 0.f);
 	}
 	else if(id == "bloom")
 	{
-		GLHandler::setShaderParam(shader, "highlumtex", 1);
+		shader.setUniform("highlumtex", 1);
 	}
 	else
 	{
 		QString pyCmd("if \"applyPostProcShaderParams\" in "
 		              "dir():\n\tapplyPostProcShaderParams(\""
-		              + id + "\"," + QString::number(shader) + ")");
+		              + id + "\"," + shader.toStr() + ")");
 		PythonQtHandler::evalScript(pyCmd);
 	}
 }
 
 std::vector<GLHandler::Texture>
     AbstractMainWin::getPostProcessingUniformTextures(
-        QString const& id, GLHandler::ShaderProgram /*shader*/,
+        QString const& id, GLShaderProgram const& /*shader*/,
         GLHandler::RenderTarget const& currentTarget) const
 {
 	if(id == "bloom")
@@ -390,22 +387,17 @@ std::vector<GLHandler::Texture>
 		if(bloom)
 		{
 			// high luminosity pass
-			GLHandler::ShaderProgram hlshader(
-			    GLHandler::newShader("postprocess", "highlumpass"));
+			GLShaderProgram hlshader("postprocess", "highlumpass");
 			GLHandler::postProcess(hlshader, currentTarget, bloomTargets[0]);
-			GLHandler::deleteShader(hlshader);
 
 			// blurring
-			GLHandler::ShaderProgram blurshader(
-			    GLHandler::newShader("postprocess", "blur"));
+			GLShaderProgram blurshader("postprocess", "blur");
 			for(unsigned int i = 0; i < 6; i++)
 			{
-				GLHandler::setShaderParam(blurshader, "horizontal",
-				                          static_cast<float>(i % 2));
+				blurshader.setUniform("horizontal", static_cast<float>(i % 2));
 				GLHandler::postProcess(blurshader, bloomTargets.at(i % 2),
 				                       bloomTargets.at((i + 1) % 2));
 			}
-			GLHandler::deleteShader(blurshader);
 
 			return {GLHandler::getColorAttachmentTexture(bloomTargets[0])};
 		}
@@ -435,6 +427,8 @@ void AbstractMainWin::initializeGL()
 	setVR(QSettings().value("vr/enabled").toBool());
 	// Init libraries
 	initLibraries();
+	// Init NetworkManager
+	networkManager = new NetworkManager(constructNewState());
 
 	qDebug() << "Using OpenGL " << format().majorVersion() << "."
 	         << format().minorVersion() << '\n';
@@ -489,8 +483,12 @@ void AbstractMainWin::initializePythonQt()
 	PythonQtHandler::init();
 	PythonQtHandler::addClass<int>("Side");
 	PythonQtHandler::addObject("Side", new PySide);
+	PythonQtHandler::addClass<int>("PrimitiveType");
+	PythonQtHandler::addObject("PrimitiveType", new PyPrimitiveType);
 	PythonQtHandler::addObject("GLHandler", new GLHandler);
 	PythonQtHandler::addObject("ToneMappingModel", toneMappingModel);
+	PythonQtHandler::addWrapper<GLShaderProgramWrapper>();
+	PythonQtHandler::addWrapper<GLMeshWrapper>();
 }
 
 void AbstractMainWin::reloadPythonQt()
@@ -542,6 +540,20 @@ void AbstractMainWin::paintGL()
 		}
 	}
 
+	auto* nState(networkManager->getNetworkedState());
+	if(nState != nullptr)
+	{
+		if(networkManager->isServer())
+		{
+			writeState(*nState);
+		}
+		else
+		{
+			readState(*nState);
+		}
+		networkManager->update(frameTiming);
+	}
+
 	toneMappingModel->autoUpdateExposure(
 	    renderer.getLastFrameAverageLuminance(), frameTiming);
 
@@ -558,10 +570,6 @@ void AbstractMainWin::paintGL()
 	// let user update before rendering
 	for(auto const& pair : renderer.sceneRenderPipeline)
 	{
-		QMatrix4x4 view(pair.second.camera->getView());
-		networkManager.update(frameTiming, view);
-		pair.second.camera->setView(view);
-
 		updateScene(*pair.second.camera, pair.first);
 	}
 	PythonQtHandler::evalScript(
@@ -618,6 +626,7 @@ void AbstractMainWin::paintGL()
 
 AbstractMainWin::~AbstractMainWin()
 {
+	delete networkManager;
 	delete toneMappingModel;
 	GLHandler::deleteRenderTarget(bloomTargets[0]);
 	GLHandler::deleteRenderTarget(bloomTargets[1]);

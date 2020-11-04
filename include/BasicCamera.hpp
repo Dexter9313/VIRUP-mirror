@@ -8,7 +8,7 @@
 #include <QVector4D>
 #include <array>
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 
 class VRHandler;
 
@@ -283,7 +283,7 @@ class BasicCamera : public QObject
 	 *
 	 * If VR is enabled, the VR transformations will be applied.
 	 */
-	virtual void update();
+	virtual void update(QMatrix4x4 const& angleShiftMat);
 	/**
 	 * @brief Updates all the camera transformation matrices and forces 2D
 	 * transformations.
@@ -291,7 +291,7 @@ class BasicCamera : public QObject
 	 * The 2D transformations will be applied wether VR is enabled or not.
 	 * Useful for rendering on the companion window for example.
 	 */
-	virtual void update2D();
+	virtual void update2D(QMatrix4x4 const& angleShiftMat);
 	/**
 	 * @brief Calls GLHandler#setUpTransforms with this camera's transformation
 	 * matrices.

@@ -20,26 +20,25 @@
 #define BILLBOARD_H
 
 #include "BasicCamera.hpp"
-#include "GLHandler.hpp"
 #include "Primitives.hpp"
+#include "gl/GLHandler.hpp"
 
 class Billboard
 {
   public:
 	explicit Billboard(const char* texPath);
 	explicit Billboard(QImage const& image);
-	Billboard(const char* texPath, GLHandler::ShaderProgram shader);
-	Billboard(QImage const& image, GLHandler::ShaderProgram shader);
+	Billboard(const char* texPath, GLShaderProgram&& shader);
+	Billboard(QImage const& image, GLShaderProgram&& shader);
 	void render(BasicCamera const& camera);
-	~Billboard();
 
 	QVector3D position = QVector3D();
 	float width        = 1.f;
 
   private:
 	GLHandler::Texture tex;
-	GLHandler::Mesh quad = {};
-	GLHandler::ShaderProgram shader;
+	GLMesh quad;
+	GLShaderProgram shader;
 };
 
 #endif // BILLBOARD_H

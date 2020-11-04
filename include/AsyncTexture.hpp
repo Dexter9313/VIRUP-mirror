@@ -23,7 +23,7 @@
 #include <QThread>
 #include <cstring>
 
-#include "GLHandler.hpp"
+#include "gl/GLHandler.hpp"
 
 // TODO(florian) when Qt 5.10 is available, use QThread::create
 namespace at

@@ -24,6 +24,11 @@ Renderer::Renderer(AbstractMainWin& window, VRHandler& vrHandler)
     : window(window)
     , vrHandler(vrHandler)
 {
+	if(!QSettings().value("network/server").toBool())
+	{
+		angleShiftMat.rotate(QSettings().value("network/angleshift").toInt(),
+		                     QVector3D(0.f, 1.f, 0.f));
+	}
 }
 
 void Renderer::init()
@@ -148,26 +153,27 @@ void Renderer::appendPostProcessingShader(QString const& id,
                                           QString const& fragment,
                                           QMap<QString, QString> const& defines)
 {
-	postProcessingPipeline_.append(QPair<QString, GLHandler::ShaderProgram>(
-	    id, GLHandler::newShader("postprocess", fragment, defines)));
+	postProcessingPipeline_.emplace_back(
+	    std::make_pair(id, GLShaderProgram("postprocess", fragment, defines)));
 }
 
 void Renderer::insertPostProcessingShader(QString const& id,
                                           QString const& fragment,
                                           unsigned int pos)
 {
-	postProcessingPipeline_.insert(
-	    pos, QPair<QString, GLHandler::ShaderProgram>(
-	             id, GLHandler::newShader("postprocess", fragment)));
+	postProcessingPipeline_.emplace(
+	    std::next(postProcessingPipeline_.begin(), pos),
+	    std::make_pair(id, GLShaderProgram("postprocess", fragment)));
 }
 
 void Renderer::removePostProcessingShader(QString const& id)
 {
-	for(int i(0); i < postProcessingPipeline_.size(); ++i)
+	for(auto it(postProcessingPipeline_.begin());
+	    it != postProcessingPipeline_.end(); ++it)
 	{
-		if(postProcessingPipeline_[i].first == id)
+		if(it->first == id)
 		{
-			postProcessingPipeline_.removeAt(i);
+			postProcessingPipeline_.erase(it);
 			break;
 		}
 	}
@@ -215,8 +221,8 @@ void Renderer::vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
                                   bool debug, bool debugInHeadset)
 {
 	GLHandler::glf().glClear(renderPath.clearMask);
-	renderPath.camera->update();
-	dbgCamera->update();
+	renderPath.camera->update(angleShiftMat);
+	dbgCamera->update(angleShiftMat);
 
 	if(debug && debugInHeadset)
 	{
@@ -267,17 +273,17 @@ void Renderer::vrRender(Side side, bool debug, bool debugInHeadset)
 
 	// do all postprocesses including last one
 	int i(0);
-	for(; i < postProcessingPipeline_.size(); ++i)
+	for(auto it(postProcessingPipeline_.begin());
+	    it != postProcessingPipeline_.end(); ++it, ++i)
 	{
 		window.applyPostProcShaderParams(
-		    postProcessingPipeline_[i].first, postProcessingPipeline_[i].second,
+		    it->first, it->second,
 		    vrHandler.getPostProcessingTarget(i % 2, side));
 		auto texs = window.getPostProcessingUniformTextures(
-		    postProcessingPipeline_[i].first, postProcessingPipeline_[i].second,
+		    it->first, it->second,
 		    vrHandler.getPostProcessingTarget(i % 2, side));
 		GLHandler::postProcess(
-		    postProcessingPipeline_[i].second,
-		    vrHandler.getPostProcessingTarget(i % 2, side),
+		    it->second, vrHandler.getPostProcessingTarget(i % 2, side),
 		    vrHandler.getPostProcessingTarget((i + 1) % 2, side), texs);
 	}
 
@@ -329,8 +335,8 @@ void Renderer::renderFrame()
 					pair.second.camera->setProj(overrProj);
 					pair.second.camera->setView(overrView * viewBack);
 				}
-				pair.second.camera->update2D();
-				dbgCamera->update();
+				pair.second.camera->update2D(angleShiftMat);
+				dbgCamera->update(angleShiftMat);
 				if(renderingCamIsDebug)
 				{
 					dbgCamera->uploadMatrices();
@@ -394,10 +400,9 @@ void Renderer::renderFrame()
 			}
 			GLHandler::generateEnvironmentMap(cubemapTarget, renderFunc);
 
-			auto shader = GLHandler::newShader("postprocess", "panorama360");
+			GLShaderProgram shader("postprocess", "panorama360");
 			GLHandler::postProcess(shader, cubemapTarget,
 			                       postProcessingTargets[0]);
-			GLHandler::deleteShader(shader);
 		}
 		else if(projection == Projection::VR360)
 		{
@@ -412,7 +417,7 @@ void Renderer::renderFrame()
 			QVector3D shift(0.065, 0.0, 0.0);
 
 			GLHandler::generateEnvironmentMap(cubemapTarget, renderFunc, shift);
-			auto shader = GLHandler::newShader("postprocess", "panorama360");
+			GLShaderProgram shader("postprocess", "panorama360");
 			GLHandler::postProcess(shader, cubemapTarget,
 			                       postProcessingTargets[0]);
 			GLHandler::blitColorBuffer(
@@ -423,7 +428,6 @@ void Renderer::renderFrame()
 			                                  -shift);
 			GLHandler::postProcess(shader, cubemapTarget,
 			                       postProcessingTargets[0]);
-			GLHandler::deleteShader(shader);
 			GLHandler::blitColorBuffer(
 			    postProcessingTargets[0], postProcessingTargets[1], 0, 0,
 			    tgtWidth, tgtHeight, 0, tgtHeight / 2, tgtWidth, tgtHeight);
@@ -441,17 +445,15 @@ void Renderer::renderFrame()
 		lastFrameAverageLuminance = GLHandler::getTextureAverageLuminance(tex);
 
 		// postprocess
-		for(int i(0); i < postProcessingPipeline_.size(); ++i)
+		int i(0);
+		for(auto it(postProcessingPipeline_.begin());
+		    it != postProcessingPipeline_.end(); ++i, ++it)
 		{
-			window.applyPostProcShaderParams(postProcessingPipeline_[i].first,
-			                                 postProcessingPipeline_[i].second,
+			window.applyPostProcShaderParams(it->first, it->second,
 			                                 postProcessingTargets.at(i % 2));
 			auto texs = window.getPostProcessingUniformTextures(
-			    postProcessingPipeline_[i].first,
-			    postProcessingPipeline_[i].second,
-			    postProcessingTargets.at(i % 2));
-			GLHandler::postProcess(postProcessingPipeline_[i].second,
-			                       postProcessingTargets.at(i % 2),
+			    it->first, it->second, postProcessingTargets.at(i % 2));
+			GLHandler::postProcess(it->second, postProcessingTargets.at(i % 2),
 			                       postProcessingTargets.at((i + 1) % 2), texs);
 		}
 		// blit result on screen
@@ -471,11 +473,6 @@ void Renderer::clean()
 	for(auto const& pair : sceneRenderPipeline_)
 	{
 		delete pair.second.camera;
-	}
-	for(const QPair<QString, GLHandler::ShaderProgram>& p :
-	    postProcessingPipeline_)
-	{
-		GLHandler::deleteShader(p.second);
 	}
 	delete dbgCamera;
 

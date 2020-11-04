@@ -17,13 +17,14 @@
 #include "AsyncTexture.hpp"
 #include "BasicCamera.hpp"
 #include "DebugCamera.hpp"
-#include "GLHandler.hpp"
 #include "InputManager.hpp"
 #include "NetworkManager.hpp"
 #include "PythonQtHandler.hpp"
 #include "Renderer.hpp"
 #include "ShaderProgram.hpp"
 #include "ToneMappingModel.hpp"
+#include "gl/GLHandler.hpp"
+#include "gl/GLShaderProgram.hpp"
 #include "vr/OpenVRHandler.hpp"
 #include "vr/StereoBeamerHandler.hpp"
 
@@ -263,6 +264,10 @@ class AbstractMainWin : public QWindow
 	 */
 	virtual void updateScene(BasicCamera& camera, QString const& pathId) = 0;
 
+	virtual AbstractState* constructNewState() const { return nullptr; };
+	virtual void readState(AbstractState const& /*s*/){};
+	virtual void writeState(AbstractState& /*s*/) const {};
+
   public:
 	/**
 	 * @brief Gets called in the main loop during each rendering.
@@ -292,7 +297,7 @@ class AbstractMainWin : public QWindow
 	 * @param shader The actual shader program.
 	 */
 	virtual void applyPostProcShaderParams(
-	    QString const& id, GLHandler::ShaderProgram shader,
+	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const;
 	/**
 	 * @brief Override to return textures to use in your post-processing
@@ -306,7 +311,7 @@ class AbstractMainWin : public QWindow
 	 * @param shader The actual shader program.
 	 */
 	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
-	    QString const& id, GLHandler::ShaderProgram shader,
+	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const;
 
   protected:
@@ -325,7 +330,7 @@ class AbstractMainWin : public QWindow
 	 * @brief The engine's only @ref Renderer.
 	 */
 	Renderer renderer;
-	NetworkManager networkManager;
+	NetworkManager* networkManager = nullptr;
 	/**
 	 * @brief Last frame time to render in seconds.
 	 *

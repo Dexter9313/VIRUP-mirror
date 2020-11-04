@@ -19,15 +19,16 @@
 #include "Text3D.hpp"
 
 Text3D::Text3D(unsigned int width, unsigned int height)
-    : Text3D(width, height, GLHandler::newShader("billboard"))
+    : Text3D(width, height, GLShaderProgram("billboard"))
 {
 }
 
 Text3D::Text3D(unsigned int width, unsigned int height,
-               GLHandler::ShaderProgram const& shader)
-    : shader(shader)
+               GLShaderProgram&& shader)
+    : shader(std::move(shader))
     , originalSize(width, height)
 {
+	Primitives::setAsQuad(quad, shader);
 	if(width > height)
 	{
 		aspectratio.scale(1.f, static_cast<float>(height) / width);
@@ -54,7 +55,7 @@ void Text3D::setColor(QColor const& color)
 void Text3D::setAlpha(float alpha)
 {
 	this->alpha = alpha;
-	GLHandler::setShaderParam(shader, "alpha", alpha);
+	shader.setUniform("alpha", alpha);
 }
 
 void Text3D::setFont(QFont const& font)
@@ -97,7 +98,7 @@ void Text3D::render(GLHandler::GeometricSpace geometricSpace)
 	GLHandler::beginTransparent();
 	GLHandler::setUpRender(shader, model * aspectratio, geometricSpace);
 	GLHandler::useTextures({tex});
-	GLHandler::render(quad, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	quad.render(PrimitiveType::TRIANGLE_STRIP);
 	GLHandler::endTransparent();
 }
 
@@ -146,8 +147,6 @@ void Text3D::updateTex()
 Text3D::~Text3D()
 {
 	GLHandler::deleteTexture(tex);
-	GLHandler::deleteMesh(quad);
-	GLHandler::deleteShader(shader);
 }
 
 QRect Text3D::paintText(QImage& image, QString const& text, QColor const& color,

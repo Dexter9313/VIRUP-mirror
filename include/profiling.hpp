@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2019 Florian Cabot <florian.cabot@hotmail.fr>
+    Copyright (C) 2020 Florian Cabot <florian.cabot@hotmail.fr>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,26 +16,10 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef MOVINGCUBE_HPP
-#define MOVINGCUBE_HPP
+#ifndef PROFILING_HPP
+#define PROFILING_HPP
 
-#include <QElapsedTimer>
+void startProfiling();
+void stopProfiling(bool close = true);
 
-#include "gl/GLHandler.hpp"
-
-class MovingCube
-{
-  public:
-	MovingCube();
-	void update();
-	void render();
-
-  private:
-	GLMesh cube = {};
-	GLShaderProgram cubeShader;
-	QElapsedTimer cubeTimer;
-
-	static std::vector<float> cubeVertices(uint64_t dt);
-};
-
-#endif // MOVINGCUBE_HPP
+#endif // PROFILING_HPP

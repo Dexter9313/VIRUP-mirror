@@ -12,4 +12,13 @@ then
 else
 	cmake .. -DCMAKE_BUILD_TYPE=Release
 fi
-make -j "$@"
+
+if [[ $# -ne 1 ]]
+then
+	ncpus=$(lscpu --parse -a | grep -v "^#" | wc -l)
+else
+	ncpus="$@"
+fi
+
+echo "make -j $ncpus"
+make -j $ncpus

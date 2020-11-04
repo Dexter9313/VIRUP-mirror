@@ -19,28 +19,26 @@
 #include "Billboard.hpp"
 
 Billboard::Billboard(const char* texPath)
-    : Billboard(texPath, GLHandler::newShader("billboard"))
+    : Billboard(texPath, GLShaderProgram("billboard"))
 {
 }
 Billboard::Billboard(QImage const& image)
-    : Billboard(image, GLHandler::newShader("billboard"))
+    : Billboard(image, GLShaderProgram("billboard"))
 {
 }
 
-Billboard::Billboard(const char* texPath, GLHandler::ShaderProgram shader)
+Billboard::Billboard(const char* texPath, GLShaderProgram&& shader)
     : tex(GLHandler::newTexture(texPath))
-    , shader(shader)
+    , shader(std::move(shader))
 {
-	quad
-	    = Primitives::newQuad(shader, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	Primitives::setAsQuad(quad, this->shader, PrimitiveType::TRIANGLE_STRIP);
 }
 
-Billboard::Billboard(QImage const& image, GLHandler::ShaderProgram shader)
+Billboard::Billboard(QImage const& image, GLShaderProgram&& shader)
     : tex(GLHandler::newTexture(image))
-    , shader(shader)
+    , shader(std::move(shader))
 {
-	quad
-	    = Primitives::newQuad(shader, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	Primitives::setAsQuad(quad, this->shader, PrimitiveType::TRIANGLE_STRIP);
 }
 
 void Billboard::render(BasicCamera const& camera)
@@ -52,12 +50,6 @@ void Billboard::render(BasicCamera const& camera)
 	GLHandler::beginTransparent();
 	GLHandler::useTextures({tex});
 	GLHandler::setUpRender(shader, model, GLHandler::GeometricSpace::HMD);
-	GLHandler::render(quad, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	quad.render(PrimitiveType::TRIANGLE_STRIP);
 	GLHandler::endTransparent();
-}
-
-Billboard::~Billboard()
-{
-	GLHandler::deleteMesh(quad);
-	GLHandler::deleteShader(shader);
 }

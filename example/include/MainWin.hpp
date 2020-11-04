@@ -16,6 +16,33 @@ class MainWin : public AbstractMainWin
 {
 	Q_OBJECT
   public:
+	class State : public AbstractState
+	{
+	  public:
+		State()                   = default;
+		State(State const& other) = default;
+		State(State&& other)      = default;
+		virtual void readFromDataStream(QDataStream& stream) override
+		{
+			stream >> exposure;
+			stream >> dynamicrange;
+			stream >> yaw;
+			stream >> pitch;
+		};
+		virtual void writeInDataStream(QDataStream& stream) override
+		{
+			stream << exposure;
+			stream << dynamicrange;
+			stream << yaw;
+			stream << pitch;
+		};
+
+		float exposure     = 0.f;
+		float dynamicrange = 0.f;
+		float yaw          = 0.f;
+		float pitch        = 0.f;
+	};
+
 	MainWin() = default;
 	~MainWin();
 
@@ -39,26 +66,47 @@ class MainWin : public AbstractMainWin
 	                         QString const& pathId) override;
 
 	virtual void applyPostProcShaderParams(
-	    QString const& id, GLHandler::ShaderProgram shader,
+	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const override;
+
+	virtual AbstractState* constructNewState() const override
+	{
+		return new MainWin::State;
+	};
+	virtual void readState(AbstractState const& s) override
+	{
+		auto const& state              = dynamic_cast<State const&>(s);
+		toneMappingModel->exposure     = state.exposure;
+		toneMappingModel->dynamicrange = state.dynamicrange;
+		yaw                            = state.yaw;
+		pitch                          = state.pitch;
+	};
+	virtual void writeState(AbstractState& s) const override
+	{
+		auto& state        = dynamic_cast<State&>(s);
+		state.exposure     = toneMappingModel->exposure;
+		state.dynamicrange = toneMappingModel->dynamicrange;
+		state.yaw          = yaw;
+		state.pitch        = pitch;
+	};
 
   private:
 	ShaderProgram sbShader;
-	GLHandler::Mesh skybox;
+	GLMesh* skybox;
 	GLHandler::Texture sbTexture;
 
-	GLHandler::Mesh mesh;
+	GLMesh* mesh;
 	ShaderProgram shaderProgram;
 
-	GLHandler::Mesh pointsMesh;
+	GLMesh* pointsMesh;
 	ShaderProgram pointsShader;
 
 	MovingCube* movingCube;
 
-	GLHandler::Mesh sphere;
+	GLMesh* sphere;
 	ShaderProgram sphereShader;
 
-	GLHandler::Mesh playarea;
+	GLMesh* playarea;
 	ShaderProgram playareaShader;
 
 	Model* model;

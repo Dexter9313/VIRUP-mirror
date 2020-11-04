@@ -19,7 +19,9 @@
 #include "Widget3D.hpp"
 
 Widget3D::Widget3D(QWidget* widget)
+    : shader("billboard")
 {
+	Primitives::setAsQuad(quad, shader);
 	setWidget(widget);
 }
 
@@ -45,7 +47,7 @@ void Widget3D::render()
 {
 	GLHandler::setUpRender(shader, model * aspectratio);
 	GLHandler::useTextures({tex});
-	GLHandler::render(quad, GLHandler::PrimitiveType::TRIANGLE_STRIP);
+	quad.render(PrimitiveType::TRIANGLE_STRIP);
 }
 
 void Widget3D::updateTex()
@@ -62,8 +64,6 @@ void Widget3D::updateTex()
 Widget3D::~Widget3D()
 {
 	GLHandler::deleteTexture(tex);
-	GLHandler::deleteMesh(quad);
-	GLHandler::deleteShader(shader);
 }
 
 void Widget3D::paintWidget(QImage& image, QWidget& widget)
