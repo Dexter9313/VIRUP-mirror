@@ -134,8 +134,53 @@ class MainWin : public AbstractMainWin
 	 * @accessors getCamYaw(), setCamYaw()
 	 */
 	Q_PROPERTY(float camYaw READ getCamYaw WRITE setCamYaw)
+	Q_PROPERTY(bool isServer READ isServer)
+
+	bool isServer() const { return networkManager->isServer(); };
 
   public:
+	class State : public AbstractState
+	{
+	  public:
+		State()                   = default;
+		State(State const& other) = default;
+		State(State&& other)      = default;
+		virtual void readFromDataStream(QDataStream& stream) override
+		{
+			toneMappingState.readFromDataStream(stream);
+			cosmoCamState.readFromDataStream(stream);
+			planetCamState.readFromDataStream(stream);
+			double dut;
+			stream >> dut;
+			ut = dut;
+			stream >> renderLabels;
+			stream >> renderOrbits;
+			stream >> planetarySystemName;
+			stream >> cosmoLum;
+		};
+		virtual void writeInDataStream(QDataStream& stream) override
+		{
+			toneMappingState.writeInDataStream(stream);
+			cosmoCamState.writeInDataStream(stream);
+			planetCamState.writeInDataStream(stream);
+			double dut(ut);
+			stream << dut;
+			stream << renderLabels;
+			stream << renderOrbits;
+			stream << planetarySystemName;
+			stream << cosmoLum;
+		};
+
+		ToneMappingModel::State toneMappingState;
+		Camera::State cosmoCamState;
+		OrbitalSystemCamera::State planetCamState;
+		UniversalTime ut;
+		float renderLabels;
+		float renderOrbits;
+		QString planetarySystemName;
+		float cosmoLum;
+	};
+
 	MainWin();
 
 	// TIME
@@ -338,6 +383,54 @@ class MainWin : public AbstractMainWin
 	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
 	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const override;
+
+	virtual AbstractState* constructNewState() const override
+	{
+		return new MainWin::State;
+	};
+	virtual void readState(AbstractState const& s) override
+	{
+		auto const& state = dynamic_cast<State const&>(s);
+		toneMappingModel->readState(state.toneMappingState);
+
+		auto& cam(renderer.getCamera<Camera&>("cosmo"));
+		cam.readState(state.cosmoCamState);
+		if(isPlanetarySystemLoaded())
+		{
+			try
+			{
+				auto& cam2(renderer.getCamera<OrbitalSystemCamera&>("planet"));
+				cam2.readState(state.planetCamState);
+			}
+			catch(...)
+			{
+			}
+		}
+		clock.setCurrentUt(state.ut);
+		CelestialBodyRenderer::renderLabels = state.renderLabels;
+		CelestialBodyRenderer::renderOrbits = state.renderOrbits;
+		planetarySystemName                 = state.planetarySystemName;
+		setCosmoLum(state.cosmoLum);
+	};
+	virtual void writeState(AbstractState& s) const override
+	{
+		auto& state = dynamic_cast<State&>(s);
+		toneMappingModel->writeState(state.toneMappingState);
+
+		auto const& cam(renderer.getCamera<Camera const&>("cosmo"));
+		cam.writeState(state.cosmoCamState);
+		if(isPlanetarySystemLoaded())
+		{
+			auto const& cam2(
+			    renderer.getCamera<OrbitalSystemCamera const&>("planet"));
+			cam2.writeState(state.planetCamState);
+		}
+		state.ut                  = clock.getCurrentUt();
+		state.renderLabels        = CelestialBodyRenderer::renderLabels;
+		state.renderOrbits        = CelestialBodyRenderer::renderOrbits;
+		state.planetarySystemName = planetarySystemName;
+		state.cosmoLum            = getCosmoLum();
+	};
 
   private:
 	void loadSolarSystem();

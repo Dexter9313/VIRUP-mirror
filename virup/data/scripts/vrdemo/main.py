@@ -281,7 +281,7 @@ def updateScene():
     global timer
     global longanimation
     global currentscene
-    if id not in range(len(scenes)):
+    if id not in range(len(scenes)) or not VIRUP.isServer:
         return
 
     if longanimation:

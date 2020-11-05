@@ -763,46 +763,50 @@ void MainWin::initScene()
 	renderer.appendPostProcessingShader("lensing", "lensing");
 
 	// TRANSITIONS
-	dialog = new QDialog;
-	dialog->show();
-	dialog->setWindowTitle("VIRUP Scenes");
-	// dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint |
-	// Qt::X11BypassWindowManagerHint );
-
-	auto layout = new QVBoxLayout(dialog);
-
-	layout->addWidget(new QLabel("Scenes :"));
-
-	QStringList scenes = {"0:International Space Station",
-	                      "1:July Eclipse close-up",
-	                      "2:July Eclipse further",
-	                      "3:Phobos",
-	                      "4:Saturn Moons",
-	                      "5:Enceladus",
-	                      "6:Solar System",
-	                      "7:Kepler-11",
-	                      "8:Milky Way",
-	                      "9:Sagittarius A*",
-	                      "Local Group",
-	                      "Cosmological Scale"};
-	for(int i(0); i < scenes.size(); ++i)
+	if(networkManager->isServer())
 	{
-		auto button = new QPushButton(scenes[i]);
-		connect(button, &QPushButton::clicked, this, [i]() {
-			PythonQtHandler::evalScript("setSceneId(" + QString::number(i)
-			                            + ")");
-		});
-		button->setFocusPolicy(Qt::NoFocus);
-		layout->addWidget(button);
-		buttons.push_back(button);
+		dialog = new QDialog;
+		dialog->show();
+		dialog->setWindowTitle("VIRUP Scenes");
+		// dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint |
+		// Qt::X11BypassWindowManagerHint );
+
+		auto layout = new QVBoxLayout(dialog);
+
+		layout->addWidget(new QLabel("Scenes :"));
+
+		QStringList scenes = {"0:International Space Station",
+		                      "1:July Eclipse close-up",
+		                      "2:July Eclipse further",
+		                      "3:Phobos",
+		                      "4:Saturn Moons",
+		                      "5:Enceladus",
+		                      "6:Solar System",
+		                      "7:Kepler-11",
+		                      "8:Milky Way",
+		                      "9:Sagittarius A*",
+		                      "Local Group",
+		                      "Cosmological Scale"};
+		for(int i(0); i < scenes.size(); ++i)
+		{
+			auto button = new QPushButton(scenes[i]);
+			connect(button, &QPushButton::clicked, this, [i]() {
+				PythonQtHandler::evalScript("setSceneId(" + QString::number(i)
+				                            + ")");
+			});
+			button->setFocusPolicy(Qt::NoFocus);
+			layout->addWidget(button);
+			buttons.push_back(button);
+		}
+		layout->addWidget(new QLabel("Options :"));
+		transitionsButton
+		    = new QPushButton("Toggle transitions (only if user is sick, can "
+		                      "introduce problems !)");
+		connect(transitionsButton, &QPushButton::clicked, this,
+		        []() { PythonQtHandler::evalScript("toggleAnimations()"); });
+		transitionsButton->setFocusPolicy(Qt::NoFocus);
+		layout->addWidget(transitionsButton);
 	}
-	layout->addWidget(new QLabel("Options :"));
-	transitionsButton = new QPushButton(
-	    "Toggle transitions (only if user is sick, can introduce problems !)");
-	connect(transitionsButton, &QPushButton::clicked, this,
-	        []() { PythonQtHandler::evalScript("toggleAnimations()"); });
-	transitionsButton->setFocusPolicy(Qt::NoFocus);
-	layout->addWidget(transitionsButton);
 }
 
 void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
@@ -816,10 +820,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 	{
 		auto& cam(dynamic_cast<Camera&>(camera));
 		cam.currentFrameTiming = frameTiming;
-		if(networkManager->isServer())
-		{
-			cam.updateTargetFPS();
-		}
+		cam.updateTargetFPS();
 
 		/*float distPeriod = 60.f, anglePeriod = 10.f;
 		integralDt += dt;
@@ -859,43 +860,44 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 			model.rotate(pitch * 180.f / M_PI + 90.f, 1.0, 0.0, 0.0);
 			cosmoLabel.second->updateModel(model);
 		}
+		movementControls->update(frameTiming);
+
 		if(networkManager->isServer())
 		{
-			movementControls->update(frameTiming);
-		}
-		int currentScene(PythonQtHandler::getVariable("id").toInt());
-		for(int i(0); i < static_cast<int>(buttons.size()); ++i)
-		{
-			auto button  = buttons[i];
-			QPalette pal = button->palette();
-			if(i == currentScene)
+			int currentScene(PythonQtHandler::getVariable("id").toInt());
+			for(int i(0); i < static_cast<int>(buttons.size()); ++i)
 			{
-				pal.setColor(QPalette::Button, QColor(Qt::green));
+				auto button  = buttons[i];
+				QPalette pal = button->palette();
+				if(i == currentScene)
+				{
+					pal.setColor(QPalette::Button, QColor(Qt::green));
+				}
+				else
+				{
+					pal.setColor(QPalette::Button, QColor(255, 128, 128));
+				}
+				button->setAutoFillBackground(true);
+				button->setPalette(pal);
+				button->update();
+			}
+			QPalette pal = transitionsButton->palette();
+			bool animationDisabled(
+			    PythonQtHandler::getVariable("disableanimations").toBool());
+			if(animationDisabled)
+			{
+				transitionsButton->setText("Transitions : DISABLED");
+				pal.setColor(QPalette::Button, QColor(255, 128, 128));
 			}
 			else
 			{
-				pal.setColor(QPalette::Button, QColor(255, 128, 128));
+				transitionsButton->setText("Transitions : ENABLED");
+				pal.setColor(QPalette::Button, QColor(Qt::green));
 			}
-			button->setAutoFillBackground(true);
-			button->setPalette(pal);
-			button->update();
+			transitionsButton->setAutoFillBackground(true);
+			transitionsButton->setPalette(pal);
+			transitionsButton->update();
 		}
-		QPalette pal = transitionsButton->palette();
-		bool animationDisabled(
-		    PythonQtHandler::getVariable("disableanimations").toBool());
-		if(animationDisabled)
-		{
-			transitionsButton->setText("Transitions : DISABLED");
-			pal.setColor(QPalette::Button, QColor(255, 128, 128));
-		}
-		else
-		{
-			transitionsButton->setText("Transitions : ENABLED");
-			pal.setColor(QPalette::Button, QColor(Qt::green));
-		}
-		transitionsButton->setAutoFillBackground(true);
-		transitionsButton->setPalette(pal);
-		transitionsButton->update();
 	}
 	if(pathId == "planet")
 	{

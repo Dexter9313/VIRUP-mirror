@@ -21,6 +21,7 @@
 
 #include <cmath>
 
+#include "AbstractState.hpp"
 #include "BasicCamera.hpp"
 #include "graphics/Utils.hpp"
 #include "math/Vector3.hpp"
@@ -44,6 +45,37 @@ class Camera : public BasicCamera
 {
 	Q_OBJECT
   public:
+	class State : public AbstractState
+	{
+	  public:
+		State()                   = default;
+		State(State const& other) = default;
+		State(State&& other)      = default;
+		virtual void readFromDataStream(QDataStream& stream) override
+		{
+			stream >> position[0];
+			stream >> position[1];
+			stream >> position[2];
+			stream >> scale;
+			stream >> pitch;
+			stream >> yaw;
+		};
+		virtual void writeInDataStream(QDataStream& stream) override
+		{
+			stream << position[0];
+			stream << position[1];
+			stream << position[2];
+			stream << scale;
+			stream << pitch;
+			stream << yaw;
+		};
+
+		Vector3 position;
+		double scale = 1.0;
+		float pitch  = 0.f;
+		float yaw    = 0.f;
+	};
+
 	Camera(VRHandler const& vrHandler);
 	Vector3 dataToWorldPosition(Vector3 const& data) const;
 	QMatrix4x4 dataToWorldTransform() const;
@@ -65,6 +97,23 @@ class Camera : public BasicCamera
 	float yaw   = 0.f;
 
 	float currentFrameTiming = 0;
+
+	void readState(AbstractState const& s)
+	{
+		auto const& state = dynamic_cast<State const&>(s);
+		position          = state.position;
+		scale             = state.scale;
+		pitch             = state.pitch;
+		yaw               = state.yaw;
+	};
+	void writeState(AbstractState& s) const
+	{
+		auto& state    = dynamic_cast<State&>(s);
+		state.position = position;
+		state.scale    = scale;
+		state.pitch    = pitch;
+		state.yaw      = yaw;
+	};
 
   public slots:
 	QVector3D getLookDirection() const;
