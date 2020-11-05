@@ -20,10 +20,10 @@ class TreeMethodLOD : public Method
 	TreeMethodLOD(std::string const& vertexShaderPath,
 	              std::string const& fragmentShaderPath);
 	virtual std::string getName() const override { return "Tree LOD"; };
-	virtual void init(std::vector<float>& gazVertices,
+	virtual void init(std::vector<float>& gasVertices,
 	                  std::vector<float>& starsVertices,
 	                  std::vector<float>& darkMatterVertices) override;
-	virtual void init(std::string const& gazPath, std::string const& starsPath,
+	virtual void init(std::string const& gasPath, std::string const& starsPath,
 	                  std::string const& darkMatterPath) override;
 	virtual BBox getDataBoundingBox() const override;
 	virtual void render(Camera const& camera) override;
@@ -33,7 +33,7 @@ class TreeMethodLOD : public Method
 	virtual ~TreeMethodLOD();
 
   protected:
-	OctreeLOD* gazTree        = nullptr;
+	OctreeLOD* gasTree        = nullptr;
 	OctreeLOD* starsTree      = nullptr;
 	OctreeLOD* darkMatterTree = nullptr;
 	// struct timeval t0;
@@ -43,6 +43,9 @@ class TreeMethodLOD : public Method
 	// ugly fix for pointSize problems
 	bool setPointSize = true;
 
+	static void loadOctreeFromFile(std::string const& path, OctreeLOD** octree,
+	                               std::string const& name,
+	                               GLShaderProgram const& shaderProgram);
 	static void initOctree(OctreeLOD* octree, std::istream* in);
 
 	// used to detect too long frames

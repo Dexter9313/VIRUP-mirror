@@ -33,14 +33,14 @@ TreeMethodLOD::TreeMethodLOD(std::string const& vertexShaderPath,
 	GLHandler::setPointSize(1);
 }
 
-void TreeMethodLOD::init(std::vector<float>& gazVertices,
+void TreeMethodLOD::init(std::vector<float>& gasVertices,
                          std::vector<float>& starsVertices,
                          std::vector<float>& darkMatterVertices)
 {
-	if(!gazVertices.empty() && gazTree == nullptr)
+	if(!gasVertices.empty() && gasTree == nullptr)
 	{
-		gazTree = new OctreeLOD(shaderProgram);
-		gazTree->init(gazVertices);
+		gasTree = new OctreeLOD(shaderProgram);
+		gasTree->init(gasVertices);
 	}
 	if(!starsVertices.empty() && starsTree == nullptr)
 	{
@@ -54,117 +54,31 @@ void TreeMethodLOD::init(std::vector<float>& gazVertices,
 	}
 }
 
-void TreeMethodLOD::init(std::string const& gazPath,
+void TreeMethodLOD::init(std::string const& gasPath,
                          std::string const& starsPath,
                          std::string const& darkMatterPath)
 {
-	if(!gazPath.empty() && gazTree == nullptr)
+	if(!gasPath.empty() && gasTree == nullptr)
 	{
-		std::cout << "Loading gaz..." << std::endl;
-		auto file = new std::ifstream();
-		file->open(gazPath, std::fstream::in | std::fstream::binary);
-		gazTree = new OctreeLOD(shaderProgram);
-
-		// Init tree with progress bar
-		int64_t cursor(file->tellg());
-		uint64_t size;
-		brw::read(*file, size);
-		file->seekg(cursor);
-
-		QProgressDialog progress(tr("Loading gaz tree structure..."), QString(),
-		                         0, size);
-		progress.setMinimumDuration(0);
-		progress.setValue(0);
-
-		auto future = std::async(&initOctree, gazTree, file);
-
-		while(future.wait_for(std::chrono::duration<int, std::milli>(100))
-		      != std::future_status::ready)
-		{
-			QCoreApplication::processEvents();
-			progress.setValue(file->tellg());
-		}
-
-		gazTree->setFile(file);
-		// update bbox
-		gazTree->readBBoxes(*file);
-		// gazTree->readData(*file);
-		std::cout << "Gaz loaded..." << std::endl;
+		loadOctreeFromFile(gasPath, &gasTree, "Gas", shaderProgram);
 	}
 	if(!starsPath.empty() && starsTree == nullptr)
 	{
-		std::cout << "Loading stars..." << std::endl;
-		auto file = new std::ifstream();
-		file->open(starsPath, std::fstream::in | std::fstream::binary);
-		starsTree = new OctreeLOD(shaderProgram);
-
-		// Init tree with progress bar
-		int64_t cursor(file->tellg());
-		uint64_t size;
-		brw::read(*file, size);
-		file->seekg(cursor);
-
-		QProgressDialog progress(tr("Loading stars tree structure..."),
-		                         QString(), 0, size);
-		progress.setMinimumDuration(0);
-		progress.setValue(0);
-
-		auto future = std::async(&initOctree, starsTree, file);
-
-		while(future.wait_for(std::chrono::duration<int, std::milli>(100))
-		      != std::future_status::ready)
-		{
-			QCoreApplication::processEvents();
-			progress.setValue(file->tellg());
-		}
-
-		starsTree->setFile(file);
-		// update bbox
-		starsTree->readBBoxes(*file);
-		// starsTree->readData(*file);
-		std::cout << "Stars loaded..." << std::endl;
+		loadOctreeFromFile(starsPath, &starsTree, "Stars", shaderProgram);
 	}
 	if(!darkMatterPath.empty() && darkMatterTree == nullptr)
 	{
-		std::cout << "Loading dark matter..." << std::endl;
-		auto file = new std::ifstream();
-		file->open(darkMatterPath, std::fstream::in | std::fstream::binary);
-		darkMatterTree = new OctreeLOD(shaderProgram);
-
-		// Init tree with progress bar
-		int64_t cursor(file->tellg());
-		uint64_t size;
-		brw::read(*file, size);
-		file->seekg(cursor);
-
-		QProgressDialog progress(tr("Loading dark matter tree structure..."),
-		                         QString(), 0, size);
-		progress.setMinimumDuration(0);
-		progress.setValue(0);
-
-		auto future = std::async(&initOctree, darkMatterTree, file);
-
-		while(future.wait_for(std::chrono::duration<int, std::milli>(100))
-		      != std::future_status::ready)
-		{
-			QCoreApplication::processEvents();
-			progress.setValue(file->tellg());
-		}
-
-		darkMatterTree->setFile(file);
-		// update bbox
-		darkMatterTree->readBBoxes(*file);
-		// darkMatterTree->readData(*file);
-		std::cout << "Dark matter loaded..." << std::endl;
+		loadOctreeFromFile(darkMatterPath, &darkMatterTree, "Dark matter",
+		                   shaderProgram);
 	}
 
 	// preload data to fill VRAM giving priority to top levels
 	uint64_t max(OctreeLOD::getMemLimit());
 
 	uint64_t wholeData(0);
-	if(gazTree != nullptr)
+	if(gasTree != nullptr)
 	{
-		wholeData += gazTree->getTotalDataSize();
+		wholeData += gasTree->getTotalDataSize();
 	}
 	if(starsTree != nullptr)
 	{
@@ -185,9 +99,9 @@ void TreeMethodLOD::init(std::string const& gazPath,
 	unsigned int lvlToLoad(0);
 	while(lvlToLoad < 10)
 	{
-		if(gazTree != nullptr)
+		if(gasTree != nullptr)
 		{
-			if(!gazTree->preloadLevel(lvlToLoad))
+			if(!gasTree->preloadLevel(lvlToLoad))
 			{
 				break;
 			}
@@ -219,9 +133,9 @@ void TreeMethodLOD::init(std::string const& gazPath,
 BBox TreeMethodLOD::getDataBoundingBox() const
 {
 	std::vector<BBox> bboxes;
-	if(gazTree != nullptr)
+	if(gasTree != nullptr)
 	{
-		bboxes.push_back(gazTree->getBoundingBox());
+		bboxes.push_back(gasTree->getBoundingBox());
 	}
 	if(starsTree != nullptr)
 	{
@@ -303,9 +217,9 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 	shaderProgram.setUniform(
 	    "color", QSettings().value("data/gazcolor").value<QColor>());
 	unsigned int rendered = 0;
-	if(gazTree != nullptr)
+	if(gasTree != nullptr)
 	{
-		rendered += gazTree->renderAboveTanAngle(currentTanAngle, camera, model,
+		rendered += gasTree->renderAboveTanAngle(currentTanAngle, camera, model,
 		                                         campos, 100000000, false,
 		                                         getAlpha());
 	}
@@ -338,15 +252,15 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 
 void TreeMethodLOD::cleanUp()
 {
-	if(gazTree != nullptr)
+	if(gasTree != nullptr)
 	{
-		if(gazTree->getFile() != nullptr)
+		if(gasTree->getFile() != nullptr)
 		{
-			delete gazTree->getFile();
+			delete gasTree->getFile();
 		}
-		delete gazTree;
+		delete gasTree;
 	}
-	gazTree = nullptr;
+	gasTree = nullptr;
 	if(starsTree != nullptr)
 	{
 		if(starsTree->getFile() != nullptr)
@@ -367,6 +281,50 @@ void TreeMethodLOD::cleanUp()
 	darkMatterTree = nullptr;
 }
 
+void TreeMethodLOD::loadOctreeFromFile(std::string const& path,
+                                       OctreeLOD** octree,
+                                       std::string const& name,
+                                       GLShaderProgram const& shaderProgram)
+{
+	std::cout << "Loading " + name + " octree..." << std::endl;
+	auto file = new std::ifstream();
+	file->open(path, std::fstream::in | std::fstream::binary);
+	*octree = new OctreeLOD(shaderProgram);
+
+	// Init tree with progress bar
+	int64_t cursor(file->tellg());
+	int64_t size;
+	brw::read(*file, size);
+	file->seekg(cursor);
+	size *= -1;
+
+	QProgressDialog progress(tr("Loading %1 tree structure").arg(name.c_str()),
+	                         QString(), 0, size);
+	progress.setMinimumDuration(0);
+	progress.setValue(0);
+
+	auto future = std::async(&initOctree, *octree, file);
+
+	while(future.wait_for(std::chrono::duration<int, std::milli>(100))
+	      != std::future_status::ready)
+	{
+		QCoreApplication::processEvents();
+		if(file->tellg() < size)
+		{
+			progress.setValue(file->tellg());
+		}
+	}
+
+	(*octree)->setFile(file);
+	// update bbox
+	progress.setLabelText(
+	    tr("Loading %1 tree bounding boxes...").arg(name.c_str()));
+	QCoreApplication::processEvents();
+	(*octree)->readBBoxes(*file);
+	// (*octree)->readData(*file);
+	std::cout << name << " loaded..." << std::endl;
+}
+
 void TreeMethodLOD::initOctree(OctreeLOD* octree, std::istream* in)
 {
 	octree->init(*in);
@@ -374,15 +332,15 @@ void TreeMethodLOD::initOctree(OctreeLOD* octree, std::istream* in)
 
 TreeMethodLOD::~TreeMethodLOD()
 {
-	if(gazTree != nullptr)
+	if(gasTree != nullptr)
 	{
-		if(gazTree->getFile() != nullptr)
+		if(gasTree->getFile() != nullptr)
 		{
-			delete gazTree->getFile();
+			delete gasTree->getFile();
 		}
-		delete gazTree;
+		delete gasTree;
 	}
-	gazTree = nullptr;
+	gasTree = nullptr;
 	if(starsTree != nullptr)
 	{
 		if(starsTree->getFile() != nullptr)
