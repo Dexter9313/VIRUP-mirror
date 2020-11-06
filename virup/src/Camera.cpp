@@ -86,42 +86,67 @@ Vector3 Camera::getTruePosition() const
 	return position + getHeadShift();
 }
 
+// doesn't work anymore because of rotations
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes/
 // http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes-ii/
+/*bool Camera::shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model,
+                            bool depthClamp) const
+{
+    bool result = false;
+    // for each plane do ...
+    for(unsigned int i(0); i < 6; ++i)
+    {
+        if(depthClamp && (i == NEAR_PLANE || i == FAR_PLANE))
+        {
+            continue;
+        }
+        QVector4D pVertex = QVector4D(bbox.minx, bbox.miny, bbox.minz, 1.f);
+        if(clippingPlanes.at(i).x() >= 0)
+        {
+            pVertex.setX(bbox.maxx);
+        }
+        if(clippingPlanes.at(i).y() >= 0)
+        {
+            pVertex.setY(bbox.maxy);
+        }
+        if(clippingPlanes.at(i).z() >= 0)
+        {
+            pVertex.setZ(bbox.maxz);
+        }
+        // p-vertex is conserved by model, because there are no rotations
+        pVertex = model * pVertex;
+        // is the p-vertex outside?
+        if(QVector4D::dotProduct(clippingPlanes.at(i), pVertex) < 0)
+        {
+            return true;
+        }
+    }
+    return result;
+}*/
+
+// sphere culling
 bool Camera::shouldBeCulled(BBox const& bbox, QMatrix4x4 const& model,
                             bool depthClamp) const
 {
-	return false;
-	bool result = false;
-	// for each plane do ...
+	float negBoundingSphereRad(-bbox.diameter / 2.f);
+	QVector4D center(bbox.mid, 1.0);
+	center = model * center;
+	QVector4D scale(1, 0, 0, 0);
+	scale = model * scale;
+	negBoundingSphereRad *= QVector3D(scale).length();
 	for(unsigned int i(0); i < 6; ++i)
 	{
 		if(depthClamp && (i == NEAR_PLANE || i == FAR_PLANE))
 		{
 			continue;
 		}
-		QVector4D pVertex = QVector4D(bbox.minx, bbox.miny, bbox.minz, 1.f);
-		if(clippingPlanes.at(i).x() >= 0)
-		{
-			pVertex.setX(bbox.maxx);
-		}
-		if(clippingPlanes.at(i).y() >= 0)
-		{
-			pVertex.setY(bbox.maxy);
-		}
-		if(clippingPlanes.at(i).z() >= 0)
-		{
-			pVertex.setZ(bbox.maxz);
-		}
-		// p-vertex is conserved by model, because there are no rotations
-		pVertex = model * pVertex;
-		// is the p-vertex outside?
-		if(QVector4D::dotProduct(clippingPlanes.at(i), pVertex) < 0)
+		if(QVector4D::dotProduct(clippingPlanes.at(i), center)
+		   < negBoundingSphereRad)
 		{
 			return true;
 		}
 	}
-	return result;
+	return false;
 }
 
 QVector3D Camera::getLookDirection() const
