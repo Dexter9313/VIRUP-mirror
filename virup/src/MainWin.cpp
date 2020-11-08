@@ -79,8 +79,9 @@ void MainWin::loadSolarSystem()
 		    = new OrbitalSystemCamera(*vrHandler, toneMappingModel->exposure,
 		                              toneMappingModel->dynamicrange);
 		camPlanet->seatedVROrigin = false;
-		camPlanet->setPerspectiveProj(
-		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
+		camPlanet->setPerspectiveProj(renderer.getVerticalFOV(),
+		                              renderer.getHorizontalFOV()
+		                                  / renderer.getVerticalFOV());
 	}
 	camPlanet->target           = solarSystem->getMainCelestialBody();
 	camPlanet->relativePosition = Vector3(
@@ -232,8 +233,9 @@ void MainWin::loadNewSystem()
 		    = new OrbitalSystemCamera(*vrHandler, toneMappingModel->exposure,
 		                              toneMappingModel->dynamicrange);
 		camPlanet->seatedVROrigin = false;
-		camPlanet->setPerspectiveProj(
-		    70.0f, static_cast<float>(width()) / static_cast<float>(height()));
+		camPlanet->setPerspectiveProj(renderer.getVerticalFOV(),
+		                              renderer.getHorizontalFOV()
+		                                  / renderer.getVerticalFOV());
 	}
 	camPlanet->target           = orbitalSystem->getMainCelestialBody();
 	camPlanet->relativePosition = Vector3(
@@ -688,8 +690,10 @@ void MainWin::initScene()
 
 	auto cam            = new Camera(*vrHandler);
 	cam->seatedVROrigin = false;
-	cam->setPerspectiveProj(70.0f, static_cast<float>(width())
-	                                   / static_cast<float>(height()));
+	cam->setPerspectiveProj(renderer.getVerticalFOV(),
+	                        renderer.getHorizontalFOV()
+	                            / renderer.getVerticalFOV());
+
 	// COSMO LOADING
 	cosmologicalSim = new CosmologicalSimulation(
 	    QSettings().value("data/gazfile").toString().toStdString(),
