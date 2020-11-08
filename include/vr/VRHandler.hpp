@@ -80,8 +80,10 @@ class VRHandler : public QObject
 
   public slots:
 	virtual QMatrix4x4 getEyeViewMatrix(Side eye) const                  = 0;
-	virtual QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan = 0.1f,
-	                                       float farPlan = 100.0f) const = 0;
+	virtual QMatrix4x4 getProjectionMatrix(Side eye,
+	                                       QMatrix4x4 const& defaultProjMatrix,
+	                                       float nearPlan = 0.1f,
+	                                       float farPlan  = 100.0f) const = 0;
 	virtual void resetPos()                                              = 0;
 
   protected:

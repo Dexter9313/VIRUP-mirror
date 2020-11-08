@@ -51,10 +51,12 @@ void BasicCamera::update(QMatrix4x4 const& angleShiftMat)
 	if(vrHandler.isEnabled())
 	{
 		// proj
-		projLeft = vrHandler.getProjectionMatrix(
-		    Side::LEFT, 0.1f * eyeDistanceFactor, 10000.f * eyeDistanceFactor);
-		projRight = vrHandler.getProjectionMatrix(
-		    Side::RIGHT, 0.1f * eyeDistanceFactor, 10000.f * eyeDistanceFactor);
+		projLeft  = vrHandler.getProjectionMatrix(Side::LEFT, proj,
+                                                 0.1f * eyeDistanceFactor,
+                                                 10000.f * eyeDistanceFactor);
+		projRight = vrHandler.getProjectionMatrix(Side::RIGHT, proj,
+		                                          0.1f * eyeDistanceFactor,
+		                                          10000.f * eyeDistanceFactor);
 
 		projLeft = projLeft
 		           * eyeDist(vrHandler.getEyeViewMatrix(Side::LEFT),
@@ -95,7 +97,8 @@ void BasicCamera::update(QMatrix4x4 const& angleShiftMat)
 		fullCameraSpaceTransform = *projEye * hmdMat;
 
 		fullSkyboxSpaceTransform
-		    = vrHandler.getProjectionMatrix(currentRenderingEye, 0.1f, 10000.f)
+		    = vrHandler.getProjectionMatrix(currentRenderingEye, proj, 0.1f,
+		                                    10000.f)
 		      * noTrans(vrHandler.getEyeViewMatrix(currentRenderingEye))
 		      * noTrans(vrHandler.getHMDPosMatrix().inverted())
 		      * noTrans(shiftedView);
@@ -205,7 +208,7 @@ float BasicCamera::pixelSolidAngle() const
 {
 	QMatrix4x4 p(vrHandler.isEnabled()
 	                 ? vrHandler.getProjectionMatrix(
-	                       Side::LEFT, 0.1f * eyeDistanceFactor,
+	                       Side::LEFT, proj, 0.1f * eyeDistanceFactor,
 	                       10000.f * eyeDistanceFactor)
 	                 : proj);
 	double radPerPix = atan(1.0f / p.column(1)[1]) * 2.0 / windowSize.height();

@@ -16,6 +16,17 @@ AbstractMainWin::AbstractMainWin()
 	m_context.create();
 }
 
+double AbstractMainWin::getAngleShift() const
+{
+	return QSettings().value("network/angleshift").toDouble();
+}
+
+void AbstractMainWin::setAngleShift(double angleShift)
+{
+	QSettings().setValue("network/angleshift", angleShift);
+	renderer.updateAngleShiftMat();
+}
+
 bool AbstractMainWin::isFullscreen() const
 {
 	return QSettings().value("window/fullscreen").toBool();

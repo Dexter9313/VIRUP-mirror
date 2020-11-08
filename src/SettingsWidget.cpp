@@ -43,6 +43,10 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addUIntSetting("smoothshadows", 0, tr("Shadow Smoothing Quality"), 0, 5);
 	addBoolSetting("dithering", true, tr("Enable Dithering"));
 	addBoolSetting("bloom", true, tr("Bloom"));
+	addDoubleSetting("vfov", 0.0, tr("Vertical field of view (0=auto)"), 0.0,
+	                 360.0);
+	addDoubleSetting("hfov", 0.0, tr("Horizontal field of view (0=auto)"), 0.0,
+	                 360.0);
 
 	InputManager inputManager;
 	addGroup("controls", tr("Controls"));
@@ -74,8 +78,9 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addBoolSetting("server", true, tr("Server"));
 	addStringSetting("ip", "127.0.0.1", tr("IP address of server (if client)"));
 	addUIntSetting("port", 5000, tr("IP port"), 1025, 49999);
-	addIntSetting("angleshift", 0,
-	              tr("Angle shift compared to server (degrees)"), -180, 180);
+	addDoubleSetting("angleshift", 0.0,
+	                 tr("Angle shift compared to server (degrees)"), -180.0,
+	                 180.0);
 
 	addGroup("scripting", tr("Scripting"));
 	addDirPathSetting(

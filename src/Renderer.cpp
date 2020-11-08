@@ -24,11 +24,6 @@ Renderer::Renderer(AbstractMainWin& window, VRHandler& vrHandler)
     : window(window)
     , vrHandler(vrHandler)
 {
-	if(!QSettings().value("network/server").toBool())
-	{
-		angleShiftMat.rotate(QSettings().value("network/angleshift").toInt(),
-		                     QVector3D(0.f, 1.f, 0.f));
-	}
 }
 
 void Renderer::init()
@@ -38,16 +33,35 @@ void Renderer::init()
 		clean();
 	}
 
+	vFOV = QSettings().value("graphics/vfov").toDouble();
+	hFOV = QSettings().value("graphics/hfov").toDouble();
+	if(vFOV == 0.0)
+	{
+		if(hFOV == 0.0)
+		{
+			vFOV = 70.0;
+		}
+		else
+		{
+			vFOV = hFOV / getAspectRatio();
+		}
+	}
+	if(hFOV == 0.0)
+	{
+		hFOV = getAspectRatio() * vFOV;
+	}
+
 	dbgCamera = new DebugCamera(vrHandler);
 	dbgCamera->lookAt({2, 0, 2}, {0, 0, 0}, {0, 0, 1});
-	dbgCamera->setPerspectiveProj(70.0f, getAspectRatio());
+	dbgCamera->setPerspectiveProj(vFOV, hFOV / vFOV);
 
 	auto defaultCam = new BasicCamera(vrHandler);
 	defaultCam->lookAt({1, 1, 1}, {0, 0, 0}, {0, 0, 1});
-	defaultCam->setPerspectiveProj(70.0f, getAspectRatio());
+	defaultCam->setPerspectiveProj(vFOV, hFOV / vFOV);
 	appendSceneRenderPath("default", RenderPath(defaultCam));
 
 	reloadPostProcessingTargets();
+	updateAngleShiftMat();
 
 	initialized = true;
 }
@@ -59,6 +73,24 @@ void Renderer::windowResized()
 		return;
 	}
 
+	vFOV = QSettings().value("graphics/vfov").toDouble();
+	hFOV = QSettings().value("graphics/hfov").toDouble();
+	if(vFOV == 0.0)
+	{
+		if(hFOV == 0.0)
+		{
+			vFOV = 70.0;
+		}
+		else
+		{
+			vFOV = hFOV / getAspectRatio();
+		}
+	}
+	if(hFOV == 0.0)
+	{
+		hFOV = getAspectRatio() * vFOV;
+	}
+
 	QSettings().setValue("window/width", window.size().width());
 	QSettings().setValue("window/height", window.size().height());
 	if(QSettings().value("window/forcerenderresolution").toBool())
@@ -67,9 +99,9 @@ void Renderer::windowResized()
 	}
 	for(auto pair : sceneRenderPipeline_)
 	{
-		pair.second.camera->setPerspectiveProj(70.0f, getAspectRatio());
+		pair.second.camera->setPerspectiveProj(vFOV, hFOV / vFOV);
 	}
-	dbgCamera->setPerspectiveProj(70.0f, getAspectRatio());
+	dbgCamera->setPerspectiveProj(vFOV, hFOV / vFOV);
 	reloadPostProcessingTargets();
 }
 
@@ -205,6 +237,16 @@ void Renderer::reloadPostProcessingTargets()
 	if(vrHandler.isEnabled())
 	{
 		vrHandler.reloadPostProcessingTargets();
+	}
+}
+
+void Renderer::updateAngleShiftMat()
+{
+	angleShiftMat = QMatrix4x4();
+	if(!QSettings().value("network/server").toBool())
+	{
+		angleShiftMat.rotate(QSettings().value("network/angleshift").toDouble(),
+		                     QVector3D(0.f, 1.f, 0.f));
 	}
 }
 

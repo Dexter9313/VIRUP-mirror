@@ -132,14 +132,11 @@ QMatrix4x4 StereoBeamerHandler::getEyeViewMatrix(Side eye) const
 	return res;
 }
 
-QMatrix4x4 StereoBeamerHandler::getProjectionMatrix(Side /*eye*/,
-                                                    float nearPlan,
-                                                    float farPlan) const
+QMatrix4x4 StereoBeamerHandler::getProjectionMatrix(
+    Side /*eye*/, QMatrix4x4 const& defaultProjMatrix, float /*nearPlan*/,
+    float /*farPlan*/) const
 {
-	const float fovV(40.f), fovH(36.f);
-	QMatrix4x4 result;
-	result.perspective(fovV, fovH / fovV, nearPlan, farPlan);
-	return result;
+	return defaultProjMatrix;
 }
 
 void StereoBeamerHandler::resetPos() {}

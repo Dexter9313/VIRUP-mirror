@@ -55,6 +55,8 @@ class Renderer
 	void windowResized();
 	QSize getSize() const;
 	float getAspectRatio() const;
+	float getVerticalFOV() const { return vFOV; };
+	float getHorizontalFOV() const { return hFOV; };
 	/**
 	 * @brief Returns a constant reference to the @ref BasicCamera used for
 	 * rendering during specific scene rendering path.
@@ -142,6 +144,7 @@ class Renderer
 	 * Will also call @ref VRHandler#reloadPostProcessingTargets if necessary.
 	 */
 	void reloadPostProcessingTargets();
+	void updateAngleShiftMat();
 	void renderVRControls() const;
 	void renderFrame();
 	void clean();
@@ -192,6 +195,8 @@ class Renderer
 	DebugCamera* dbgCamera = nullptr;
 
 	QMatrix4x4 angleShiftMat;
+	float vFOV = 0.f;
+	float hFOV = 0.f;
 
 	QList<QPair<QString, RenderPath>> sceneRenderPipeline_;
 
