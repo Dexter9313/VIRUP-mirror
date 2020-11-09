@@ -50,7 +50,7 @@ class CSVObjects : public UniverseElement
 		QString name;
 	};
 
-	struct Star
+	struct Object
 	{
 		double x;
 		double y;
@@ -78,10 +78,10 @@ class CSVObjects : public UniverseElement
 		return (x < lo) ? lo : ((x > hi) ? hi : x);
 	}
 	static QColor colorFromColorIndex(float ci);
-	static Star parseLine(QString const& line,
-	                      std::map<QString, int> const& columnsNumbers);
+	static Object parseLine(QString const& line,
+	                        std::map<QString, int> const& columnsNumbers);
 
-	std::vector<Star> stars;
+	std::vector<Object> objects;
 
 	std::map<QString, unsigned int> indexByName;
 

@@ -76,10 +76,10 @@ CSVObjects::CSVObjects(QString const& csvFile, bool galaxies)
 		while(line != "")
 		{
 			++i;
-			stars.push_back(parseLine(line, columnsNumbers));
-			for(auto const& starName : stars[stars.size() - 1].names)
+			objects.push_back(parseLine(line, columnsNumbers));
+			for(auto const& starName : objects[objects.size() - 1].names)
 			{
-				indexByName[starName.name] = stars.size() - 1;
+				indexByName[starName.name] = objects.size() - 1;
 			}
 			line = file.readLine().data();
 		}
@@ -87,15 +87,15 @@ CSVObjects::CSVObjects(QString const& csvFile, bool galaxies)
 	}
 
 	std::vector<float> vertices;
-	for(auto star : stars)
+	for(auto object : objects)
 	{
-		vertices.push_back(star.x);
-		vertices.push_back(star.y);
-		vertices.push_back(star.z);
-		vertices.push_back(star.absmag);
-		vertices.push_back(star.color.redF());
-		vertices.push_back(star.color.greenF());
-		vertices.push_back(star.color.blueF());
+		vertices.push_back(object.x);
+		vertices.push_back(object.y);
+		vertices.push_back(object.z);
+		vertices.push_back(object.absmag);
+		vertices.push_back(object.color.redF());
+		vertices.push_back(object.color.greenF());
+		vertices.push_back(object.color.blueF());
 	}
 
 	mesh.setVertices(vertices, shader,
@@ -155,13 +155,13 @@ CSVObjects::CSVObjects(QString const& csvFile,
 					continue;
 				}
 
-				Star star(stars[index]);
+				Object object(objects[index]);
 				elements.push_back(vertices.size() / 3);
-				vertices.push_back(star.x);
-				vertices.push_back(star.y);
-				vertices.push_back(star.z);
+				vertices.push_back(object.x);
+				vertices.push_back(object.y);
+				vertices.push_back(object.z);
 
-				currentPosSum += Vector3(star.x, star.y, star.z);
+				currentPosSum += Vector3(object.x, object.y, object.z);
 				++posNumber;
 			}
 			elements.push_back(0xFFFF);
@@ -281,11 +281,11 @@ QColor CSVObjects::colorFromColorIndex(float ci)
 	    Utils::toQt(blackbody::colorFromTemperature(temperature)));
 }
 
-CSVObjects::Star
+CSVObjects::Object
     CSVObjects::parseLine(QString const& line,
                           std::map<QString, int> const& columnsNumbers)
 {
-	Star result;
+	Object result;
 	QStringList splitted(line.split(","));
 
 	try
