@@ -12,6 +12,7 @@
 #include "AbstractMainWin.hpp"
 #include "Text3D.hpp"
 
+#include "CSVObjects.hpp"
 #include "CosmologicalSimulation.hpp"
 #include "Grid.hpp"
 #include "MovementControls.hpp"
@@ -441,6 +442,8 @@ class MainWin : public AbstractMainWin
 
 	bool loaded                             = false;
 	CosmologicalSimulation* cosmologicalSim = nullptr;
+	CSVObjects* hyg                         = nullptr;
+	CSVObjects* sdss                        = nullptr;
 
 	Grid* grid    = nullptr;
 	bool showGrid = QSettings().value("misc/showgrid").toBool();

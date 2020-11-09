@@ -705,6 +705,13 @@ void MainWin::initScene()
 	cosmologicalSim->unit           = 1.0;
 	cosmologicalSim->solarsystemPosition = Vector3(8.29995608, 0.0, -0.027);
 
+	hyg       = new CSVObjects(QSettings().value("data/hyg").toString(),
+                         QSettings().value("data/hygcon").toString());
+	hyg->unit = 0.001;
+
+	sdss = new CSVObjects(QSettings().value("data/sdss").toString(), true);
+	sdss->unit = 1000.0;
+
 	// PLANETS LOADING
 	debugText = new Text3D(textWidth, textHeight);
 	debugText->setFlags(Qt::AlignCenter);
@@ -1033,6 +1040,10 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& pathId)
 	GLHandler::glf().glDepthFunc(GL_LEQUAL);
 	GLHandler::glf().glEnable(GL_DEPTH_CLAMP);
 	GLHandler::glf().glEnable(GL_CLIP_DISTANCE0);
+	hyg->constellationsLabels = CelestialBodyRenderer::renderLabels;
+	hyg->constellationsAlpha  = CelestialBodyRenderer::renderLabels;
+	hyg->render(cam, toneMappingModel);
+	sdss->render(cam, toneMappingModel);
 	cosmologicalSim->render(cam, toneMappingModel);
 
 	// TODO(florian) better than this
@@ -1169,6 +1180,8 @@ MainWin::~MainWin()
 	delete orbitalSystem;
 	delete debugText;
 	delete movementControls;
+	delete sdss;
+	delete hyg;
 	delete cosmologicalSim;
 	delete grid;
 }

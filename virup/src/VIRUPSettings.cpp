@@ -22,6 +22,10 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
     : SettingsWidget(parent)
 {
 	insertGroup("data", tr("Data"), 0);
+	addFilePathSetting("hyg", QString(""), tr("HYG Data File"));
+	addFilePathSetting("hygcon", QString(""), tr("HYG Constellation File"));
+	addFilePathSetting("sdss", QString(""), tr("SDSS Data File"));
+	addFilePathSetting("sdssatlas", QString(""), tr("SDSS Atlas File"));
 	addFilePathSetting("gazfile", QString(""), tr("Gaz File"));
 	addFilePathSetting("starsfile", QString(""), tr("Stars File"));
 	addFilePathSetting("darkmatterfile", QString(""), tr("Dark Matter File"));
