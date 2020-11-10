@@ -16,14 +16,47 @@ AbstractMainWin::AbstractMainWin()
 	m_context.create();
 }
 
-double AbstractMainWin::getAngleShift() const
+double AbstractMainWin::getHorizontalFOV() const
+{
+	return renderer.getHorizontalFOV();
+}
+
+double AbstractMainWin::getVerticalFOV() const
+{
+	return renderer.getVerticalFOV();
+}
+
+void AbstractMainWin::setHorizontalFOV(double fov)
+{
+	QSettings().setValue("graphics/hfov", fov);
+	renderer.updateFOV();
+}
+
+void AbstractMainWin::setVerticalFOV(double fov)
+{
+	QSettings().setValue("graphics/vfov", fov);
+	renderer.updateFOV();
+}
+
+double AbstractMainWin::getHorizontalAngleShift() const
 {
 	return QSettings().value("network/angleshift").toDouble();
 }
 
-void AbstractMainWin::setAngleShift(double angleShift)
+double AbstractMainWin::getVerticalAngleShift() const
+{
+	return QSettings().value("network/vangleshift").toDouble();
+}
+
+void AbstractMainWin::setHorizontalAngleShift(double angleShift)
 {
 	QSettings().setValue("network/angleshift", angleShift);
+	renderer.updateAngleShiftMat();
+}
+
+void AbstractMainWin::setVerticalAngleShift(double angleShift)
+{
+	QSettings().setValue("network/vangleshift", angleShift);
 	renderer.updateAngleShiftMat();
 }
 
@@ -585,6 +618,14 @@ void AbstractMainWin::paintGL()
 	}
 	PythonQtHandler::evalScript(
 	    "if \"updateScene\" in dir():\n\tupdateScene()");
+
+	if(renderer.getCalibrationCompass())
+	{
+		renderer.getCalibrationCompassPtr()->exposure
+		    = toneMappingModel->exposure;
+		renderer.getCalibrationCompassPtr()->dynamicrange
+		    = toneMappingModel->dynamicrange;
+	}
 
 	// Render frame
 	renderer.renderFrame();

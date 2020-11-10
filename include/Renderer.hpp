@@ -23,6 +23,7 @@
 #include <utility>
 
 #include "BasicCamera.hpp"
+#include "CalibrationCompass.hpp"
 #include "DebugCamera.hpp"
 #include "vr/VRHandler.hpp"
 
@@ -54,7 +55,8 @@ class Renderer
 	void init();
 	void windowResized();
 	QSize getSize() const;
-	float getAspectRatio() const;
+	float getRenderTargetAspectRatio() const;
+	float getAspectRatioFromFOV() const;
 	float getVerticalFOV() const { return vFOV; };
 	float getHorizontalFOV() const { return hFOV; };
 	/**
@@ -144,7 +146,28 @@ class Renderer
 	 * Will also call @ref VRHandler#reloadPostProcessingTargets if necessary.
 	 */
 	void reloadPostProcessingTargets();
+	void updateFOV();
 	void updateAngleShiftMat();
+	bool getCalibrationCompass() const { return renderCompass; };
+	CalibrationCompass* getCalibrationCompassPtr() { return compass; };
+	CalibrationCompass const* getCalibrationCompassPtr() const
+	{
+		return compass;
+	};
+	void setCalibrationCompass(bool on)
+	{
+		if(on != renderCompass)
+		{
+			toggleCalibrationCompass();
+		}
+	};
+	void toggleCalibrationCompass();
+	double getDoubleFarRightPixelSubtendedAngle()
+	{
+		return CalibrationCompass::getDoubleFarRightPixelSubtendedAngle(
+		    hFOV, getSize().width());
+	};
+
 	void renderVRControls() const;
 	void renderFrame();
 	void clean();
@@ -206,6 +229,9 @@ class Renderer
 	GLHandler::RenderTarget multisampledTarget                   = {};
 	std::array<GLHandler::RenderTarget, 2> postProcessingTargets = {{{}, {}}};
 	float lastFrameAverageLuminance                              = 0.f;
+
+	bool renderCompass          = false;
+	CalibrationCompass* compass = nullptr;
 };
 
 template <class T>

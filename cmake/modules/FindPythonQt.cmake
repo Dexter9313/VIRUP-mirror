@@ -12,7 +12,12 @@ endif()
 # Python2
 find_path(PYTHONQT_PYTHON2_INSTALL_DIR NAMES include/PythonQt/PythonQt.h include/PythonQt5/PythonQt.h include/Qt5Python27/PythonQt/PythonQt.h DOC "Directory where PythonQt was installed.")
 find_path(PYTHONQT_PYTHON2_INCLUDE_DIR PythonQt.h PATHS "${PYTHONQT_PYTHON2_INSTALL_DIR}/include/PythonQt" "${PYTHONQT_PYTHON2_INSTALL_DIR}/include/PythonQt5" "${PYTHONQT_PYTHON2_INSTALL_DIR}/include/Qt5Python27/PythonQt" DOC "Path to the PythonQt include directory")
-find_library(PYTHONQT_PYTHON2_LIBRARY NAMES PythonQt QtPython PythonQt-Qt5-Python3.6 PATHS "${PYTHONQT_PYTHON2_INSTALL_DIR}/lib" DOC "The PythonQt library.")
+find_library(PYTHONQT_PYTHON2_LIBRARY NAMES PythonQt QtPython PythonQt-Qt5-Python2.7 Qt5Python27 PATHS "${PYTHONQT_PYTHON2_INSTALL_DIR}/lib" DOC "The PythonQt library.")
+
+message(STATUS "OK")
+message(STATUS "${PYTHONQT_PYTHON2_INSTALL_DIR}")
+message(STATUS "${PYTHONQT_PYTHON2_INCLUDE_DIR}")
+message(STATUS "${PYTHONQT_PYTHON2_LIBRARY}")
 
 mark_as_advanced(PYTHONQT_PYTHON2_INSTALL_DIR)
 mark_as_advanced(PYTHONQT_PYTHON2_INCLUDE_DIR)

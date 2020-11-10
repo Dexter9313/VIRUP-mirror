@@ -90,11 +90,21 @@
 class AbstractMainWin : public QWindow
 {
 	Q_OBJECT
+	Q_PROPERTY(float horizontalFOV READ getHorizontalFOV()
+	               WRITE setHorizontalFOV)
+	Q_PROPERTY(float verticalFOV READ getVerticalFOV() WRITE setVerticalFOV)
 	/**
-	 * @brief Angle shift in degrees compared to server if current instance is a
-	 * network client.
+	 * @brief Horizontal angle shift in degrees compared to server if current
+	 * instance is a network client.
 	 */
-	Q_PROPERTY(double angleShift READ getAngleShift WRITE setAngleShift)
+	Q_PROPERTY(double horizontalAngleShift READ getHorizontalAngleShift WRITE
+	               setHorizontalAngleShift)
+	/**
+	 * @brief Vertical angle shift in degrees compared to server if current
+	 * instance is a network client.
+	 */
+	Q_PROPERTY(double verticalAngleShift READ getVerticalAngleShift WRITE
+	               setVerticalAngleShift)
 	/**
 	 * @brief Wether the window is displayed in full screen or not.
 	 *
@@ -128,13 +138,37 @@ class AbstractMainWin : public QWindow
 	AbstractMainWin();
 
 	/**
-	 * @getter{angleshift}
+	 * @getter{horizontalFOV}
 	 */
-	double getAngleShift() const;
+	double getHorizontalFOV() const;
 	/**
-	 * @setter{angleshift}
+	 * @getter{verticalFOV}
 	 */
-	void setAngleShift(double angleShift);
+	double getVerticalFOV() const;
+	/**
+	 * @setter{horizontalFOV}
+	 */
+	void setHorizontalFOV(double fov);
+	/**
+	 * @setter{verticalFOV}
+	 */
+	void setVerticalFOV(double fov);
+	/**
+	 * @getter{horizontalAngleShift}
+	 */
+	double getHorizontalAngleShift() const;
+	/**
+	 * @getter{verticalAngleShift}
+	 */
+	double getVerticalAngleShift() const;
+	/**
+	 * @setter{horizontalAngleShift}
+	 */
+	void setHorizontalAngleShift(double angleShift);
+	/**
+	 * @setter{verticalAngleShift}
+	 */
+	void setVerticalAngleShift(double angleShift);
 	/**
 	 * @getter{fullscreen}
 	 */
@@ -176,6 +210,24 @@ class AbstractMainWin : public QWindow
 	 * @toggle{wireframe}
 	 */
 	void toggleWireframe();
+	void toggleCalibrationCompass() { renderer.toggleCalibrationCompass(); };
+	void toggleCalibrationCompassMode()
+	{
+		CalibrationCompass::forceProtractorMode()
+		    = !CalibrationCompass::forceProtractorMode();
+	};
+	double getCalibrationCompassTickResolution()
+	{
+		return CalibrationCompass::getCurrentTickResolution();
+	};
+	double getDoubleFarRightPixelSubtendedAngle()
+	{
+		return renderer.getDoubleFarRightPixelSubtendedAngle();
+	};
+	void setCalibrationCompassTickResolution(double tickRes)
+	{
+		CalibrationCompass::forcedTickResolution() = tickRes;
+	}
 	/**
 	 * @brief Reloads all shaders managed by ShadersLoader.
 	 */

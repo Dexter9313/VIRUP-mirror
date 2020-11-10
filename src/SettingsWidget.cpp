@@ -79,8 +79,11 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addStringSetting("ip", "127.0.0.1", tr("IP address of server (if client)"));
 	addUIntSetting("port", 5000, tr("IP port"), 1025, 49999);
 	addDoubleSetting("angleshift", 0.0,
-	                 tr("Angle shift compared to server (degrees)"), -180.0,
-	                 180.0);
+	                 tr("Horizontal angle shift compared to server (degrees)"),
+	                 -180.0, 180.0);
+	addDoubleSetting("vangleshift", 0.0,
+	                 tr("Vertical angle shift compared to server (degrees)"),
+	                 -180.0, 180.0);
 
 	addGroup("scripting", tr("Scripting"));
 	addDirPathSetting(

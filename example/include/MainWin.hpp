@@ -5,6 +5,7 @@
 
 #include "AbstractMainWin.hpp"
 #include "Billboard.hpp"
+#include "CalibrationCompass.hpp"
 #include "Model.hpp"
 #include "Primitives.hpp"
 #include "ShaderProgram.hpp"
@@ -28,6 +29,8 @@ class MainWin : public AbstractMainWin
 			stream >> dynamicrange;
 			stream >> yaw;
 			stream >> pitch;
+			stream >> servHFOV;
+			stream >> servRTWidth;
 		};
 		virtual void writeInDataStream(QDataStream& stream) override
 		{
@@ -35,12 +38,16 @@ class MainWin : public AbstractMainWin
 			stream << dynamicrange;
 			stream << yaw;
 			stream << pitch;
+			stream << servHFOV;
+			stream << servRTWidth;
 		};
 
-		float exposure     = 0.f;
-		float dynamicrange = 0.f;
-		float yaw          = 0.f;
-		float pitch        = 0.f;
+		float exposure           = 0.f;
+		float dynamicrange       = 0.f;
+		float yaw                = 0.f;
+		float pitch              = 0.f;
+		float servHFOV           = 70.f;
+		unsigned int servRTWidth = 1920;
 	};
 
 	MainWin() = default;
@@ -80,6 +87,8 @@ class MainWin : public AbstractMainWin
 		toneMappingModel->dynamicrange = state.dynamicrange;
 		yaw                            = state.yaw;
 		pitch                          = state.pitch;
+		CalibrationCompass::serverHorizontalFOV()     = state.servHFOV;
+		CalibrationCompass::serverRenderTargetWidth() = state.servRTWidth;
 	};
 	virtual void writeState(AbstractState& s) const override
 	{
@@ -88,6 +97,8 @@ class MainWin : public AbstractMainWin
 		state.dynamicrange = toneMappingModel->dynamicrange;
 		state.yaw          = yaw;
 		state.pitch        = pitch;
+		state.servHFOV     = renderer.getHorizontalFOV();
+		state.servRTWidth  = renderer.getSize().width();
 	};
 
   private:

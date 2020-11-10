@@ -6,7 +6,7 @@
 #Python2
 find_path(PYTHONQT_QTALL_PYTHON2_INSTALL_DIR NAMES include/PythonQt/PythonQt_QtAll.h include/Qt5Python27/PythonQt/PythonQt_QtAll.h include/PythonQt5/PythonQt_QtAll.h DOC "Directory where PythonQt_QtAll.h was installed.")
 find_path(PYTHONQT_QTALL_PYTHON2_INCLUDE_DIR PythonQt_QtAll.h PATHS "${PYTHONQT_QTALL_PYTHON2_INSTALL_DIR}/include/PythonQt" "${PYTHONQT_QTALL_PYTHON2_INSTALL_DIR}/include/PythonQt5" "${PYTHONQT_QTALL_PYTHON2_INSTALL_DIR}/include/Qt5Python27/PythonQt" DOC "Path to the PythonQt_QtAll include directory")
-find_library(PYTHONQT_QTALL_PYTHON2_LIBRARY NAMES PythonQt_QtAll QtPython_QtAll PythonQt_QtAll-Qt5-Python3.6 PATHS "${PYTHONQT_QTALL_PYTHON2_INSTALL_DIR}/extensions/PythonQt_QtAll" DOC "The PythonQt_QtAll library.")
+find_library(PYTHONQT_QTALL_PYTHON2_LIBRARY NAMES PythonQt_QtAll QtPython_QtAll PythonQt_QtAll-Qt5-Python2.7 Qt5Python27_QtAll PATHS "${PYTHONQT_QTALL_PYTHON2_INSTALL_DIR}/extensions/PythonQt_QtAll" DOC "The PythonQt_QtAll library.")
 
 mark_as_advanced(PYTHONQT_QTALL_PYTHON2_INSTALL_DIR)
 mark_as_advanced(PYTHONQT_QTALL_PYTHON2_INCLUDE_DIR)
