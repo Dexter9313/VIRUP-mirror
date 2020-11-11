@@ -158,6 +158,8 @@ class MainWin : public AbstractMainWin
 			stream >> renderOrbits;
 			stream >> planetarySystemName;
 			stream >> cosmoLum;
+			stream >> servHFOV;
+			stream >> servRTWidth;
 		};
 		virtual void writeInDataStream(QDataStream& stream) override
 		{
@@ -170,6 +172,8 @@ class MainWin : public AbstractMainWin
 			stream << renderOrbits;
 			stream << planetarySystemName;
 			stream << cosmoLum;
+			stream << servHFOV;
+			stream << servRTWidth;
 		};
 
 		ToneMappingModel::State toneMappingState;
@@ -180,6 +184,8 @@ class MainWin : public AbstractMainWin
 		float renderOrbits;
 		QString planetarySystemName;
 		float cosmoLum;
+		float servHFOV           = 70.f;
+		unsigned int servRTWidth = 1920;
 	};
 
 	MainWin();
@@ -412,6 +418,8 @@ class MainWin : public AbstractMainWin
 		CelestialBodyRenderer::renderOrbits = state.renderOrbits;
 		planetarySystemName                 = state.planetarySystemName;
 		setCosmoLum(state.cosmoLum);
+		CalibrationCompass::serverHorizontalFOV()     = state.servHFOV;
+		CalibrationCompass::serverRenderTargetWidth() = state.servRTWidth;
 	};
 	virtual void writeState(AbstractState& s) const override
 	{
@@ -431,6 +439,8 @@ class MainWin : public AbstractMainWin
 		state.renderOrbits        = CelestialBodyRenderer::renderOrbits;
 		state.planetarySystemName = planetarySystemName;
 		state.cosmoLum            = getCosmoLum();
+		state.servHFOV            = renderer.getHorizontalFOV();
+		state.servRTWidth         = renderer.getSize().width();
 	};
 
   private:
