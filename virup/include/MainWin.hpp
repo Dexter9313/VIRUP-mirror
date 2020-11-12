@@ -159,6 +159,7 @@ class MainWin : public AbstractMainWin
 			stream >> planetarySystemName;
 			stream >> cosmoLum;
 			stream >> compass;
+			stream >> compassForceTickRes;
 			stream >> compassProtractor;
 			stream >> servHFOV;
 			stream >> servRTWidth;
@@ -175,6 +176,7 @@ class MainWin : public AbstractMainWin
 			stream << planetarySystemName;
 			stream << cosmoLum;
 			stream << compass;
+			stream << compassForceTickRes;
 			stream << compassProtractor;
 			stream << servHFOV;
 			stream << servRTWidth;
@@ -188,10 +190,11 @@ class MainWin : public AbstractMainWin
 		float renderOrbits;
 		QString planetarySystemName;
 		float cosmoLum;
-		bool compass             = false;
-		bool compassProtractor   = false;
-		float servHFOV           = 70.f;
-		unsigned int servRTWidth = 1920;
+		bool compass               = false;
+		double compassForceTickRes = 0.0;
+		bool compassProtractor     = false;
+		float servHFOV             = 70.f;
+		unsigned int servRTWidth   = 1920;
 	};
 
 	MainWin();
@@ -425,8 +428,9 @@ class MainWin : public AbstractMainWin
 		planetarySystemName                 = state.planetarySystemName;
 		setCosmoLum(state.cosmoLum);
 		renderer.setCalibrationCompass(state.compass);
-		CalibrationCompass::forceProtractorMode()     = state.compassProtractor;
-		CalibrationCompass::serverHorizontalFOV()     = state.servHFOV;
+		CalibrationCompass::forcedTickResolution() = state.compassForceTickRes;
+		CalibrationCompass::forceProtractorMode()  = state.compassProtractor;
+		CalibrationCompass::serverHorizontalFOV()  = state.servHFOV;
 		CalibrationCompass::serverRenderTargetWidth() = state.servRTWidth;
 	};
 	virtual void writeState(AbstractState& s) const override
@@ -448,6 +452,7 @@ class MainWin : public AbstractMainWin
 		state.planetarySystemName = planetarySystemName;
 		state.cosmoLum            = getCosmoLum();
 		state.compass             = renderer.getCalibrationCompass();
+		state.compassForceTickRes = CalibrationCompass::forcedTickResolution();
 		state.compassProtractor   = CalibrationCompass::forceProtractorMode();
 		state.servHFOV            = renderer.getHorizontalFOV();
 		state.servRTWidth         = renderer.getSize().width();
