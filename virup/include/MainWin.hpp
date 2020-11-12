@@ -158,6 +158,8 @@ class MainWin : public AbstractMainWin
 			stream >> renderOrbits;
 			stream >> planetarySystemName;
 			stream >> cosmoLum;
+			stream >> compass;
+			stream >> compassProtractor;
 			stream >> servHFOV;
 			stream >> servRTWidth;
 		};
@@ -172,6 +174,8 @@ class MainWin : public AbstractMainWin
 			stream << renderOrbits;
 			stream << planetarySystemName;
 			stream << cosmoLum;
+			stream << compass;
+			stream << compassProtractor;
 			stream << servHFOV;
 			stream << servRTWidth;
 		};
@@ -184,6 +188,8 @@ class MainWin : public AbstractMainWin
 		float renderOrbits;
 		QString planetarySystemName;
 		float cosmoLum;
+		bool compass             = false;
+		bool compassProtractor   = false;
 		float servHFOV           = 70.f;
 		unsigned int servRTWidth = 1920;
 	};
@@ -418,6 +424,8 @@ class MainWin : public AbstractMainWin
 		CelestialBodyRenderer::renderOrbits = state.renderOrbits;
 		planetarySystemName                 = state.planetarySystemName;
 		setCosmoLum(state.cosmoLum);
+		renderer.setCalibrationCompass(state.compass);
+		CalibrationCompass::forceProtractorMode()     = state.compassProtractor;
 		CalibrationCompass::serverHorizontalFOV()     = state.servHFOV;
 		CalibrationCompass::serverRenderTargetWidth() = state.servRTWidth;
 	};
@@ -439,6 +447,8 @@ class MainWin : public AbstractMainWin
 		state.renderOrbits        = CelestialBodyRenderer::renderOrbits;
 		state.planetarySystemName = planetarySystemName;
 		state.cosmoLum            = getCosmoLum();
+		state.compass             = renderer.getCalibrationCompass();
+		state.compassProtractor   = CalibrationCompass::forceProtractorMode();
 		state.servHFOV            = renderer.getHorizontalFOV();
 		state.servRTWidth         = renderer.getSize().width();
 	};
