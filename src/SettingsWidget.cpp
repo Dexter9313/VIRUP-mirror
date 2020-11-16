@@ -73,6 +73,8 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addBoolSetting(
 	    "thirdrender", false,
 	    tr("Force 2D render on screen\n(will decrease performance !)"));
+	addDoubleSetting("stereomultiplier", 1.0,
+	                 tr("Stereo multiplier (if applicable)"), 0.0, 1000.0);
 
 	addGroup("network", tr("Network"));
 	addBoolSetting("server", true, tr("Server"));
@@ -221,10 +223,15 @@ void SettingsWidget::addDoubleSetting(QString const& name, double defaultVal,
 		settings.setValue(fullName, defaultVal);
 	}
 
+	double currentVal(settings.value(fullName).toDouble());
+
+	qDebug() << label;
+	qDebug() << currentVal;
+
 	auto sbox = new QDoubleSpinBox(this);
 	sbox->setRange(minVal, maxVal);
 	sbox->setDecimals(decimals);
-	sbox->setValue(settings.value(fullName).toDouble());
+	sbox->setValue(currentVal);
 
 	connect(sbox,
 	        static_cast<void (QDoubleSpinBox::*)(double)>(

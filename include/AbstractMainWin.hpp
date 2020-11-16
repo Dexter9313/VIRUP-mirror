@@ -123,6 +123,7 @@ class AbstractMainWin : public QWindow
 	 * @accessors vrIsEnabled(), setVR()
 	 */
 	Q_PROPERTY(bool vr READ vrIsEnabled WRITE setVR)
+	Q_PROPERTY(double stereomultiplier READ getStereoMultiplier WRITE setStereoMultiplier)
 	/**
 	 * @brief Gamma value to use for gamma correction.
 	 */
@@ -193,6 +194,14 @@ class AbstractMainWin : public QWindow
 	 * @setter{vr, vr}
 	 */
 	void setVR(bool vr);
+	/**
+	 * @getter{stereomultiplier}
+	 */
+	double getStereoMultiplier() const;
+	/**
+	 * @setter{stereomultiplier}
+	 */
+	void setStereoMultiplier(double sm);
 	/**
 	 * @brief Destroys the @ref AbstractMainWin instance, freeing its resources.
 	 *

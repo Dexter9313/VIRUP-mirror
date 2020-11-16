@@ -158,6 +158,7 @@ class MainWin : public AbstractMainWin
 			stream >> renderOrbits;
 			stream >> planetarySystemName;
 			stream >> cosmoLum;
+			stream >> stereoMultiplier;
 			stream >> compass;
 			stream >> compassForceTickRes;
 			stream >> compassProtractor;
@@ -175,11 +176,11 @@ class MainWin : public AbstractMainWin
 			stream << renderOrbits;
 			stream << planetarySystemName;
 			stream << cosmoLum;
+			stream << stereoMultiplier;
 			stream << compass;
 			stream << compassForceTickRes;
 			stream << compassProtractor;
 			stream << servHFOV;
-			stream << servRTWidth;
 		};
 
 		ToneMappingModel::State toneMappingState;
@@ -195,6 +196,7 @@ class MainWin : public AbstractMainWin
 		bool compassProtractor     = false;
 		float servHFOV             = 70.f;
 		unsigned int servRTWidth   = 1920;
+		double stereoMultiplier    = 1.0;
 	};
 
 	MainWin();
@@ -432,6 +434,7 @@ class MainWin : public AbstractMainWin
 		CalibrationCompass::forceProtractorMode()  = state.compassProtractor;
 		CalibrationCompass::serverHorizontalFOV()  = state.servHFOV;
 		CalibrationCompass::serverRenderTargetWidth() = state.servRTWidth;
+		setStereoMultiplier(state.stereoMultiplier);
 	};
 	virtual void writeState(AbstractState& s) const override
 	{
@@ -456,6 +459,7 @@ class MainWin : public AbstractMainWin
 		state.compassProtractor   = CalibrationCompass::forceProtractorMode();
 		state.servHFOV            = renderer.getHorizontalFOV();
 		state.servRTWidth         = renderer.getSize().width();
+		state.stereoMultiplier    = getStereoMultiplier();
 	};
 
   private:

@@ -112,7 +112,7 @@ void AbstractMainWin::setVR(bool vr)
 	}
 	else if(!vrHandler->isEnabled() && vr)
 	{
-		if(vrHandler->init())
+		if(vrHandler->init(renderer))
 		{
 			vrHandler->resetPos();
 		}
@@ -134,6 +134,18 @@ void AbstractMainWin::setVR(bool vr)
 void AbstractMainWin::toggleVR()
 {
 	setVR(!vrIsEnabled());
+}
+
+double AbstractMainWin::getStereoMultiplier() const
+{
+	return vrHandler->stereoMultiplier;
+}
+
+void AbstractMainWin::setStereoMultiplier(double sm)
+{
+	qDebug() << sm;
+	QSettings().setValue("vr/stereomultiplier", sm);
+	vrHandler->stereoMultiplier = sm;
 }
 
 void AbstractMainWin::takeScreenshot(QString path) const
