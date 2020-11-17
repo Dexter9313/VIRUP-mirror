@@ -65,6 +65,7 @@ int main(int argc, char* argv[])
 	}
 #endif
 
+	if(!QCoreApplication::arguments().contains("--no-launcher"))
 	{
 		Launcher launcher;
 		launcher.init();

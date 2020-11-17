@@ -158,12 +158,12 @@ class MainWin : public AbstractMainWin
 			stream >> renderOrbits;
 			stream >> planetarySystemName;
 			stream >> cosmoLum;
-			stream >> stereoMultiplier;
 			stream >> compass;
 			stream >> compassForceTickRes;
 			stream >> compassProtractor;
 			stream >> servHFOV;
 			stream >> servRTWidth;
+			stream >> stereoMultiplier;
 		};
 		virtual void writeInDataStream(QDataStream& stream) override
 		{
@@ -176,11 +176,12 @@ class MainWin : public AbstractMainWin
 			stream << renderOrbits;
 			stream << planetarySystemName;
 			stream << cosmoLum;
-			stream << stereoMultiplier;
 			stream << compass;
 			stream << compassForceTickRes;
 			stream << compassProtractor;
 			stream << servHFOV;
+			stream << servRTWidth;
+			stream << stereoMultiplier;
 		};
 
 		ToneMappingModel::State toneMappingState;

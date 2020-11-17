@@ -143,7 +143,6 @@ double AbstractMainWin::getStereoMultiplier() const
 
 void AbstractMainWin::setStereoMultiplier(double sm)
 {
-	qDebug() << sm;
 	QSettings().setValue("vr/stereomultiplier", sm);
 	vrHandler->stereoMultiplier = sm;
 }
@@ -709,8 +708,11 @@ AbstractMainWin::~AbstractMainWin()
 
 void AbstractMainWin::reloadBloomTargets()
 {
-	GLHandler::deleteRenderTarget(bloomTargets[0]);
-	GLHandler::deleteRenderTarget(bloomTargets[1]);
+	if(false)
+	{
+		GLHandler::deleteRenderTarget(bloomTargets[0]);
+		GLHandler::deleteRenderTarget(bloomTargets[1]);
+	}
 	if(!vrHandler->isEnabled())
 	{
 		bloomTargets[0]

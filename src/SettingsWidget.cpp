@@ -223,15 +223,10 @@ void SettingsWidget::addDoubleSetting(QString const& name, double defaultVal,
 		settings.setValue(fullName, defaultVal);
 	}
 
-	double currentVal(settings.value(fullName).toDouble());
-
-	qDebug() << label;
-	qDebug() << currentVal;
-
 	auto sbox = new QDoubleSpinBox(this);
 	sbox->setRange(minVal, maxVal);
 	sbox->setDecimals(decimals);
-	sbox->setValue(currentVal);
+	sbox->setValue(settings.value(fullName).toDouble());
 
 	connect(sbox,
 	        static_cast<void (QDoubleSpinBox::*)(double)>(

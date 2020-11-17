@@ -166,7 +166,7 @@ scenes = [
           TemporalData(1.0, solareclipsedt), UI(0.167)),
     # Phobos
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 30000, 'Phobos', 'Solar System'),
-          TemporalData(1.0), UI(0.167)),
+          TemporalData(1.0, solareclipsedt), UI(0.167)),
     # Saturn moons dynamics
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 2000000000, 'Saturn', 'Solar System'),
           TemporalData(100000.0), UI(0.167, True, True)),
