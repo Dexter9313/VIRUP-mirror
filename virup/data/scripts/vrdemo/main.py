@@ -152,7 +152,7 @@ def interpolateScene(sc0, sc1, t):
         interpolateUI(sc0.ui, sc1.ui, t)
     )
 
-solareclipsedt = QDateTime(QDate(2019, 7, 2), QTime(22, 18, 00))
+solareclipsedt = QDateTime(QDate(2020, 5, 13), QTime(20, 00, 46))
 
 scenes = [
     # International Space Station
@@ -166,12 +166,12 @@ scenes = [
           TemporalData(1.0, solareclipsedt), UI(0.167)),
     # Phobos
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 30000, 'Phobos', 'Solar System'),
-          TemporalData(1.0, solareclipsedt), UI(0.167)),
+          TemporalData(500.0), UI(0.167)),
     # Saturn moons dynamics
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 2000000000, 'Saturn', 'Solar System'),
           TemporalData(100000.0), UI(0.167, True, True)),
     # Enceladus
-    Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 1000000, 'Enceladus',  'Solar System'),
+    Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 3000000, 'Rhea',  'Solar System'),
           TemporalData(1.0), UI(0.167)),
     # Solar System dynamics
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 5.65181e+12, 'Sun', 'Solar System'),
@@ -179,17 +179,17 @@ scenes = [
     # Kepler-11 general area
     Scene(SpatialData(Vector3(-0.156822, 0.263175, -0.487417), 5e+10, 'Kepler-11', 'Kepler-11'),
            TemporalData(50000), UI(0.167, True, True)),
+    # Kepler-11 general area
+    Scene(SpatialData(Vector3(-0.156822, 0.263175, -0.487417), 1e+8, 'Kepler-11 f', 'Kepler-11'),
+           TemporalData(5000), UI(0.167)),
     # Milky Way
     Scene(SpatialData(Vector3(0.43, 8.24, 0.81), 6.171e+20),
-           TemporalData(), UI(0.0181)),
-    # Black Hole
-    Scene(SpatialData(Vector3(0.43, 8.24, 0.81), 1.0e+14),
-           TemporalData(), UI(0.0181)),
+           TemporalData(), UI(20*0.0181)),
     # Local Group
     Scene(SpatialData(Vector3(0.43, 8.24, 0.81), 2.469e+22),
-           TemporalData(), UI(55.8, False, True, True)),
+           TemporalData(), UI(55.8, False)),
     # Whole cube
-    Scene(SpatialData(Vector3(0.43, 8.24, 0.81), 1.2e+24),
+    Scene(SpatialData(Vector3(0.43, 8.24, 0.81), 1.2e+25),
            TemporalData(), UI(1015.0, False, False, True)),
 ]
 
@@ -201,10 +201,10 @@ def getCosmoShift():
     try:
         VRHandler
     except NameError:
-        return Vector3(personheight*3.24078e-20 / VIRUP.scale, 0, 0)
+        return Vector3(personheight*3.24078e-20 / VIRUP.scale, 0, 0.05 * personheight*3.24078e-20 / VIRUP.scale)
     else:
         if VRHandler.drivername != "OpenVR":
-            return Vector3(personheight*3.24078e-20 / VIRUP.scale, 0, 0)
+            return Vector3(personheight*3.24078e-20 / VIRUP.scale, 0, 0.05 * personheight*3.24078e-20 / VIRUP.scale)
         else:
             return Vector3(0, 0, -personheight*3.24078e-20 / VIRUP.scale)
 
@@ -212,10 +212,10 @@ def getPlanetShift():
     try:
         VRHandler
     except NameError:
-        return Vector3(personheight / VIRUP.scale, 0, 0)
+        return Vector3(personheight / VIRUP.scale, 0, 0.05 * personheight / VIRUP.scale)
     else:
         if VRHandler.drivername != "OpenVR":
-            return Vector3(personheight / VIRUP.scale, 0, 0)
+            return Vector3(personheight / VIRUP.scale, 0, 0.05 * personheight / VIRUP.scale)
         else:
             return Vector3(0, 0, -personheight / VIRUP.scale)
 
