@@ -158,6 +158,9 @@ class MainWin : public AbstractMainWin
 			stream >> renderOrbits;
 			stream >> planetarySystemName;
 			stream >> cosmoLum;
+			stream >> compass;
+			compassState.readFromDataStream(stream);
+			stream >> stereoMultiplier;
 		};
 		virtual void writeInDataStream(QDataStream& stream) override
 		{
@@ -170,6 +173,9 @@ class MainWin : public AbstractMainWin
 			stream << renderOrbits;
 			stream << planetarySystemName;
 			stream << cosmoLum;
+			stream << compass;
+			compassState.writeInDataStream(stream);
+			stream << stereoMultiplier;
 		};
 
 		ToneMappingModel::State toneMappingState;
@@ -180,6 +186,9 @@ class MainWin : public AbstractMainWin
 		float renderOrbits;
 		QString planetarySystemName;
 		float cosmoLum;
+		bool compass = false;
+		CalibrationCompass::State compassState;
+		double stereoMultiplier = 1.0;
 	};
 
 	MainWin();
@@ -412,6 +421,9 @@ class MainWin : public AbstractMainWin
 		CelestialBodyRenderer::renderOrbits = state.renderOrbits;
 		planetarySystemName                 = state.planetarySystemName;
 		setCosmoLum(state.cosmoLum);
+		renderer.setCalibrationCompass(state.compass);
+		CalibrationCompass::readState(state.compassState);
+		vrHandler->setStereoMultiplier(state.stereoMultiplier);
 	};
 	virtual void writeState(AbstractState& s) const override
 	{
@@ -431,6 +443,9 @@ class MainWin : public AbstractMainWin
 		state.renderOrbits        = CelestialBodyRenderer::renderOrbits;
 		state.planetarySystemName = planetarySystemName;
 		state.cosmoLum            = getCosmoLum();
+		state.compass             = renderer.getCalibrationCompass();
+		CalibrationCompass::writeState(state.compassState);
+		state.stereoMultiplier = vrHandler->getStereoMultiplier();
 	};
 
   private:
