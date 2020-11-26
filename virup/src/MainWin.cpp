@@ -707,7 +707,8 @@ void MainWin::initScene()
 	hyg->unit = 0.001;
 
 	sdss = new CSVObjects(QSettings().value("data/sdss").toString(), true);
-	sdss->unit = 1000.0;
+	sdss->unit                 = 1000.0;
+	sdss->brightnessMultiplier = 1e10;
 
 	// PLANETS LOADING
 	debugText = new Text3D(textWidth, textHeight);
@@ -784,17 +785,17 @@ void MainWin::initScene()
 		layout->addWidget(new QLabel("Scenes :"));
 
 		QStringList scenes = {"0:International Space Station",
-		                      "1:July Eclipse close-up",
-		                      "2:July Eclipse further",
+		                      "1:Earth close-up",
+		                      "2:Earth-Moon System",
 		                      "3:Phobos",
 		                      "4:Saturn Moons",
-		                      "5:Enceladus",
+		                      "5:Rhea",
 		                      "6:Solar System",
 		                      "7:Kepler-11",
-		                      "8:Milky Way",
-		                      "9:Sagittarius A*",
+		                      "8:Kepler-11 f",
+		                      "9:Milky Way",
 		                      "Local Group",
-		                      "Cosmological Scale"};
+		                      "SDSS"};
 		for(int i(0); i < scenes.size(); ++i)
 		{
 			auto button = new QPushButton(scenes[i]);
