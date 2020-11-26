@@ -80,8 +80,7 @@ void MainWin::loadSolarSystem()
 		                              toneMappingModel->dynamicrange);
 		camPlanet->seatedVROrigin = false;
 		camPlanet->setPerspectiveProj(renderer.getVerticalFOV(),
-		                              renderer.getHorizontalFOV()
-		                                  / renderer.getVerticalFOV());
+		                              renderer.getAspectRatioFromFOV());
 	}
 	camPlanet->target           = solarSystem->getMainCelestialBody();
 	camPlanet->relativePosition = Vector3(
@@ -234,8 +233,7 @@ void MainWin::loadNewSystem()
 		                              toneMappingModel->dynamicrange);
 		camPlanet->seatedVROrigin = false;
 		camPlanet->setPerspectiveProj(renderer.getVerticalFOV(),
-		                              renderer.getHorizontalFOV()
-		                                  / renderer.getVerticalFOV());
+		                              renderer.getAspectRatioFromFOV());
 	}
 	camPlanet->target           = orbitalSystem->getMainCelestialBody();
 	camPlanet->relativePosition = Vector3(
@@ -691,8 +689,7 @@ void MainWin::initScene()
 	auto cam            = new Camera(*vrHandler);
 	cam->seatedVROrigin = false;
 	cam->setPerspectiveProj(renderer.getVerticalFOV(),
-	                        renderer.getHorizontalFOV()
-	                            / renderer.getVerticalFOV());
+	                        renderer.getAspectRatioFromFOV());
 
 	// COSMO LOADING
 	cosmologicalSim = new CosmologicalSimulation(
