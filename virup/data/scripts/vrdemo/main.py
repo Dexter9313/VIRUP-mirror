@@ -201,17 +201,23 @@ def getCosmoShift():
     try:
         VRHandler
     except NameError:
-        return Vector3(personheight*3.24078e-20 / VIRUP.scale, 0, 0)
+        return Vector3(personheight*3.24078e-20 / VIRUP.scale, 0, 0.05 * personheight*3.24078e-20 / VIRUP.scale)
     else:
-        return Vector3(0, 0, -personheight*3.24078e-20 / VIRUP.scale)
+        if VRHandler.drivername != "OpenVR":
+            return Vector3(personheight*3.24078e-20 / VIRUP.scale, 0, 0.05 * personheight*3.24078e-20 / VIRUP.scale)
+        else:
+            return Vector3(0, 0, -personheight*3.24078e-20 / VIRUP.scale)
 
 def getPlanetShift():
     try:
         VRHandler
     except NameError:
-        return Vector3(personheight / VIRUP.scale, 0, 0)
+        return Vector3(personheight / VIRUP.scale, 0, 0.05 * personheight / VIRUP.scale)
     else:
-        return Vector3(0, 0, -personheight / VIRUP.scale)
+        if VRHandler.drivername != "OpenVR":
+            return Vector3(personheight / VIRUP.scale, 0, 0.05 * personheight / VIRUP.scale)
+        else:
+            return Vector3(0, 0, -personheight / VIRUP.scale)
 
 def setSceneId(newid):
     global timer
