@@ -1079,9 +1079,8 @@ void MainWin::applyPostProcShaderParams(
 	AbstractMainWin::applyPostProcShaderParams(id, shader, currentTarget);
 	if(id == "lensing")
 	{
-		float aspectRatio(width());
-		aspectRatio /= height();
-		if(vrHandler->isEnabled())
+		float aspectRatio(renderer.getAspectRatioFromFOV());
+		if(vrHandler->isEnabled() && vrHandler->getDriverName() == "OpenVR")
 		{
 			QSize rtSize(vrHandler->getEyeRenderTargetSize());
 			aspectRatio = rtSize.width();
