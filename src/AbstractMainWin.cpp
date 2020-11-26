@@ -112,7 +112,7 @@ void AbstractMainWin::setVR(bool vr)
 	}
 	else if(!vrHandler->isEnabled() && vr)
 	{
-		if(vrHandler->init())
+		if(vrHandler->init(renderer))
 		{
 			vrHandler->resetPos();
 		}
@@ -697,8 +697,8 @@ AbstractMainWin::~AbstractMainWin()
 
 void AbstractMainWin::reloadBloomTargets()
 {
-	GLHandler::deleteRenderTarget(bloomTargets[0]);
-	GLHandler::deleteRenderTarget(bloomTargets[1]);
+	// GLHandler::deleteRenderTarget(bloomTargets[0]);
+	// GLHandler::deleteRenderTarget(bloomTargets[1]);
 	if(!vrHandler->isEnabled())
 	{
 		bloomTargets[0]

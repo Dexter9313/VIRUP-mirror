@@ -73,6 +73,8 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	addBoolSetting(
 	    "thirdrender", false,
 	    tr("Force 2D render on screen\n(will decrease performance !)"));
+	addDoubleSetting("stereomultiplier", 1.0,
+	                 tr("Stereo multiplier (if applicable)"), 0.0, 1000.0);
 
 	addGroup("network", tr("Network"));
 	addBoolSetting("server", true, tr("Server"));

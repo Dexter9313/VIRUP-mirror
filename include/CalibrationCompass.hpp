@@ -19,6 +19,7 @@
 #ifndef CALIBRATIONCOMPASS_HPP
 #define CALIBRATIONCOMPASS_HPP
 
+#include "AbstractState.hpp"
 #include "BasicCamera.hpp"
 #include "Primitives.hpp"
 #include "Text3D.hpp"
@@ -27,6 +28,33 @@
 class CalibrationCompass
 {
   public:
+	class State : public AbstractState
+	{
+	  public:
+		State()                   = default;
+		State(State const& other) = default;
+		State(State&& other)      = default;
+		virtual void readFromDataStream(QDataStream& stream) override
+		{
+			stream >> compassForceTickRes;
+			stream >> compassProtractor;
+			stream >> servHFOV;
+			stream >> servRTWidth;
+		};
+		virtual void writeInDataStream(QDataStream& stream) override
+		{
+			stream << compassForceTickRes;
+			stream << compassProtractor;
+			stream << servHFOV;
+			stream << servRTWidth;
+		};
+
+		double compassForceTickRes = 0.0;
+		bool compassProtractor     = false;
+		float servHFOV             = 70.f;
+		unsigned int servRTWidth   = 1920;
+	};
+
 	CalibrationCompass();
 	void render(QMatrix4x4 const& angleShiftMat);
 
@@ -42,6 +70,23 @@ class CalibrationCompass
 
 	float exposure     = 1.f;
 	float dynamicrange = 1.f;
+
+	static void readState(AbstractState const& s)
+	{
+		auto const& state         = dynamic_cast<State const&>(s);
+		forcedTickResolution()    = state.compassForceTickRes;
+		forceProtractorMode()     = state.compassProtractor;
+		serverHorizontalFOV()     = state.servHFOV;
+		serverRenderTargetWidth() = state.servRTWidth;
+	}
+	static void writeState(AbstractState& s)
+	{
+		auto& state               = dynamic_cast<State&>(s);
+		state.compassForceTickRes = forcedTickResolution();
+		state.compassProtractor   = forceProtractorMode();
+		state.servHFOV            = serverHorizontalFOV();
+		state.servRTWidth         = serverRenderTargetWidth();
+	}
 
   private:
 	GLShaderProgram shader;

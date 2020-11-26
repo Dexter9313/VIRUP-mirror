@@ -29,8 +29,8 @@ class MainWin : public AbstractMainWin
 			stream >> dynamicrange;
 			stream >> yaw;
 			stream >> pitch;
-			stream >> servHFOV;
-			stream >> servRTWidth;
+			stream >> compass;
+			compassState.readFromDataStream(stream);
 		};
 		virtual void writeInDataStream(QDataStream& stream) override
 		{
@@ -38,16 +38,16 @@ class MainWin : public AbstractMainWin
 			stream << dynamicrange;
 			stream << yaw;
 			stream << pitch;
-			stream << servHFOV;
-			stream << servRTWidth;
+			stream << compass;
+			compassState.writeInDataStream(stream);
 		};
 
-		float exposure           = 0.f;
-		float dynamicrange       = 0.f;
-		float yaw                = 0.f;
-		float pitch              = 0.f;
-		float servHFOV           = 70.f;
-		unsigned int servRTWidth = 1920;
+		float exposure     = 0.f;
+		float dynamicrange = 0.f;
+		float yaw          = 0.f;
+		float pitch        = 0.f;
+		bool compass       = false;
+		CalibrationCompass::State compassState;
 	};
 
 	MainWin() = default;
@@ -87,8 +87,8 @@ class MainWin : public AbstractMainWin
 		toneMappingModel->dynamicrange = state.dynamicrange;
 		yaw                            = state.yaw;
 		pitch                          = state.pitch;
-		CalibrationCompass::serverHorizontalFOV()     = state.servHFOV;
-		CalibrationCompass::serverRenderTargetWidth() = state.servRTWidth;
+		renderer.setCalibrationCompass(state.compass);
+		CalibrationCompass::readState(state.compassState);
 	};
 	virtual void writeState(AbstractState& s) const override
 	{
@@ -97,8 +97,8 @@ class MainWin : public AbstractMainWin
 		state.dynamicrange = toneMappingModel->dynamicrange;
 		state.yaw          = yaw;
 		state.pitch        = pitch;
-		state.servHFOV     = renderer.getHorizontalFOV();
-		state.servRTWidth  = renderer.getSize().width();
+		state.compass      = renderer.getCalibrationCompass();
+		CalibrationCompass::writeState(state.compassState);
 	};
 
   private:

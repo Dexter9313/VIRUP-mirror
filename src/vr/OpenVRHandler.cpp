@@ -1,11 +1,12 @@
 #include "vr/OpenVRHandler.hpp"
 
-bool OpenVRHandler::init()
+bool OpenVRHandler::init(Renderer const& renderer)
 {
 	if(!vr::VR_IsRuntimeInstalled())
 	{
 		return false;
 	}
+	VRHandler::init(renderer);
 
 // Start SteamVR if not running on unix-based
 #ifdef Q_OS_UNIX
@@ -487,10 +488,8 @@ QMatrix4x4 OpenVRHandler::getEyeViewMatrix(Side eye) const
 	return toQt(vr_pointer->GetEyeToHeadTransform(getEye(eye))).inverted();
 }
 
-QMatrix4x4
-    OpenVRHandler::getProjectionMatrix(Side eye,
-                                       QMatrix4x4 const& /*defaultProjMatrix*/,
-                                       float nearPlan, float farPlan) const
+QMatrix4x4 OpenVRHandler::getProjectionMatrix(Side eye, float nearPlan,
+                                              float farPlan) const
 {
 	return toQt(
 	    vr_pointer->GetProjectionMatrix(getEye(eye), nearPlan, farPlan));

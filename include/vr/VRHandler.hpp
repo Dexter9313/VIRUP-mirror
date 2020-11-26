@@ -8,6 +8,7 @@
 
 class Controller;
 class Hand;
+class Renderer;
 
 /** @ingroup pycall
  *
@@ -16,10 +17,13 @@ class Hand;
 class VRHandler : public QObject
 {
 	Q_OBJECT
+	Q_PROPERTY(QString drivername READ getDriverName)
 	Q_PROPERTY(QSize eyerendertargetsize READ getEyeRenderTargetSize)
 	Q_PROPERTY(QMatrix4x4 hmdposmatrix READ getHMDPosMatrix)
 	Q_PROPERTY(Side currentrenderingeye READ getCurrentRenderingEye)
 	Q_PROPERTY(float frametiming READ getFrameTiming)
+	Q_PROPERTY(double stereomultiplier READ getStereoMultiplier WRITE
+	               setStereoMultiplier)
 
   public: // public types
 	enum class EventType
@@ -49,12 +53,29 @@ class VRHandler : public QObject
 	};
 
   public:
-	VRHandler()                                  = default;
-	virtual bool isEnabled() const               = 0;
-	virtual bool init()                          = 0;
+	VRHandler()                           = default;
+	virtual QString getDriverName() const = 0;
+	virtual bool isEnabled() const        = 0;
+	virtual bool init(Renderer const& renderer)
+	{
+		this->renderer = &renderer;
+		return true;
+	};
 	virtual QSize getEyeRenderTargetSize() const = 0;
 	QMatrix4x4 getHMDPosMatrix() const { return hmdPosMatrix; };
 	Side getCurrentRenderingEye() const { return currentRenderingEye; };
+	/**
+	 * @getter{stereomultiplier}
+	 */
+	double getStereoMultiplier() const { return stereoMultiplier; };
+	/**
+	 * @setter{stereomultiplier}
+	 */
+	void setStereoMultiplier(double sm)
+	{
+		QSettings().setValue("vr/stereomultiplier", sm);
+		stereoMultiplier = sm;
+	};
 	virtual float getFrameTiming() const                              = 0;
 	virtual const Controller* getController(Side side) const          = 0;
 	virtual const Hand* getHand(Side side) const                      = 0;
@@ -79,14 +100,17 @@ class VRHandler : public QObject
 	virtual ~VRHandler(){};
 
   public slots:
-	virtual QMatrix4x4 getEyeViewMatrix(Side eye) const                  = 0;
-	virtual QMatrix4x4 getProjectionMatrix(Side eye,
-	                                       QMatrix4x4 const& defaultProjMatrix,
-	                                       float nearPlan = 0.1f,
-	                                       float farPlan  = 100.0f) const = 0;
-	virtual void resetPos()                                              = 0;
+	virtual QMatrix4x4 getEyeViewMatrix(Side eye) const                    = 0;
+	virtual QMatrix4x4 getProjectionMatrix(Side eye, float nearPlan = 0.1f,
+	                                       float farPlan = 10000.0f) const = 0;
+	virtual void resetPos()                                                = 0;
 
   protected:
+	Renderer const* renderer;
+
+	double stereoMultiplier
+	    = QSettings().value("vr/stereomultiplier").toDouble();
+
 	QMatrix4x4 hmdPosMatrix;
 	Side currentRenderingEye = Side::LEFT;
 	QString sideToStr(Side side) const
