@@ -36,7 +36,7 @@ class Billboard
 	float width        = 1.f;
 
   private:
-	GLHandler::Texture tex;
+	GLTexture tex;
 	GLMesh quad;
 	GLShaderProgram shader;
 };

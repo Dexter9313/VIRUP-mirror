@@ -22,6 +22,7 @@
 
 #include "gl/GLMesh.hpp"
 #include "gl/GLShaderProgram.hpp"
+#include "gl/GLTexture.hpp"
 
 /** @ingroup pycall
  *
@@ -45,21 +46,7 @@ class GLHandler : public QObject
   public: // useful types
 	static unsigned int& renderTargetCount();
 	static unsigned int& meshCount();
-	static unsigned int& texCount();
 	static unsigned int& PBOCount();
-	/** @ingroup pywrap
-	 * @brief Opaque class that represents a Texture. Use the texture related
-	 * methods to handle it.
-	 *
-	 * A GLHandler#Texture represents a texture as it sits on the GPU and
-	 * is manipulated by OpenGL API calls, they are not CPU arrays of data.
-	 */
-	class Texture
-	{
-		friend GLHandler;
-		GLuint glTexture;
-		GLenum glTarget;
-	};
 
 	class PixelBufferObject
 	{
@@ -107,7 +94,7 @@ class GLHandler : public QObject
 		    : width(width)
 		    , height(height)
 		    , depth(depth){};
-		RenderTarget(GLuint _0, Texture _1, GLuint _2, unsigned int _3,
+		RenderTarget(GLuint _0, GLTexture* _1, GLuint _2, unsigned int _3,
 		             unsigned int _4, unsigned int _5 = 1)
 		    : frameBuffer(_0)
 		    , texColorBuffer(_1)
@@ -117,8 +104,8 @@ class GLHandler : public QObject
 		    , depth(_5){};
 		GLuint frameBuffer = 0;
 		// if depth map, will be the depth buffer instead
-		Texture texColorBuffer = {};
-		GLuint renderBuffer    = 0;
+		GLTexture* texColorBuffer = nullptr;
+		GLuint renderBuffer       = 0;
 		unsigned int width;
 		unsigned int height;
 		unsigned int depth;
@@ -166,42 +153,7 @@ class GLHandler : public QObject
 	};
 	Q_ENUM(GeometricSpace)
 
-	/**
-	 * @brief Representing a cube face (used mostly for cubemaps).
-	 *
-	 * Front : X+
-	 *
-	 * Back : X-
-	 *
-	 * Left : Y+
-	 *
-	 * Right : Y-
-	 *
-	 * Top : Z+
-	 *
-	 * Bottom : Z-
-	 */
-	enum class CubeFace
-	{
-		FRONT = GL_TEXTURE_CUBE_MAP_POSITIVE_X - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		BACK  = GL_TEXTURE_CUBE_MAP_NEGATIVE_X - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		LEFT  = GL_TEXTURE_CUBE_MAP_POSITIVE_Y - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		RIGHT = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		TOP   = GL_TEXTURE_CUBE_MAP_POSITIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		BOTTOM
-		= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-	};
-
   public:
-	/**
-	 * @brief Default constructor.
-	 * @warning Should only be used within @ref PythonQtHandler.
-	 *
-	 * Adds RenderTarget and #Texture classes to the
-	 * Python API.
-	 */
-	GLHandler();
-
 	/**
 	 * @brief Initializes the OpenGL API. No OpenGL call can be issued before
 	 * this method is called, which you can consider all of the other methods
@@ -280,7 +232,7 @@ class GLHandler : public QObject
 	 * This is mainly used for post-processing to be passed to a post-processing
 	 * fragment shader.
 	 */
-	static Texture
+	static GLTexture const&
 	    getColorAttachmentTexture(GLHandler::RenderTarget const& renderTarget);
 	/**
 	 * @brief Blits one color buffer from a render target to another one's.
@@ -299,7 +251,7 @@ class GLHandler : public QObject
 	/**
 	 * @brief Frees a @ref RenderTarget and any buffer it allocated.
 	 */
-	static void deleteRenderTarget(GLHandler::RenderTarget const& renderTarget);
+	static void deleteRenderTarget(GLHandler::RenderTarget& renderTarget);
 	static void setClearColor(QColor const& color);
 	/**
 	 * @brief Prepares a @ref RenderTarget to be rendered on.
@@ -311,14 +263,16 @@ class GLHandler : public QObject
 	static void beginRendering(GLHandler::RenderTarget const& renderTarget
 	                           = {QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()},
-	                           CubeFace face = CubeFace::FRONT,
-	                           GLint layer   = 0);
+	                           GLTexture::CubemapFace face
+	                           = GLTexture::CubemapFace::FRONT,
+	                           GLint layer = 0);
 	static void beginRendering(GLbitfield clearMask,
 	                           GLHandler::RenderTarget const& renderTarget
 	                           = {QSettings().value("window/width").toUInt(),
 	                              QSettings().value("window/height").toUInt()},
-	                           CubeFace face = CubeFace::FRONT,
-	                           GLint layer   = 0);
+	                           GLTexture::CubemapFace face
+	                           = GLTexture::CubemapFace::FRONT,
+	                           GLint layer = 0);
 	/**
 	 * @brief Sets the <code>in mat4 camera;</code> input of a shader program.
 	 *
@@ -372,7 +326,8 @@ class GLHandler : public QObject
 	                        RenderTarget const& to
 	                        = {QSettings().value("window/width").toUInt(),
 	                           QSettings().value("window/height").toUInt()},
-	                        std::vector<Texture> const& uniformTextures = {});
+	                        std::vector<GLTexture const*> const& uniformTextures
+	                        = {});
 	static void
 	    renderFromScratch(GLShaderProgram const& shader,
 	                      RenderTarget const& to
@@ -464,72 +419,13 @@ class GLHandler : public QObject
 	                    QMatrix4x4 const& fullSkyboxSpaceTransform);
 
 	// TEXTURES
-	static Texture newTexture(unsigned int width, const GLvoid* data,
-	                          bool sRGB = true);
-	static Texture newTexture(unsigned int width, const unsigned char* red,
-	                          const unsigned char* green,
-	                          const unsigned char* blue,
-	                          const unsigned char* alpha = nullptr,
-	                          bool sRGB                  = true);
-	static Texture newTexture(const char* texturePath, bool sRGB = true);
-	static Texture newTexture(QImage const& image, bool sRGB = true);
-	static Texture newTexture(unsigned int width, unsigned int height,
-	                          const GLvoid* data, bool sRGB = true);
-	static Texture newTexture(std::array<const char*, 6> const& texturesPaths,
-	                          bool sRGB = true);
-	static Texture newTexture(std::array<QImage, 6> const& images,
-	                          bool sRGB = true);
-	static Texture
-	    newTexture1D(unsigned int width, GLvoid const* data = nullptr,
-	                 GLint internalFormat = GL_SRGB8_ALPHA8,
-	                 GLenum format = GL_RGBA, GLenum target = GL_TEXTURE_1D,
-	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE,
-	                 GLenum type = GL_UNSIGNED_BYTE);
-	static Texture newTexture2D(
-	    unsigned int width, unsigned int height, GLvoid const* data = nullptr,
-	    GLint internalFormat = GL_SRGB8_ALPHA8, GLenum format = GL_RGBA,
-	    GLenum target = GL_TEXTURE_2D, GLint filter = GL_LINEAR,
-	    GLint wrap = GL_CLAMP_TO_EDGE, GLenum type = GL_UNSIGNED_BYTE);
-	static Texture newTextureMultisample(unsigned int width,
-	                                     unsigned int height,
-	                                     unsigned int samples,
-	                                     GLint internalFormat = GL_SRGB8_ALPHA8,
-	                                     GLint filter         = GL_LINEAR,
-	                                     GLint wrap = GL_CLAMP_TO_EDGE);
-	static Texture
-	    newTexture3D(unsigned int width, unsigned int height,
-	                 unsigned int depth, GLvoid const* data = nullptr,
-	                 GLint internalFormat = GL_SRGB8_ALPHA8,
-	                 GLenum format = GL_RGBA, GLenum target = GL_TEXTURE_3D,
-	                 GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE,
-	                 GLenum type = GL_UNSIGNED_BYTE);
-	static Texture newTextureCubemap(
-	    unsigned int side,
-	    std::array<GLvoid const*, 6> data
-	    = {{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}},
-	    GLint internalFormat = GL_SRGB8_ALPHA8, GLenum format = GL_RGBA,
-	    GLenum target = GL_TEXTURE_CUBE_MAP, GLint filter = GL_LINEAR,
-	    GLint wrap = GL_CLAMP_TO_EDGE);
-	static GLuint getGLTexture(Texture const& tex) { return tex.glTexture; };
-	// level = level of mipmapping
-	static QSize getTextureSize(Texture const& tex, unsigned int level = 0);
-	static void generateMipmap(Texture const& tex);
-	static unsigned int getHighestMipmapLevel(Texture const& tex);
-	static QImage getTextureContentAsImage(Texture const& tex,
-	                                       unsigned int level = 0);
-	// allocates buff ; don't forget to delete ; returns allocated size (zero if
-	// error)
-	static unsigned int getTextureContentAsData(GLfloat** buff,
-	                                            Texture const& tex,
-	                                            unsigned int level = 0);
-	static float getTextureAverageLuminance(Texture const& tex);
-	static void useTextures(std::vector<Texture> const& textures);
-	static void deleteTexture(Texture const& texture);
+	static void useTextures(std::vector<GLTexture const*> const& textures);
 
 	// PBOs
 	static PixelBufferObject newPixelBufferObject(unsigned int width,
 	                                              unsigned int height);
-	static Texture copyPBOToTex(PixelBufferObject const& pbo, bool sRGB = true);
+	static GLTexture* copyPBOToTex(PixelBufferObject const& pbo,
+	                               bool sRGB = true);
 	static void deletePixelBufferObject(PixelBufferObject const& pbo);
 
 	// http://entropymine.com/imageworsener/srgbformula/
@@ -537,12 +433,6 @@ class GLHandler : public QObject
 	static QColor linearTosRGB(QColor const& linear);
 
   private:
-	static QString
-	    getFullPreprocessedSource(QString const& path,
-	                              QMap<QString, QString> const& defines);
-	static GLuint loadShader(QString const& path, GLenum shaderType,
-	                         QMap<QString, QString> const& defines);
-
 	// object to screen transforms
 	// transform for any world object
 	static QMatrix4x4& fullTransform();
@@ -559,7 +449,6 @@ class GLHandler : public QObject
 	static QMatrix4x4& fullSkyboxSpaceTransform();
 };
 
-Q_DECLARE_METATYPE(GLHandler::Texture)
-Q_DECLARE_METATYPE(GLHandler::RenderTarget)
+// Q_DECLARE_METATYPE(GLHandler::RenderTarget)
 
 #endif // GLHANDLER_H

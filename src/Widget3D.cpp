@@ -52,18 +52,18 @@ void Widget3D::render()
 
 void Widget3D::updateTex()
 {
-	GLHandler::deleteTexture(tex);
+	delete tex;
 
 	image = QImage(originalSize, QImage::Format_ARGB32);
 
 	paintWidget(image, *widget);
 
-	tex = GLHandler::newTexture(image);
+	tex = new GLTexture(image);
 }
 
 Widget3D::~Widget3D()
 {
-	GLHandler::deleteTexture(tex);
+	delete tex;
 }
 
 void Widget3D::paintWidget(QImage& image, QWidget& widget)

@@ -67,7 +67,7 @@ class Text3D
 
 	GLShaderProgram shader;
 	GLMesh quad;
-	GLHandler::Texture tex = GLHandler::newTexture(0, 0, nullptr);
+	GLTexture* tex = nullptr;
 
 	QMatrix4x4 model;
 

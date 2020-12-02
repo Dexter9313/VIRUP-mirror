@@ -42,6 +42,12 @@ unsigned int& CalibrationCompass::serverRenderTargetWidth()
 	return serverRenderTargetWidth;
 }
 
+float& CalibrationCompass::tilt()
+{
+	static float tilt = 0.f;
+	return tilt;
+}
+
 double CalibrationCompass::getDoubleFarRightPixelSubtendedAngle(
     float horizontalFOV, unsigned int renderTargetWidth)
 {
@@ -107,6 +113,9 @@ CalibrationCompass::CalibrationCompass()
 
 void CalibrationCompass::render(QMatrix4x4 const& angleShiftMat)
 {
+	QMatrix4x4 tiltMat;
+	tiltMat.rotate(tilt(), QVector3D(0.f, 0.f, -1.f));
+
 	GLHandler::glf().glDisable(GL_DEPTH_TEST);
 
 	shader.setUniform("exposure", exposure);
@@ -115,13 +124,13 @@ void CalibrationCompass::render(QMatrix4x4 const& angleShiftMat)
 	// NOLINTNEXTLINE(cert-flp30-c, clang-analyzer-security.FloatLoopCounter)
 	for(float lat(-M_PI_2); lat < M_PI_2; lat += 10.0 * M_PI / 180.0)
 	{
-		renderCircle(angleShiftMat, lat);
+		renderCircle(angleShiftMat * tiltMat, lat);
 	}
 
 	double doubleAngle(getCurrentTickResolution());
-	renderCompassTicks(angleShiftMat, 1.3, 100.0 * doubleAngle, true);
-	renderCompassTicks(angleShiftMat, 1.0, 10.0 * doubleAngle);
-	renderCompassTicks(angleShiftMat, 0.7, 1.0 * doubleAngle);
+	renderCompassTicks(angleShiftMat * tiltMat, 1.3, 100.0 * doubleAngle, true);
+	renderCompassTicks(angleShiftMat * tiltMat, 1.0, 10.0 * doubleAngle);
+	renderCompassTicks(angleShiftMat * tiltMat, 0.7, 1.0 * doubleAngle);
 
 	GLHandler::glf().glEnable(GL_DEPTH_TEST);
 }

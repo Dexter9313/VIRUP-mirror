@@ -34,10 +34,10 @@ const Hand* StereoBeamerHandler::getHand(Side /*side*/) const
 
 float StereoBeamerHandler::getRenderTargetAverageLuminance(Side eye) const
 {
-	auto tex = GLHandler::getColorAttachmentTexture(
+	auto const& tex = GLHandler::getColorAttachmentTexture(
 	    eye == Side::LEFT ? postProcessingTargetsLeft[0]
 	                      : postProcessingTargetsRight[0]);
-	return GLHandler::getTextureAverageLuminance(tex);
+	return tex.getAverageLuminance();
 }
 
 QMatrix4x4 StereoBeamerHandler::getSeatedToStandingAbsoluteTrackingPos() const

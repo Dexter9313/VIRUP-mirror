@@ -62,7 +62,7 @@ void Light::setUpShader(GLShaderProgram const& shader,
 	shader.setUniform("boundingSphereRadius", boundingSphereRadius);
 }
 
-GLHandler::Texture Light::getShadowMap() const
+GLTexture const& Light::getShadowMap() const
 {
 	return GLHandler::getColorAttachmentTexture(shadowMap);
 }

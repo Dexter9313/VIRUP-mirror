@@ -57,7 +57,7 @@ class AssetLoader
 	struct TexturedMesh
 	{
 		GLMesh* mesh;
-		std::map<TextureType, GLHandler::Texture> textures; // a.k.a. material
+		std::map<TextureType, GLTexture*> textures; // a.k.a. material
 		QMatrix4x4 transform;
 	};
 

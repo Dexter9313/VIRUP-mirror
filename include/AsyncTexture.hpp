@@ -85,16 +85,16 @@ class AsyncTexture
 	AsyncTexture(QString const& path, unsigned int width, unsigned int height,
 	             QColor const& defaultColor, bool sRGB = true);
 	bool isLoaded() const { return loaded; };
-	GLHandler::Texture getDefaultTexture() const { return defaultTex; };
-	GLHandler::Texture getTexture();
+	GLTexture const& getDefaultTexture() const { return defaultTex; };
+	GLTexture const& getTexture();
 	QColor getAverageColor() const { return averageColor; };
 	~AsyncTexture();
 
 	static void garbageCollect(bool force = false);
 
   private:
-	GLHandler::Texture defaultTex = {};
-	GLHandler::Texture tex        = {};
+	GLTexture defaultTex;
+	GLTexture* tex = nullptr;
 
 	GLHandler::PixelBufferObject pbo = {};
 	at::WorkerThread* thread;

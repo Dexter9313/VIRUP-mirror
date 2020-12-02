@@ -520,9 +520,9 @@ void Renderer::renderFrame()
 		}
 
 		// compute average luminance
-		auto tex
+		auto const& tex
 		    = GLHandler::getColorAttachmentTexture(postProcessingTargets[0]);
-		lastFrameAverageLuminance = GLHandler::getTextureAverageLuminance(tex);
+		lastFrameAverageLuminance = tex.getAverageLuminance();
 
 		// postprocess
 		int i(0);

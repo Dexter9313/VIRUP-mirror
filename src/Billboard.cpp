@@ -28,14 +28,14 @@ Billboard::Billboard(QImage const& image)
 }
 
 Billboard::Billboard(const char* texPath, GLShaderProgram&& shader)
-    : tex(GLHandler::newTexture(texPath))
+    : tex(texPath)
     , shader(std::move(shader))
 {
 	Primitives::setAsQuad(quad, this->shader, PrimitiveType::TRIANGLE_STRIP);
 }
 
 Billboard::Billboard(QImage const& image, GLShaderProgram&& shader)
-    : tex(GLHandler::newTexture(image))
+    : tex(image)
     , shader(std::move(shader))
 {
 	Primitives::setAsQuad(quad, this->shader, PrimitiveType::TRIANGLE_STRIP);
@@ -48,7 +48,7 @@ void Billboard::render(BasicCamera const& camera)
 	model.translate(hmdPos);
 	model.scale(width / camera.getEyeDistanceFactor());
 	GLHandler::beginTransparent();
-	GLHandler::useTextures({tex});
+	GLHandler::useTextures({&tex});
 	GLHandler::setUpRender(shader, model, GLHandler::GeometricSpace::HMD);
 	quad.render(PrimitiveType::TRIANGLE_STRIP);
 	GLHandler::endTransparent();

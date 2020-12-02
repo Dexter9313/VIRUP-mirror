@@ -20,10 +20,38 @@ int main(int argc, char* argv[])
 	// Set config file names for QSettings
 	QCoreApplication::setOrganizationName(PROJECT_NAME);
 	QCoreApplication::setApplicationName("config");
-	QSettings::setDefaultFormat(QSettings::IniFormat);
 
 	QApplication a(argc, argv);
 
+	// Set arguments
+	QCommandLineParser parser;
+	parser.addHelpOption();
+	QCommandLineOption noLauncher(
+	    "no-launcher", QCoreApplication::translate(
+	                       "main", "By-pass launcher and launch application."));
+	parser.addOption(noLauncher);
+	QCommandLineOption config(
+	    "config",
+	    QCoreApplication::translate("main", "Read .ini config from <file>."),
+	    "file");
+	parser.addOption(config);
+	parser.process(a);
+
+	// set settings
+	QSettings::setDefaultFormat(QSettings::IniFormat);
+	if(parser.isSet(config))
+	{
+		QString configPath(parser.value(config));
+		QFileInfo file(configPath);
+		QDir dir(file.absoluteDir());
+		QCoreApplication::setOrganizationName(dir.dirName());
+		dir.cdUp();
+		QCoreApplication::setApplicationName(file.baseName());
+		QSettings::setPath(QSettings::IniFormat, QSettings::UserScope,
+		                   dir.absolutePath());
+	}
+
+	// set translation
 	QString localeName(QSettings()
 	                       .value("window/language", QLocale::system().name())
 	                       .toString());
@@ -65,7 +93,7 @@ int main(int argc, char* argv[])
 	}
 #endif
 
-	if(!QCoreApplication::arguments().contains("--no-launcher"))
+	if(!parser.isSet(noLauncher))
 	{
 		Launcher launcher;
 		launcher.init();
@@ -76,6 +104,7 @@ int main(int argc, char* argv[])
 	}
 
 	MainWin w;
+	w.setTitle(PROJECT_NAME + QString(" - Loading..."));
 	w.setFullscreen(QSettings().value("window/fullscreen").toBool());
 	// start event loop
 	QCoreApplication::postEvent(&w, new QEvent(QEvent::UpdateRequest));

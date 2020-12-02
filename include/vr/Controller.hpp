@@ -104,6 +104,8 @@ class Controller : public QObject
 	 */
 	const Side side;
 
+	~Controller() { delete tex; };
+
   private:
 	unsigned int nDevice;
 
@@ -116,7 +118,7 @@ class Controller : public QObject
 
 	GLShaderProgram shaderProgram;
 	GLMesh mesh;
-	GLHandler::Texture tex;
+	GLTexture* tex = nullptr;
 	QMatrix4x4 model;
 };
 

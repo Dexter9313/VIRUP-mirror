@@ -421,10 +421,9 @@ void AbstractMainWin::applyPostProcShaderParams(
 	}
 }
 
-std::vector<GLHandler::Texture>
-    AbstractMainWin::getPostProcessingUniformTextures(
-        QString const& id, GLShaderProgram const& /*shader*/,
-        GLHandler::RenderTarget const& currentTarget) const
+std::vector<GLTexture const*> AbstractMainWin::getPostProcessingUniformTextures(
+    QString const& id, GLShaderProgram const& /*shader*/,
+    GLHandler::RenderTarget const& currentTarget) const
 {
 	if(id == "bloom")
 	{
@@ -443,10 +442,10 @@ std::vector<GLHandler::Texture>
 				                       bloomTargets.at((i + 1) % 2));
 			}
 
-			return {GLHandler::getColorAttachmentTexture(bloomTargets[0])};
+			return {&GLHandler::getColorAttachmentTexture(bloomTargets[0])};
 		}
 		GLHandler::beginRendering(bloomTargets[0]);
-		return {GLHandler::getColorAttachmentTexture(bloomTargets[0])};
+		return {&GLHandler::getColorAttachmentTexture(bloomTargets[0])};
 	}
 	return {};
 }

@@ -93,7 +93,7 @@ void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
 			// discard additional textures, keep only one per type
 			if(tMesh.textures.count(tex.first) == 0 && !tex.second.empty())
 			{
-				tMesh.textures[tex.first] = GLHandler::newTexture(
+				tMesh.textures[tex.first] = new GLTexture(
 				    tex.second.c_str(), tex.first == TextureType::DIFFUSE);
 			}
 		}
@@ -104,12 +104,14 @@ void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
 			{
 				QColor color(getDefaultColor(ttype, defaultDiffuseColor));
 				char data[4];
-				data[0]               = color.red();
-				data[1]               = color.green();
-				data[2]               = color.blue();
-				data[3]               = color.alpha();
-				tMesh.textures[ttype] = GLHandler::newTexture(
-				    1, 1, &data[0], ttype == TextureType::DIFFUSE);
+				data[0] = color.red();
+				data[1] = color.green();
+				data[2] = color.blue();
+				data[3] = color.alpha();
+				tMesh.textures[ttype]
+				    = new GLTexture(GLTexture::Tex2DProperties(
+				                        1, 1, ttype == TextureType::DIFFUSE),
+				                    {}, {&data[0]});
 			}
 		}
 		tMesh.transform = descriptor.transform;

@@ -146,10 +146,10 @@ const Hand* OpenVRHandler::getHand(Side side) const
 
 float OpenVRHandler::getRenderTargetAverageLuminance(Side eye) const
 {
-	auto tex = GLHandler::getColorAttachmentTexture(
+	auto const& tex = GLHandler::getColorAttachmentTexture(
 	    eye == Side::LEFT ? postProcessingTargetsLeft[0]
 	                      : postProcessingTargetsRight[0]);
-	return GLHandler::getTextureAverageLuminance(tex)
+	return tex.getAverageLuminance()
 	       * 1.041f; // compensate for hidden area mesh
 }
 
@@ -379,11 +379,11 @@ void OpenVRHandler::submitRendering(Side eye, unsigned int i)
 	submittedIndex = i % 2;
 	GLHandler::RenderTarget const& frame
 	    = getPostProcessingTarget(submittedIndex, eye);
-	vr::Texture_t texture = {
-	    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-	    reinterpret_cast<void*>(static_cast<uintptr_t>(GLHandler::getGLTexture(
-	        GLHandler::getColorAttachmentTexture(frame)))),
-	    vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
+	vr::Texture_t texture
+	    = {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+	       reinterpret_cast<void*>(static_cast<uintptr_t>(
+	           GLHandler::getColorAttachmentTexture(frame).getGLTexture())),
+	       vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
 	vr::EVRCompositorError error = vr_compositor->Submit(getEye(eye), &texture);
 	if(error != vr::VRCompositorError_None)
 	{

@@ -66,14 +66,14 @@ void Model::generateShadowMap(QMatrix4x4 const& model, Light& light)
 }
 
 void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
-                   Light const& light, GLHandler::GeometricSpace geometricSpace)
+                   std::vector<GLTexture const*> const& shadowMaps,
+                   GLHandler::GeometricSpace geometricSpace)
 {
-	light.setUpShader(shader, boundingSphereRadius, model);
 	shader.setUniform("cameraPosition", model.inverted() * cameraPosition);
 
 	for(auto& mesh : meshes)
 	{
-		GLHandler::useTextures(
+		std::vector<GLTexture const*> texs(
 		    {mesh.textures[AssetLoader::TextureType::DIFFUSE],
 		     mesh.textures[AssetLoader::TextureType::SPECULAR],
 		     mesh.textures[AssetLoader::TextureType::AMBIENT],
@@ -81,12 +81,23 @@ void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
 		     mesh.textures[AssetLoader::TextureType::NORMALS],
 		     mesh.textures[AssetLoader::TextureType::SHININESS],
 		     mesh.textures[AssetLoader::TextureType::OPACITY],
-		     mesh.textures[AssetLoader::TextureType::LIGHTMAP],
-		     light.getShadowMap()});
+		     mesh.textures[AssetLoader::TextureType::LIGHTMAP]});
+		for(auto sMap : shadowMaps)
+		{
+			texs.push_back(sMap);
+		}
+		GLHandler::useTextures(texs);
 		shader.setUniform("localTransform", mesh.transform);
 		GLHandler::setUpRender(shader, model * mesh.transform, geometricSpace);
 		mesh.mesh->render();
 	}
+}
+
+void Model::render(QVector3D const& cameraPosition, QMatrix4x4 const& model,
+                   Light const& light, GLHandler::GeometricSpace geometricSpace)
+{
+	light.setUpShader(shader, boundingSphereRadius, model);
+	render(cameraPosition, model, {&light.getShadowMap()}, geometricSpace);
 }
 
 Model::~Model()
@@ -96,7 +107,7 @@ Model::~Model()
 		delete mesh.mesh;
 		for(auto pair : mesh.textures)
 		{
-			GLHandler::deleteTexture(pair.second);
+			delete pair.second;
 		}
 	}
 }

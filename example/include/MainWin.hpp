@@ -104,7 +104,7 @@ class MainWin : public AbstractMainWin
   private:
 	ShaderProgram sbShader;
 	GLMesh* skybox;
-	GLHandler::Texture sbTexture;
+	GLTexture* sbTexture;
 
 	GLMesh* mesh;
 	ShaderProgram shaderProgram;

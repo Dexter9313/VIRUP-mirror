@@ -40,6 +40,7 @@ class CalibrationCompass
 			stream >> compassProtractor;
 			stream >> servHFOV;
 			stream >> servRTWidth;
+			stream >> tilt;
 		};
 		virtual void writeInDataStream(QDataStream& stream) override
 		{
@@ -47,12 +48,14 @@ class CalibrationCompass
 			stream << compassProtractor;
 			stream << servHFOV;
 			stream << servRTWidth;
+			stream << tilt;
 		};
 
 		double compassForceTickRes = 0.0;
 		bool compassProtractor     = false;
 		float servHFOV             = 70.f;
 		unsigned int servRTWidth   = 1920;
+		float tilt                 = 0.f;
 	};
 
 	CalibrationCompass();
@@ -62,6 +65,7 @@ class CalibrationCompass
 	static bool& forceProtractorMode();
 	static float& serverHorizontalFOV();
 	static unsigned int& serverRenderTargetWidth();
+	static float& tilt();
 	static double
 	    getDoubleFarRightPixelSubtendedAngle(float horizontalFOV,
 	                                         unsigned int renderTargetWidth);
@@ -78,6 +82,7 @@ class CalibrationCompass
 		forceProtractorMode()     = state.compassProtractor;
 		serverHorizontalFOV()     = state.servHFOV;
 		serverRenderTargetWidth() = state.servRTWidth;
+		tilt()                    = state.tilt;
 	}
 	static void writeState(AbstractState& s)
 	{
@@ -86,6 +91,7 @@ class CalibrationCompass
 		state.compassProtractor   = forceProtractorMode();
 		state.servHFOV            = serverHorizontalFOV();
 		state.servRTWidth         = serverRenderTargetWidth();
+		state.tilt                = tilt();
 	}
 
   private:

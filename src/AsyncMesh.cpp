@@ -66,7 +66,7 @@ void AsyncMesh::updateMesh(GLShaderProgram const& shader)
 		mesh = meshes[0].mesh;
 		for(auto pair : meshes[0].textures)
 		{
-			GLHandler::deleteTexture(pair.second);
+			delete pair.second;
 		}
 	}
 	else
@@ -76,7 +76,7 @@ void AsyncMesh::updateMesh(GLShaderProgram const& shader)
 			delete vMesh.mesh;
 			for(auto pair : vMesh.textures)
 			{
-				GLHandler::deleteTexture(pair.second);
+				delete pair.second;
 			}
 		}
 	}

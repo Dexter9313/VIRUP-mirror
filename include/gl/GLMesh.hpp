@@ -59,17 +59,15 @@ enum class PrimitiveType
  * It doesn't handle model matrix or shaders, it is a very basic
  * vertex data storage class.
  */
-class GLMesh : public QObject
+class GLMesh
 {
-	Q_OBJECT
   public:
 	// implement those in protected if and only if they're needed for the Python
 	// API
 	GLMesh(GLMesh const& other) = delete;
 	GLMesh& operator=(GLMesh const& other) = delete;
 	/**
-	 * @brief Returns the number of allocated OpenGL shader programs (not the
-	 * actual @ref GLMesh number of instances).
+	 * @brief Returns the number of allocated OpenGL meshes .
 	 */
 	static unsigned int getInstancesCount() { return instancesCount(); };
 

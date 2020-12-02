@@ -51,7 +51,6 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
     , triggerid(getAxisId(vr_pointer, nDevice, vr::k_eControllerAxis_Trigger))
     , padid(getAxisId(vr_pointer, nDevice, vr::k_eControllerAxis_TrackPad))
     , shaderProgram("controllers")
-    , tex()
 {
 	std::string render_model_name = GetTrackedDeviceString(
 	    vr_pointer, nDevice, vr::Prop_RenderModelName_String);
@@ -168,8 +167,9 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 	                 {{"position", 3}, {"normal", 3}, {"texcoord", 2}},
 	                 elements);
 
-	tex = GLHandler::newTexture(rm_texture->unWidth, rm_texture->unHeight,
-	                            rm_texture->rubTextureMapData);
+	tex = new GLTexture(
+	    GLTexture::Tex2DProperties(rm_texture->unWidth, rm_texture->unHeight),
+	    {}, {rm_texture->rubTextureMapData});
 
 	shaderProgram.setUniform("alpha", 1.0f);
 	if(side == Side::LEFT)

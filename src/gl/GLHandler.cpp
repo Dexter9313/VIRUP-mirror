@@ -12,12 +12,6 @@ unsigned int& GLHandler::meshCount()
 	return meshCount;
 }
 
-unsigned int& GLHandler::texCount()
-{
-	static unsigned int texCount = 0;
-	return texCount;
-}
-
 unsigned int& GLHandler::PBOCount()
 {
 	static unsigned int PBOCount = 0;
@@ -72,12 +66,6 @@ QMatrix4x4& GLHandler::fullSkyboxSpaceTransform()
 	return fullSkyboxSpaceTransform;
 }
 
-GLHandler::GLHandler()
-{
-	PythonQtHandler::addClass<Texture>("Texture");
-	PythonQtHandler::addClass<RenderTarget>("RenderTarget");
-}
-
 bool GLHandler::init()
 {
 	glf().initializeOpenGLFunctions();
@@ -112,8 +100,8 @@ GLHandler::RenderTarget GLHandler::newRenderTarget1D(unsigned int width,
 
 	// generate texture
 	result.texColorBuffer
-	    = newTexture1D(width, nullptr, format, GL_RGBA, GL_TEXTURE_1D,
-	                   GL_LINEAR, GL_MIRRORED_REPEAT);
+	    = new GLTexture(GLTexture::Tex1DProperties(width, format),
+	                    {GL_LINEAR, GL_MIRRORED_REPEAT});
 
 	return result;
 }
@@ -139,15 +127,14 @@ GLHandler::RenderTarget GLHandler::newRenderTarget(unsigned int width,
 	if(!cubemap)
 	{
 		result.texColorBuffer
-		    = newTexture2D(width, height, nullptr, format, GL_RGBA,
-		                   GL_TEXTURE_2D, GL_LINEAR, GL_MIRRORED_REPEAT);
+		    = new GLTexture(GLTexture::Tex2DProperties(width, height, format),
+		                    {GL_LINEAR, GL_MIRRORED_REPEAT});
 	}
 	else
 	{
-		result.texColorBuffer = newTextureCubemap(
-		    width, {{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}},
-		    format, GL_RGBA, GL_TEXTURE_CUBE_MAP, GL_LINEAR,
-		    GL_MIRRORED_REPEAT);
+		result.texColorBuffer
+		    = new GLTexture(GLTexture::TexCubemapProperties(width, format),
+		                    {GL_LINEAR, GL_MIRRORED_REPEAT});
 	}
 
 	// render buffer for depth and stencil
@@ -174,8 +161,9 @@ GLHandler::RenderTarget GLHandler::newRenderTargetMultisample(
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
 
 	// generate texture
-	result.texColorBuffer = newTextureMultisample(
-	    width, height, samples, format, GL_LINEAR, GL_MIRRORED_REPEAT);
+	result.texColorBuffer = new GLTexture(
+	    GLTexture::TexMultisampleProperties(width, height, samples, format),
+	    {GL_LINEAR, GL_MIRRORED_REPEAT});
 
 	// render buffer for depth and stencil
 	glf().glGenRenderbuffers(1, &result.renderBuffer);
@@ -210,9 +198,9 @@ GLHandler::RenderTarget GLHandler::newRenderTarget3D(unsigned int width,
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
 
 	// generate texture
-	result.texColorBuffer
-	    = newTexture3D(width, height, depth, nullptr, format, GL_RGBA,
-	                   GL_TEXTURE_3D, GL_LINEAR, GL_MIRRORED_REPEAT);
+	result.texColorBuffer = new GLTexture(
+	    GLTexture::Tex3DProperties(width, height, depth, format),
+	    {GL_LINEAR, GL_MIRRORED_REPEAT});
 
 	return result;
 }
@@ -227,19 +215,19 @@ GLHandler::RenderTarget GLHandler::newDepthMap(unsigned int width,
 
 	glf().glGenFramebuffers(1, &result.frameBuffer);
 
-	result.texColorBuffer = newTexture2D(
-	    width, height, nullptr, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT,
-	    GL_TEXTURE_2D, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_FLOAT);
+	result.texColorBuffer = new GLTexture(
+	    GLTexture::Tex2DProperties(width, height, GL_DEPTH_COMPONENT32),
+	    {GL_LINEAR, GL_CLAMP_TO_EDGE}, {nullptr, GL_FLOAT, GL_DEPTH_COMPONENT});
 	// add depth specific texture parameters for sampler2DShadow
-	glf().glBindTexture(GL_TEXTURE_2D, result.texColorBuffer.glTexture);
+	glf().glBindTexture(GL_TEXTURE_2D, result.texColorBuffer->glTexture);
 	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
 	                      GL_COMPARE_REF_TO_TEXTURE);
 	glf().glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, result.frameBuffer);
 	glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-	                             GL_TEXTURE_2D, result.texColorBuffer.glTexture,
-	                             0);
+	                             GL_TEXTURE_2D,
+	                             result.texColorBuffer->glTexture, 0);
 	glf().glDrawBuffer(GL_NONE);
 	glf().glReadBuffer(GL_NONE);
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -247,10 +235,10 @@ GLHandler::RenderTarget GLHandler::newDepthMap(unsigned int width,
 	return result;
 }
 
-GLHandler::Texture
+GLTexture const&
     GLHandler::getColorAttachmentTexture(RenderTarget const& renderTarget)
 {
-	return renderTarget.texColorBuffer;
+	return *renderTarget.texColorBuffer;
 }
 
 void GLHandler::blitColorBuffer(RenderTarget const& from,
@@ -280,11 +268,11 @@ void GLHandler::blitDepthBuffer(RenderTarget const& from,
 	                                   GL_NEAREST);
 }
 
-void GLHandler::deleteRenderTarget(RenderTarget const& renderTarget)
+void GLHandler::deleteRenderTarget(RenderTarget& renderTarget)
 {
 	--renderTargetCount();
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	GLHandler::deleteTexture(renderTarget.texColorBuffer);
+	delete renderTarget.texColorBuffer;
 	glf().glDeleteRenderbuffers(1, &renderTarget.renderBuffer);
 	glf().glDeleteFramebuffers(1, &renderTarget.frameBuffer);
 }
@@ -295,8 +283,8 @@ void GLHandler::setClearColor(QColor const& color)
 	                   color.alphaF());
 }
 
-void GLHandler::beginRendering(RenderTarget const& renderTarget, CubeFace face,
-                               GLint layer)
+void GLHandler::beginRendering(RenderTarget const& renderTarget,
+                               GLTexture::CubemapFace face, GLint layer)
 {
 	beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
 	                   | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT),
@@ -304,39 +292,39 @@ void GLHandler::beginRendering(RenderTarget const& renderTarget, CubeFace face,
 }
 
 void GLHandler::beginRendering(GLbitfield clearMask,
-                               RenderTarget const& renderTarget, CubeFace face,
-                               GLint layer)
+                               RenderTarget const& renderTarget,
+                               GLTexture::CubemapFace face, GLint layer)
 {
 	glf().glBindFramebuffer(GL_FRAMEBUFFER, renderTarget.frameBuffer);
 	if(renderTarget.frameBuffer != 0 && !renderTarget.isDepthMap)
 	{
-		if(renderTarget.texColorBuffer.glTarget == GL_TEXTURE_CUBE_MAP)
+		if(renderTarget.texColorBuffer->glTarget == GL_TEXTURE_CUBE_MAP)
 		{
 			glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 			                             static_cast<unsigned int>(face)
 			                                 + GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-			                             renderTarget.texColorBuffer.glTexture,
+			                             renderTarget.texColorBuffer->glTexture,
 			                             0);
 		}
-		else if(renderTarget.texColorBuffer.glTarget == GL_TEXTURE_1D)
+		else if(renderTarget.texColorBuffer->glTarget == GL_TEXTURE_1D)
 		{
 			glf().glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			                             renderTarget.texColorBuffer.glTarget,
-			                             renderTarget.texColorBuffer.glTexture,
+			                             renderTarget.texColorBuffer->glTarget,
+			                             renderTarget.texColorBuffer->glTexture,
 			                             0);
 		}
-		else if(renderTarget.texColorBuffer.glTarget == GL_TEXTURE_3D)
+		else if(renderTarget.texColorBuffer->glTarget == GL_TEXTURE_3D)
 		{
 			glf().glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			                             renderTarget.texColorBuffer.glTarget,
-			                             renderTarget.texColorBuffer.glTexture,
+			                             renderTarget.texColorBuffer->glTarget,
+			                             renderTarget.texColorBuffer->glTexture,
 			                             0, layer);
 		}
 		else
 		{
 			glf().glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			                             renderTarget.texColorBuffer.glTarget,
-			                             renderTarget.texColorBuffer.glTexture,
+			                             renderTarget.texColorBuffer->glTarget,
+			                             renderTarget.texColorBuffer->glTexture,
 			                             0);
 		}
 	}
@@ -377,9 +365,10 @@ void GLHandler::setUpRender(GLShaderProgram const& shader,
 	};
 }
 
-void GLHandler::postProcess(GLShaderProgram const& shader,
-                            RenderTarget const& from, RenderTarget const& to,
-                            std::vector<Texture> const& uniformTextures)
+void GLHandler::postProcess(
+    GLShaderProgram const& shader, RenderTarget const& from,
+    RenderTarget const& to,
+    std::vector<GLTexture const*> const& uniformTextures)
 {
 	GLMesh quad;
 	quad.setVertices({-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f}, shader,
@@ -387,8 +376,8 @@ void GLHandler::postProcess(GLShaderProgram const& shader,
 
 	beginRendering(to);
 	shader.use();
-	std::vector<Texture> texs;
-	texs.push_back(getColorAttachmentTexture(from));
+	std::vector<GLTexture const*> texs;
+	texs.push_back(&getColorAttachmentTexture(from));
 	// TODO(florian) performance
 	for(auto tex : uniformTextures)
 	{
@@ -419,7 +408,7 @@ void GLHandler::renderFromScratch(GLShaderProgram const& shader,
 	{
 		for(unsigned int i(0); i < to.depth; ++i)
 		{
-			GLHandler::beginRendering(to, GLHandler::CubeFace::FRONT, i);
+			GLHandler::beginRendering(to, GLTexture::CubemapFace::FRONT, i);
 			shader.setUniform("z", i / static_cast<float>(to.depth));
 			GLHandler::setBackfaceCulling(false);
 			quad.render(PrimitiveType::TRIANGLE_STRIP);
@@ -443,10 +432,10 @@ void GLHandler::generateEnvironmentMap(
 	    QVector3D(0, -1, 0), QVector3D(0, 0, 1),  QVector3D(0, -1, 0),
 	};
 
-	std::vector<GLHandler::CubeFace> faces = {
-	    GLHandler::CubeFace::FRONT,  GLHandler::CubeFace::BACK,
-	    GLHandler::CubeFace::LEFT,   GLHandler::CubeFace::RIGHT,
-	    GLHandler::CubeFace::BOTTOM, GLHandler::CubeFace::TOP,
+	std::vector<GLTexture::CubemapFace> faces = {
+	    GLTexture::CubemapFace::FRONT,  GLTexture::CubemapFace::BACK,
+	    GLTexture::CubemapFace::LEFT,   GLTexture::CubemapFace::RIGHT,
+	    GLTexture::CubemapFace::BOTTOM, GLTexture::CubemapFace::TOP,
 	};
 
 	for(unsigned int i(0); i < 6; ++i)
@@ -544,420 +533,15 @@ void GLHandler::setUpTransforms(
 	GLHandler::fullSkyboxSpaceTransform() = fullSkyboxSpaceTransform;
 }
 
-GLHandler::Texture GLHandler::newTexture(unsigned int width, const GLvoid* data,
-                                         bool sRGB)
-{
-	return newTexture1D(width, data, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA);
-}
-
-GLHandler::Texture GLHandler::newTexture(unsigned int width,
-                                         const unsigned char* red,
-                                         const unsigned char* green,
-                                         const unsigned char* blue,
-                                         const unsigned char* alpha, bool sRGB)
-{
-	auto image = new GLubyte[width * 4];
-	for(unsigned int i(0); i < width; ++i)
-	{
-		image[4 * i]     = red[i];
-		image[4 * i + 1] = green[i];
-		image[4 * i + 2] = blue[i];
-		image[4 * i + 3] = alpha != nullptr ? alpha[i] : 255;
-	}
-	Texture tex = newTexture(width, image, sRGB);
-	delete[] image;
-	return tex;
-}
-
-GLHandler::Texture GLHandler::newTexture(const char* texturePath, bool sRGB)
-{
-	QImage img_data;
-	if(!img_data.load(texturePath))
-	{
-		qWarning() << "Could not load Texture \"" << texturePath << "\""
-		           << '\n';
-		return {};
-	}
-	return newTexture(img_data, sRGB);
-}
-
-GLHandler::Texture GLHandler::newTexture(QImage const& image, bool sRGB)
-{
-	QImage img_data = image.convertToFormat(QImage::Format_RGBA8888);
-	return newTexture2D(img_data.width(), img_data.height(), img_data.bits(),
-	                    sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA);
-}
-
-GLHandler::Texture GLHandler::newTexture(unsigned int width,
-                                         unsigned int height,
-                                         const GLvoid* data, bool sRGB)
-{
-	return newTexture2D(width, height, data, sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA);
-}
-
-GLHandler::Texture
-    GLHandler::newTexture(std::array<const char*, 6> const& texturesPaths,
-                          bool sRGB)
-{
-	std::array<QImage, 6> images;
-	for(unsigned int i(0); i < 6; ++i)
-	{
-		if(!images.at(i).load(texturesPaths.at(i)))
-		{
-			qWarning() << "Could not load Texture \"" << texturesPaths.at(i)
-			           << "\"" << '\n';
-			return {};
-		}
-	}
-
-	return newTexture(images, sRGB);
-}
-
-GLHandler::Texture GLHandler::newTexture(std::array<QImage, 6> const& images,
-                                         bool sRGB)
-{
-	std::array<GLvoid const*, 6> data = {};
-
-	std::array<QImage, 6> img_data = {};
-
-	for(unsigned int i(0); i < 6; ++i)
-	{
-		switch(i)
-		{
-			case static_cast<int>(CubeFace::FRONT):
-			case static_cast<int>(CubeFace::TOP):
-			case static_cast<int>(CubeFace::BOTTOM):
-			{
-				QImage im(images.at(i).height(), images.at(i).width(),
-				          QImage::Format_RGBA8888);
-				for(int j(0); j < im.height(); ++j)
-				{
-					for(int k(0); k < im.width(); ++k)
-					{
-						im.setPixel(k, j, images.at(i).pixel(j, k));
-					}
-				}
-				img_data.at(i) = im;
-			}
-			break;
-			case static_cast<int>(CubeFace::BACK):
-			{
-				QImage im(images.at(i).height(), images.at(i).width(),
-				          QImage::Format_RGBA8888);
-				for(int j(0); j < im.height(); ++j)
-				{
-					for(int k(0); k < im.width(); ++k)
-					{
-						im.setPixel(im.width() - k - 1, im.height() - j - 1,
-						            images.at(i).pixel(j, k));
-					}
-				}
-				img_data.at(i) = im;
-			}
-			break;
-			case static_cast<int>(CubeFace::LEFT):
-				img_data.at(i) = images.at(i)
-				                     .mirrored(false, true)
-				                     .convertToFormat(QImage::Format_RGBA8888);
-				break;
-			case static_cast<int>(CubeFace::RIGHT):
-				img_data.at(i) = images.at(i)
-				                     .mirrored(true, false)
-				                     .convertToFormat(QImage::Format_RGBA8888);
-				break;
-			default:
-				break;
-		}
-	}
-	for(unsigned int i(0); i < 6; ++i)
-	{
-		data.at(i) = img_data.at(i).bits();
-	}
-
-	return newTextureCubemap(images.at(0).width(), data,
-	                         sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA);
-}
-
-GLHandler::Texture GLHandler::newTexture1D(unsigned int width,
-                                           GLvoid const* data,
-                                           GLint internalFormat, GLenum format,
-                                           GLenum target, GLint filter,
-                                           GLint wrap, GLenum type)
-{
-	++texCount();
-	Texture tex  = {};
-	tex.glTarget = target;
-	glf().glGenTextures(1, &tex.glTexture);
-	// glActiveTexture(GL_TEXTURE0);
-	glf().glBindTexture(target, tex.glTexture);
-	glf().glTexImage1D(target, 0, internalFormat, width, 0, format, type, data);
-	// glGenerateMipmap(format);
-	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
-	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
-	glf().glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
-	/*GLfloat fLargest;
-	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
-	glTexParameterf( format, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
-	glf().glBindTexture(target, 0);
-
-	return tex;
-}
-
-GLHandler::Texture GLHandler::newTexture2D(unsigned int width,
-                                           unsigned int height,
-                                           GLvoid const* data,
-                                           GLint internalFormat, GLenum format,
-                                           GLenum target, GLint filter,
-                                           GLint wrap, GLenum type)
-{
-	++texCount();
-	Texture tex  = {};
-	tex.glTarget = target;
-	glf().glGenTextures(1, &tex.glTexture);
-	// glActiveTexture(GL_TEXTURE0);
-	glf().glBindTexture(target, tex.glTexture);
-	glf().glTexImage2D(target, 0, internalFormat, width, height, 0, format,
-	                   type, data);
-	// GL_UNSIGNED_BYTE, data);
-	// glGenerateMipmap(target);
-	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
-	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
-	glf().glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
-	glf().glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
-	/*GLfloat fLargest;
-	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
-	glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
-	glf().glBindTexture(target, 0);
-
-	return tex;
-}
-
-GLHandler::Texture GLHandler::newTextureMultisample(unsigned int width,
-                                                    unsigned int height,
-                                                    unsigned int samples,
-                                                    GLint internalFormat,
-                                                    GLint filter, GLint wrap)
-{
-	++texCount();
-	Texture tex  = {};
-	tex.glTarget = GL_TEXTURE_2D_MULTISAMPLE;
-	glf().glGenTextures(1, &tex.glTexture);
-	// glActiveTexture(GL_TEXTURE0);
-	glf().glBindTexture(tex.glTarget, tex.glTexture);
-	glf().glTexImage2DMultisample(tex.glTarget, samples, internalFormat, width,
-	                              height, GL_TRUE);
-	// GL_UNSIGNED_BYTE, data);
-	// glGenerateMipmap(target);
-	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_MIN_FILTER, filter);
-	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_MAG_FILTER, filter);
-	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_WRAP_S, wrap);
-	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_WRAP_T, wrap);
-	/*GLfloat fLargest;
-	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
-	glTexParameterf( tex.glTarget, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
-	glf().glBindTexture(tex.glTarget, 0);
-
-	return tex;
-}
-
-GLHandler::Texture
-    GLHandler::newTexture3D(unsigned int width, unsigned int height,
-                            unsigned int depth, GLvoid const* data,
-                            GLint internalFormat, GLenum format, GLenum target,
-                            GLint filter, GLint wrap, GLenum type)
-{
-	++texCount();
-	Texture tex  = {};
-	tex.glTarget = target;
-	glf().glGenTextures(1, &tex.glTexture);
-	// glActiveTexture(GL_TEXTURE0);
-	glf().glBindTexture(target, tex.glTexture);
-	glf().glTexImage3D(target, 0, internalFormat, width, height, depth, 0,
-	                   format, type, data);
-	// GL_UNSIGNED_BYTE, data);
-	// glGenerateMipmap(target);
-	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
-	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
-	glf().glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
-	glf().glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
-	glf().glTexParameteri(target, GL_TEXTURE_WRAP_R, wrap);
-	/*GLfloat fLargest;
-	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
-	glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
-	glf().glBindTexture(target, 0);
-
-	return tex;
-}
-
-GLHandler::Texture GLHandler::newTextureCubemap(
-    unsigned int side, std::array<GLvoid const*, 6> data, GLint internalFormat,
-    GLenum format, GLenum target, GLint filter, GLint wrap)
-{
-	++texCount();
-	Texture tex  = {};
-	tex.glTarget = target;
-	glf().glGenTextures(1, &tex.glTexture);
-	// glActiveTexture(GL_TEXTURE0);
-	glf().glBindTexture(target, tex.glTexture);
-	for(unsigned int i(0); i < 6; ++i)
-	{
-		glf().glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
-		                   internalFormat, side, side, 0, format,
-		                   GL_UNSIGNED_BYTE, data.at(i));
-	}
-	// glGenerateMipmap(target);
-	glf().glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
-	glf().glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
-	glf().glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
-	glf().glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
-	glf().glTexParameteri(target, GL_TEXTURE_WRAP_R, wrap);
-	/*GLfloat fLargest;
-	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
-	glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/
-	glf().glBindTexture(target, 0);
-
-	return tex;
-}
-
-QSize GLHandler::getTextureSize(Texture const& tex, unsigned int level)
-{
-	GLint width, height;
-	glf().glBindTexture(tex.glTarget, tex.glTexture);
-	glf().glGetTexLevelParameteriv(tex.glTarget, level, GL_TEXTURE_WIDTH,
-	                               &width);
-	glf().glGetTexLevelParameteriv(tex.glTarget, level, GL_TEXTURE_HEIGHT,
-	                               &height);
-	glf().glBindTexture(tex.glTarget, 0);
-
-	return {width, height};
-}
-
-void GLHandler::generateMipmap(Texture const& tex)
-{
-	glf().glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
-	glf().glBindTexture(tex.glTarget, tex.glTexture);
-	glf().glTexParameteri(tex.glTarget, GL_TEXTURE_MIN_FILTER,
-	                      GL_LINEAR_MIPMAP_LINEAR);
-	glf().glGenerateMipmap(tex.glTarget);
-	glf().glBindTexture(tex.glTarget, 0);
-}
-
-unsigned int GLHandler::getHighestMipmapLevel(Texture const& tex)
-{
-	QSize size(GLHandler::getTextureSize(tex));
-	return static_cast<unsigned int>(
-	    log2(size.width() > size.height() ? size.width() : size.height()));
-}
-
-QImage GLHandler::getTextureContentAsImage(Texture const& tex,
-                                           unsigned int level)
-{
-	QSize size(getTextureSize(tex, level));
-
-	GLint internalFormat;
-	glf().glBindTexture(tex.glTarget, tex.glTexture);
-	glf().glGetTexLevelParameteriv(
-	    tex.glTarget, level, GL_TEXTURE_INTERNAL_FORMAT,
-	    &internalFormat);  // get internal format type of GL texture
-	switch(internalFormat) // determine what type GL texture has...
-	{
-		case GL_RGB:
-		{
-			QImage result(size, QImage::Format::Format_RGB888);
-			glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_UNSIGNED_BYTE,
-			                    result.bits());
-			return result;
-		}
-		break;
-		case GL_RGBA:
-		{
-			QImage result(size, QImage::Format::Format_RGBA8888);
-			glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_UNSIGNED_BYTE,
-			                    result.bits());
-			return result;
-		}
-		break;
-		case GL_SRGB8_ALPHA8:
-		{
-			QImage result(size, QImage::Format::Format_RGBA8888);
-			glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_UNSIGNED_BYTE,
-			                    result.bits());
-			return result;
-		}
-		default: // unsupported type for now
-			break;
-	}
-
-	return {};
-}
-
-unsigned int GLHandler::getTextureContentAsData(GLfloat** buff,
-                                                Texture const& tex,
-                                                unsigned int level)
-{
-	QSize size(getTextureSize(tex, level));
-
-	GLint internalFormat;
-	glf().glBindTexture(tex.glTarget, tex.glTexture);
-	glf().glGetTexLevelParameteriv(
-	    tex.glTarget, level, GL_TEXTURE_INTERNAL_FORMAT,
-	    &internalFormat); // get internal format type of GL texture
-	GLint numFloats = 0;
-	if(internalFormat == GL_RGBA32F) // determine what type GL texture has...
-	{
-		numFloats = size.width() * size.height() * 4;
-		*buff     = new GLfloat[numFloats];
-		glf().glGetTexImage(tex.glTarget, level, GL_RGBA, GL_FLOAT, *buff);
-	}
-	return numFloats;
-}
-
-float GLHandler::getTextureAverageLuminance(Texture const& tex)
-{
-	GLHandler::generateMipmap(tex);
-	unsigned int lvl = GLHandler::getHighestMipmapLevel(tex) - 3;
-	auto size        = GLHandler::getTextureSize(tex, lvl);
-	GLfloat* buff;
-	unsigned int allocated(GLHandler::getTextureContentAsData(&buff, tex, lvl));
-	float lastFrameAverageLuminance = 0.f;
-	if(allocated > 0)
-	{
-		float coeffSum = 0.f;
-		float halfWidth((size.width() - 1) / 2.f);
-		float halfHeight((size.height() - 1) / 2.f);
-		for(int i(0); i < size.width(); ++i)
-		{
-			for(int j(0); j < size.height(); ++j)
-			{
-				unsigned int id(j * size.width() + i);
-				float lum(0.2126 * buff[4 * id] + 0.7152 * buff[4 * id + 1]
-				          + 0.0722 * buff[4 * id + 2]);
-				float coeff
-				    = exp(-1 * pow((i - halfWidth) * 4.5 / halfWidth, 2));
-				coeff *= exp(-1 * pow((j - halfHeight) * 4.5 / halfHeight, 2));
-				coeffSum += coeff;
-				lastFrameAverageLuminance += coeff * lum;
-			}
-		}
-		lastFrameAverageLuminance /= coeffSum;
-		delete[] buff;
-	}
-	return lastFrameAverageLuminance;
-}
-
-void GLHandler::useTextures(std::vector<Texture> const& textures)
+void GLHandler::useTextures(std::vector<GLTexture const*> const& textures)
 {
 	for(unsigned int i(0); i < textures.size(); ++i)
 	{
-		glf().glActiveTexture(GL_TEXTURE0 + i);
-		glf().glBindTexture(textures[i].glTarget, textures[i].glTexture);
+		if(textures[i] != nullptr)
+		{
+			textures[i]->use(GL_TEXTURE0 + i);
+		}
 	}
-}
-
-void GLHandler::deleteTexture(Texture const& texture)
-{
-	--texCount();
-	glf().glDeleteTextures(1, &texture.glTexture);
 }
 
 GLHandler::PixelBufferObject
@@ -978,15 +562,14 @@ GLHandler::PixelBufferObject
 	return result;
 }
 
-GLHandler::Texture GLHandler::copyPBOToTex(PixelBufferObject const& pbo,
-                                           bool sRGB)
+GLTexture* GLHandler::copyPBOToTex(PixelBufferObject const& pbo, bool sRGB)
 {
-	Texture result = {};
-
 	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo.id);
 	glf().glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	// NOLINTNEXTLINE(hicpp-use-nullptr, modernize-use-nullptr)
-	result = newTexture(pbo.width, pbo.height, static_cast<GLvoid*>(0), sRGB);
+	auto result
+	    = new GLTexture(GLTexture::Tex2DProperties(pbo.width, pbo.height, sRGB),
+	                    {}, {static_cast<GLvoid*>(nullptr)});
 	glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
 	return result;

@@ -105,6 +105,10 @@ class AbstractMainWin : public QWindow
 	 */
 	Q_PROPERTY(double verticalAngleShift READ getVerticalAngleShift WRITE
 	               setVerticalAngleShift)
+	/*
+	 * @brief Compass tilt around the 0->180deg axis.
+	 */
+	Q_PROPERTY(float compassTilt READ getCompassTilt WRITE setCompassTilt)
 	/**
 	 * @brief Wether the window is displayed in full screen or not.
 	 *
@@ -169,6 +173,14 @@ class AbstractMainWin : public QWindow
 	 * @setter{verticalAngleShift}
 	 */
 	void setVerticalAngleShift(double angleShift);
+	/**
+	 * @getter{compasstilt}
+	 */
+	float getCompassTilt() { return CalibrationCompass::tilt(); };
+	/**
+	 * @setter{compasstilt}
+	 */
+	void setCompassTilt(float tilt) { CalibrationCompass::tilt() = tilt; };
 	/**
 	 * @getter{fullscreen}
 	 */
@@ -375,7 +387,7 @@ class AbstractMainWin : public QWindow
 	 * processing.
 	 * @param shader The actual shader program.
 	 */
-	virtual std::vector<GLHandler::Texture> getPostProcessingUniformTextures(
+	virtual std::vector<GLTexture const*> getPostProcessingUniformTextures(
 	    QString const& id, GLShaderProgram const& shader,
 	    GLHandler::RenderTarget const& currentTarget) const;
 

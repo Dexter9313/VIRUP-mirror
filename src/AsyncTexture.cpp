@@ -28,15 +28,16 @@ QList<QPair<at::WorkerThread*, GLHandler::PixelBufferObject>>&
 
 AsyncTexture::AsyncTexture(QString const& path, QColor const& defaultColor,
                            bool sRGB)
-    : sRGB(sRGB)
+    : defaultTex(GLTexture::Tex2DProperties(1, 1, sRGB))
+    , sRGB(sRGB)
     , averageColor(defaultColor)
 {
 	unsigned char color[4];
-	color[0]   = defaultColor.red();
-	color[1]   = defaultColor.green();
-	color[2]   = defaultColor.blue();
-	color[3]   = defaultColor.alpha();
-	defaultTex = GLHandler::newTexture(1, 1, &(color[0]), sRGB);
+	color[0] = defaultColor.red();
+	color[1] = defaultColor.green();
+	color[2] = defaultColor.blue();
+	color[3] = defaultColor.alpha();
+	defaultTex.setData({&(color[0])});
 
 	if(path.isEmpty())
 	{
@@ -57,15 +58,16 @@ AsyncTexture::AsyncTexture(QString const& path, QColor const& defaultColor,
 AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
                            unsigned int height, QColor const& defaultColor,
                            bool sRGB)
-    : sRGB(sRGB)
+    : defaultTex(GLTexture::Tex2DProperties(1, 1, sRGB))
+    , sRGB(sRGB)
     , averageColor(defaultColor)
 {
 	unsigned char color[4];
-	color[0]   = defaultColor.red();
-	color[1]   = defaultColor.green();
-	color[2]   = defaultColor.blue();
-	color[3]   = defaultColor.alpha();
-	defaultTex = GLHandler::newTexture(1, 1, &(color[0]), sRGB);
+	color[0] = defaultColor.red();
+	color[1] = defaultColor.green();
+	color[2] = defaultColor.blue();
+	color[3] = defaultColor.alpha();
+	defaultTex.setData({&(color[0])});
 
 	if(path.isEmpty())
 	{
@@ -80,7 +82,7 @@ AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
 	thread->start();
 }
 
-GLHandler::Texture AsyncTexture::getTexture()
+GLTexture const& AsyncTexture::getTexture()
 {
 	if(emptyPath)
 	{
@@ -89,7 +91,7 @@ GLHandler::Texture AsyncTexture::getTexture()
 
 	if(loaded)
 	{
-		return tex;
+		return *tex;
 	}
 
 	if(!thread->isFinished())
@@ -99,24 +101,22 @@ GLHandler::Texture AsyncTexture::getTexture()
 
 	tex = GLHandler::copyPBOToTex(pbo, sRGB);
 	GLHandler::deletePixelBufferObject(pbo);
-	GLHandler::generateMipmap(tex);
-	unsigned int lastMipmap(GLHandler::getHighestMipmapLevel(tex));
-	averageColor
-	    = GLHandler::getTextureContentAsImage(tex, lastMipmap).pixelColor(0, 0);
+	tex->generateMipmap();
+	unsigned int lastMipmap(tex->getHighestMipmapLevel());
+	averageColor = tex->getContentAsImage(lastMipmap).pixelColor(0, 0);
 	delete thread;
 	loaded = true;
 
-	return tex;
+	return *tex;
 }
 
 AsyncTexture::~AsyncTexture()
 {
-	GLHandler::deleteTexture(defaultTex);
 	if(!emptyPath)
 	{
 		if(loaded)
 		{
-			GLHandler::deleteTexture(tex);
+			delete tex;
 		}
 		else if(thread->isFinished())
 		{

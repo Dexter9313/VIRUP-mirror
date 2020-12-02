@@ -104,7 +104,7 @@ void Text3D::render(GLHandler::GeometricSpace geometricSpace)
 
 void Text3D::updateTex()
 {
-	GLHandler::deleteTexture(tex);
+	delete tex;
 
 	image = QImage(superSampling * originalSize, QImage::Format_RGBA8888);
 
@@ -141,12 +141,12 @@ void Text3D::updateTex()
 		font.setPointSize(fontSize);
 	}
 
-	tex = GLHandler::newTexture(image);
+	tex = new GLTexture(image);
 }
 
 Text3D::~Text3D()
 {
-	GLHandler::deleteTexture(tex);
+	delete tex;
 }
 
 QRect Text3D::paintText(QImage& image, QString const& text, QColor const& color,

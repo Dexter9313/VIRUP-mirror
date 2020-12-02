@@ -70,19 +70,19 @@ void MainWin::initScene()
 	Primitives::setAsUnitCube(*skybox, sbShader.toGLShaderProgram());
 
 	std::array<const char*, 6> paths = {};
-	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::BACK))
+	paths.at(static_cast<unsigned int>(GLTexture::CubemapFace::BACK))
 	    = "data/example/images/ame_ash/ashcanyon_bk.tga";
-	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::BOTTOM))
+	paths.at(static_cast<unsigned int>(GLTexture::CubemapFace::BOTTOM))
 	    = "data/example/images/ame_ash/ashcanyon_dn.tga";
-	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::FRONT))
+	paths.at(static_cast<unsigned int>(GLTexture::CubemapFace::FRONT))
 	    = "data/example/images/ame_ash/ashcanyon_ft.tga";
-	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::LEFT))
+	paths.at(static_cast<unsigned int>(GLTexture::CubemapFace::LEFT))
 	    = "data/example/images/ame_ash/ashcanyon_lf.tga";
-	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::RIGHT))
+	paths.at(static_cast<unsigned int>(GLTexture::CubemapFace::RIGHT))
 	    = "data/example/images/ame_ash/ashcanyon_rt.tga";
-	paths.at(static_cast<unsigned int>(GLHandler::CubeFace::TOP))
+	paths.at(static_cast<unsigned int>(GLTexture::CubemapFace::TOP))
 	    = "data/example/images/ame_ash/ashcanyon_up.tga";
-	sbTexture = GLHandler::newTexture(paths);
+	sbTexture = new GLTexture(paths);
 
 	shaderProgram.load("colorpervert");
 	// set up vertex data (and buffer(s)) and configure vertex attributes
@@ -306,7 +306,7 @@ void MainWin::applyPostProcShaderParams(
 
 MainWin::~MainWin()
 {
-	GLHandler::deleteTexture(sbTexture);
+	delete sbTexture;
 	delete skybox;
 
 	delete mesh;
