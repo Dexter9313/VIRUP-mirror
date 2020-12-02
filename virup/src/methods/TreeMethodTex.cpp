@@ -2,12 +2,10 @@
 
 TreeMethodTex::TreeMethodTex()
     : TreeMethodLOD("gaz")
-    , tex()
+    , tex("data/virup/images/particle.png")
 {
 	GLHandler::glf().glEnable(GL_POINT_SPRITE);
 	GLHandler::glf().glEnable(GL_PROGRAM_POINT_SIZE);
-	// load texture
-	tex = GLHandler::newTexture("data/virup/images/particle.png");
 
 	setPointSize = false;
 }
@@ -15,11 +13,6 @@ TreeMethodTex::TreeMethodTex()
 void TreeMethodTex::render(Camera const& camera)
 {
 	shaderProgram.setUniform("scale", static_cast<float>(camera.scale));
-	GLHandler::useTextures({tex});
+	GLHandler::useTextures({&tex});
 	TreeMethodLOD::render(camera);
-}
-
-TreeMethodTex::~TreeMethodTex()
-{
-	GLHandler::deleteTexture(tex);
 }

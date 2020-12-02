@@ -9,7 +9,6 @@ class BaseLineMethodTex : public BaseLineMethod
   public:
 	BaseLineMethodTex();
 	virtual void render(Camera const& camera) override;
-	~BaseLineMethodTex();
 
   public slots:
 	virtual std::string getName() const override
@@ -18,7 +17,7 @@ class BaseLineMethodTex : public BaseLineMethod
 	};
 
   private:
-	GLHandler::Texture tex;
+	GLTexture tex;
 };
 
 #endif // BASELINEMETHOD_H

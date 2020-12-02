@@ -766,8 +766,8 @@ void MainWin::initScene()
 	}
 
 	// LENSING
-	lenseDistortionMap = GLHandler::newTexture(
-	    "data/virup/images/pointmass-distortion.png", false);
+	lenseDistortionMap
+	    = new GLTexture("data/virup/images/pointmass-distortion.png", false);
 
 	renderer.appendPostProcessingShader("lensing", "lensing");
 
@@ -1097,7 +1097,7 @@ void MainWin::applyPostProcShaderParams(
 	}
 }
 
-std::vector<GLHandler::Texture> MainWin::getPostProcessingUniformTextures(
+std::vector<GLTexture const*> MainWin::getPostProcessingUniformTextures(
     QString const& id, GLShaderProgram const& shader,
     GLHandler::RenderTarget const& currentTarget) const
 {
@@ -1169,6 +1169,7 @@ std::vector<float> MainWin::generateVertices(unsigned int number,
 MainWin::~MainWin()
 {
 	delete dialog;
+	delete lenseDistortionMap;
 	for(auto cosmoLabel : cosmoLabels)
 	{
 		delete cosmoLabel.second;

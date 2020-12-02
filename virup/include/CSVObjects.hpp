@@ -87,9 +87,8 @@ class CSVObjects : public UniverseElement
 
 	GLShaderProgram shader;
 	GLMesh mesh;
-	static GLHandler::Texture& starTex();
-	static GLHandler::Texture& galTex();
-	static bool& texLoaded();
+	static GLTexture*& starTex();
+	static GLTexture*& galTex();
 
 	bool galaxies = false;
 

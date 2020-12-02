@@ -18,22 +18,16 @@
 
 #include "CSVObjects.hpp"
 
-GLHandler::Texture& CSVObjects::starTex()
+GLTexture*& CSVObjects::starTex()
 {
-	static GLHandler::Texture starTex;
+	static GLTexture* starTex = nullptr;
 	return starTex;
 }
 
-GLHandler::Texture& CSVObjects::galTex()
+GLTexture*& CSVObjects::galTex()
 {
-	static GLHandler::Texture galTex;
+	static GLTexture* galTex = nullptr;
 	return galTex;
-}
-
-bool& CSVObjects::texLoaded()
-{
-	static bool texLoaded(false);
-	return texLoaded;
 }
 
 CSVObjects::CSVObjects(QString const& csvFile, bool galaxies)
@@ -41,15 +35,17 @@ CSVObjects::CSVObjects(QString const& csvFile, bool galaxies)
     , galaxies(galaxies)
     , conShader("default")
 {
-	if(!texLoaded())
+	if(starTex() == nullptr)
 	{
-		starTex() = GLHandler::newTexture(
+		starTex() = new GLTexture(
 		    getAbsoluteDataPath("images/star.png").toLatin1().data());
-		galTex() = GLHandler::newTexture(
+		starTex()->generateMipmap();
+	}
+	if(galTex() == nullptr)
+	{
+		galTex() = new GLTexture(
 		    QSettings().value("data/sdssatlas").toString().toLatin1().data());
-		GLHandler::generateMipmap(starTex());
-		GLHandler::generateMipmap(galTex());
-		texLoaded() = true;
+		galTex()->generateMipmap();
 	}
 	QFile file(csvFile);
 	if(file.open(QFile::ReadOnly))
@@ -383,11 +379,16 @@ CSVObjects::Object
 
 CSVObjects::~CSVObjects()
 {
-	if(texLoaded())
+	// TODO don't do that, check if last instance of CSVObjects !
+	if(starTex() != nullptr)
 	{
-		GLHandler::deleteTexture(starTex());
-		GLHandler::deleteTexture(galTex());
-		texLoaded() = false;
+		delete starTex();
+		starTex() = nullptr;
+	}
+	if(galTex() != nullptr)
+	{
+		delete galTex();
+		galTex() = nullptr;
 	}
 
 	if(containsConstellations)

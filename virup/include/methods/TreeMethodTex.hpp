@@ -10,10 +10,9 @@ class TreeMethodTex : public TreeMethodLOD
 	TreeMethodTex();
 	virtual std::string getName() const override { return "Tree Texture"; };
 	virtual void render(Camera const& camera) override;
-	virtual ~TreeMethodTex();
 
   private:
-	GLHandler::Texture tex;
+	GLTexture tex;
 };
 
 #endif // TREEMETHOD_H
