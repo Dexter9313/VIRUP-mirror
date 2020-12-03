@@ -235,6 +235,7 @@ class GLTexture
 
 	// dangerous !
 	GLuint getGLTexture() const { return glTexture; };
+	GLenum getGLTarget() const { return glTarget; };
 	// level = level of mipmapping
 	QSize getSize(unsigned int level = 0) const;
 	void generateMipmap() const;

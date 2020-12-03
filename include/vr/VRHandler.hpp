@@ -88,7 +88,7 @@ class VRHandler : public QObject
 	virtual void beginRendering(Side eye)  = 0;
 	virtual void renderControllers() const = 0;
 	virtual void renderHands() const       = 0;
-	virtual GLHandler::RenderTarget const&
+	virtual GLFramebufferObject const&
 	    getPostProcessingTarget(unsigned int i, Side side) const = 0;
 	virtual void reloadPostProcessingTargets()                   = 0;
 	virtual void submitRendering(Side eye, unsigned int i)       = 0;

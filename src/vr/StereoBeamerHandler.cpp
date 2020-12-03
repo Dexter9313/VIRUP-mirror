@@ -34,10 +34,10 @@ const Hand* StereoBeamerHandler::getHand(Side /*side*/) const
 
 float StereoBeamerHandler::getRenderTargetAverageLuminance(Side eye) const
 {
-	auto const& tex = GLHandler::getColorAttachmentTexture(
-	    eye == Side::LEFT ? postProcessingTargetsLeft[0]
-	                      : postProcessingTargetsRight[0]);
-	return tex.getAverageLuminance();
+	return (eye == Side::LEFT ? postProcessingTargetsLeft[0]
+	                          : postProcessingTargetsRight[0])
+	    ->getColorAttachmentTexture()
+	    .getAverageLuminance();
 }
 
 QMatrix4x4 StereoBeamerHandler::getSeatedToStandingAbsoluteTrackingPos() const
@@ -73,8 +73,8 @@ void StereoBeamerHandler::prepareRendering()
 void StereoBeamerHandler::beginRendering(Side eye)
 {
 	GLHandler::beginRendering(eye == Side::LEFT
-	                              ? postProcessingTargetsLeft[0]
-	                              : postProcessingTargetsRight[0]);
+	                              ? *postProcessingTargetsLeft[0]
+	                              : *postProcessingTargetsRight[0]);
 	currentRenderingEye = eye;
 }
 
@@ -84,20 +84,24 @@ void StereoBeamerHandler::renderHands() const {}
 
 void StereoBeamerHandler::reloadPostProcessingTargets()
 {
-	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsRight[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[1]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsRight[1]);
+	delete postProcessingTargetsLeft[0];
+	delete postProcessingTargetsRight[0];
+	delete postProcessingTargetsLeft[1];
+	delete postProcessingTargetsRight[1];
 
-	currentTargetSize            = getEyeRenderTargetSize();
-	postProcessingTargetsLeft[0] = GLHandler::newRenderTarget(
-	    currentTargetSize.width(), currentTargetSize.height());
-	postProcessingTargetsLeft[1] = GLHandler::newRenderTarget(
-	    currentTargetSize.width(), currentTargetSize.height());
-	postProcessingTargetsRight[0] = GLHandler::newRenderTarget(
-	    currentTargetSize.width(), currentTargetSize.height());
-	postProcessingTargetsRight[1] = GLHandler::newRenderTarget(
-	    currentTargetSize.width(), currentTargetSize.height());
+	currentTargetSize = getEyeRenderTargetSize();
+	postProcessingTargetsLeft[0]
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
+	postProcessingTargetsLeft[1]
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
+	postProcessingTargetsRight[0]
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
+	postProcessingTargetsRight[1]
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
 }
 
 void StereoBeamerHandler::submitRendering(Side /*eye*/, unsigned int /*i*/) {}
@@ -105,13 +109,13 @@ void StereoBeamerHandler::submitRendering(Side /*eye*/, unsigned int /*i*/) {}
 void StereoBeamerHandler::displayOnCompanion(unsigned int companionWidth,
                                              unsigned int companionHeight) const
 {
-	GLHandler::showOnScreen(getPostProcessingTarget(submittedIndex, Side::LEFT),
-	                        0, 0, static_cast<int>(companionWidth / 2),
-	                        static_cast<int>(companionHeight));
-	GLHandler::showOnScreen(
-	    getPostProcessingTarget(submittedIndex, Side::RIGHT),
-	    static_cast<int>(companionWidth / 2), 0,
-	    static_cast<int>(companionWidth), static_cast<int>(companionHeight));
+	getPostProcessingTarget(submittedIndex, Side::LEFT)
+	    .showOnScreen(0, 0, static_cast<int>(companionWidth / 2),
+	                  static_cast<int>(companionHeight));
+	getPostProcessingTarget(submittedIndex, Side::RIGHT)
+	    .showOnScreen(static_cast<int>(companionWidth / 2), 0,
+	                  static_cast<int>(companionWidth),
+	                  static_cast<int>(companionHeight));
 }
 
 bool StereoBeamerHandler::pollEvent(Event* /*e*/)
@@ -121,11 +125,15 @@ bool StereoBeamerHandler::pollEvent(Event* /*e*/)
 
 void StereoBeamerHandler::close()
 {
-	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsRight[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[1]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsRight[1]);
-	enabled = false;
+	delete postProcessingTargetsLeft[0];
+	delete postProcessingTargetsRight[0];
+	delete postProcessingTargetsLeft[1];
+	delete postProcessingTargetsRight[1];
+	postProcessingTargetsLeft[0]  = nullptr;
+	postProcessingTargetsLeft[1]  = nullptr;
+	postProcessingTargetsRight[0] = nullptr;
+	postProcessingTargetsRight[1] = nullptr;
+	enabled                       = false;
 }
 
 QMatrix4x4 StereoBeamerHandler::getEyeViewMatrix(Side eye) const

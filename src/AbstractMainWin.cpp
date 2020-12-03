@@ -396,7 +396,7 @@ void AbstractMainWin::setupPythonAPI()
 
 void AbstractMainWin::applyPostProcShaderParams(
     QString const& id, GLShaderProgram const& shader,
-    GLHandler::RenderTarget const& /*currentTarget*/) const
+    GLFramebufferObject const& /*currentTarget*/) const
 {
 	if(id == "colors")
 	{
@@ -423,7 +423,7 @@ void AbstractMainWin::applyPostProcShaderParams(
 
 std::vector<GLTexture const*> AbstractMainWin::getPostProcessingUniformTextures(
     QString const& id, GLShaderProgram const& /*shader*/,
-    GLHandler::RenderTarget const& currentTarget) const
+    GLFramebufferObject const& currentTarget) const
 {
 	if(id == "bloom")
 	{
@@ -431,21 +431,21 @@ std::vector<GLTexture const*> AbstractMainWin::getPostProcessingUniformTextures(
 		{
 			// high luminosity pass
 			GLShaderProgram hlshader("postprocess", "highlumpass");
-			GLHandler::postProcess(hlshader, currentTarget, bloomTargets[0]);
+			GLHandler::postProcess(hlshader, currentTarget, *bloomTargets[0]);
 
 			// blurring
 			GLShaderProgram blurshader("postprocess", "blur");
 			for(unsigned int i = 0; i < 6; i++)
 			{
 				blurshader.setUniform("horizontal", static_cast<float>(i % 2));
-				GLHandler::postProcess(blurshader, bloomTargets.at(i % 2),
-				                       bloomTargets.at((i + 1) % 2));
+				GLHandler::postProcess(blurshader, *bloomTargets.at(i % 2),
+				                       *bloomTargets.at((i + 1) % 2));
 			}
 
-			return {&GLHandler::getColorAttachmentTexture(bloomTargets[0])};
+			return {&bloomTargets[0]->getColorAttachmentTexture()};
 		}
-		GLHandler::beginRendering(bloomTargets[0]);
-		return {&GLHandler::getColorAttachmentTexture(bloomTargets[0])};
+		GLHandler::beginRendering(*bloomTargets[0]);
+		return {&bloomTargets[0]->getColorAttachmentTexture()};
 	}
 	return {};
 }
@@ -482,21 +482,7 @@ void AbstractMainWin::initializeGL()
 	}
 
 	// BLOOM
-	if(!vrHandler->isEnabled())
-	{
-		bloomTargets[0]
-		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
-		bloomTargets[1]
-		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
-	}
-	else
-	{
-		QSize size(vrHandler->getEyeRenderTargetSize());
-		bloomTargets[0] = GLHandler::newRenderTarget(size.width(),
-		                                             size.height(), GL_RGBA32F);
-		bloomTargets[1] = GLHandler::newRenderTarget(size.width(),
-		                                             size.height(), GL_RGBA32F);
-	}
+	reloadBloomTargets();
 
 	// let user init
 	initScene();
@@ -642,13 +628,13 @@ void AbstractMainWin::paintGL()
 		QString subdir;
 		switch(renderer.projection)
 		{
-			case Renderer::Projection::DEFAULT:
+			case MainRenderTarget::Projection::DEFAULT:
 				subdir = "2D";
 				break;
-			case Renderer::Projection::PANORAMA360:
+			case MainRenderTarget::Projection::PANORAMA360:
 				subdir = "PANORAMA360";
 				break;
-			case Renderer::Projection::VR360:
+			case MainRenderTarget::Projection::VR360:
 				subdir = "VR360";
 				break;
 		}
@@ -679,8 +665,8 @@ AbstractMainWin::~AbstractMainWin()
 {
 	delete networkManager;
 	delete toneMappingModel;
-	GLHandler::deleteRenderTarget(bloomTargets[0]);
-	GLHandler::deleteRenderTarget(bloomTargets[1]);
+	delete bloomTargets[0];
+	delete bloomTargets[1];
 
 	// force garbage collect some resources
 	AsyncTexture::garbageCollect(true);
@@ -696,21 +682,21 @@ AbstractMainWin::~AbstractMainWin()
 
 void AbstractMainWin::reloadBloomTargets()
 {
-	// GLHandler::deleteRenderTarget(bloomTargets[0]);
-	// GLHandler::deleteRenderTarget(bloomTargets[1]);
+	delete bloomTargets[0];
+	delete bloomTargets[1];
 	if(!vrHandler->isEnabled())
 	{
-		bloomTargets[0]
-		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
-		bloomTargets[1]
-		    = GLHandler::newRenderTarget(width(), height(), GL_RGBA32F);
+		bloomTargets[0] = new GLFramebufferObject(
+		    GLTexture::Tex2DProperties(width(), height(), GL_RGBA32F));
+		bloomTargets[1] = new GLFramebufferObject(
+		    GLTexture::Tex2DProperties(width(), height(), GL_RGBA32F));
 	}
 	else
 	{
 		QSize size(vrHandler->getEyeRenderTargetSize());
-		bloomTargets[0] = GLHandler::newRenderTarget(size.width(),
-		                                             size.height(), GL_RGBA32F);
-		bloomTargets[1] = GLHandler::newRenderTarget(size.width(),
-		                                             size.height(), GL_RGBA32F);
+		bloomTargets[0] = new GLFramebufferObject(GLTexture::Tex2DProperties(
+		    size.width(), size.height(), GL_RGBA32F));
+		bloomTargets[1] = new GLFramebufferObject(GLTexture::Tex2DProperties(
+		    size.width(), size.height(), GL_RGBA32F));
 	}
 }

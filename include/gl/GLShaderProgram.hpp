@@ -223,7 +223,6 @@ class GLShaderProgram
 	void cleanUp();
 
   private:
-	friend GLHandler;
 	const GLuint glShaderProgram;
 
 	bool doClean = true;

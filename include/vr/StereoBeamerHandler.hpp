@@ -40,11 +40,11 @@ class StereoBeamerHandler : public VRHandler
 	virtual void beginRendering(Side eye) override;
 	virtual void renderControllers() const override;
 	virtual void renderHands() const override;
-	GLHandler::RenderTarget const&
-	    getPostProcessingTarget(unsigned int i, Side side) const override
+	GLFramebufferObject const& getPostProcessingTarget(unsigned int i,
+	                                                   Side side) const override
 	{
-		return side == Side::LEFT ? postProcessingTargetsLeft[i]
-		                          : postProcessingTargetsRight[i];
+		return side == Side::LEFT ? *postProcessingTargetsLeft[i]
+		                          : *postProcessingTargetsRight[i];
 	};
 	virtual void reloadPostProcessingTargets() override;
 	virtual void submitRendering(Side eye, unsigned int i) override;
@@ -64,8 +64,10 @@ class StereoBeamerHandler : public VRHandler
   private:
 	bool enabled                = false;
 	unsigned int submittedIndex = 0;
-	GLHandler::RenderTarget postProcessingTargetsLeft[2];
-	GLHandler::RenderTarget postProcessingTargetsRight[2];
+	std::array<GLFramebufferObject*, 2> postProcessingTargetsLeft
+	    = {{nullptr, nullptr}};
+	std::array<GLFramebufferObject*, 2> postProcessingTargetsRight
+	    = {{nullptr, nullptr}};
 	QSize currentTargetSize;
 };
 

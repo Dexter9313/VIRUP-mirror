@@ -96,7 +96,7 @@ class AsyncTexture
 	GLTexture defaultTex;
 	GLTexture* tex = nullptr;
 
-	GLHandler::PixelBufferObject pbo = {};
+	GLPixelBufferObject* pbo;
 	at::WorkerThread* thread;
 
 	bool loaded    = false;
@@ -108,7 +108,7 @@ class AsyncTexture
 	// never wait for futures to finish within destructor ! if you need to
 	// release resources and the future didn't finish, push it here and other
 	// AsyncTextures will take care of it later
-	static QList<QPair<at::WorkerThread*, GLHandler::PixelBufferObject>>&
+	static QList<QPair<at::WorkerThread*, GLPixelBufferObject*>>&
 	    waitingForDeletion();
 };
 

@@ -295,7 +295,7 @@ void MainWin::renderScene(BasicCamera const& camera, QString const& /*pathId*/)
 
 void MainWin::applyPostProcShaderParams(
     QString const& id, GLShaderProgram const& shader,
-    GLHandler::RenderTarget const& currentTarget) const
+    GLFramebufferObject const& currentTarget) const
 {
 	AbstractMainWin::applyPostProcShaderParams(id, shader, currentTarget);
 	if(id == "distort")

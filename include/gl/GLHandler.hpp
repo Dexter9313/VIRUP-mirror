@@ -20,7 +20,9 @@
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
 
+#include "gl/GLFramebufferObject.hpp"
 #include "gl/GLMesh.hpp"
+#include "gl/GLPixelBufferObject.hpp"
 #include "gl/GLShaderProgram.hpp"
 #include "gl/GLTexture.hpp"
 
@@ -44,95 +46,6 @@ class GLHandler : public QObject
 {
 	Q_OBJECT
   public: // useful types
-	static unsigned int& renderTargetCount();
-	static unsigned int& meshCount();
-	static unsigned int& PBOCount();
-
-	class PixelBufferObject
-	{
-		friend GLHandler;
-		GLuint id;
-
-	  public:
-		unsigned int width;
-		unsigned int height;
-		unsigned char* mappedData;
-
-		PixelBufferObject()                         = default;
-		PixelBufferObject(PixelBufferObject const&) = default;
-		PixelBufferObject(PixelBufferObject&&)      = default;
-		PixelBufferObject& operator=(PixelBufferObject const&) = default;
-	};
-
-	/** @ingroup pywrap
-	 * @brief Mostly opaque class that represents a render target. Use the
-	 * render target related methods to handle it.
-	 *
-	 * A render target is a collection of buffers in video memory on which a
-	 * scene is rendered. The default render target is the screen. Having
-	 * several other render targets than the screen can be useful for VR
-	 * rendering (one per eye) or post-processing for example (render the scene
-	 * on a RenderTarget then pass it to a post-processing shader that is
-	 * rendering to the screen buffer). About post-processing, @ref GLHandler as
-	 * high level methods to do it, you shouldn't have to do post-processing
-	 * manually.
-	 *
-	 * To be more specific, a RenderTarget contains pointers to a framebuffer, a
-	 * color attachment buffer and a render buffer (depth + stencil). Deferred
-	 * rendering is therefore not supported yet. It also keeps its attachments
-	 * size (width + height).
-	 */
-	class RenderTarget
-	{
-		friend GLHandler;
-		RenderTarget(unsigned int width, unsigned int height)
-		    : width(width)
-		    , height(height)
-		    , depth(1){};
-		RenderTarget(unsigned int width, unsigned int height,
-		             unsigned int depth)
-		    : width(width)
-		    , height(height)
-		    , depth(depth){};
-		RenderTarget(GLuint _0, GLTexture* _1, GLuint _2, unsigned int _3,
-		             unsigned int _4, unsigned int _5 = 1)
-		    : frameBuffer(_0)
-		    , texColorBuffer(_1)
-		    , renderBuffer(_2)
-		    , width(_3)
-		    , height(_4)
-		    , depth(_5){};
-		GLuint frameBuffer = 0;
-		// if depth map, will be the depth buffer instead
-		GLTexture* texColorBuffer = nullptr;
-		GLuint renderBuffer       = 0;
-		unsigned int width;
-		unsigned int height;
-		unsigned int depth;
-		bool isDepthMap = false;
-
-	  public:
-		/**
-		 * @brief Default constructor.
-		 *
-		 * @warning You should use GLHandler#newRenderTarget instead.
-		 */
-		RenderTarget() = default;
-		/**
-		 * @brief Copy constructor.
-		 */
-		RenderTarget(RenderTarget const&) = default;
-		/**
-		 * @brief Move constructor.
-		 */
-		RenderTarget(RenderTarget&&) = default;
-		/**
-		 * @brief Assignment operator.
-		 */
-		RenderTarget& operator=(RenderTarget const&) = default;
-		QSize getSize() const { return QSize(width, height); };
-	};
-
 	/**
 	 * @brief Representing a geometric space.
 	 *
@@ -162,18 +75,6 @@ class GLHandler : public QObject
 	static bool init();
 
 	/**
-	 * @brief Returns a reference to the default render target format.
-	 *
-	 * This default render target format will be used in
-	 * GLHandler#newRenderTarget if no format is provided. This is mostly used
-	 * to ensure that any part of the engine instantiating a new render target
-	 * uses this particular format.
-	 *
-	 * By default, contains GL_RGBA32F.
-	 */
-	static GLint& defaultRenderTargetFormat();
-
-	/**
 	 * @brief Returns a reference to the OpenGL functions retrieved by Qt.
 	 *
 	 * You can call OpenGL directly through that reference, but be careful !
@@ -190,68 +91,6 @@ class GLHandler : public QObject
 	 */
 	static void setPointSize(unsigned int size);
 
-	// RENDERING
-	static RenderTarget newRenderTarget1D(unsigned int width);
-	static RenderTarget newRenderTarget1D(unsigned int width, GLint format);
-	/**
-	 * @brief Calls @ref newRenderTarget(@p width, @p height, @ref
-	 * defaultRenderTargetFormat()).
-	 */
-	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
-	                                    bool cubemap = false);
-	/**
-	 * @brief Allocates a new @ref RenderTarget.
-	 * @param width Width of all buffers of the render target.
-	 * @param height Height of all buffers the render target.
-	 * @param format Internal format of the color attachment of the render
-	 * target. See <a
-	 * href="https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml">glTexImage2D's
-	 * documentation</a> to have a table of all possible internal formats for
-	 * textures.
-	 */
-	static RenderTarget newRenderTarget(unsigned int width, unsigned int height,
-	                                    GLint format, bool cubemap = false);
-
-	static RenderTarget newRenderTargetMultisample(unsigned int width,
-	                                               unsigned int height,
-	                                               unsigned int samples,
-	                                               GLint format);
-
-	static RenderTarget newRenderTarget3D(unsigned int width,
-	                                      unsigned int height,
-	                                      unsigned int depth);
-	static RenderTarget newRenderTarget3D(unsigned int width,
-	                                      unsigned int height,
-	                                      unsigned int depth, GLint format);
-
-	static RenderTarget newDepthMap(unsigned int width, unsigned int height,
-	                                bool cubemap = false);
-	/**
-	 * @brief Returns the color attachment of a @p renderTarget.
-	 *
-	 * This is mainly used for post-processing to be passed to a post-processing
-	 * fragment shader.
-	 */
-	static GLTexture const&
-	    getColorAttachmentTexture(GLHandler::RenderTarget const& renderTarget);
-	/**
-	 * @brief Blits one color buffer from a render target to another one's.
-	 */
-	static void blitColorBuffer(RenderTarget const& from,
-	                            RenderTarget const& to);
-	static void blitColorBuffer(RenderTarget const& from,
-	                            RenderTarget const& to, int srcX0, int srcY0,
-	                            int srcX1, int srcY1, int dstX0, int dstY0,
-	                            int dstX1, int dstY1);
-	/**
-	 * @brief Blits one depth buffer from a render target to another one's.
-	 */
-	static void blitDepthBuffer(RenderTarget const& from,
-	                            RenderTarget const& to);
-	/**
-	 * @brief Frees a @ref RenderTarget and any buffer it allocated.
-	 */
-	static void deleteRenderTarget(GLHandler::RenderTarget& renderTarget);
 	static void setClearColor(QColor const& color);
 	/**
 	 * @brief Prepares a @ref RenderTarget to be rendered on.
@@ -260,16 +99,12 @@ class GLHandler : public QObject
 	 * viewport to coincide with the @p renderTarget's size. By default, the
 	 * screen will be used.
 	 */
-	static void beginRendering(GLHandler::RenderTarget const& renderTarget
-	                           = {QSettings().value("window/width").toUInt(),
-	                              QSettings().value("window/height").toUInt()},
+	static void beginRendering(GLFramebufferObject const& renderTarget,
 	                           GLTexture::CubemapFace face
 	                           = GLTexture::CubemapFace::FRONT,
 	                           GLint layer = 0);
 	static void beginRendering(GLbitfield clearMask,
-	                           GLHandler::RenderTarget const& renderTarget
-	                           = {QSettings().value("window/width").toUInt(),
-	                              QSettings().value("window/height").toUInt()},
+	                           GLFramebufferObject const& renderTarget,
 	                           GLTexture::CubemapFace face
 	                           = GLTexture::CubemapFace::FRONT,
 	                           GLint layer = 0);
@@ -322,47 +157,17 @@ class GLHandler : public QObject
 	 * uniformTextures parameter.
 	 */
 	static void postProcess(GLShaderProgram const& shader,
-	                        GLHandler::RenderTarget const& from,
-	                        RenderTarget const& to
-	                        = {QSettings().value("window/width").toUInt(),
-	                           QSettings().value("window/height").toUInt()},
+	                        GLFramebufferObject const& from,
+	                        GLFramebufferObject const& to,
 	                        std::vector<GLTexture const*> const& uniformTextures
 	                        = {});
-	static void
-	    renderFromScratch(GLShaderProgram const& shader,
-	                      RenderTarget const& to
-	                      = {QSettings().value("window/width").toUInt(),
-	                         QSettings().value("window/height").toUInt()});
-
-	static RenderTarget getScreenRenderTarget()
-	{
-		return {QSettings().value("window/width").toUInt(),
-		        QSettings().value("window/height").toUInt()};
-	};
+	static void renderFromScratch(GLShaderProgram const& shader,
+	                              GLFramebufferObject const& to);
 
 	static void generateEnvironmentMap(
-	    GLHandler::RenderTarget const& renderTarget,
+	    GLFramebufferObject const& renderTarget,
 	    std::function<void(bool, QMatrix4x4, QMatrix4x4)> const& renderFunction,
 	    QVector3D const& shift = QVector3D(0, 0, 0));
-	/**
-	 * @brief Shows a @p renderTarget content on screen
-	 *
-	 * It will be displayed as rectangle which top-left coordinates are (@p
-	 * screenx0, @p screeny0) and bottom-right coordinates are (@p screenx1, @p
-	 * screeny1).
-	 *
-	 * Coordinates are from window space (0->width, 0->height).
-	 */
-	static void showOnScreen(GLHandler::RenderTarget const& renderTarget,
-	                         int screenx0, int screeny0, int screenx1,
-	                         int screeny1);
-	/**
-	 * @brief Copies the color content of a RenderTarget in a QImage.
-	 */
-	static QImage
-	    generateScreenshot(RenderTarget const& renderTarget
-	                       = {QSettings().value("window/width").toUInt(),
-	                          QSettings().value("window/height").toUInt()});
 	/**
 	 * @brief Begins wireframe rendering.
 	 */
@@ -421,13 +226,6 @@ class GLHandler : public QObject
 	// TEXTURES
 	static void useTextures(std::vector<GLTexture const*> const& textures);
 
-	// PBOs
-	static PixelBufferObject newPixelBufferObject(unsigned int width,
-	                                              unsigned int height);
-	static GLTexture* copyPBOToTex(PixelBufferObject const& pbo,
-	                               bool sRGB = true);
-	static void deletePixelBufferObject(PixelBufferObject const& pbo);
-
 	// http://entropymine.com/imageworsener/srgbformula/
 	static QColor sRGBToLinear(QColor const& srgb);
 	static QColor linearTosRGB(QColor const& linear);
@@ -448,7 +246,5 @@ class GLHandler : public QObject
 	// stereo)
 	static QMatrix4x4& fullSkyboxSpaceTransform();
 };
-
-// Q_DECLARE_METATYPE(GLHandler::RenderTarget)
 
 #endif // GLHANDLER_H

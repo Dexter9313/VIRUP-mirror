@@ -402,8 +402,13 @@ void GLTexture::use(GLenum textureUnit) const
 
 void GLTexture::cleanUp()
 {
+	if(!doClean)
+	{
+		return;
+	}
 	--instancesCount();
 	GLHandler::glf().glDeleteTextures(1, &glTexture);
+	doClean = false;
 }
 
 void GLTexture::initData(Data const& data) const

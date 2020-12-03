@@ -146,11 +146,12 @@ const Hand* OpenVRHandler::getHand(Side side) const
 
 float OpenVRHandler::getRenderTargetAverageLuminance(Side eye) const
 {
-	auto const& tex = GLHandler::getColorAttachmentTexture(
-	    eye == Side::LEFT ? postProcessingTargetsLeft[0]
-	                      : postProcessingTargetsRight[0]);
-	return tex.getAverageLuminance()
-	       * 1.041f; // compensate for hidden area mesh
+	// compensate for hidden area mesh
+	return 1.041f
+	       * (eye == Side::LEFT ? postProcessingTargetsLeft[0]
+	                            : postProcessingTargetsRight[0])
+	             ->getColorAttachmentTexture()
+	             .getAverageLuminance();
 }
 
 QMatrix4x4 OpenVRHandler::getSeatedToStandingAbsoluteTrackingPos() const
@@ -280,8 +281,8 @@ void OpenVRHandler::prepareRendering()
 void OpenVRHandler::beginRendering(Side eye)
 {
 	GLHandler::beginRendering(eye == Side::LEFT
-	                              ? postProcessingTargetsLeft[0]
-	                              : postProcessingTargetsRight[0]);
+	                              ? *postProcessingTargetsLeft[0]
+	                              : *postProcessingTargetsRight[0]);
 	currentRenderingEye = eye;
 }
 
@@ -311,20 +312,24 @@ void OpenVRHandler::renderHands() const
 
 void OpenVRHandler::reloadPostProcessingTargets()
 {
-	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsRight[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[1]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsRight[1]);
+	delete postProcessingTargetsLeft[0];
+	delete postProcessingTargetsRight[0];
+	delete postProcessingTargetsLeft[1];
+	delete postProcessingTargetsRight[1];
 
-	currentTargetSize            = getEyeRenderTargetSize();
-	postProcessingTargetsLeft[0] = GLHandler::newRenderTarget(
-	    currentTargetSize.width(), currentTargetSize.height());
-	postProcessingTargetsLeft[1] = GLHandler::newRenderTarget(
-	    currentTargetSize.width(), currentTargetSize.height());
-	postProcessingTargetsRight[0] = GLHandler::newRenderTarget(
-	    currentTargetSize.width(), currentTargetSize.height());
-	postProcessingTargetsRight[1] = GLHandler::newRenderTarget(
-	    currentTargetSize.width(), currentTargetSize.height());
+	currentTargetSize = getEyeRenderTargetSize();
+	postProcessingTargetsLeft[0]
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
+	postProcessingTargetsLeft[1]
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
+	postProcessingTargetsRight[0]
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
+	postProcessingTargetsRight[1]
+	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
+	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
 
 	// Render hidden area mesh
 
@@ -347,7 +352,7 @@ void OpenVRHandler::reloadPostProcessingTargets()
 	GLHandler::beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
 	                              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
 	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
-	                          postProcessingTargetsLeft[0]);
+	                          *postProcessingTargetsLeft[0]);
 	s.use();
 	hiddenAreaMesh->render(PrimitiveType::TRIANGLES);
 	delete hiddenAreaMesh;
@@ -362,7 +367,7 @@ void OpenVRHandler::reloadPostProcessingTargets()
 	GLHandler::beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
 	                              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
 	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
-	                          postProcessingTargetsRight[0]);
+	                          *postProcessingTargetsRight[0]);
 	s.use();
 	hiddenAreaMesh->render(PrimitiveType::TRIANGLES);
 	delete hiddenAreaMesh;
@@ -377,12 +382,12 @@ void OpenVRHandler::reloadPostProcessingTargets()
 void OpenVRHandler::submitRendering(Side eye, unsigned int i)
 {
 	submittedIndex = i % 2;
-	GLHandler::RenderTarget const& frame
+	GLFramebufferObject const& frame
 	    = getPostProcessingTarget(submittedIndex, eye);
 	vr::Texture_t texture
 	    = {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	       reinterpret_cast<void*>(static_cast<uintptr_t>(
-	           GLHandler::getColorAttachmentTexture(frame).getGLTexture())),
+	           frame.getColorAttachmentTexture().getGLTexture())),
 	       vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
 	vr::EVRCompositorError error = vr_compositor->Submit(getEye(eye), &texture);
 	if(error != vr::VRCompositorError_None)
@@ -394,13 +399,13 @@ void OpenVRHandler::submitRendering(Side eye, unsigned int i)
 void OpenVRHandler::displayOnCompanion(unsigned int companionWidth,
                                        unsigned int companionHeight) const
 {
-	GLHandler::showOnScreen(getPostProcessingTarget(submittedIndex, Side::LEFT),
-	                        0, 0, static_cast<int>(companionWidth / 2),
-	                        static_cast<int>(companionHeight));
-	GLHandler::showOnScreen(
-	    getPostProcessingTarget(submittedIndex, Side::RIGHT),
-	    static_cast<int>(companionWidth / 2), 0,
-	    static_cast<int>(companionWidth), static_cast<int>(companionHeight));
+	getPostProcessingTarget(submittedIndex, Side::LEFT)
+	    .showOnScreen(0, 0, static_cast<int>(companionWidth / 2),
+	                  static_cast<int>(companionHeight));
+	getPostProcessingTarget(submittedIndex, Side::RIGHT)
+	    .showOnScreen(static_cast<int>(companionWidth / 2), 0,
+	                  static_cast<int>(companionWidth),
+	                  static_cast<int>(companionHeight));
 }
 
 bool OpenVRHandler::pollEvent(Event* e)
@@ -474,10 +479,14 @@ void OpenVRHandler::close()
 	delete rightHand;
 	PythonQtHandler::addObject("leftHand", nullptr);
 	PythonQtHandler::addObject("leftHand", nullptr);
-	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsRight[0]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsLeft[1]);
-	GLHandler::deleteRenderTarget(postProcessingTargetsRight[1]);
+	delete postProcessingTargetsLeft[0];
+	delete postProcessingTargetsRight[0];
+	delete postProcessingTargetsLeft[1];
+	delete postProcessingTargetsRight[1];
+	postProcessingTargetsLeft[0]  = nullptr;
+	postProcessingTargetsLeft[1]  = nullptr;
+	postProcessingTargetsRight[0] = nullptr;
+	postProcessingTargetsRight[1] = nullptr;
 	qDebug() << "Closing VR runtime...";
 	vr::VR_Shutdown();
 	vr_pointer = nullptr;

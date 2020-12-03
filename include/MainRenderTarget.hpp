@@ -19,6 +19,8 @@
 #ifndef MAINRENDERTARGET_HPP
 #define MAINRENDERTARGET_HPP
 
+#include "gl/GLHandler.hpp"
+
 class MainRenderTarget
 {
   public:
@@ -29,10 +31,36 @@ class MainRenderTarget
 		VR360       = 2,
 	};
 
-	MainRenderTarget();
-	~MainRenderTarget();
+	MainRenderTarget(unsigned int width, unsigned int height,
+	                 unsigned int samples, Projection projection)
+	    : sceneTarget(constructSceneTarget(width, height, samples, projection))
+	    , postProcessingTargets({GLFramebufferObject(GLTexture::Tex2DProperties(
+	                                 width, height, GL_RGBA32F)),
+	                             GLFramebufferObject(GLTexture::Tex2DProperties(
+	                                 width, height, GL_RGBA32F))}){};
 
-  private:
+	static GLFramebufferObject constructSceneTarget(unsigned int width,
+	                                                unsigned int height,
+	                                                unsigned int samples,
+	                                                Projection projection)
+	{
+		if(projection == Projection::DEFAULT)
+		{
+			if(samples > 1)
+			{
+				return GLFramebufferObject(GLTexture::TexMultisampleProperties(
+				    width, height, samples, GL_RGBA32F));
+			}
+			return GLFramebufferObject(
+			    GLTexture::Tex2DProperties(width, height, GL_RGBA32F));
+		}
+		return GLFramebufferObject(
+		    GLTexture::TexCubemapProperties(width / 3, GL_RGBA32F));
+	}
+
+  public:
+	GLFramebufferObject sceneTarget;
+	std::array<GLFramebufferObject, 2> postProcessingTargets;
 };
 
 #endif // MAINRENDERTARGET_HPP

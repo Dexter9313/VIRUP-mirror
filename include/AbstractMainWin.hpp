@@ -375,7 +375,7 @@ class AbstractMainWin : public QWindow
 	 */
 	virtual void applyPostProcShaderParams(
 	    QString const& id, GLShaderProgram const& shader,
-	    GLHandler::RenderTarget const& currentTarget) const;
+	    GLFramebufferObject const& currentTarget) const;
 	/**
 	 * @brief Override to return textures to use in your post-processing
 	 * shaders.
@@ -389,7 +389,7 @@ class AbstractMainWin : public QWindow
 	 */
 	virtual std::vector<GLTexture const*> getPostProcessingUniformTextures(
 	    QString const& id, GLShaderProgram const& shader,
-	    GLHandler::RenderTarget const& currentTarget) const;
+	    GLFramebufferObject const& currentTarget) const;
 
   protected:
 	/**
@@ -442,7 +442,7 @@ class AbstractMainWin : public QWindow
 
 	// BLOOM
 	bool bloom = QSettings().value("graphics/bloom").toBool();
-	std::array<GLHandler::RenderTarget, 2> bloomTargets;
+	std::array<GLFramebufferObject*, 2> bloomTargets = {{nullptr, nullptr}};
 	void reloadBloomTargets();
 };
 

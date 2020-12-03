@@ -18,15 +18,19 @@
 
 #include "Light.hpp"
 
+unsigned int Light::getResolution()
+{
+	return 1u << (9 + QSettings().value("graphics/shadowsquality").toUInt());
+}
+
 Light::Light()
     : direction(-1.f, 0.f, 0.f)
     , color(255, 255, 255)
     , ambiantFactor(0.05f)
+    , shadowMap(GLTexture::Tex2DProperties(getResolution(), getResolution(),
+                                           GL_DEPTH_COMPONENT32))
     , shadowShader("shadow")
 {
-	unsigned int resolution(
-	    1u << (9 + QSettings().value("graphics/shadowsquality").toUInt()));
-	shadowMap = GLHandler::newDepthMap(resolution, resolution);
 }
 
 QMatrix4x4 Light::getTransformation(float boundingSphereRadius,
@@ -64,7 +68,7 @@ void Light::setUpShader(GLShaderProgram const& shader,
 
 GLTexture const& Light::getShadowMap() const
 {
-	return GLHandler::getColorAttachmentTexture(shadowMap);
+	return shadowMap.getColorAttachmentTexture();
 }
 
 void Light::generateShadowMap(std::vector<GLMesh const*> const& meshes,
@@ -83,9 +87,4 @@ void Light::generateShadowMap(std::vector<GLMesh const*> const& meshes,
 		meshes[i]->render();
 	}
 	GLHandler::setBackfaceCulling(true);
-}
-
-Light::~Light()
-{
-	GLHandler::deleteRenderTarget(shadowMap);
 }

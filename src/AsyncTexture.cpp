@@ -18,10 +18,10 @@
 
 #include "AsyncTexture.hpp"
 
-QList<QPair<at::WorkerThread*, GLHandler::PixelBufferObject>>&
+QList<QPair<at::WorkerThread*, GLPixelBufferObject*>>&
     AsyncTexture::waitingForDeletion()
 {
-	static QList<QPair<at::WorkerThread*, GLHandler::PixelBufferObject>>
+	static QList<QPair<at::WorkerThread*, GLPixelBufferObject*>>
 	    waitingForDeletion = {};
 	return waitingForDeletion;
 }
@@ -48,8 +48,8 @@ AsyncTexture::AsyncTexture(QString const& path, QColor const& defaultColor,
 	QImageReader imReader(path);
 	QSize size(imReader.size());
 
-	pbo = GLHandler::newPixelBufferObject(size.width(), size.height());
-	unsigned char* data(pbo.mappedData);
+	pbo = new GLPixelBufferObject(size);
+	unsigned char* data(pbo->getMappedData());
 
 	thread = new at::WorkerThread(path, data);
 	thread->start();
@@ -75,8 +75,8 @@ AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
 		return;
 	}
 
-	pbo = GLHandler::newPixelBufferObject(width, height);
-	unsigned char* data(pbo.mappedData);
+	pbo = new GLPixelBufferObject(width, height);
+	unsigned char* data(pbo->getMappedData());
 
 	thread = new at::WorkerThread(path, data, width, height);
 	thread->start();
@@ -99,8 +99,8 @@ GLTexture const& AsyncTexture::getTexture()
 		return defaultTex;
 	}
 
-	tex = GLHandler::copyPBOToTex(pbo, sRGB);
-	GLHandler::deletePixelBufferObject(pbo);
+	tex = pbo->copyContentToNewTex(sRGB);
+	delete pbo;
 	tex->generateMipmap();
 	unsigned int lastMipmap(tex->getHighestMipmapLevel());
 	averageColor = tex->getContentAsImage(lastMipmap).pixelColor(0, 0);
@@ -120,7 +120,7 @@ AsyncTexture::~AsyncTexture()
 		}
 		else if(thread->isFinished())
 		{
-			GLHandler::deletePixelBufferObject(pbo);
+			delete pbo;
 			delete thread;
 		}
 		else
@@ -142,7 +142,7 @@ void AsyncTexture::garbageCollect(bool force)
 		}
 		if(waitingForDeletion()[i].first->isFinished())
 		{
-			GLHandler::deletePixelBufferObject(waitingForDeletion()[i].second);
+			delete waitingForDeletion()[i].second;
 			delete waitingForDeletion()[i].first;
 			waitingForDeletion().removeAt(i);
 		}

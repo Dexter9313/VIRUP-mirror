@@ -37,15 +37,16 @@ class Light
 	                       float boundingSphereRadius,
 	                       std::vector<QMatrix4x4> const& models,
 	                       QMatrix4x4 const& model);
-	~Light();
 
 	QVector3D direction;
 	QColor color;
 	float ambiantFactor;
 
   private:
-	GLHandler::RenderTarget shadowMap;
+	GLFramebufferObject shadowMap;
 	GLShaderProgram shadowShader;
+
+	static unsigned int getResolution();
 };
 
 #endif // LIGHT_HPP
