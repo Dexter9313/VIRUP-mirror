@@ -70,21 +70,55 @@ void AbstractMainWin::setFullscreen(bool fullscreen)
 	QSettings().setValue("window/fullscreen", fullscreen);
 	if(fullscreen)
 	{
-		QRect screenGeometry(QApplication::desktop()->screenGeometry());
-		resize(screenGeometry.width(), screenGeometry.height());
+		QRect screenGeometry(screen()->geometry());
+		QStringList screensStr(
+		    QSettings().value("window/screennames").toStringList());
+		if(!screensStr.empty())
+		{
+			bool first(true);
+			for(auto s : QGuiApplication::screens())
+			{
+				if(screensStr.contains(s->name()))
+				{
+					if(first)
+					{
+						screenGeometry = s->geometry();
+						first          = false;
+					}
+					else
+					{
+						if(screenGeometry.left() > s->geometry().left())
+						{
+							screenGeometry.setLeft(s->geometry().left());
+						}
+						if(screenGeometry.right() < s->geometry().right())
+						{
+							screenGeometry.setRight(s->geometry().right());
+						}
+						if(screenGeometry.top() > s->geometry().top())
+						{
+							screenGeometry.setTop(s->geometry().top());
+						}
+						if(screenGeometry.bottom() < s->geometry().bottom())
+						{
+							screenGeometry.setBottom(s->geometry().bottom());
+						}
+					}
+				}
+			}
+		}
+		setGeometry(screenGeometry);
+		show();
+		setFlag(Qt::FramelessWindowHint, true);
+		setFlag(Qt::WindowStaysOnTopHint, true);
 	}
 	else
 	{
 		resize(QSettings().value("window/width").toUInt(),
 		       QSettings().value("window/height").toUInt());
-	}
-	if(fullscreen)
-	{
-		showFullScreen();
-	}
-	else
-	{
 		show();
+		setFlag(Qt::FramelessWindowHint, false);
+		setFlag(Qt::WindowStaysOnTopHint, false);
 	}
 }
 

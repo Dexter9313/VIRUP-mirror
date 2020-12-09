@@ -7,7 +7,6 @@ uniform float exposure;
 uniform float dynamicrange       = 10000.0;
 uniform float screendynamicrange = 255.0;
 uniform float purkinje           = 1.0;
-uniform float contrast           = 1.0;
 uniform sampler2D tex0;
 
 // technically tone mapping
@@ -46,9 +45,6 @@ void main()
 	{
 		return;
 	}
-
-	outColor.rgb
-	    = clamp(contrast * (outColor.rgb - 0.5) + 0.5, vec3(0.0), vec3(1.0));
 
 	/*float screenminvalue=0.0/255.0;
 	outColor.rgb *= 1.0 - screenminvalue;

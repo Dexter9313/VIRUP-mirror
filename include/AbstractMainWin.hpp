@@ -7,6 +7,7 @@
 #include <QKeyEvent>
 #include <QProcess>
 #include <QRunnable>
+#include <QScreen>
 #include <QStandardPaths>
 #include <QThreadPool>
 #include <QWindow>

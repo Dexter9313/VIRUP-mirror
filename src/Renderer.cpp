@@ -54,8 +54,11 @@ void Renderer::windowResized()
 		return;
 	}
 
-	QSettings().setValue("window/width", window.size().width());
-	QSettings().setValue("window/height", window.size().height());
+	if(!QSettings().value("window/fullscreen").toBool())
+	{
+		QSettings().setValue("window/width", window.size().width());
+		QSettings().setValue("window/height", window.size().height());
+	}
 	if(QSettings().value("window/forcerenderresolution").toBool())
 	{
 		return;

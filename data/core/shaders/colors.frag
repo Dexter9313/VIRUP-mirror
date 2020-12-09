@@ -7,6 +7,7 @@ out vec4 outColor;
 uniform sampler2D tex;
 
 uniform float gamma;
+uniform float contrast = 1.0;
 
 #ifdef DITHERING
 const int bayer_pattern[64]
@@ -54,5 +55,7 @@ void main()
 	outColor.a   = 1.0;
 
 	// contrast
-	// outColor.rgb = clamp(1.2*(outColor.rgb - 0.5) + 0.5, vec3(0.0), vec3(1.0));
+	outColor.rgb
+	    = clamp(contrast * (outColor.rgb - 0.5) + 0.5, vec3(0.0), vec3(1.0));
+
 }
