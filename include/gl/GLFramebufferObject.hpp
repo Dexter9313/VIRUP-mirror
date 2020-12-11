@@ -61,6 +61,7 @@ class GLFramebufferObject
 	    , texColorBuffer(other.texColorBuffer)
 	    , renderBuffer(other.renderBuffer)
 	    , width(other.width)
+	    , height(other.height)
 	    , depth(other.depth)
 	    , isDepthMap(other.isDepthMap)
 	    , doClean(other.doClean)

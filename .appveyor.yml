@@ -4,14 +4,6 @@ build:
     verbosity: detailed
 environment:
   matrix:
-    - BUILD_TYPE: 32bit
-      QTPATH: 'C:\Qt\5.11\msvc2015'
-      PYTHON_PATH: 'C:\Python37'
-      PYTHON_LIB: 'C:\Python37\libs'
-      GENERATOR: '"Visual Studio 14 2015"'
-      VCREDIST13: vcredist_x86.exe
-      VCREDIST15: vc_redist.x86.exe
-      PYTHON_URL: "https://www.python.org/ftp/python/3.7.4/python-3.7.4.exe"
     - BUILD_TYPE: 64bit
       QTPATH: 'C:\Qt\5.11\msvc2015_64'
       PYTHON_PATH: 'C:\Python37-x64'
@@ -20,6 +12,14 @@ environment:
       VCREDIST13: vcredist_x64.exe
       VCREDIST15: vc_redist.x64.exe
       PYTHON_URL: "https://www.python.org/ftp/python/3.7.4/python-3.7.4-amd64.exe"
+    - BUILD_TYPE: 32bit
+      QTPATH: 'C:\Qt\5.11\msvc2015'
+      PYTHON_PATH: 'C:\Python37'
+      PYTHON_LIB: 'C:\Python37\libs'
+      GENERATOR: '"Visual Studio 14 2015"'
+      VCREDIST13: vcredist_x86.exe
+      VCREDIST15: vc_redist.x86.exe
+      PYTHON_URL: "https://www.python.org/ftp/python/3.7.4/python-3.7.4.exe"
 
 install:
     - set INNOSETUPPATH=C:\Program Files (x86)\Inno Setup 5
