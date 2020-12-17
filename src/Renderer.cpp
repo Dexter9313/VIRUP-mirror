@@ -33,6 +33,9 @@ void Renderer::init()
 		clean();
 	}
 
+	QObject::connect(&vrHandler, &VRHandler::renderTargetSizeChanged,
+	                 [this]() { this->updateRenderTargets(); });
+
 	dbgCamera = new DebugCamera(vrHandler);
 	dbgCamera->lookAt({2, 0, 2}, {0, 0, 0}, {0, 0, 1});
 
@@ -47,7 +50,7 @@ void Renderer::init()
 	initialized = true;
 }
 
-void Renderer::windowResized()
+void Renderer::updateRenderTargets()
 {
 	if(!initialized)
 	{
@@ -59,18 +62,18 @@ void Renderer::windowResized()
 		QSettings().setValue("window/width", window.size().width());
 		QSettings().setValue("window/height", window.size().height());
 	}
-	if(QSettings().value("window/forcerenderresolution").toBool())
-	{
-		return;
-	}
 	updateFOV();
 	reloadPostProcessingTargets();
 }
 
-QSize Renderer::getSize() const
+QSize Renderer::getSize(bool ignoreVR) const
 {
 	QSize renderSize(window.size().width(), window.size().height());
-	if(QSettings().value("window/forcerenderresolution").toBool())
+	if(vrHandler.isEnabled() && !ignoreVR)
+	{
+		renderSize = vrHandler.getEyeRenderTargetSize();
+	}
+	else if(QSettings().value("window/forcerenderresolution").toBool())
 	{
 		renderSize.setWidth(QSettings().value("window/forcewidth").toInt());
 		renderSize.setHeight(QSettings().value("window/forceheight").toInt());
@@ -189,11 +192,6 @@ void Renderer::reloadPostProcessingTargets()
 	delete mainRenderTarget;
 	mainRenderTarget = new MainRenderTarget(newSize.width(), newSize.height(),
 	                                        samples, projection);
-
-	if(vrHandler.isEnabled())
-	{
-		vrHandler.reloadPostProcessingTargets();
-	}
 }
 
 void Renderer::updateFOV()
@@ -306,18 +304,24 @@ void Renderer::vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 	}
 }
 
-void Renderer::vrRender(Side side, bool debug, bool debugInHeadset)
+void Renderer::vrRender(Side side, bool debug, bool debugInHeadset,
+                        bool displayOnScreen)
 {
-	vrHandler.beginRendering(side);
+	vrHandler.prepareRendering(side);
+	GLHandler::beginRendering(mainRenderTarget->sceneTarget);
+	vrHandler.renderHiddenAreaMesh(side);
 
 	for(auto pair : sceneRenderPipeline_)
 	{
 		pair.second.camera->setWindowSize(getSize());
 		vrRenderSinglePath(pair.second, pair.first, debug, debugInHeadset);
 	}
+	mainRenderTarget->sceneTarget.blitColorBufferTo(
+	    mainRenderTarget->postProcessingTargets[0]);
 
-	lastFrameAverageLuminance
-	    += vrHandler.getRenderTargetAverageLuminance(side);
+	lastFrameAverageLuminance += mainRenderTarget->postProcessingTargets[0]
+	                                 .getColorAttachmentTexture()
+	                                 .getAverageLuminance();
 
 	// do all postprocesses including last one
 	int i(0);
@@ -326,16 +330,35 @@ void Renderer::vrRender(Side side, bool debug, bool debugInHeadset)
 	{
 		window.applyPostProcShaderParams(
 		    it->first, it->second,
-		    vrHandler.getPostProcessingTarget(i % 2, side));
+		    mainRenderTarget->postProcessingTargets.at(i % 2));
 		auto texs = window.getPostProcessingUniformTextures(
 		    it->first, it->second,
-		    vrHandler.getPostProcessingTarget(i % 2, side));
+		    mainRenderTarget->postProcessingTargets.at(i % 2));
 		GLHandler::postProcess(
-		    it->second, vrHandler.getPostProcessingTarget(i % 2, side),
-		    vrHandler.getPostProcessingTarget((i + 1) % 2, side), texs);
+		    it->second, mainRenderTarget->postProcessingTargets.at(i % 2),
+		    mainRenderTarget->postProcessingTargets.at((i + 1) % 2), texs);
 	}
 
-	vrHandler.submitRendering(side, i % 2);
+	vrHandler.submitRendering(mainRenderTarget->postProcessingTargets.at(
+	    postProcessingPipeline_.size() % 2));
+
+	if(displayOnScreen)
+	{
+		// blit result on screen
+		if(side == Side::LEFT)
+		{
+			mainRenderTarget->postProcessingTargets
+			    .at(postProcessingPipeline_.size() % 2)
+			    .showOnScreen(0, 0, window.width() / 2, window.height());
+		}
+		else
+		{
+			mainRenderTarget->postProcessingTargets
+			    .at(postProcessingPipeline_.size() % 2)
+			    .showOnScreen(window.width() / 2, 0, window.width(),
+			                  window.height());
+		}
+	}
 }
 
 void Renderer::renderFrame()
@@ -350,19 +373,14 @@ void Renderer::renderFrame()
 	// main render logic
 	if(vrHandler.isEnabled())
 	{
-		vrHandler.prepareRendering();
-
 		lastFrameAverageLuminance = 0.f;
-		vrRender(Side::LEFT, debug, debugInHeadset);
-		vrRender(Side::RIGHT, debug, debugInHeadset);
+		vrRender(Side::LEFT, debug, debugInHeadset,
+		         !thirdRender && (!debug || debugInHeadset));
+		vrRender(Side::RIGHT, debug, debugInHeadset,
+		         !thirdRender && (!debug || debugInHeadset));
 		lastFrameAverageLuminance *= 0.5f;
 
-		if(!thirdRender && (!debug || debugInHeadset))
-		{
-			vrHandler.displayOnCompanion(window.size().width(),
-			                             window.size().height());
-		}
-		else if(debug && !debugInHeadset)
+		if(debug && !debugInHeadset)
 		{
 			renderingCamIsDebug = true;
 		}

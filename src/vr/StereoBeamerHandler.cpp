@@ -5,7 +5,6 @@
 bool StereoBeamerHandler::init(Renderer const& renderer)
 {
 	VRHandler::init(renderer);
-	reloadPostProcessingTargets();
 	hmdPosMatrix = QMatrix4x4();
 	enabled      = true;
 	return true;
@@ -13,7 +12,7 @@ bool StereoBeamerHandler::init(Renderer const& renderer)
 
 QSize StereoBeamerHandler::getEyeRenderTargetSize() const
 {
-	auto fullRTSize(renderer->getSize());
+	auto fullRTSize(renderer->getSize(true));
 	return {fullRTSize.width() / 2, fullRTSize.height()};
 }
 
@@ -30,14 +29,6 @@ const Controller* StereoBeamerHandler::getController(Side /*side*/) const
 const Hand* StereoBeamerHandler::getHand(Side /*side*/) const
 {
 	return nullptr;
-}
-
-float StereoBeamerHandler::getRenderTargetAverageLuminance(Side eye) const
-{
-	return (eye == Side::LEFT ? postProcessingTargetsLeft[0]
-	                          : postProcessingTargetsRight[0])
-	    ->getColorAttachmentTexture()
-	    .getAverageLuminance();
 }
 
 QMatrix4x4 StereoBeamerHandler::getSeatedToStandingAbsoluteTrackingPos() const
@@ -61,20 +52,8 @@ std::vector<QVector3D> StereoBeamerHandler::getPlayAreaQuad() const
 	return result;
 }
 
-void StereoBeamerHandler::prepareRendering()
+void StereoBeamerHandler::prepareRendering(Side eye)
 {
-	// reload render targets if resolution per eye changed (supersampling)
-	if(currentTargetSize != getEyeRenderTargetSize())
-	{
-		reloadPostProcessingTargets();
-	}
-}
-
-void StereoBeamerHandler::beginRendering(Side eye)
-{
-	GLHandler::beginRendering(eye == Side::LEFT
-	                              ? *postProcessingTargetsLeft[0]
-	                              : *postProcessingTargetsRight[0]);
 	currentRenderingEye = eye;
 }
 
@@ -82,41 +61,7 @@ void StereoBeamerHandler::renderControllers() const {}
 
 void StereoBeamerHandler::renderHands() const {}
 
-void StereoBeamerHandler::reloadPostProcessingTargets()
-{
-	delete postProcessingTargetsLeft[0];
-	delete postProcessingTargetsRight[0];
-	delete postProcessingTargetsLeft[1];
-	delete postProcessingTargetsRight[1];
-
-	currentTargetSize = getEyeRenderTargetSize();
-	postProcessingTargetsLeft[0]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
-	postProcessingTargetsLeft[1]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
-	postProcessingTargetsRight[0]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
-	postProcessingTargetsRight[1]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
-}
-
-void StereoBeamerHandler::submitRendering(Side /*eye*/, unsigned int /*i*/) {}
-
-void StereoBeamerHandler::displayOnCompanion(unsigned int companionWidth,
-                                             unsigned int companionHeight) const
-{
-	getPostProcessingTarget(submittedIndex, Side::LEFT)
-	    .showOnScreen(0, 0, static_cast<int>(companionWidth / 2),
-	                  static_cast<int>(companionHeight));
-	getPostProcessingTarget(submittedIndex, Side::RIGHT)
-	    .showOnScreen(static_cast<int>(companionWidth / 2), 0,
-	                  static_cast<int>(companionWidth),
-	                  static_cast<int>(companionHeight));
-}
+void StereoBeamerHandler::submitRendering(GLFramebufferObject const& /*fbo*/) {}
 
 bool StereoBeamerHandler::pollEvent(Event* /*e*/)
 {
@@ -125,15 +70,7 @@ bool StereoBeamerHandler::pollEvent(Event* /*e*/)
 
 void StereoBeamerHandler::close()
 {
-	delete postProcessingTargetsLeft[0];
-	delete postProcessingTargetsRight[0];
-	delete postProcessingTargetsLeft[1];
-	delete postProcessingTargetsRight[1];
-	postProcessingTargetsLeft[0]  = nullptr;
-	postProcessingTargetsLeft[1]  = nullptr;
-	postProcessingTargetsRight[0] = nullptr;
-	postProcessingTargetsRight[1] = nullptr;
-	enabled                       = false;
+	enabled = false;
 }
 
 QMatrix4x4 StereoBeamerHandler::getEyeViewMatrix(Side eye) const

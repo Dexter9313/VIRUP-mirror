@@ -1,9 +1,15 @@
 #include "gl/GLHandler.hpp"
 
-QOpenGLFunctions_4_0_Core& GLHandler::glf()
+QOpenGLFunctions_4_2_Core& GLHandler::glf()
 {
-	static QOpenGLFunctions_4_0_Core glf;
+	static QOpenGLFunctions_4_2_Core glf;
 	return glf;
+}
+
+QOpenGLExtension_ARB_compute_shader& GLHandler::glf_ARB_compute_shader()
+{
+	static QOpenGLExtension_ARB_compute_shader glf_ARB_compute_shader;
+	return glf_ARB_compute_shader;
 }
 
 QMatrix4x4& GLHandler::fullTransform()
@@ -45,6 +51,7 @@ QMatrix4x4& GLHandler::fullSkyboxSpaceTransform()
 bool GLHandler::init()
 {
 	glf().initializeOpenGLFunctions();
+	glf_ARB_compute_shader().initializeOpenGLFunctions();
 
 	// enable depth test
 	glf().glEnable(GL_DEPTH_TEST);

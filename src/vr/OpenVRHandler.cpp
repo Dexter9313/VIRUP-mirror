@@ -70,7 +70,10 @@ bool OpenVRHandler::init(Renderer const& renderer)
 		qDebug() << "Render models loaded successfully";
 	}
 
-	reloadPostProcessingTargets();
+	currentTargetSize = getEyeRenderTargetSize();
+	submitFBO         = new GLFramebufferObject(GLTexture::Tex2DProperties(
+        currentTargetSize.width(), currentTargetSize.height(), GL_RGB8));
+	submitFBO->bind();
 
 #ifdef LEAP_MOTION
 	if(leapController.isConnected())
@@ -144,16 +147,6 @@ const Hand* OpenVRHandler::getHand(Side side) const
 	return nullptr;
 }
 
-float OpenVRHandler::getRenderTargetAverageLuminance(Side eye) const
-{
-	// compensate for hidden area mesh
-	return 1.041f
-	       * (eye == Side::LEFT ? postProcessingTargetsLeft[0]
-	                            : postProcessingTargetsRight[0])
-	             ->getColorAttachmentTexture()
-	             .getAverageLuminance();
-}
-
 QMatrix4x4 OpenVRHandler::getSeatedToStandingAbsoluteTrackingPos() const
 {
 	return toQt(vr_pointer->GetSeatedZeroPoseToStandingAbsoluteTrackingPose());
@@ -222,15 +215,27 @@ std::string GetTrackedDeviceClassString(vr::ETrackedDeviceClass td_class)
 
 	return str_td_class;
 }
-void OpenVRHandler::prepareRendering()
+void OpenVRHandler::prepareRendering(Side eye)
 {
+	currentRenderingEye = eye;
+	// only execute the rest once for both eyes
+	if(eye == Side::RIGHT)
+	{
+		return;
+	}
+
 	vr::EVRCompositorError error = vr::VRCompositor()->WaitGetPoses(
 	    &tracked_device_pose[0], vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
 	// reload render targets if resolution per eye changed (supersampling)
 	if(currentTargetSize != getEyeRenderTargetSize())
 	{
-		reloadPostProcessingTargets();
+		currentTargetSize = getEyeRenderTargetSize();
+		delete submitFBO;
+		submitFBO = new GLFramebufferObject(GLTexture::Tex2DProperties(
+		    currentTargetSize.width(), currentTargetSize.height(), GL_RGB8));
+		submitFBO->bind();
+		emit renderTargetSizeChanged(currentTargetSize);
 	}
 
 	int nDeviceLeft  = -1;
@@ -278,12 +283,32 @@ void OpenVRHandler::prepareRendering()
 	}
 }
 
-void OpenVRHandler::beginRendering(Side eye)
+void OpenVRHandler::renderHiddenAreaMesh(Side eye)
 {
-	GLHandler::beginRendering(eye == Side::LEFT
-	                              ? *postProcessingTargetsLeft[0]
-	                              : *postProcessingTargetsRight[0]);
-	currentRenderingEye = eye;
+	GLHandler::setBackfaceCulling(false);
+	GLShaderProgram s("hiddenarea");
+
+	GLHandler::glf().glClearStencil(0x0);
+	GLHandler::glf().glEnable(GL_STENCIL_TEST);
+	GLHandler::glf().glStencilMask(0xFF);
+	GLHandler::glf().glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+	GLMesh hiddenAreaMesh;
+	hiddenAreaMesh.setVertices(
+	    &(vr_pointer->GetHiddenAreaMesh(getEye(eye)).pVertexData[0].v[0]),
+	    2 * 3 * vr_pointer->GetHiddenAreaMesh(getEye(eye)).unTriangleCount, s,
+	    {{"position", 2}});
+
+	GLHandler::glf().glClear(static_cast<GLuint>(GL_STENCIL_BUFFER_BIT));
+	s.use();
+	hiddenAreaMesh.render(PrimitiveType::TRIANGLES);
+
+	GLHandler::setBackfaceCulling(true);
+
+	GLHandler::glf().glStencilMask(0x00);
+	GLHandler::glf().glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
 void OpenVRHandler::renderControllers() const
@@ -310,102 +335,20 @@ void OpenVRHandler::renderHands() const
 	}
 }
 
-void OpenVRHandler::reloadPostProcessingTargets()
+void OpenVRHandler::submitRendering(GLFramebufferObject const& fbo)
 {
-	delete postProcessingTargetsLeft[0];
-	delete postProcessingTargetsRight[0];
-	delete postProcessingTargetsLeft[1];
-	delete postProcessingTargetsRight[1];
-
-	currentTargetSize = getEyeRenderTargetSize();
-	postProcessingTargetsLeft[0]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
-	postProcessingTargetsLeft[1]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
-	postProcessingTargetsRight[0]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
-	postProcessingTargetsRight[1]
-	    = new GLFramebufferObject(GLTexture::Tex2DProperties(
-	        currentTargetSize.width(), currentTargetSize.height(), GL_RGBA32F));
-
-	// Render hidden area mesh
-
-	GLHandler::setBackfaceCulling(false);
-	GLShaderProgram s("hiddenarea");
-
-	GLHandler::glf().glClearStencil(0x0);
-	GLHandler::glf().glEnable(GL_STENCIL_TEST);
-	GLHandler::glf().glStencilMask(0xFF);
-	GLHandler::glf().glStencilFunc(GL_ALWAYS, 1, 0xFF);
-	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-	// LEFT
-	auto hiddenAreaMesh = new GLMesh;
-	hiddenAreaMesh->setVertices(
-	    &(vr_pointer->GetHiddenAreaMesh(vr::Eye_Left).pVertexData[0].v[0]),
-	    2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Left).unTriangleCount, s,
-	    {{"position", 2}});
-
-	GLHandler::beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
-	                              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
-	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
-	                          *postProcessingTargetsLeft[0]);
-	s.use();
-	hiddenAreaMesh->render(PrimitiveType::TRIANGLES);
-	delete hiddenAreaMesh;
-
-	// RIGHT
-	hiddenAreaMesh = new GLMesh;
-	hiddenAreaMesh->setVertices(
-	    &(vr_pointer->GetHiddenAreaMesh(vr::Eye_Right).pVertexData[0].v[0]),
-	    2 * 3 * vr_pointer->GetHiddenAreaMesh(vr::Eye_Right).unTriangleCount, s,
-	    {{"position", 2}});
-
-	GLHandler::beginRendering(static_cast<GLuint>(GL_COLOR_BUFFER_BIT)
-	                              | static_cast<GLuint>(GL_DEPTH_BUFFER_BIT)
-	                              | static_cast<GLuint>(GL_STENCIL_BUFFER_BIT),
-	                          *postProcessingTargetsRight[0]);
-	s.use();
-	hiddenAreaMesh->render(PrimitiveType::TRIANGLES);
-	delete hiddenAreaMesh;
-
-	GLHandler::setBackfaceCulling(true);
-
-	GLHandler::glf().glStencilMask(0x00);
-	GLHandler::glf().glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-}
-
-void OpenVRHandler::submitRendering(Side eye, unsigned int i)
-{
-	submittedIndex = i % 2;
-	GLFramebufferObject const& frame
-	    = getPostProcessingTarget(submittedIndex, eye);
+	fbo.blitColorBufferTo(*submitFBO);
 	vr::Texture_t texture
 	    = {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 	       reinterpret_cast<void*>(static_cast<uintptr_t>(
-	           frame.getColorAttachmentTexture().getGLTexture())),
+	           submitFBO->getColorAttachmentTexture().getGLTexture())),
 	       vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
-	vr::EVRCompositorError error = vr_compositor->Submit(getEye(eye), &texture);
+	vr::EVRCompositorError error
+	    = vr_compositor->Submit(getEye(currentRenderingEye), &texture);
 	if(error != vr::VRCompositorError_None)
 	{
 		qCritical() << QString("ERROR in submit: ") + error;
 	}
-}
-
-void OpenVRHandler::displayOnCompanion(unsigned int companionWidth,
-                                       unsigned int companionHeight) const
-{
-	getPostProcessingTarget(submittedIndex, Side::LEFT)
-	    .showOnScreen(0, 0, static_cast<int>(companionWidth / 2),
-	                  static_cast<int>(companionHeight));
-	getPostProcessingTarget(submittedIndex, Side::RIGHT)
-	    .showOnScreen(static_cast<int>(companionWidth / 2), 0,
-	                  static_cast<int>(companionWidth),
-	                  static_cast<int>(companionHeight));
 }
 
 bool OpenVRHandler::pollEvent(Event* e)
@@ -479,14 +422,8 @@ void OpenVRHandler::close()
 	delete rightHand;
 	PythonQtHandler::addObject("leftHand", nullptr);
 	PythonQtHandler::addObject("leftHand", nullptr);
-	delete postProcessingTargetsLeft[0];
-	delete postProcessingTargetsRight[0];
-	delete postProcessingTargetsLeft[1];
-	delete postProcessingTargetsRight[1];
-	postProcessingTargetsLeft[0]  = nullptr;
-	postProcessingTargetsLeft[1]  = nullptr;
-	postProcessingTargetsRight[0] = nullptr;
-	postProcessingTargetsRight[1] = nullptr;
+	delete submitFBO;
+	submitFBO = nullptr;
 	qDebug() << "Closing VR runtime...";
 	vr::VR_Shutdown();
 	vr_pointer = nullptr;

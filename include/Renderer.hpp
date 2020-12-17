@@ -47,12 +47,14 @@ class Renderer
 
 	Renderer(AbstractMainWin& window, VRHandler& vrHandler);
 	void init();
-	void windowResized();
-	QSize getSize() const;
+	// if ignore VR, returns hypothetical size if VR wasn't enabled
+	// of course real RT size doesn't ignore VR
+	QSize getSize(bool ignoreVR = false) const;
 	float getRenderTargetAspectRatio() const;
 	float getAspectRatioFromFOV() const;
 	float getVerticalFOV() const { return vFOV; };
 	float getHorizontalFOV() const { return hFOV; };
+	void updateRenderTargets();
 	/**
 	 * @brief Returns a constant reference to the @ref BasicCamera used for
 	 * rendering during specific scene rendering path.
@@ -206,7 +208,8 @@ class Renderer
 
 	void vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 	                        bool debug, bool debugInHeadset);
-	void vrRender(Side side, bool debug, bool debugInHeadset);
+	void vrRender(Side side, bool debug, bool debugInHeadset,
+	              bool displayOnScreen);
 
 	AbstractMainWin& window;
 	VRHandler& vrHandler;

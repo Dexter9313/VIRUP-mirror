@@ -28,41 +28,40 @@ unsigned int& GLShaderProgram::instancesCount()
 
 GLShaderProgram::GLShaderProgram(QString const& shadersCommonName,
                                  QMap<QString, QString> const& defines)
-    : GLShaderProgram(shadersCommonName, shadersCommonName, defines,
-                      shadersCommonName)
+    : GLShaderProgram(shadersCommonName, shadersCommonName, defines)
 {
 }
 
 GLShaderProgram::GLShaderProgram(QString const& vertexName,
                                  QString const& fragmentName,
-                                 QMap<QString, QString> const& defines,
-                                 QString geometryName)
+                                 QMap<QString, QString> const& defines)
+    : GLShaderProgram(
+          {{vertexName, Stage::VERTEX}, {fragmentName, Stage::FRAGMENT}},
+          defines)
+{
+}
+
+GLShaderProgram::GLShaderProgram(
+    std::vector<std::pair<QString, Stage>> const& pipeline,
+    QMap<QString, QString> const& defines)
     : glShaderProgram(GLHandler::glf().glCreateProgram())
 {
 	++instancesCount();
-	// ignoring geometry shader for now
-	(void) geometryName;
 
-	QString vName(vertexName), fName(fragmentName);
-	if(!vertexName.contains('.'))
+	for(auto const& stage : pipeline)
 	{
-		vName = "shaders/" + vName + ".vert";
+		QString name(stage.first);
+		// (extension, GLenum stage)
+		auto pair(decodeStage(stage.second));
+		if(!name.contains('.'))
+		{
+			name = "shaders/" + name + pair.first;
+		}
+		// vertex shader
+		GLuint shader(loadShader(name, pair.second, defines));
+		GLHandler::glf().glAttachShader(glShaderProgram, shader);
+		GLHandler::glf().glDeleteShader(shader);
 	}
-	if(!fragmentName.contains('.'))
-	{
-		fName = "shaders/" + fName + ".frag";
-	}
-
-	// vertex shader
-	GLuint vertexShader = loadShader(vName, GL_VERTEX_SHADER, defines);
-	// fragment shader
-	GLuint fragmentShader = loadShader(fName, GL_FRAGMENT_SHADER, defines);
-
-	// program
-	GLHandler::glf().glAttachShader(glShaderProgram, vertexShader);
-	GLHandler::glf().glAttachShader(glShaderProgram, fragmentShader);
-	GLHandler::glf().glDeleteShader(vertexShader);
-	GLHandler::glf().glDeleteShader(fragmentShader);
 
 	GLHandler::glf().glBindFragDataLocation(
 	    glShaderProgram, 0,
@@ -234,6 +233,27 @@ void GLShaderProgram::setUniform(const char* paramName, QColor const& value,
 void GLShaderProgram::use() const
 {
 	GLHandler::glf().glUseProgram(glShaderProgram);
+}
+
+std::pair<QString, GLenum> GLShaderProgram::decodeStage(Stage s)
+{
+	switch(s)
+	{
+		case Stage::VERTEX:
+			return {".vert", GL_VERTEX_SHADER};
+		case Stage::TESS_CONTROL:
+			return {".tesc", GL_TESS_CONTROL_SHADER};
+		case Stage::TESS_EVALUATION:
+			return {".tese", GL_TESS_EVALUATION_SHADER};
+		case Stage::GEOMETRY:
+			return {".geom", GL_GEOMETRY_SHADER};
+		case Stage::FRAGMENT:
+			return {".frag", GL_FRAGMENT_SHADER};
+		case Stage::COMPUTE:
+			return {".comp", GL_COMPUTE_SHADER};
+		default:
+			return {};
+	}
 }
 
 QString GLShaderProgram::getFullPreprocessedSource(

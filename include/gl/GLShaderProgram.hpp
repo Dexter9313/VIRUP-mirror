@@ -20,7 +20,7 @@
 #define GLSHADERPROGRAM_HPP
 
 #include <QOpenGLFunctions>
-#include <QOpenGLFunctions_4_0_Core>
+#include <QOpenGLFunctions_4_2_Core>
 
 #include "PythonQtHandler.hpp"
 
@@ -36,6 +36,16 @@ class GLHandler;
 class GLShaderProgram
 {
   public:
+	enum class Stage
+	{
+		VERTEX,
+		TESS_CONTROL,
+		TESS_EVALUATION,
+		GEOMETRY,
+		FRAGMENT,
+		COMPUTE
+	};
+
 	// implement those in protected if and only if they're needed for the Python
 	// API
 	GLShaderProgram()                             = delete;
@@ -98,8 +108,10 @@ class GLShaderProgram
 	 * GLShaderProgram is constructed another time with the same parameters.
 	 */
 	GLShaderProgram(QString const& vertexName, QString const& fragmentName,
-	                QMap<QString, QString> const& defines = {},
-	                QString geometryName                  = "");
+	                QMap<QString, QString> const& defines = {});
+	// pair := (name/path, stage)
+	GLShaderProgram(std::vector<std::pair<QString, Stage>> const& pipeline,
+	                QMap<QString, QString> const& defines = {});
 	/** @brief Returns attribute location in shader program.
 	 */
 	int getAttribLocationFromName(const char* attributeName) const;
@@ -227,6 +239,8 @@ class GLShaderProgram
 
 	bool doClean = true;
 	static unsigned int& instancesCount();
+
+	static std::pair<QString, GLenum> decodeStage(Stage s);
 	static QString
 	    getFullPreprocessedSource(QString const& path,
 	                              QMap<QString, QString> const& defines);

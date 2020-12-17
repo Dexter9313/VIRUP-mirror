@@ -7,19 +7,21 @@
 #include <QImage>
 #include <QMatrix4x4>
 #include <QOpenGLFunctions>
-#include <QOpenGLFunctions_4_0_Core>
+#include <QOpenGLFunctions_4_2_Core>
 #include <QSettings>
 #include <QString>
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector>
 #include <QtMath>
+#include <QtOpenGLExtensions>
 #include <array>
 #include <functional>
 
 #include "PythonQtHandler.hpp"
 #include "utils.hpp"
 
+#include "gl/GLComputeShader.hpp"
 #include "gl/GLFramebufferObject.hpp"
 #include "gl/GLMesh.hpp"
 #include "gl/GLPixelBufferObject.hpp"
@@ -80,7 +82,9 @@ class GLHandler : public QObject
 	 * You can call OpenGL directly through that reference, but be careful !
 	 * Make sure you keep a clean OpenGL state.
 	 */
-	static QOpenGLFunctions_4_0_Core& glf();
+	static QOpenGLFunctions_4_2_Core& glf();
+
+	static QOpenGLExtension_ARB_compute_shader& glf_ARB_compute_shader();
 
   public slots:
 	/**

@@ -20,7 +20,7 @@
 #define GLMESH_HPP
 
 #include <QOpenGLFunctions>
-#include <QOpenGLFunctions_4_0_Core>
+#include <QOpenGLFunctions_4_2_Core>
 
 #include "PythonQtHandler.hpp"
 
