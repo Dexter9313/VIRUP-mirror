@@ -1,0 +1,58 @@
+#version 420 core
+#extension GL_ARB_compute_shader : enable
+
+layout (local_size_x = LOCAL_SIZE_2D_X, local_size_y = LOCAL_SIZE_2D_Y) in;
+
+// An image to store data into.
+layout (rgba32f, binding = 0) readonly uniform image2D dataIn;
+layout (rgba32f, binding = 1) writeonly uniform image2D dataOut;
+
+// https://www.geeks3d.com/20140213/glsl-shader-library-fish-eye-and-dome-and-barrel-distortion-post-processing-filters/2/
+
+const float PI = 3.1415926535;
+
+uniform float BarrelPower;
+
+vec2 Distort(vec2 p)
+{
+	float theta  = atan(p.y, p.x);
+	float radius = length(p);
+	radius       = pow(radius, BarrelPower);
+	p.x          = radius * cos(theta);
+	p.y          = radius * sin(theta);
+	return 0.5 * (p + 1.0);
+}
+
+void main()
+{
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+	vec2 globalSize = vec2(gl_NumWorkGroups.xy * gl_WorkGroupSize.xy);
+	vec2 texCoord = vec2(gl_GlobalInvocationID.xy) / globalSize;
+	vec2 xy = 2.0 * texCoord - 1.0;
+	vec2 uv;
+	float d = length(xy);
+	if(d < 1.0)
+	{
+		uv = Distort(xy);
+	}
+	else
+	{
+		uv = texCoord;
+	}
+
+	// bilinear interpolation
+	ivec2 fetch_floor = ivec2(floor(globalSize * uv));
+	vec2 fetch_fract = fract(globalSize * uv);
+
+	vec4 res00 = imageLoad(dataIn, fetch_floor);
+	vec4 res01 = imageLoad(dataIn, fetch_floor + ivec2(0, 1));
+	vec4 res10 = imageLoad(dataIn, fetch_floor + ivec2(1, 0));
+	vec4 res11 = imageLoad(dataIn, fetch_floor + ivec2(1, 1));
+
+	vec4 result = res00 * (1.0 - fetch_fract.x) * (1.0 - fetch_fract.y);
+	result += res01 * (1.0 - fetch_fract.x) * fetch_fract.y;
+	result += res10 * fetch_fract.x * (1.0 - fetch_fract.y);
+	result += res11 * fetch_fract.x * fetch_fract.y;
+
+	imageStore(dataOut, pixel_coords, result);
+}

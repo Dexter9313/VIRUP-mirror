@@ -153,20 +153,20 @@ void Renderer::removeSceneRenderPath(QString const& id)
 }
 
 void Renderer::appendPostProcessingShader(QString const& id,
-                                          QString const& fragment,
+                                          QString const& computeName,
                                           QMap<QString, QString> const& defines)
 {
 	postProcessingPipeline_.emplace_back(
-	    std::make_pair(id, GLShaderProgram("postprocess", fragment, defines)));
+	    std::make_pair(id, GLComputeShader(computeName, defines)));
 }
 
 void Renderer::insertPostProcessingShader(QString const& id,
-                                          QString const& fragment,
+                                          QString const& computeName,
                                           unsigned int pos)
 {
 	postProcessingPipeline_.emplace(
 	    std::next(postProcessingPipeline_.begin(), pos),
-	    std::make_pair(id, GLShaderProgram("postprocess", fragment)));
+	    std::make_pair(id, GLComputeShader(computeName)));
 }
 
 void Renderer::removePostProcessingShader(QString const& id)

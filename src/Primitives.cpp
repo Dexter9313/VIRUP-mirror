@@ -30,7 +30,8 @@ void Primitives::setAsQuad(GLMesh& mesh, GLShaderProgram const& shader,
 
 	if(primitiveType == PrimitiveType::POINTS)
 	{
-		mesh.setVertices(vertices, shader, {{"position", 3}});
+		mesh.setVertexShaderMapping(shader, {{"position", 3}});
+		mesh.setVertices(vertices);
 		return;
 	}
 
@@ -49,7 +50,8 @@ void Primitives::setAsQuad(GLMesh& mesh, GLShaderProgram const& shader,
 	{
 		elements = {0, 2, 1, 3};
 	}
-	mesh.setVertices(vertices, shader, {{"position", 2}}, elements);
+	mesh.setVertexShaderMapping(shader, {{"position", 2}});
+	mesh.setVertices(vertices, elements);
 }
 
 void Primitives::setAsGrid(GLMesh& mesh, GLShaderProgram const& shader,
@@ -67,7 +69,8 @@ void Primitives::setAsGrid(GLMesh& mesh, GLShaderProgram const& shader,
 
 	if(primitiveType == PrimitiveType::POINTS)
 	{
-		mesh.setVertices(vertices, shader, {{"position", 2}});
+		mesh.setVertexShaderMapping(shader, {{"position", 2}});
+		mesh.setVertices(vertices);
 		return;
 	}
 
@@ -91,8 +94,8 @@ void Primitives::setAsGrid(GLMesh& mesh, GLShaderProgram const& shader,
 			}
 		}
 	}
-
-	mesh.setVertices(vertices, shader, {{"position", 2}}, elements);
+	mesh.setVertexShaderMapping(shader, {{"position", 2}});
+	mesh.setVertices(vertices, elements);
 }
 
 void Primitives::setAsUnitCube(GLMesh& mesh, GLShaderProgram const& shader,
@@ -111,7 +114,8 @@ void Primitives::setAsUnitCube(GLMesh& mesh, GLShaderProgram const& shader,
 
 	if(primitiveType == PrimitiveType::POINTS)
 	{
-		mesh.setVertices(vertices, shader, {{"position", 3}});
+		mesh.setVertexShaderMapping(shader, {{"position", 3}});
+		mesh.setVertices(vertices);
 		return;
 	}
 
@@ -175,7 +179,8 @@ void Primitives::setAsUnitCube(GLMesh& mesh, GLShaderProgram const& shader,
 		// thus :
 		elements = {5, 4, 7, 6, 2, 4, 0, 5, 1, 7, 3, 2, 1, 0};
 	}
-	mesh.setVertices(vertices, shader, {{"position", 3}}, elements);
+	mesh.setVertexShaderMapping(shader, {{"position", 3}});
+	mesh.setVertices(vertices, elements);
 }
 
 void Primitives::setAsUnitSphere(GLMesh& mesh, GLShaderProgram const& shader,
@@ -308,5 +313,6 @@ void Primitives::setAsUnitSphere(GLMesh& mesh, GLShaderProgram const& shader,
 	vertices.push_back(0.f);
 	vertices.push_back(-1.f);
 
-	mesh.setVertices(vertices, shader, {{"position", 3}}, elements);
+	mesh.setVertexShaderMapping(shader, {{"position", 3}});
+	mesh.setVertices(vertices, elements);
 }

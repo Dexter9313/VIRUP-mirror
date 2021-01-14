@@ -31,25 +31,20 @@ GLPixelBufferObject::GLPixelBufferObject(QSize const& size)
 {
 	++instancesCount();
 
-	GLHandler::glf().glGenBuffers(1, &id);
-	GLHandler::glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, id);
-	GLHandler::glf().glBufferData(GL_PIXEL_UNPACK_BUFFER,
-	                              size.width() * size.height() * 4, nullptr,
-	                              GL_STREAM_DRAW);
-	mappedData = static_cast<unsigned char*>(
-	    GLHandler::glf().glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY));
-	GLHandler::glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	buff       = new GLBuffer(GL_PIXEL_UNPACK_BUFFER,
+                        size.width() * size.height() * 4, GL_STREAM_DRAW);
+	mappedData = static_cast<unsigned char*>(buff->map(GL_WRITE_ONLY));
+	buff->unbind();
 }
 
 GLTexture* GLPixelBufferObject::copyContentToNewTex(bool sRGB) const
 {
-	GLHandler::glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, id);
-	GLHandler::glf().glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	buff->unmap();
+	buff->bind(); // be sure it is bound before the call to glTexImage2D
 	// NOLINTNEXTLINE(hicpp-use-nullptr, modernize-use-nullptr)
 	auto result = new GLTexture(
-	    GLTexture::Tex2DProperties(size.width(), size.height(), sRGB), {},
-	    {static_cast<GLvoid*>(nullptr)});
-	GLHandler::glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	    GLTexture::Tex2DProperties(size.width(), size.height(), sRGB));
+	buff->unbind();
 
 	return result;
 }
@@ -61,7 +56,7 @@ void GLPixelBufferObject::cleanUp()
 		return;
 	}
 	--instancesCount();
-	GLHandler::glf().glDeleteBuffers(1, &id);
-	GLHandler::glf().glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	buff->unbind();
+	delete buff;
 	doClean = false;
 }

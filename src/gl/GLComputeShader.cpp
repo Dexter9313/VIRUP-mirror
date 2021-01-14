@@ -20,15 +20,17 @@
 
 #include "gl/GLComputeShader.hpp"
 
-GLComputeShader::GLComputeShader(QString const& name,
+GLComputeShader::GLComputeShader(QString const& fileName,
                                  QMap<QString, QString> const& defines)
-    : GLShaderProgram({{name, Stage::COMPUTE}}, defines)
+    : GLShaderProgram({{fileName, Stage::COMPUTE}}, addDefines(defines))
 {
+	get(GL_COMPUTE_WORK_GROUP_SIZE, &workGroupSize[0]);
 }
 
 void GLComputeShader::exec(
     std::vector<std::pair<GLTexture const*, DataAccessMode>> const& textures,
-    std::array<unsigned int, 3> const& workGroupSize, bool waitForFinish) const
+    std::array<unsigned int, 3> const& globalGroupSize,
+    bool waitForFinish) const
 {
 	use();
 
@@ -44,12 +46,42 @@ void GLComputeShader::exec(
 		    i, textures[i].first->getGLTexture(), 0, GL_FALSE, 0,
 		    textures[i].second, format);
 	}
+	std::array<unsigned int, 3> dispatchSize{};
+	for(unsigned int i(0); i < 3; ++i)
+	{
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+		dispatchSize[i]
+		    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+		    = globalGroupSize[i] / workGroupSize[i]
+		      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+		      + (globalGroupSize[i] % workGroupSize[i] == 0 ? 0 : 1);
+	}
+
 	GLHandler::glf_ARB_compute_shader().glDispatchCompute(
-	    workGroupSize[0], workGroupSize[1], workGroupSize[2]);
+	    dispatchSize[0], dispatchSize[1], dispatchSize[2]);
 
 	if(waitForFinish)
 	{
 		// add GL_SHADER_STORAGE_BARRIER_BIT for SSBO later
 		GLHandler::glf().glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	}
+}
+
+QMap<QString, QString>
+    GLComputeShader::addDefines(QMap<QString, QString> const& userDefines)
+{
+	QMap<QString, QString> result(userDefines);
+
+	GLint maxInvocations;
+	GLHandler::glf().glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS,
+	                               &maxInvocations);
+
+	result["LOCAL_SIZE_1D_X"] = QString::number(maxInvocations);
+	result["LOCAL_SIZE_2D_X"] = QString::number(floor(sqrt(maxInvocations)));
+	result["LOCAL_SIZE_2D_Y"] = QString::number(floor(sqrt(maxInvocations)));
+	result["LOCAL_SIZE_3D_X"] = QString::number(floor(cbrt(maxInvocations)));
+	result["LOCAL_SIZE_3D_Y"] = QString::number(floor(cbrt(maxInvocations)));
+	result["LOCAL_SIZE_3D_Z"] = QString::number(floor(cbrt(maxInvocations)));
+
+	return result;
 }

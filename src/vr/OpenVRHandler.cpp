@@ -295,10 +295,10 @@ void OpenVRHandler::renderHiddenAreaMesh(Side eye)
 	GLHandler::glf().glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	GLMesh hiddenAreaMesh;
+	hiddenAreaMesh.setVertexShaderMapping(s, {{"position", 2}});
 	hiddenAreaMesh.setVertices(
 	    &(vr_pointer->GetHiddenAreaMesh(getEye(eye)).pVertexData[0].v[0]),
-	    2 * 3 * vr_pointer->GetHiddenAreaMesh(getEye(eye)).unTriangleCount, s,
-	    {{"position", 2}});
+	    2 * 3 * vr_pointer->GetHiddenAreaMesh(getEye(eye)).unTriangleCount);
 
 	GLHandler::glf().glClear(static_cast<GLuint>(GL_STENCIL_BUFFER_BIT));
 	s.use();

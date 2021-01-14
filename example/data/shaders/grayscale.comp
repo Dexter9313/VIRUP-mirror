@@ -1,0 +1,19 @@
+#version 420 core
+#extension GL_ARB_compute_shader : enable
+
+layout (local_size_x = LOCAL_SIZE_2D_X, local_size_y = LOCAL_SIZE_2D_Y) in;
+
+// An image to store data into.
+layout (rgba32f, binding = 0) readonly uniform image2D dataIn;
+layout (rgba32f, binding = 1) writeonly uniform image2D dataOut;
+
+uniform float lum;
+
+void main()
+{
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+	vec4 result = imageLoad(dataIn, pixel_coords);
+	float color = result.r*0.3 + result.g*0.59 + result.b*0.11;
+	result = vec4(vec3(lum*color), 1.0);
+	imageStore(dataOut, pixel_coords, result);
+}

@@ -234,6 +234,15 @@ class GLShaderProgram
 	 */
 	void cleanUp();
 
+	/**
+	 * @brief Returns a parameter from this OpenGL shader program object.
+	 *
+	 * See
+	 * https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetProgram.xhtml
+	 * .
+	 */
+	void get(GLenum pname, GLint* params) const;
+
   private:
 	const GLuint glShaderProgram;
 

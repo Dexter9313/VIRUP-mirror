@@ -47,7 +47,8 @@ DebugCamera::DebugCamera(VRHandler const& vrHandler)
 	    4, 6, 4, 5,
 	};
 
-	camMesh.setVertices(vertices, camMeshShader, {{"position", 3}}, elements);
+	camMesh.setVertexShaderMapping(camMeshShader, {{"position", 3}});
+	camMesh.setVertices(vertices, elements);
 }
 
 void DebugCamera::update(QMatrix4x4 const& angleShiftMat)

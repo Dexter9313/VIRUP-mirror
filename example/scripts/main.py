@@ -25,7 +25,8 @@ def initScene():
     shader.setUniform("alpha", 1.0)
     shader.setUniform("color", QColor(128, 255, 255))
 
-    mesh.setVertices([0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5], shader, ["position"], [3], [0, 1, 1, 2, 2, 0])
+    mesh.setVertexShaderMapping(shader, ["position"], [3])
+    mesh.setVertices([0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5], [0, 1, 1, 2, 2, 0])
 
     #HydrogenVR.appendPostProcessingShader("py", "grayscale")
 

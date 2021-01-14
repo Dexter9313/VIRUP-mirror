@@ -38,7 +38,8 @@ Hand::Hand(Side side)
 	};
 
 	std::vector<float> vertices(22 * 3); // 21 random positions
-	mesh.setVertices(vertices, shaderProgram, {{"position", 3}}, ebo);
+	mesh.setVertexShaderMapping(shaderProgram, {{"position", 3}});
+	mesh.setVertices(vertices, ebo);
 
 	// transforms leap coordinates to GL coordinates
 	// account for the controller position on the headset
@@ -58,7 +59,7 @@ void Hand::update(Leap::Hand const& hand)
 		return;
 	}
 
-	mesh.updateVertices(getHandVBO(hand));
+	mesh.setVertices(getHandVBO(hand));
 
 	_isFlat   = hand.grabStrength() == 0;
 	_isClosed = hand.grabStrength() == 1;

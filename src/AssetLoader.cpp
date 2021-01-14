@@ -83,10 +83,10 @@ void AssetLoader::loadModel(std::vector<MeshDescriptor> const& meshDescriptors,
 		TexturedMesh tMesh;
 
 		tMesh.mesh = new GLMesh;
-		tMesh.mesh->setVertices(
-		    descriptor.vertices, shader,
-		    {{"position", 3}, {"tangent", 3}, {"normal", 3}, {"texcoord", 2}},
-		    descriptor.indices);
+		tMesh.mesh->setVertexShaderMapping(
+		    shader,
+		    {{"position", 3}, {"tangent", 3}, {"normal", 3}, {"texcoord", 2}});
+		tMesh.mesh->setVertices(descriptor.vertices, descriptor.indices);
 
 		for(auto const& tex : descriptor.texturesPathsTypes)
 		{

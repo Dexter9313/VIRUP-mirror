@@ -37,6 +37,9 @@ GLFramebufferObject::GLFramebufferObject(
 
 	// generate texture
 	texColorBuffer = new GLTexture(properties, sampler);
+	GLHandler::glf().glFramebufferTexture1D(
+	    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texColorBuffer->getGLTarget(),
+	    texColorBuffer->getGLTexture(), 0);
 }
 
 GLFramebufferObject::GLFramebufferObject(
@@ -83,6 +86,9 @@ GLFramebufferObject::GLFramebufferObject(
 	{
 		// generate texture
 		texColorBuffer = new GLTexture(properties, sampler);
+		GLHandler::glf().glFramebufferTexture2D(
+		    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texColorBuffer->getGLTarget(),
+		    texColorBuffer->getGLTexture(), 0);
 
 		// render buffer for depth and stencil
 		GLHandler::glf().glGenRenderbuffers(1, &renderBuffer);
@@ -111,6 +117,9 @@ GLFramebufferObject::GLFramebufferObject(
 
 	// generate texture
 	texColorBuffer = new GLTexture(properties, sampler);
+	GLHandler::glf().glFramebufferTexture2D(
+	    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texColorBuffer->getGLTarget(),
+	    texColorBuffer->getGLTexture(), 0);
 
 	// render buffer for depth and stencil
 	GLHandler::glf().glGenRenderbuffers(1, &renderBuffer);
@@ -140,6 +149,9 @@ GLFramebufferObject::GLFramebufferObject(
 
 	// generate texture
 	texColorBuffer = new GLTexture(properties, sampler);
+	GLHandler::glf().glFramebufferTexture3D(
+	    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texColorBuffer->getGLTarget(),
+	    texColorBuffer->getGLTexture(), 0, 0);
 }
 
 GLFramebufferObject::GLFramebufferObject(
@@ -155,6 +167,9 @@ GLFramebufferObject::GLFramebufferObject(
 
 	// generate texture
 	texColorBuffer = new GLTexture(properties, sampler);
+	GLHandler::glf().glFramebufferTexture2D(
+	    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+	    texColorBuffer->getGLTexture(), 0);
 
 	// render buffer for depth and stencil
 	GLHandler::glf().glGenRenderbuffers(1, &renderBuffer);
@@ -182,26 +197,12 @@ void GLFramebufferObject::bind(GLTexture::CubemapFace face, GLint layer) const
 			        + GL_TEXTURE_CUBE_MAP_POSITIVE_X,
 			    texColorBuffer->getGLTexture(), 0);
 		}
-		else if(texColorBuffer->getGLTarget() == GL_TEXTURE_1D)
-		{
-			GLHandler::glf().glFramebufferTexture1D(
-			    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			    texColorBuffer->getGLTarget(), texColorBuffer->getGLTexture(),
-			    0);
-		}
 		else if(texColorBuffer->getGLTarget() == GL_TEXTURE_3D)
 		{
 			GLHandler::glf().glFramebufferTexture3D(
 			    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 			    texColorBuffer->getGLTarget(), texColorBuffer->getGLTexture(),
 			    0, layer);
-		}
-		else
-		{
-			GLHandler::glf().glFramebufferTexture2D(
-			    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			    texColorBuffer->getGLTarget(), texColorBuffer->getGLTexture(),
-			    0);
 		}
 	}
 }

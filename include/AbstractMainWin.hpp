@@ -69,6 +69,7 @@
  * accessed.
  * * #~AbstractMainWin : <code>cleanUpScene()</code>
  *
+ * TODO (florian) rewrite
  * @par Post-processing
  *
  * A post processing fragment shader must have :
@@ -388,9 +389,11 @@ class AbstractMainWin : public QWindow
 	 * processing.
 	 * @param shader The actual shader program.
 	 */
-	virtual std::vector<GLTexture const*> getPostProcessingUniformTextures(
-	    QString const& id, GLShaderProgram const& shader,
-	    GLFramebufferObject const& currentTarget) const;
+	virtual std::vector<
+	    std::pair<GLTexture const*, GLComputeShader::DataAccessMode>>
+	    getPostProcessingUniformTextures(
+	        QString const& id, GLShaderProgram const& shader,
+	        GLFramebufferObject const& currentTarget) const;
 
   protected:
 	/**

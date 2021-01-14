@@ -1,0 +1,54 @@
+#version 420 core
+#extension GL_ARB_compute_shader : enable
+
+layout (local_size_x = LOCAL_SIZE_2D_X, local_size_y = LOCAL_SIZE_2D_Y) in;
+
+// An image to store data into.
+layout (rgba32f, binding = 0) readonly uniform image2D dataIn;
+layout (rgba32f, binding = 1) writeonly uniform image2D dataOut;
+
+// https://learnopengl.com/Advanced-Lighting/Bloom
+
+uniform vec2 dir = vec2(1.0, 0.0);
+const float weight[5]
+    = float[](0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
+
+shared vec3 buff[LOCAL_SIZE_2D_X * LOCAL_SIZE_2D_Y];
+
+void writebuff(ivec2 coord, vec3 val)
+{
+	buff[coord.x + LOCAL_SIZE_2D_X * coord.y] = val;
+}
+
+vec3 readbuff(ivec2 coord)
+{
+	// if out of bounds
+	if(coord.x < 0 || coord.x > LOCAL_SIZE_2D_X - 1 || coord.y < 0 || coord.y > LOCAL_SIZE_2D_Y - 1)
+	{
+		return imageLoad(dataIn,
+		                 ivec2(gl_WorkGroupID * gl_WorkGroupSize) + coord)
+		    .rgb;
+	}
+	return buff[coord.x + LOCAL_SIZE_2D_X * coord.y];
+}
+
+void main()
+{
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 buff_coords  = ivec2(gl_LocalInvocationID.xy);
+	writebuff(
+	    buff_coords,
+	    imageLoad(dataIn, pixel_coords).rgb); // current fragment's contribution
+
+	vec3 result = readbuff(buff_coords) * weight[0];
+	barrier();
+
+	ivec2 d = ivec2(dir);
+	for(int i = 1; i < 5; ++i)
+	{
+		result += readbuff(ivec2(gl_LocalInvocationID.xy) + i * d) * weight[i];
+		result += readbuff(ivec2(gl_LocalInvocationID.xy) - i * d) * weight[i];
+	}
+
+	imageStore(dataOut, pixel_coords, vec4(result, 1.0));
+}

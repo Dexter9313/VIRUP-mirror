@@ -37,14 +37,15 @@ MovingCube::MovingCube()
 
 	    4, 6, 4, 5,
 	};
-	cube.setVertices(vertices, cubeShader, {{"position", 3}}, elements);
+	cube.setVertexShaderMapping(cubeShader, {{"position", 3}});
+	cube.setVertices(vertices, elements);
 
 	cubeTimer.start();
 }
 
 void MovingCube::update()
 {
-	cube.updateVertices(cubeVertices(cubeTimer.elapsed()));
+	cube.setVertices(cubeVertices(cubeTimer.elapsed()));
 }
 
 void MovingCube::render()

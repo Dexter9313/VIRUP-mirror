@@ -235,6 +235,11 @@ void GLShaderProgram::use() const
 	GLHandler::glf().glUseProgram(glShaderProgram);
 }
 
+void GLShaderProgram::get(GLenum pname, GLint* params) const
+{
+	GLHandler::glf().glGetProgramiv(glShaderProgram, pname, params);
+}
+
 std::pair<QString, GLenum> GLShaderProgram::decodeStage(Stage s)
 {
 	switch(s)

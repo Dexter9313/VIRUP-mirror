@@ -26,6 +26,7 @@
 
 #include "GLShaderProgram.hpp"
 
+class GLBuffer;
 class GLHandler;
 
 /**
@@ -75,8 +76,7 @@ class GLMesh
 	    : vao(other.vao)
 	    , vbo(other.vbo)
 	    , ebo(other.ebo)
-	    , vboSize(other.vboSize)
-	    , eboSize(other.eboSize)
+	    , vertexSize(other.vertexSize)
 	    , doClean(other.doClean)
 	{
 		// prevent other from cleaning shader if it destroys itself
@@ -86,12 +86,31 @@ class GLMesh
 	 * @brief Allocates a new @ref Mesh.
 	 */
 	GLMesh();
-	// doesn't work in PythonQt
-	void setVertices(
-	    float const* vertices, size_t size,
+	GLBuffer& getVBO() { return *vbo; };
+	GLBuffer& getEBO() { return *ebo; };
+	void setVertexShaderMapping(
 	    GLShaderProgram const& shaderProgram,
-	    std::vector<QPair<const char*, unsigned int>> const& mapping,
-	    std::vector<unsigned int> const& elements = {});
+	    std::vector<QPair<const char*, unsigned int>> const& mapping);
+	/**
+	 * @brief Convenient version of the @ref setVertices(GLHandler::Mesh&,
+	 * std::vector<float>const&, GLShaderProgram const&, std::vector<QPair<const
+	 * char*, unsigned int>>const&, std::vector<unsigned int>const&) method to
+	 * be used in Python.
+	 *
+	 * Behaves the same way as its other version, but the attribute mapping is
+	 * specified differently, as it is harder to construct a QVector<QPair>
+	 * object in Python. Instead of an array of pairs (name, size), the
+	 * mapping is specified by all the ordered names in the @p mappingNames
+	 * parameter and all their corresponding sizes in the same order in the @p
+	 * mappingSizes parameter.
+	 */
+	void setVertexShaderMapping(GLShaderProgram const& shaderProgram,
+	                            QStringList const& mappingNames,
+	                            std::vector<unsigned int> const& mappingSizes);
+	// doesn't work in PythonQt
+	void setVertices(float const* vertices, size_t vertSize);
+	void setVertices(float const* vertices, size_t vertSize,
+	                 unsigned int const* elements, size_t elemSize);
 	// doesn't work in PythonQt
 	/**
 	 * @brief Sets vertices data for a mesh.
@@ -135,47 +154,9 @@ class GLMesh
 	 * Also, if this parameter is empty, the automatic @ref PrimitiveType for
 	 * the mesh will be POINTS.
 	 */
-	void setVertices(
-	    std::vector<float> const& vertices,
-	    GLShaderProgram const& shaderProgram,
-	    std::vector<QPair<const char*, unsigned int>> const& mapping,
-	    std::vector<unsigned int> const& elements = {});
-	/**
-	 * @brief Convenient version of the @ref setVertices(GLHandler::Mesh&,
-	 * std::vector<float>const&, GLShaderProgram const&, std::vector<QPair<const
-	 * char*, unsigned int>>const&, std::vector<unsigned int>const&) method to
-	 * be used in Python.
-	 *
-	 * Behaves the same way as its other version, but the attribute mapping is
-	 * specified differently, as it is harder to construct a QVector<QPair>
-	 * object in Python. Instead of an array of pairs (name, size), the
-	 * mapping is specified by all the ordered names in the @p mappingNames
-	 * parameter and all their corresponding sizes in the same order in the @p
-	 * mappingSizes parameter.
-	 */
+	void setVertices(std::vector<float> const& vertices);
 	void setVertices(std::vector<float> const& vertices,
-	                 GLShaderProgram const& shaderProgram,
-	                 QStringList const& mappingNames,
-	                 std::vector<unsigned int> const& mappingSizes,
-	                 std::vector<unsigned int> const& elements = {});
-	void updateVertices(float const* vertices, size_t size) const;
-	/**
-	 * @brief Updates a mesh vertices data.
-	 *
-	 * @ref setVertices must have already been called once before to set the
-	 * attributes mapping with the rendering shader. If the attributes mapping
-	 * has to change, use @ref setVertices instead.
-	 *
-	 * The main use case of this method is to update each vertex data for
-	 * animations for example. The data isn't supposed to be too different than
-	 * it was when @ref setVertices was called (same number of vertices with the
-	 * same elements buffer and same way to specify the attributes...).
-	 *
-	 * @param mesh @ref Mesh for which the vertices data are updated.
-	 * @param vertices See @ref setVertices. This parameter must be the same
-	 * format as the @p vertices parameter of @ref setVertices.
-	 */
-	void updateVertices(std::vector<float> const& vertices) const;
+	                 std::vector<unsigned int> const& elements);
 	/**
 	 * @brief Draws a mesh on the current render target.
 	 *
@@ -204,11 +185,10 @@ class GLMesh
 	void cleanUp();
 
   private:
-	GLuint vao           = 0;
-	GLuint vbo           = 0;
-	GLuint ebo           = 0;
-	unsigned int vboSize = 0;
-	unsigned int eboSize = 0;
+	GLuint vao              = 0;
+	GLBuffer* vbo           = 0;
+	GLBuffer* ebo           = 0;
+	unsigned int vertexSize = 0; // in bytes
 
 	bool doClean = true;
 	static unsigned int& instancesCount();
@@ -228,18 +208,16 @@ class GLMeshWrapper : public PythonQtWrapper
 	{
 		return GLMesh::getInstancesCount();
 	};
+	void setVertexShaderMapping(GLMesh* m, GLShaderProgram const& shaderProgram,
+	                            QStringList const& mappingNames,
+	                            std::vector<unsigned int> const& mappingSizes)
+	{
+		m->setVertexShaderMapping(shaderProgram, mappingNames, mappingSizes);
+	}
 	void setVertices(GLMesh* m, std::vector<float> const& vertices,
-	                 GLShaderProgram const& shaderProgram,
-	                 QStringList const& mappingNames,
-	                 std::vector<unsigned int> const& mappingSizes,
 	                 std::vector<unsigned int> const& elements = {})
 	{
-		m->setVertices(vertices, shaderProgram, mappingNames, mappingSizes,
-		               elements);
-	}
-	void updateVertices(GLMesh* m, std::vector<float> const& vertices)
-	{
-		m->updateVertices(vertices);
+		m->setVertices(vertices, elements);
 	}
 	void render(GLMesh* m, PrimitiveType t = PrimitiveType::AUTO)
 	{

@@ -25,6 +25,7 @@
 
 #include "GLTexture.hpp"
 
+class GLBuffer;
 class GLHandler;
 
 class GLPixelBufferObject
@@ -40,7 +41,7 @@ class GLPixelBufferObject
 	static unsigned int getInstancesCount() { return instancesCount(); };
 
 	GLPixelBufferObject(GLPixelBufferObject&& other)
-	    : id(other.id)
+	    : buff(other.buff)
 	    , size(other.size)
 	    , mappedData(other.mappedData)
 	    , doClean(other.doClean)
@@ -65,7 +66,7 @@ class GLPixelBufferObject
 	void cleanUp();
 
   private:
-	GLuint id = 0;
+	GLBuffer* buff = nullptr;
 	QSize size;
 	unsigned char* mappedData;
 

@@ -1,10 +1,11 @@
-#version 150 core
+#version 420 core
+#extension GL_ARB_compute_shader : enable
 
-in vec2 texCoord;
+layout (local_size_x = LOCAL_SIZE_2D_X, local_size_y = LOCAL_SIZE_2D_Y) in;
 
-out vec4 outColor;
-
-uniform sampler2D tex;
+// An image to store data into.
+layout (rgba32f, binding = 0) readonly uniform image2D dataIn;
+layout (rgba32f, binding = 1) writeonly uniform image2D dataOut;
 
 uniform float gamma;
 uniform float contrast = 1.0;
@@ -21,8 +22,8 @@ const int bayer_pattern[64]
 
 vec4 dither()
 {
-	int x = int(mod(round(gl_FragCoord.x / 1.5), 8.0));
-	int y = int(mod(round(gl_FragCoord.y / 1.5), 8.0));
+	int x = int(mod(round(float(gl_GlobalInvocationID.x) / 1.5), 8.0));
+	int y = int(mod(round(float(gl_GlobalInvocationID.y) / 1.5), 8.0));
 	return vec4(bayer_pattern[x + 8 * y] / (32.0 * 256.0) - (1.0 / 128.0));
 }
 #endif
@@ -34,7 +35,8 @@ float max3(vec3 v)
 
 void main()
 {
-	vec4 result = texture(tex, texCoord);
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+	vec4 result = imageLoad(dataIn, pixel_coords);
 	/*
 	// reinhard tone mapping
 	result.rgb = result.rgb / (result.rgb + vec3(1.0));
@@ -51,11 +53,11 @@ void main()
 	result += dither();
 #endif
 
-	outColor.rgb = result.rgb;
-	outColor.a   = 1.0;
-
 	// contrast
-	outColor.rgb
-	    = clamp(contrast * (outColor.rgb - 0.5) + 0.5, vec3(0.0), vec3(1.0));
+	result.rgb
+	    = clamp(contrast * (result.rgb - 0.5) + 0.5, vec3(0.0), vec3(1.0));
 
+	result.a   = 1.0;
+
+	imageStore(dataOut, pixel_coords, result);
 }

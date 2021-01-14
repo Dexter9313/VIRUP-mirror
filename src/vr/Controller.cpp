@@ -163,9 +163,9 @@ Controller::Controller(vr::IVRSystem* vr_pointer, unsigned int nDevice,
 		elements.push_back(model->rIndexData[i]);
 	}
 
-	mesh.setVertices(vertices, shaderProgram,
-	                 {{"position", 3}, {"normal", 3}, {"texcoord", 2}},
-	                 elements);
+	mesh.setVertices(vertices, elements);
+	mesh.setVertexShaderMapping(
+	    shaderProgram, {{"position", 3}, {"normal", 3}, {"texcoord", 2}});
 
 	tex = new GLTexture(
 	    GLTexture::Tex2DProperties(rm_texture->unWidth, rm_texture->unHeight),

@@ -106,8 +106,9 @@ void MainWin::initScene()
 	    1, 2, 3  // second Triangle
 	};
 	mesh = new GLMesh;
-	mesh->setVertices(vertices, shaderProgram.toGLShaderProgram(),
-	                  {{"position", 3}}, indices);
+	mesh->setVertexShaderMapping(shaderProgram.toGLShaderProgram(),
+	                             {{"position", 3}});
+	mesh->setVertices(vertices, indices);
 	shaderProgram.toGLShaderProgram().setUnusedAttributesValues(
 	    {{"color", {1.0, 1.0, 0.0}}});
 
@@ -120,8 +121,9 @@ void MainWin::initScene()
 	pointsShader.setUniform("alpha", 1.0f);
 	pointsShader.setUniform("color", QColor::fromRgbF(1.0f, 1.0f, 1.0f));
 	std::vector<float> points = {0, 0, 0};
-	pointsMesh->setVertices(points, pointsShader.toGLShaderProgram(),
-	                        {{"position", 3}});
+	pointsMesh->setVertexShaderMapping(pointsShader.toGLShaderProgram(),
+	                                   {{"position", 3}});
+	pointsMesh->setVertices(points);
 
 	sphereShader.load("default");
 	sphereShader.setUniform("alpha", 1.0f);
@@ -144,8 +146,9 @@ void MainWin::initScene()
 		    playareaquad[3].x(), playareaquad[3].y(), playareaquad[3].z(),
 		};
 		indices = {0, 1, 1, 2, 2, 3, 3, 0};
-		playarea->setVertices(vertices, playareaShader.toGLShaderProgram(),
-		                      {{"position", 3}}, indices);
+		playarea->setVertexShaderMapping(playareaShader.toGLShaderProgram(),
+		                                 {{"position", 3}});
+		playarea->setVertices(vertices, indices);
 	}
 
 	model                = new Model("models/drone/scene.gltf");
@@ -201,7 +204,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 			points[0] = pos[0];
 			points[1] = pos[1];
 			points[2] = pos[2];
-			pointsMesh->updateVertices(points);
+			pointsMesh->setVertices(points);
 		}
 	}
 
@@ -216,7 +219,7 @@ void MainWin::updateScene(BasicCamera& camera, QString const& /*pathId*/)
 			points[0] = pos[0];
 			points[1] = pos[1];
 			points[2] = pos[2];
-			pointsMesh->updateVertices(points);
+			pointsMesh->setVertices(points);
 		}
 	}
 
