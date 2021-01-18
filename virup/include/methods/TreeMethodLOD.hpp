@@ -47,6 +47,7 @@ class TreeMethodLOD : public Method
 	                               std::string const& name,
 	                               GLShaderProgram const& shaderProgram);
 	static void initOctree(OctreeLOD* octree, std::istream* in);
+	void setShaderColor(QColor const& color);
 
 	// used to detect too long frames
 	QElapsedTimer timer;

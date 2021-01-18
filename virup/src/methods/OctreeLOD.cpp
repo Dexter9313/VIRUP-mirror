@@ -406,7 +406,10 @@ void OctreeLOD::ramToVideo()
 	{
 		unused.emplace_back("luminosity", std::vector<float>{1.f});
 	}
-
+	if((getFlags() & Flags::STORE_COLOR) != Flags::NONE)
+	{
+		mapping.emplace_back("color", 3);
+	}
 	shaderProgram->setUnusedAttributesValues(unused);
 	mesh->setVertexShaderMapping(*shaderProgram, mapping);
 	mesh->setVertices(data);

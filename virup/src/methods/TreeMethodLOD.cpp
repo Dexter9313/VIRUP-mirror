@@ -211,30 +211,42 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 	}
 
 	GLHandler::beginTransparent(GL_ONE, GL_ONE);
-	shaderProgram.setUniform("color", QVector3D(1.0f, 1.0f, 1.0f));
+	shaderProgram.setUnusedAttributesValues(
+	    {{"color", std::vector<float>{1.0f, 1.0f, 1.0f}}});
 	GLHandler::setUpRender(shaderProgram, model);
 	shaderProgram.setUniform("pixelSolidAngle", camera.pixelSolidAngle());
-	shaderProgram.setUniform(
-	    "color", QSettings().value("data/gazcolor").value<QColor>());
 	unsigned int rendered = 0;
 	if(gasTree != nullptr)
 	{
+		if((gasTree->getFlags() & Octree::Flags::STORE_COLOR)
+		   == Octree::Flags::NONE)
+		{
+			setShaderColor(QSettings().value("data/gazcolor").value<QColor>());
+		}
 		rendered += gasTree->renderAboveTanAngle(currentTanAngle, camera, model,
 		                                         campos, 100000000, false,
 		                                         getAlpha());
 	}
-	shaderProgram.setUniform(
-	    "color", QSettings().value("data/starscolor").value<QColor>());
 	if(starsTree != nullptr)
 	{
+		if((starsTree->getFlags() & Octree::Flags::STORE_COLOR)
+		   == Octree::Flags::NONE)
+		{
+			setShaderColor(
+			    QSettings().value("data/starscolor").value<QColor>());
+		}
 		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera,
 		                                           model, campos, 100000000,
 		                                           true, getAlpha());
 	}
-	shaderProgram.setUniform(
-	    "color", QSettings().value("data/darkmattercolor").value<QColor>());
 	if(darkMatterTree != nullptr && showdm)
 	{
+		if((darkMatterTree->getFlags() & Octree::Flags::STORE_COLOR)
+		   == Octree::Flags::NONE)
+		{
+			setShaderColor(
+			    QSettings().value("data/darkmattercolor").value<QColor>());
+		}
 		rendered += darkMatterTree->renderAboveTanAngle(
 		    currentTanAngle, camera, model, campos, 100000000, false,
 		    getAlpha());
@@ -328,6 +340,13 @@ void TreeMethodLOD::loadOctreeFromFile(std::string const& path,
 void TreeMethodLOD::initOctree(OctreeLOD* octree, std::istream* in)
 {
 	octree->init(*in);
+}
+
+void TreeMethodLOD::setShaderColor(QColor const& color)
+{
+	shaderProgram.setUnusedAttributesValues(
+	    {{"color",
+	      {float(color.redF()), float(color.greenF()), float(color.blueF())}}});
 }
 
 TreeMethodLOD::~TreeMethodLOD()

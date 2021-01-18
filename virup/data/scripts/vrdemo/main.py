@@ -318,7 +318,7 @@ def updateScene():
             VIRUP.simulationTime = temporalData.simulationTime
 
     ui = scene.ui
-    VIRUP.cosmolum = ui.luminosity
+    VIRUP.cosmolum = ui.luminosity * 3.7e7
     VIRUP.orbitsEnabled = ui.orbits
     VIRUP.labelsEnabled = ui.labels
     VIRUP.darkmatterEnabled = ui.darkmatter
