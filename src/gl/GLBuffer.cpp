@@ -28,7 +28,6 @@ unsigned int& GLBuffer::instancesCount()
 
 GLBuffer::GLBuffer(GLenum target, size_t size, GLenum usage)
     : currentTarget(target)
-    , size(size)
 {
 	++instancesCount();
 

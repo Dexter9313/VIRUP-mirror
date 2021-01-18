@@ -569,20 +569,11 @@ void AbstractMainWin::setupPythonScripts()
 {
 	setupPythonAPI();
 
-	// Init Python engine
-	setupPythonScripts();
-
-	renderer.appendPostProcessingShader("exposure", "exposure");
-	renderer.appendPostProcessingShader("bloom", "bloom");
-	// make sure gamma correction is applied last
-	if(QSettings().value("graphics/dithering").toBool())
+	QString mainScriptPath(QSettings().value("scripting/rootdir").toString()
+	                       + "/main.py");
+	if(QFile(mainScriptPath).exists())
 	{
-		renderer.appendPostProcessingShader("colors", "colors",
-		                                    {{"DITHERING", "0"}});
-	}
-	else
-	{
-		renderer.appendPostProcessingShader("colors", "colors");
+		PythonQtHandler::evalFile(mainScriptPath);
 	}
 
 	PythonQtHandler::evalScript("if \"initScene\" in dir():\n\tinitScene()");
