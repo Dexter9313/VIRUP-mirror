@@ -302,7 +302,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 					vertexData[i + 1] -= closest[1];
 					vertexData[i + 2] -= closest[2];
 				}
-				mesh->updateVertices(vertexData);
+				mesh->setVertices(vertexData);
 
 				Vector3 closestNeighbor(DBL_MAX, DBL_MAX, DBL_MAX);
 				neighborDist = DBL_MAX;
@@ -408,7 +408,8 @@ void OctreeLOD::ramToVideo()
 	}
 
 	shaderProgram->setUnusedAttributesValues(unused);
-	mesh->setVertices(data, *shaderProgram, mapping);
+	mesh->setVertexShaderMapping(*shaderProgram, mapping);
+	mesh->setVertices(data);
 	dataSize = data.size();
 	usedMem() += dataSize * sizeof(float);
 	data.resize(0);

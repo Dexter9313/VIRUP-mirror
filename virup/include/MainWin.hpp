@@ -390,9 +390,11 @@ class MainWin : public AbstractMainWin
 	    QString const& id, GLShaderProgram const& shader,
 	    GLFramebufferObject const& currentTarget) const override;
 
-	virtual std::vector<GLTexture const*> getPostProcessingUniformTextures(
-	    QString const& id, GLShaderProgram const& shader,
-	    GLFramebufferObject const& currentTarget) const override;
+	virtual std::vector<
+	    std::pair<GLTexture const*, GLComputeShader::DataAccessMode>>
+	    getPostProcessingUniformTextures(
+	        QString const& id, GLShaderProgram const& shader,
+	        GLFramebufferObject const& currentTarget) const override;
 
 	virtual AbstractState* constructNewState() const override
 	{

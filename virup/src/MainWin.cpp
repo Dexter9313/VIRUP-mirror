@@ -1097,9 +1097,10 @@ void MainWin::applyPostProcShaderParams(
 	}
 }
 
-std::vector<GLTexture const*> MainWin::getPostProcessingUniformTextures(
-    QString const& id, GLShaderProgram const& shader,
-    GLFramebufferObject const& currentTarget) const
+std::vector<std::pair<GLTexture const*, GLComputeShader::DataAccessMode>>
+    MainWin::getPostProcessingUniformTextures(
+        QString const& id, GLShaderProgram const& shader,
+        GLFramebufferObject const& currentTarget) const
 {
 	auto abstractResult(AbstractMainWin::getPostProcessingUniformTextures(
 	    id, shader, currentTarget));
@@ -1109,7 +1110,7 @@ std::vector<GLTexture const*> MainWin::getPostProcessingUniformTextures(
 	}
 	if(id == "lensing")
 	{
-		return {lenseDistortionMap};
+		return {{lenseDistortionMap, GLComputeShader::DataAccessMode::R}};
 	}
 	return {};
 }

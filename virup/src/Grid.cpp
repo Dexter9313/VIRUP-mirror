@@ -29,7 +29,8 @@ Grid::Grid()
 	std::vector<float> vertices;
 	std::vector<unsigned int> elements;
 	generateGridVertices(vertices, elements);
-	mesh.setVertices(vertices, shader, {{"position", 3}}, elements);
+	mesh.setVertexShaderMapping(shader, {{"position", 3}});
+	mesh.setVertices(vertices, elements);
 
 	scaleText3D.setColor(QColor(0, 255, 0));
 

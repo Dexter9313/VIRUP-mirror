@@ -21,16 +21,19 @@ void BaseLineMethod::init(std::vector<float>& gazVertices,
 {
 	cleanUp();
 	size_t totalSize(0);
-	gazMesh.setVertices(gazVertices, shaderProgram,
-	                    {{"position", 3}, {"radius", 1}});
+	gazMesh.setVertexShaderMapping(shaderProgram,
+	                               {{"position", 3}, {"radius", 1}});
+	gazMesh.setVertices(gazVertices);
 	shaderProgram.setUnusedAttributesValues({{"luminosity", {1.f}}});
 	totalSize += gazVertices.size();
-	starsMesh.setVertices(starsVertices, shaderProgram,
-	                      {{"position", 3}, {"radius", 1}});
+	starsMesh.setVertexShaderMapping(shaderProgram,
+	                                 {{"position", 3}, {"radius", 1}});
+	starsMesh.setVertices(starsVertices);
 	shaderProgram.setUnusedAttributesValues({{"luminosity", {1.f}}});
 	totalSize += starsVertices.size();
-	darkMatterMesh.setVertices(darkMatterVertices, shaderProgram,
-	                           {{"position", 3}, {"radius", 1}});
+	darkMatterMesh.setVertexShaderMapping(shaderProgram,
+	                                      {{"position", 3}, {"radius", 1}});
+	darkMatterMesh.setVertices(darkMatterVertices);
 	shaderProgram.setUnusedAttributesValues({{"luminosity", {1.f}}});
 	totalSize += darkMatterVertices.size();
 	std::cout << "VRAM Loaded with " << totalSize * sizeof(float)
@@ -54,8 +57,9 @@ void BaseLineMethod::init(std::string const& gazPath,
 		tree.readData(file);
 		bboxes.push_back(tree.getBoundingBox());
 		std::vector<float> data(tree.getData());
-		gazMesh.setVertices(data, shaderProgram,
-		                    {{"position", 3}, {"radius", 1}});
+		gazMesh.setVertexShaderMapping(shaderProgram,
+		                               {{"position", 3}, {"radius", 1}});
+		gazMesh.setVertices(data);
 		totalSize += data.size();
 		file.close();
 	}
@@ -69,7 +73,8 @@ void BaseLineMethod::init(std::string const& gazPath,
 		tree.readData(file);
 		bboxes.push_back(tree.getBoundingBox());
 		std::vector<float> data(tree.getData());
-		starsMesh.setVertices(data, shaderProgram, {{"position", 3}});
+		starsMesh.setVertexShaderMapping(shaderProgram, {{"position", 3}});
+		starsMesh.setVertices(data);
 		totalSize += data.size();
 		file.close();
 	}
@@ -83,7 +88,8 @@ void BaseLineMethod::init(std::string const& gazPath,
 		tree.readData(file);
 		bboxes.push_back(tree.getBoundingBox());
 		std::vector<float> data(tree.getData());
-		darkMatterMesh.setVertices(data, shaderProgram, {{"position", 3}});
+		darkMatterMesh.setVertexShaderMapping(shaderProgram, {{"position", 3}});
+		darkMatterMesh.setVertices(data);
 		totalSize += data.size();
 		file.close();
 	}

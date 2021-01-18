@@ -94,8 +94,9 @@ CSVObjects::CSVObjects(QString const& csvFile, bool galaxies)
 		vertices.push_back(object.color.blueF());
 	}
 
-	mesh.setVertices(vertices, shader,
-	                 {{"position", 3}, {"absmag", 1}, {"color", 3}});
+	mesh.setVertexShaderMapping(shader,
+	                            {{"position", 3}, {"absmag", 1}, {"color", 3}});
+	mesh.setVertices(vertices);
 }
 
 CSVObjects::CSVObjects(QString const& csvFile,
@@ -175,7 +176,8 @@ CSVObjects::CSVObjects(QString const& csvFile,
 		file.close();
 	}
 
-	conMesh.setVertices(vertices, conShader, {{"position", 3}}, elements);
+	conMesh.setVertexShaderMapping(conShader, {{"position", 3}});
+	conMesh.setVertices(vertices, elements);
 }
 
 BBox CSVObjects::getBoundingBox() const
