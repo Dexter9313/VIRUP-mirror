@@ -1,7 +1,13 @@
 #!/bin/bash
 
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-	wget --content-disposition https://gitlab.com/Dexter9313/octree-file-format/-/jobs/artifacts/1.12.0/raw/liboctree-1.12.0-linux_amd64.deb?job=pack:liboctree ;
+	git clone https://gitlab.com/Dexter9313/octree-file-format.git ;
+	cd octree-file-format/liboctree ;
+	mkdir build
+	cd build
+	cmake ..
+	make package -j
 	sudo dpkg -i ./*.deb ;
+	cd ../../.. ;
 	sudo apt-get install libboost-dev ;
 fi
