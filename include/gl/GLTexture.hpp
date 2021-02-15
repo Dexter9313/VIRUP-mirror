@@ -277,7 +277,7 @@ class GLTexture
 	GLuint glTexture = 0;
 	GLenum glTarget;
 	GLint internalFormat;
-	std::array<unsigned int, 3> size = {1, 1, 1};
+	std::array<unsigned int, 3> size = {{1, 1, 1}};
 	unsigned int samples             = 1;
 
 	bool doClean = true;
