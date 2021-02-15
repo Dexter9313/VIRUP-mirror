@@ -315,7 +315,7 @@ void TreeMethodLOD::loadOctreeFromFile(std::string const& path,
 	progress.setMinimumDuration(0);
 	progress.setValue(0);
 
-	auto future = std::async(&initOctree, *octree, file);
+	auto future = std::async(std::launch::async, &initOctree, *octree, file);
 
 	while(future.wait_for(std::chrono::duration<int, std::milli>(100))
 	      != std::future_status::ready)
