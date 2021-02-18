@@ -10,6 +10,7 @@
 #include "Method.hpp"
 #include "OctreeLOD.hpp"
 #include "PIDController.hpp"
+#include "VolumetricModel.hpp"
 
 class TreeMethodLOD : public Method
 {
@@ -33,9 +34,12 @@ class TreeMethodLOD : public Method
 	virtual ~TreeMethodLOD();
 
   protected:
-	OctreeLOD* gasTree        = nullptr;
-	OctreeLOD* starsTree      = nullptr;
-	OctreeLOD* darkMatterTree = nullptr;
+	VolumetricModel* dustModel = nullptr;
+	OctreeLOD* gasTree         = nullptr;
+	OctreeLOD* starsTree       = nullptr;
+	OctreeLOD* darkMatterTree  = nullptr;
+	VolumetricModel* hiiModel  = nullptr;
+
 	// struct timeval t0;
 	float currentTanAngle;
 	PIDController ctrl;

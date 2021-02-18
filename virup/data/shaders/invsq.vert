@@ -8,6 +8,10 @@ uniform float alpha;
 uniform vec3 campos;
 uniform float pixelSolidAngle;
 
+uniform mat4 dusttransform;
+uniform float useDust = 0.0;
+
+uniform sampler3D dusttex;
 
 out vec3 f_color;
 
@@ -29,6 +33,8 @@ vec3 log10_3(in vec3 x)
 	return log(x) * oneOverLog10;
 }
 
+#include <raymarch.glsl>
+
 void main()
 {
 	vec4 pos           = camera * vec4(position, 1.0);
@@ -43,6 +49,10 @@ void main()
 	vec3 luminance   = irradiance / pixelSolidAngle; // lum
 
 	vec3 a = vec3(1.0);
+	if(useDust == 1.0)
+	{
+		a = attenuation(campos, position, dusttex, dusttransform);
+	}
 
 	f_color = a * alpha * luminance;
 }

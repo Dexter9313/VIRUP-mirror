@@ -58,18 +58,38 @@ void TreeMethodLOD::init(std::string const& gasPath,
                          std::string const& starsPath,
                          std::string const& darkMatterPath)
 {
-	if(!gasPath.empty() && gasTree == nullptr)
+	if(!darkMatterPath.empty())
 	{
-		loadOctreeFromFile(gasPath, &gasTree, "Gas", shaderProgram);
+		if(darkMatterPath.find(".dat") == std::string::npos
+		   && darkMatterTree == nullptr)
+		{
+			loadOctreeFromFile(darkMatterPath, &darkMatterTree, "Dark matter",
+			                   shaderProgram);
+		}
+		else
+		{
+			hiiModel = new VolumetricModel(darkMatterPath.c_str());
+			hiiModel->initMesh();
+		}
+	}
+	if(!gasPath.empty())
+	{
+		if(gasPath.find(".dat") == std::string::npos && gasTree == nullptr)
+		{
+			loadOctreeFromFile(gasPath, &gasTree, "Gas", shaderProgram);
+		}
+		else
+		{
+			dustModel = new VolumetricModel(gasPath.c_str());
+			if(hiiModel != nullptr)
+			{
+				hiiModel->initOcclusionModel(gasPath.c_str());
+			}
+		}
 	}
 	if(!starsPath.empty() && starsTree == nullptr)
 	{
 		loadOctreeFromFile(starsPath, &starsTree, "Stars", shaderProgram);
-	}
-	if(!darkMatterPath.empty() && darkMatterTree == nullptr)
-	{
-		loadOctreeFromFile(darkMatterPath, &darkMatterTree, "Dark matter",
-		                   shaderProgram);
 	}
 
 	// preload data to fill VRAM giving priority to top levels
@@ -213,8 +233,20 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 	GLHandler::beginTransparent(GL_ONE, GL_ONE);
 	shaderProgram.setUnusedAttributesValues(
 	    {{"color", std::vector<float>{1.0f, 1.0f, 1.0f}}});
+	shaderProgram.setUniform("useDust", dustModel == nullptr ? 0.f : 1.f);
+	if(dustModel != nullptr)
+	{
+		GLHandler::useTextures({&dustModel->getTexture()});
+	}
 	GLHandler::setUpRender(shaderProgram, model);
 	shaderProgram.setUniform("pixelSolidAngle", camera.pixelSolidAngle());
+	shaderProgram.setUniform("useDust", 1.f);
+	QMatrix4x4 dustTransform;
+	if(dustModel != nullptr)
+	{
+		dustTransform = dustModel->getPosToTexCoord();
+	}
+
 	unsigned int rendered = 0;
 	if(gasTree != nullptr)
 	{
@@ -225,7 +257,7 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 		}
 		rendered += gasTree->renderAboveTanAngle(currentTanAngle, camera, model,
 		                                         campos, 100000000, false,
-		                                         getAlpha());
+		                                         getAlpha(), dustTransform);
 	}
 	if(starsTree != nullptr)
 	{
@@ -235,9 +267,9 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 			setShaderColor(
 			    QSettings().value("data/starscolor").value<QColor>());
 		}
-		rendered += starsTree->renderAboveTanAngle(currentTanAngle, camera,
-		                                           model, campos, 100000000,
-		                                           true, getAlpha());
+		rendered += starsTree->renderAboveTanAngle(
+		    currentTanAngle, camera, model, campos, 100000000, true, getAlpha(),
+		    dustTransform);
 	}
 	if(darkMatterTree != nullptr && showdm)
 	{
@@ -249,9 +281,13 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 		}
 		rendered += darkMatterTree->renderAboveTanAngle(
 		    currentTanAngle, camera, model, campos, 100000000, false,
-		    getAlpha());
+		    getAlpha(), dustTransform);
 	}
 	GLHandler::endTransparent();
+	if(hiiModel != nullptr)
+	{
+		hiiModel->render(camera, model, campos);
+	}
 
 	(void) rendered;
 
@@ -351,6 +387,10 @@ void TreeMethodLOD::setShaderColor(QColor const& color)
 
 TreeMethodLOD::~TreeMethodLOD()
 {
+	delete dustModel;
+	dustModel = nullptr;
+	delete hiiModel;
+	hiiModel = nullptr;
 	if(gasTree != nullptr)
 	{
 		if(gasTree->getFile() != nullptr)
