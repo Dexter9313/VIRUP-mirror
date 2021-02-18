@@ -353,15 +353,20 @@ void TreeMethodLOD::loadOctreeFromFile(std::string const& path,
 
 	auto future = std::async(std::launch::async, &initOctree, *octree, file);
 
+	float p(0.f);
+	Octree::showProgress(p);
 	while(future.wait_for(std::chrono::duration<int, std::milli>(100))
 	      != std::future_status::ready)
 	{
 		QCoreApplication::processEvents();
-		if(file->tellg() < size)
+		p = static_cast<float>(file->tellg()) / size;
+		if(0.f <= p && p <= 1.f)
 		{
 			progress.setValue(file->tellg());
+			Octree::showProgress(p);
 		}
 	}
+	Octree::showProgress(1.f);
 
 	(*octree)->setFile(file);
 	// update bbox
