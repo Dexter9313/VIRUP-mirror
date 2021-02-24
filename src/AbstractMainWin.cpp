@@ -689,6 +689,7 @@ void AbstractMainWin::paintGL()
 
 		QString framePath(QSettings().value("window/viddir").toString() + "/"
 		                  + subdir + "/" + res + "/frame" + number + ".png");
+		qDebug() << framePath;
 		QThreadPool::globalInstance()->start(new ImageWriter(framePath, frame));
 
 		currentVideoFrame++;

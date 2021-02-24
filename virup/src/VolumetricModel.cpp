@@ -86,13 +86,9 @@ void VolumetricModel::initMesh()
 	dataModel.translate(QVector3D(0.5f, 0.5f, 0.5f));
 }
 
-void VolumetricModel::initOcclusionModel(QString const& datFile)
-{
-	occlusionModel = new VolumetricModel(datFile);
-}
-
-void VolumetricModel::render(Camera const& camera, QMatrix4x4 const& model,
-                             QVector3D const& campos)
+void VolumetricModel::render(Camera const& /*camera*/, QMatrix4x4 const& model,
+                             QVector3D const& campos,
+                             VolumetricModel const* occlusionModel)
 {
 	GLHandler::beginTransparent(GL_ONE, GL_ONE);
 	GLHandler::setBackfaceCulling(true, GL_FRONT);
@@ -122,5 +118,4 @@ void VolumetricModel::render(Camera const& camera, QMatrix4x4 const& model,
 VolumetricModel::~VolumetricModel()
 {
 	delete tex;
-	delete occlusionModel;
 }

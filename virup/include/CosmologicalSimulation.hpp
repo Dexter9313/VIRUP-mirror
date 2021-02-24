@@ -29,12 +29,15 @@ class CosmologicalSimulation : public UniverseElement
 	                       std::string const& starsOctreePath,
 	                       std::string const& darkMatterOctreePath);
 	virtual BBox getBoundingBox() const override;
+	void reload(std::string const& gazOctreePath,
+	            std::string const& starsOctreePath,
+	            std::string const& darkMatterOctreePath);
 	virtual void render(Camera const& camera,
 	                    ToneMappingModel const* tmm) override;
-	~CosmologicalSimulation() = default;
+	~CosmologicalSimulation();
 
   public:
-	TreeMethodLOD trees;
+	TreeMethodLOD* trees;
 };
 
 #endif // COSMOLOGICALSIMULATION_HPP

@@ -22,12 +22,22 @@ CosmologicalSimulation::CosmologicalSimulation(
     std::string const& gazOctreePath, std::string const& starsOctreePath,
     std::string const& darkMatterOctreePath)
 {
-	trees.init(gazOctreePath, starsOctreePath, darkMatterOctreePath);
+	trees = new TreeMethodLOD;
+	trees->init(gazOctreePath, starsOctreePath, darkMatterOctreePath);
 }
 
 BBox CosmologicalSimulation::getBoundingBox() const
 {
-	return trees.getDataBoundingBox();
+	return trees->getDataBoundingBox();
+}
+
+void CosmologicalSimulation::reload(std::string const& gazOctreePath,
+                                    std::string const& starsOctreePath,
+                                    std::string const& darkMatterOctreePath)
+{
+	delete trees;
+	trees = new TreeMethodLOD;
+	trees->init(gazOctreePath, starsOctreePath, darkMatterOctreePath);
 }
 
 void CosmologicalSimulation::render(Camera const& camera,
@@ -37,8 +47,13 @@ void CosmologicalSimulation::render(Camera const& camera,
 	QVector3D campos;
 	getModelAndCampos(camera, model, campos);
 
-	trees.setAlpha(brightnessMultiplier);
+	trees->setAlpha(brightnessMultiplier);
 	GLHandler::glf().glEnable(GL_CLIP_DISTANCE0);
-	trees.render(camera, model, campos);
+	trees->render(camera, model, campos);
 	GLHandler::glf().glDisable(GL_CLIP_DISTANCE0);
+}
+
+CosmologicalSimulation::~CosmologicalSimulation()
+{
+	delete trees;
 }

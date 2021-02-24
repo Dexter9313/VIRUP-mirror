@@ -470,7 +470,7 @@ void MainWin::actionEvent(BaseInputManager::Action a, bool pressed)
 			}
 			else if(a.id == "toggledm")
 			{
-				cosmologicalSim->trees.toggleDarkMatter();
+				cosmologicalSim->trees->toggleDarkMatter();
 			}
 			else if(a.id == "togglegrid")
 			{
@@ -682,6 +682,7 @@ void MainWin::initLibraries()
 
 void MainWin::initScene()
 {
+	videomode                      = true;
 	toneMappingModel->exposure     = 0.3f;
 	toneMappingModel->dynamicrange = 10000.f;
 	grid                           = new Grid;
@@ -691,13 +692,29 @@ void MainWin::initScene()
 	cam->setPerspectiveProj(renderer.getVerticalFOV(),
 	                        renderer.getAspectRatioFromFOV());
 
+	dirPathHi = QSettings().value("data/gazfile").toString();
+	QDir HiDir(dirPathHi);
+	cosmoFilesHi = HiDir.entryList({"*.dat"}, QDir::Files, QDir::Name);
+
+	dirPathStars = QSettings().value("data/starsfile").toString();
+	QDir starsDir(dirPathStars);
+	cosmoFilesStars = starsDir.entryList({"*.octree"}, QDir::Files, QDir::Name);
+
+	dirPathHa = QSettings().value("data/darkmatterfile").toString();
+	QDir HaDir(dirPathHa);
+	cosmoFilesHa = HaDir.entryList({"*.dat"}, QDir::Files, QDir::Name);
+
 	// COSMO LOADING
-	cosmologicalSim = new CosmologicalSimulation(
+	/*cosmologicalSim = new CosmologicalSimulation(
 	    QSettings().value("data/gazfile").toString().toStdString(),
 	    QSettings().value("data/starsfile").toString().toStdString(),
 	    QSettings().value("data/loaddarkmatter").toBool()
 	        ? QSettings().value("data/darkmatterfile").toString().toStdString()
-	        : "");
+	        : "");*/
+	cosmologicalSim = new CosmologicalSimulation(
+	    dirPathHi.toStdString() + "/" + cosmoFilesHi.at(3).toStdString(),
+	    dirPathStars.toStdString() + "/" + cosmoFilesStars.at(0).toStdString(),
+	    dirPathHa.toStdString() + "/" + cosmoFilesHa.at(0).toStdString());
 	cosmologicalSim->referenceFrame = UniverseElement::ReferenceFrame::GALACTIC;
 	cosmologicalSim->unit           = 1.0;
 	cosmologicalSim->solarsystemPosition = Vector3(8.29995608, 0.0, -0.027);
@@ -775,7 +792,7 @@ void MainWin::initScene()
 	if(networkManager->isServer())
 	{
 		dialog = new QDialog;
-		dialog->show();
+		// dialog->show();
 		dialog->setWindowTitle("VIRUP Scenes");
 		// dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint |
 		// Qt::X11BypassWindowManagerHint );
@@ -827,6 +844,26 @@ void MainWin::updateScene(BasicCamera& camera, QString const& pathId)
 
 	if(pathId == "cosmo")
 	{
+		++currentIndex;
+		currentIndex %= cosmoFilesStars.size();
+		if(currentIndex == 0)
+		{
+			QApplication::quit();
+		}
+		QString HiPath;
+		// if(currentIndex < 97)
+		HiPath = dirPathHi + "/" + cosmoFilesHi.at(currentIndex + 3);
+		/*else if(currentIndex >= 947)
+		    HiPath = dirPathHi + "/" + cosmoFilesHi.at(currentIndex - 847);
+		else
+		    HiPath = "";*/
+		cosmologicalSim->reload(
+		    HiPath.toStdString(),
+		    dirPathStars.toStdString() + "/"
+		        + cosmoFilesStars.at(currentIndex).toStdString(),
+		    dirPathHa.toStdString() + "/"
+		        + cosmoFilesHa.at(currentIndex).toStdString());
+
 		auto& cam(dynamic_cast<Camera&>(camera));
 		cam.currentFrameTiming = frameTiming;
 		cam.updateTargetFPS();

@@ -291,14 +291,14 @@ class MainWin : public AbstractMainWin
 	 */
 	bool darkmatterEnabled() const
 	{
-		return cosmologicalSim->trees.isDarkMatterEnabled();
+		return cosmologicalSim->trees->isDarkMatterEnabled();
 	};
 	/**
 	 * @setter{darkmatterEnabled, darkmatterEnabled}
 	 */
 	void setDarkmatterEnabled(bool enabled)
 	{
-		cosmologicalSim->trees.setDarkMatterEnabled(enabled);
+		cosmologicalSim->trees->setDarkMatterEnabled(enabled);
 	};
 	/**
 	 * @getter{gridEnabled}
@@ -461,6 +461,14 @@ class MainWin : public AbstractMainWin
 	CosmologicalSimulation* cosmologicalSim = nullptr;
 	CSVObjects* hyg                         = nullptr;
 	CSVObjects* sdss                        = nullptr;
+
+	QString dirPathHi;
+	QStringList cosmoFilesHi;
+	QString dirPathStars;
+	QStringList cosmoFilesStars;
+	QString dirPathHa;
+	QStringList cosmoFilesHa;
+	unsigned int currentIndex = 0;
 
 	Grid* grid    = nullptr;
 	bool showGrid = QSettings().value("misc/showgrid").toBool();

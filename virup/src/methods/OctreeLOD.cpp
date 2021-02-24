@@ -94,6 +94,14 @@ void OctreeLOD::readOwnData(std::istream& in)
 		}
 	}
 
+	std::cout << data[0] << std::endl;
+	std::cout << data[1] << std::endl;
+	std::cout << data[2] << std::endl;
+	std::cout << data[3] << std::endl;
+	std::cout << data[4] << std::endl;
+	std::cout << data[5] << std::endl;
+
+	/*
 	if(isLeaf() && solarSystemDataPos()[0] > bbox.minx
 	   && solarSystemDataPos()[0] < bbox.maxx
 	   && solarSystemDataPos()[1] > bbox.miny
@@ -101,17 +109,18 @@ void OctreeLOD::readOwnData(std::istream& in)
 	   && solarSystemDataPos()[2] > bbox.minz
 	   && solarSystemDataPos()[2] < bbox.maxz)
 	{
-		// put in normalized coordinates
-		Vector3 correctedSSDataPos(solarSystemDataPos());
-		for(unsigned int j(0); j < 3; ++j)
-		{
-			correctedSSDataPos[j] -= localTranslation[j];
-		}
+	    // put in normalized coordinates
+	    Vector3 correctedSSDataPos(solarSystemDataPos());
+	    for(unsigned int j(0); j < 3; ++j)
+	    {
+	        correctedSSDataPos[j] -= localTranslation[j];
+	    }
 
-		data.push_back(correctedSSDataPos[0]);
-		data.push_back(correctedSSDataPos[1]);
-		data.push_back(correctedSSDataPos[2]);
+	    data.push_back(correctedSSDataPos[0]);
+	    data.push_back(correctedSSDataPos[1]);
+	    data.push_back(correctedSSDataPos[2]);
 	}
+	*/
 }
 
 void OctreeLOD::readBBox(std::istream& in)
@@ -200,7 +209,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(
 	{
 		if(usedMem() > (memLimit() * 80) / 100)
 		{
-			unload();
+			// unload();
 		}
 		return 0;
 	}
@@ -218,7 +227,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(
 		}*/
 	}
 
-	if(currentTanAngle(globalCampos) > tanAngle && !isLeaf())
+	if(!isLeaf()) // currentTanAngle(globalCampos) > tanAngle && !isLeaf())
 	{
 		unsigned int remaining = maxPoints;
 		// RENDER SUBTREES
