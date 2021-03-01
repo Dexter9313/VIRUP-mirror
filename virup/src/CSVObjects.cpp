@@ -286,7 +286,7 @@ CSVObjects::Object
 	Object result;
 	QStringList splitted(line.split(","));
 
-	try
+	if(columnsNumbers.find("names") != columnsNumbers.cend())
 	{
 		QString names = splitted[columnsNumbers.at("names")].simplified();
 		if(names != "")
@@ -317,24 +317,21 @@ CSVObjects::Object
 			}
 		}
 	}
-	catch(...)
-	{
-	}
 
 	result.x = splitted[columnsNumbers.at("x")].simplified().toDouble();
 	result.y = splitted[columnsNumbers.at("y")].simplified().toDouble();
 	result.z = splitted[columnsNumbers.at("z")].simplified().toDouble();
 
-	try
+	if(columnsNumbers.find("absmag") != columnsNumbers.cend())
 	{
 		result.absmag
 		    = splitted[columnsNumbers.at("absmag")].simplified().toDouble();
-		try
+		if(columnsNumbers.find("ci") != columnsNumbers.cend())
 		{
 			result.color = colorFromColorIndex(
 			    splitted[columnsNumbers.at("ci")].simplified().toDouble());
 		}
-		catch(...)
+		else
 		{
 			result.color = GLHandler::sRGBToLinear(
 			    Utils::toQt(blackbody::colorFromTemperature(
@@ -343,7 +340,7 @@ CSVObjects::Object
 			            .toDouble())));
 		}
 	}
-	catch(...)
+	else
 	{
 		double rabsmag
 		    = splitted[columnsNumbers.at("rabsmag")].simplified().toDouble();
