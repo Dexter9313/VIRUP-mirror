@@ -30,9 +30,14 @@ Vector3& OctreeLOD::solarSystemDataPos()
 // TODO just draw nothing if vertices.size() == 0 (prevents nullptr tests when
 // drawing)
 
-OctreeLOD::OctreeLOD(GLShaderProgram const& shaderProgram, Flags flags,
-                     unsigned int lvl)
-    : Octree(flags)
+OctreeLOD::OctreeLOD(GLShaderProgram const& shaderProgram)
+    : shaderProgram(&shaderProgram)
+{
+}
+
+OctreeLOD::OctreeLOD(GLShaderProgram const& shaderProgram,
+                     Octree::CommonData& commonData, unsigned int lvl)
+    : Octree(commonData)
     , lvl(lvl)
     , shaderProgram(&shaderProgram)
 {
@@ -61,7 +66,7 @@ void OctreeLOD::readOwnData(std::istream& in)
 
 	if((getFlags() & Flags::NORMALIZED_NODES) == Flags::NONE)
 	{
-		for(size_t i(0); i < data.size(); i += dimPerVertex)
+		for(size_t i(0); i < data.size(); i += commonData.dimPerVertex)
 		{
 			for(unsigned int j(0); j < 3; ++j)
 			{
@@ -85,7 +90,7 @@ void OctreeLOD::readOwnData(std::istream& in)
 		{
 			localScale = bbox.maxz - bbox.minz;
 		}
-		for(size_t i(0); i < data.size(); i += dimPerVertex)
+		for(size_t i(0); i < data.size(); i += commonData.dimPerVertex)
 		{
 			for(unsigned int j(0); j < 3; ++j)
 			{
@@ -123,7 +128,7 @@ void OctreeLOD::readBBox(std::istream& in)
 std::vector<float> OctreeLOD::getOwnData() const
 {
 	std::vector<float> result(data);
-	for(size_t i(0); i < result.size(); i += dimPerVertex)
+	for(size_t i(0); i < result.size(); i += commonData.dimPerVertex)
 	{
 		for(unsigned int j(0); j < 3; ++j)
 		{
@@ -272,7 +277,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 
 				double dist(FLT_MAX);
 				for(unsigned int i(0); i < absoluteData.size();
-				    i += dimPerVertex)
+				    i += commonData.dimPerVertex)
 				{
 					Vector3 x(absoluteData[i], absoluteData[i + 1],
 					          absoluteData[i + 2]);
@@ -296,7 +301,8 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 				closestBackup = closest;
 
 				std::vector<float> vertexData(absoluteData);
-				for(unsigned int i(0); i < vertexData.size(); i += dimPerVertex)
+				for(unsigned int i(0); i < vertexData.size();
+				    i += commonData.dimPerVertex)
 				{
 					vertexData[i] -= closest[0];
 					vertexData[i + 1] -= closest[1];
@@ -306,7 +312,8 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 
 				Vector3 closestNeighbor(DBL_MAX, DBL_MAX, DBL_MAX);
 				neighborDist = DBL_MAX;
-				for(unsigned int i(0); i < vertexData.size(); i += dimPerVertex)
+				for(unsigned int i(0); i < vertexData.size();
+				    i += commonData.dimPerVertex)
 				{
 					Vector3 x(vertexData[i], vertexData[i + 1],
 					          vertexData[i + 2]);
@@ -347,7 +354,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		}
 	}
 
-	if(dataSize / dimPerVertex <= maxPoints)
+	if(dataSize / commonData.dimPerVertex <= maxPoints)
 	{
 		QMatrix4x4 model;
 		model.translate(Utils::toQt(localTranslation));
@@ -356,7 +363,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 		shaderProgram->setUniform("campos", model.inverted() * globalCampos);
 		GLHandler::setUpRender(*shaderProgram, globalModel * model);
 		mesh->render();
-		return dataSize / dimPerVertex;
+		return dataSize / commonData.dimPerVertex;
 	}
 	return 0;
 }
@@ -420,9 +427,9 @@ void OctreeLOD::ramToVideo()
 	isLoaded = true;
 }
 
-Octree* OctreeLOD::newOctree(Flags flags) const
+Octree* OctreeLOD::newChild() const
 {
-	return new OctreeLOD(*shaderProgram, flags, lvl + 1);
+	return new OctreeLOD(*shaderProgram, commonData, lvl + 1);
 }
 
 OctreeLOD::~OctreeLOD()

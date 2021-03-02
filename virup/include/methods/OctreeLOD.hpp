@@ -19,8 +19,7 @@
 class OctreeLOD : public Octree
 {
   public:
-	OctreeLOD(GLShaderProgram const& shaderProgram, Flags flags = Flags::NONE,
-	          unsigned int lvl = 0);
+	OctreeLOD(GLShaderProgram const& shaderProgram);
 	virtual void init(std::vector<float>& data) override;
 	virtual void init(std::istream& in) override;
 	virtual void init(int64_t file_addr, std::istream& in) override;
@@ -47,10 +46,12 @@ class OctreeLOD : public Octree
 	static Vector3& solarSystemDataPos();
 
   protected:
-	virtual Octree* newOctree(Flags flags) const override;
+	OctreeLOD(GLShaderProgram const& shaderProgram,
+	          Octree::CommonData& commonData, unsigned int lvl = 0);
+	virtual Octree* newChild() const override;
 
   private:
-	unsigned int lvl;
+	unsigned int lvl = 0;
 	BBox bbox;
 
 	std::istream* file    = nullptr;
