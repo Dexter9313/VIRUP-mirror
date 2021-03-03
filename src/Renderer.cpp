@@ -298,6 +298,10 @@ void Renderer::vrRenderSinglePath(RenderPath& renderPath, QString const& pathId,
 	{
 		dbgCamera->renderCamera(renderPath.camera);
 	}
+	if(renderCompass)
+	{
+		compass->render(angleShiftMat);
+	}
 	if(wireframe)
 	{
 		GLHandler::endWireframe();
@@ -345,7 +349,13 @@ void Renderer::vrRender(Side side, bool debug, bool debugInHeadset,
 	if(displayOnScreen)
 	{
 		// blit result on screen
-		if(side == Side::LEFT)
+		if(vrHandler.forceLeft || vrHandler.forceRight)
+		{
+			mainRenderTarget->postProcessingTargets
+			    .at(postProcessingPipeline_.size() % 2)
+			    .showOnScreen(0, 0, window.width(), window.height());
+		}
+		else if(side == Side::LEFT)
 		{
 			mainRenderTarget->postProcessingTargets
 			    .at(postProcessingPipeline_.size() % 2)
@@ -374,10 +384,16 @@ void Renderer::renderFrame()
 	if(vrHandler.isEnabled())
 	{
 		lastFrameAverageLuminance = 0.f;
-		vrRender(Side::LEFT, debug, debugInHeadset,
-		         !thirdRender && (!debug || debugInHeadset));
-		vrRender(Side::RIGHT, debug, debugInHeadset,
-		         !thirdRender && (!debug || debugInHeadset));
+		if(!vrHandler.forceRight)
+		{
+			vrRender(Side::LEFT, debug, debugInHeadset,
+			         !thirdRender && (!debug || debugInHeadset));
+		}
+		if(!vrHandler.forceLeft || vrHandler.forceRight)
+		{
+			vrRender(Side::RIGHT, debug, debugInHeadset,
+			         !thirdRender && (!debug || debugInHeadset));
+		}
 		lastFrameAverageLuminance *= 0.5f;
 
 		if(debug && !debugInHeadset)

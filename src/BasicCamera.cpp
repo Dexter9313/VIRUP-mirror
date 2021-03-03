@@ -56,14 +56,18 @@ void BasicCamera::update(QMatrix4x4 const& angleShiftMat)
 		projRight = vrHandler.getProjectionMatrix(
 		    Side::RIGHT, 0.1f * eyeDistanceFactor, 10000.f * eyeDistanceFactor);
 
+		Side currentRenderingEye(vrHandler.getCurrentRenderingEye());
+
+		// fullEyeSpaceTransform
+		fullEyeSpaceTransform
+		    = (currentRenderingEye == Side::LEFT) ? projLeft : projRight;
+
 		projLeft = projLeft
 		           * eyeDist(vrHandler.getEyeViewMatrix(Side::LEFT),
 		                     eyeDistanceFactor);
 		projRight = projRight
 		            * eyeDist(vrHandler.getEyeViewMatrix(Side::RIGHT),
 		                      eyeDistanceFactor);
-
-		Side currentRenderingEye(vrHandler.getCurrentRenderingEye());
 
 		QMatrix4x4* projEye
 		    = (currentRenderingEye == Side::LEFT) ? &projLeft : &projRight;
@@ -112,6 +116,7 @@ void BasicCamera::update2D(QMatrix4x4 const& angleShiftMat)
 {
 	const QMatrix4x4 shiftedView(angleShiftMat * view);
 	fullTransform                     = proj * shiftedView;
+	fullEyeSpaceTransform             = proj;
 	fullCameraSpaceTransform          = proj;
 	fullSeatedTrackedSpaceTransform   = proj * eyeDistanceCorrection;
 	fullStandingTrackedSpaceTransform = fullSeatedTrackedSpaceTransform;
@@ -123,10 +128,10 @@ void BasicCamera::update2D(QMatrix4x4 const& angleShiftMat)
 
 void BasicCamera::uploadMatrices() const
 {
-	GLHandler::setUpTransforms(fullTransform, fullCameraSpaceTransform,
-	                           fullSeatedTrackedSpaceTransform,
-	                           fullStandingTrackedSpaceTransform,
-	                           fullHmdSpaceTransform, fullSkyboxSpaceTransform);
+	GLHandler::setUpTransforms(
+	    fullTransform, fullEyeSpaceTransform, fullCameraSpaceTransform,
+	    fullSeatedTrackedSpaceTransform, fullStandingTrackedSpaceTransform,
+	    fullHmdSpaceTransform, fullSkyboxSpaceTransform);
 }
 
 void BasicCamera::updateClippingPlanes()
@@ -161,6 +166,12 @@ QVector3D BasicCamera::getWorldSpacePosition() const
 	}
 
 	return QVector3D((hmdScaledToWorld * eyeViewMatrix.inverted()).column(3));
+}
+
+QMatrix4x4 BasicCamera::eyeSpaceToWorldTransform() const
+{
+	// see TRANSFORMS
+	return fullTransform.inverted() * fullEyeSpaceTransform;
 }
 
 QMatrix4x4 BasicCamera::cameraSpaceToWorldTransform() const

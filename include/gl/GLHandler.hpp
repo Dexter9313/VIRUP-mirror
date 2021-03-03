@@ -61,6 +61,7 @@ class GLHandler : public QObject
 	{
 		CLIP,
 		WORLD,
+		EYE,
 		CAMERA,
 		SEATEDTRACKED,
 		STANDINGTRACKED,
@@ -118,6 +119,7 @@ class GLHandler : public QObject
 	 *
 	 * The transformation matrix used will depend on the @p space parameter :
 	 * * WORLD : fullTransform : from world space to clip space
+	 * * EYE: fullEyeSpaceTransform : from eye space to clip space
 	 * * CAMERA : fullCameraSpaceTransform : from camera space to clip space
 	 * * SEATEDTRACKED : fullSeatedTrackedSpaceTransform : from seated tracked
 	 * space to clip space
@@ -235,6 +237,7 @@ class GLHandler : public QObject
 	 */
 	static void
 	    setUpTransforms(QMatrix4x4 const& fullTransform,
+	                    QMatrix4x4 const& fullEyeSpaceTransform,
 	                    QMatrix4x4 const& fullCameraSpaceTransform,
 	                    QMatrix4x4 const& fullSeatedTrackedSpaceTransform,
 	                    QMatrix4x4 const& fullStandingTrackedSpaceTransform,
@@ -252,6 +255,8 @@ class GLHandler : public QObject
 	// object to screen transforms
 	// transform for any world object
 	static QMatrix4x4& fullTransform();
+	// transform for any Camera space object (follows Camera)
+	static QMatrix4x4& fullEyeSpaceTransform();
 	// transform for any Camera space object (follows Camera)
 	static QMatrix4x4& fullCameraSpaceTransform();
 	// transform for any Seated Tracked space object

@@ -60,6 +60,16 @@ void AbstractMainWin::setVerticalAngleShift(double angleShift)
 	renderer.updateAngleShiftMat();
 }
 
+QVector3D AbstractMainWin::getVirtualCamShift() const
+{
+	return QSettings().value("vr/virtualcamshift").value<QVector3D>();
+}
+
+void AbstractMainWin::setVirtualCamShift(QVector3D const& virtualCamShift)
+{
+	QSettings().setValue("vr/virtualcamshift", virtualCamShift);
+}
+
 bool AbstractMainWin::isFullscreen() const
 {
 	return QSettings().value("window/fullscreen").toBool();
@@ -71,54 +81,26 @@ void AbstractMainWin::setFullscreen(bool fullscreen)
 	if(fullscreen)
 	{
 		QRect screenGeometry(screen()->geometry());
-		QStringList screensStr(
-		    QSettings().value("window/screennames").toStringList());
-		if(!screensStr.empty())
+		QString screenStr(QSettings().value("window/screenname").toString());
+		if(screenStr != "")
 		{
-			bool first(true);
 			for(auto s : QGuiApplication::screens())
 			{
-				if(screensStr.contains(s->name()))
+				if(s->name() == screenStr)
 				{
-					if(first)
-					{
-						screenGeometry = s->geometry();
-						first          = false;
-					}
-					else
-					{
-						if(screenGeometry.left() > s->geometry().left())
-						{
-							screenGeometry.setLeft(s->geometry().left());
-						}
-						if(screenGeometry.right() < s->geometry().right())
-						{
-							screenGeometry.setRight(s->geometry().right());
-						}
-						if(screenGeometry.top() > s->geometry().top())
-						{
-							screenGeometry.setTop(s->geometry().top());
-						}
-						if(screenGeometry.bottom() < s->geometry().bottom())
-						{
-							screenGeometry.setBottom(s->geometry().bottom());
-						}
-					}
+					screenGeometry = s->geometry();
+					break;
 				}
 			}
 		}
 		setGeometry(screenGeometry);
-		show();
-		setFlag(Qt::FramelessWindowHint, true);
-		setFlag(Qt::WindowStaysOnTopHint, true);
+		showFullScreen();
 	}
 	else
 	{
+		show();
 		resize(QSettings().value("window/width").toUInt(),
 		       QSettings().value("window/height").toUInt());
-		show();
-		setFlag(Qt::FramelessWindowHint, false);
-		setFlag(Qt::WindowStaysOnTopHint, false);
 	}
 }
 

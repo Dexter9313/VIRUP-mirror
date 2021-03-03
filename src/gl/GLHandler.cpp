@@ -18,6 +18,12 @@ QMatrix4x4& GLHandler::fullTransform()
 	return fullTransform;
 }
 
+QMatrix4x4& GLHandler::fullEyeSpaceTransform()
+{
+	static QMatrix4x4 fullEyeSpaceTransform;
+	return fullEyeSpaceTransform;
+}
+
 QMatrix4x4& GLHandler::fullCameraSpaceTransform()
 {
 	static QMatrix4x4 fullCameraSpaceTransform;
@@ -101,6 +107,9 @@ void GLHandler::setUpRender(GLShaderProgram const& shader,
 			break;
 		case GeometricSpace::WORLD:
 			shader.setUniform("camera", fullTransform() * model);
+			break;
+		case GeometricSpace::EYE:
+			shader.setUniform("camera", fullEyeSpaceTransform() * model);
 			break;
 		case GeometricSpace::CAMERA:
 			shader.setUniform("camera", fullCameraSpaceTransform() * model);
@@ -295,13 +304,15 @@ void GLHandler::clearDepthBuffer()
 }
 
 void GLHandler::setUpTransforms(
-    QMatrix4x4 const& fullTransform, QMatrix4x4 const& fullCameraSpaceTransform,
+    QMatrix4x4 const& fullTransform, QMatrix4x4 const& fullEyeSpaceTransform,
+    QMatrix4x4 const& fullCameraSpaceTransform,
     QMatrix4x4 const& fullSeatedTrackedSpaceTransform,
     QMatrix4x4 const& fullStandingTrackedSpaceTransform,
     QMatrix4x4 const& fullHmdSpaceTransform,
     QMatrix4x4 const& fullSkyboxSpaceTransform)
 {
 	GLHandler::fullTransform()            = fullTransform;
+	GLHandler::fullEyeSpaceTransform()    = fullEyeSpaceTransform;
 	GLHandler::fullCameraSpaceTransform() = fullCameraSpaceTransform;
 	GLHandler::fullSeatedTrackedSpaceTransform()
 	    = fullSeatedTrackedSpaceTransform;

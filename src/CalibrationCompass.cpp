@@ -144,7 +144,7 @@ void CalibrationCompass::renderCircle(QMatrix4x4 const& angleShiftMat,
 	model.scale(cos(latitude));
 
 	GLHandler::setUpRender(shader, angleShiftMat * model,
-	                       GLHandler::GeometricSpace::CAMERA);
+	                       GLHandler::GeometricSpace::EYE);
 	circle.render(PrimitiveType::LINE_LOOP);
 }
 
@@ -176,7 +176,7 @@ void CalibrationCompass::renderCompassTicks(QMatrix4x4 const& angleShiftMat,
 			billboards[j]->getModel() = angleShiftMat * model;
 			billboards[j]->getShader().setUniform("exposure", exposure);
 			billboards[j]->getShader().setUniform("dynamicrange", dynamicrange);
-			billboards[j]->render(GLHandler::GeometricSpace::CAMERA);
+			billboards[j]->render(GLHandler::GeometricSpace::EYE);
 		}
 		++j;
 	}
@@ -184,7 +184,7 @@ void CalibrationCompass::renderCompassTicks(QMatrix4x4 const& angleShiftMat,
 	mesh.setVertices(vertices);
 
 	GLHandler::setUpRender(shader, angleShiftMat,
-	                       GLHandler::GeometricSpace::CAMERA);
+	                       GLHandler::GeometricSpace::EYE);
 	mesh.render(PrimitiveType::LINES);
 }
 
