@@ -196,12 +196,10 @@ bool OctreeLOD::preloadLevel(unsigned int lvlToLoad)
 	return true;
 }
 
-unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
-                                            Camera const& camera,
-                                            QMatrix4x4 const& globalModel,
-                                            QVector3D const& globalCampos,
-                                            unsigned int maxPoints,
-                                            bool isStarField, float alpha)
+unsigned int OctreeLOD::renderAboveTanAngle(
+    float tanAngle, Camera const& camera, QMatrix4x4 const& globalModel,
+    QVector3D const& globalCampos, unsigned int maxPoints, bool isStarField,
+    float alpha, QMatrix4x4 const& globalDustModel)
 {
 	if(camera.shouldBeCulled(bbox, globalModel, true) && lvl > 0)
 	{
@@ -235,7 +233,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 			{
 				remaining -= dynamic_cast<OctreeLOD*>(oct)->renderAboveTanAngle(
 				    tanAngle, camera, globalModel, globalCampos, remaining,
-				    isStarField, alpha);
+				    isStarField, alpha, globalDustModel);
 			}
 		}
 		return maxPoints - remaining;
@@ -361,6 +359,7 @@ unsigned int OctreeLOD::renderAboveTanAngle(float tanAngle,
 
 		shaderProgram->setUniform("alpha", alpha * totalDataSize / dataSize);
 		shaderProgram->setUniform("campos", model.inverted() * globalCampos);
+		shaderProgram->setUniform("dusttransform", globalDustModel * model);
 		GLHandler::setUpRender(*shaderProgram, globalModel * model);
 		mesh->render();
 		return dataSize / commonData.dimPerVertex;

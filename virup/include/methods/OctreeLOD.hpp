@@ -35,7 +35,8 @@ class OctreeLOD : public Octree
 	                                 QMatrix4x4 const& globalModel,
 	                                 QVector3D const& globalCampos,
 	                                 unsigned int maxPoints, bool isStarField,
-	                                 float alpha);
+	                                 float alpha,
+	                                 QMatrix4x4 const& globalDustModel);
 	~OctreeLOD();
 
 	static int64_t getUsedMem() { return usedMem(); };
