@@ -37,7 +37,8 @@ class VolumetricModel
 	Vector3 getMaxPos() const { return maxPos; };
 	QMatrix4x4 getPosToTexCoord() const { return posToTexCoord; };
 	GLTexture const& getTexture() const { return *tex; };
-	void render(Camera const& camera, QMatrix4x4 const& model, QVector3D const& campos);
+	void render(Camera const& camera, QMatrix4x4 const& model,
+	            QVector3D const& campos);
 	~VolumetricModel();
 
 	float brightnessMultiplier = 1.f;

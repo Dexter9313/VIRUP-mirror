@@ -91,7 +91,7 @@ void VolumetricModel::initOcclusionModel(QString const& datFile)
 	occlusionModel = new VolumetricModel(datFile);
 }
 
-void VolumetricModel::render(Camera const& camera, QMatrix4x4 const& model,
+void VolumetricModel::render(Camera const& /*camera*/, QMatrix4x4 const& model,
                              QVector3D const& campos)
 {
 	GLHandler::beginTransparent(GL_ONE, GL_ONE);
