@@ -656,6 +656,9 @@ void AbstractMainWin::paintGL()
 			case MainRenderTarget::Projection::VR360:
 				subdir = "VR360";
 				break;
+			case MainRenderTarget::Projection::DOMEMASTER180:
+				subdir = "DOMEMASTER180";
+				break;
 		}
 
 		QString res = QString::number(renderer.getSize().width()) + "x"

@@ -176,7 +176,7 @@ class Renderer
 
 	bool wireframe = false;
 	MainRenderTarget::Projection projection
-	    = MainRenderTarget::Projection::DEFAULT;
+	    = MainRenderTarget::Projection::DOMEMASTER180;
 	/**
 	 * @brief Ordered list of render passes to apply as scene rendering.
 	 *

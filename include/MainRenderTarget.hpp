@@ -26,9 +26,10 @@ class MainRenderTarget
   public:
 	enum class Projection
 	{
-		DEFAULT     = 0,
-		PANORAMA360 = 1,
-		VR360       = 2,
+		DEFAULT       = 0,
+		PANORAMA360   = 1,
+		VR360         = 2,
+		DOMEMASTER180 = 3,
 	};
 
 	MainRenderTarget(unsigned int width, unsigned int height,

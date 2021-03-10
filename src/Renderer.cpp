@@ -500,6 +500,15 @@ void Renderer::renderFrame()
 			mainRenderTarget->postProcessingTargets[1].blitColorBufferTo(
 			    mainRenderTarget->postProcessingTargets[0]);
 		}
+		else if(projection == MainRenderTarget::Projection::DOMEMASTER180)
+		{
+			GLHandler::generateEnvironmentMap(mainRenderTarget->sceneTarget,
+			                                  renderFunc);
+
+			GLShaderProgram shader("postprocess", "domemaster180");
+			GLHandler::postProcess(shader, mainRenderTarget->sceneTarget,
+			                       mainRenderTarget->postProcessingTargets[0]);
+		}
 		else
 		{
 			qDebug() << "Invalid MainRenderTarget::Projection";
