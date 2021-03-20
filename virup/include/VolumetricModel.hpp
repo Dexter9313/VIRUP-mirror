@@ -32,13 +32,13 @@ class VolumetricModel
   public:
 	VolumetricModel(QString const& datFile);
 	void initMesh();
-	void initOcclusionModel(QString const& datFile);
 	Vector3 getMinPos() const { return minPos; };
 	Vector3 getMaxPos() const { return maxPos; };
 	QMatrix4x4 getPosToTexCoord() const { return posToTexCoord; };
 	GLTexture const& getTexture() const { return *tex; };
 	void render(Camera const& camera, QMatrix4x4 const& model,
-	            QVector3D const& campos);
+	            QVector3D const& campos,
+	            VolumetricModel const* occlusionModel = nullptr);
 	~VolumetricModel();
 
 	float brightnessMultiplier = 1.f;
@@ -54,8 +54,6 @@ class VolumetricModel
 	QMatrix4x4 dataModel;
 	GLShaderProgram shader;
 	GLMesh mesh;
-
-	VolumetricModel* occlusionModel = nullptr;
 };
 
 #endif // VOLUMETRICMODEL_HPP

@@ -176,18 +176,9 @@ scenes = [
     # Solar System dynamics
     Scene(SpatialData(Vector3(0.0, 0.0, 0.0), 5.65181e+12, 'Sun', 'Solar System'),
           TemporalData(10000000.0), UI(0.167, True, True)),
-    # Kepler-11 general area
-    Scene(SpatialData(Vector3(-0.156822, 0.263175, -0.487417), 5e+10, 'Kepler-11', 'Kepler-11'),
-           TemporalData(50000), UI(0.167, True, True)),
-    # Kepler-11 general area
-    Scene(SpatialData(Vector3(-0.156822, 0.263175, -0.487417), 1e+8, 'Kepler-11 f', 'Kepler-11'),
-           TemporalData(5000), UI(0.167)),
     # Milky Way
     Scene(SpatialData(Vector3(0.43, 8.24, 0.81), 6.171e+20),
            TemporalData(), UI(20*0.0181)),
-    # Local Group
-    Scene(SpatialData(Vector3(0.43, 8.24, 0.81), 2.469e+22),
-           TemporalData(), UI(55.8, False)),
     # Whole cube
     Scene(SpatialData(Vector3(0.43, 8.24, 0.81), 1.2e+25),
            TemporalData(), UI(1015.0, False, False, True)),
@@ -318,7 +309,7 @@ def updateScene():
             VIRUP.simulationTime = temporalData.simulationTime
 
     ui = scene.ui
-    VIRUP.cosmolum = ui.luminosity * 3.7e7
+    VIRUP.cosmolum = 0.167 * 1e7#ui.luminosity * 3.7e6
     VIRUP.orbitsEnabled = ui.orbits
     VIRUP.labelsEnabled = ui.labels
     VIRUP.darkmatterEnabled = ui.darkmatter

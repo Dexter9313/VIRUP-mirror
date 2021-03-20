@@ -708,7 +708,7 @@ void MainWin::initScene()
 
 	sdss = new CSVObjects(QSettings().value("data/sdss").toString(), true);
 	sdss->unit                 = 1000.0;
-	sdss->brightnessMultiplier = 1e10;
+	sdss->brightnessMultiplier = 1e9;
 
 	// PLANETS LOADING
 	debugText = new Text3D(textWidth, textHeight);
@@ -791,11 +791,8 @@ void MainWin::initScene()
 		                      "4:Saturn Moons",
 		                      "5:Rhea",
 		                      "6:Solar System",
-		                      "7:Kepler-11",
-		                      "8:Kepler-11 f",
-		                      "9:Milky Way",
-		                      "Local Group",
-		                      "SDSS"};
+		                      "7:Milky Way",
+		                      "8:SDSS"};
 		for(int i(0); i < scenes.size(); ++i)
 		{
 			auto button = new QPushButton(scenes[i]);
