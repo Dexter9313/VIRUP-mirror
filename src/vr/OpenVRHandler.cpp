@@ -443,8 +443,7 @@ QMatrix4x4 OpenVRHandler::getProjectionMatrix(Side eye, float nearPlan,
 
 void OpenVRHandler::resetPos()
 {
-	vr::VRChaperone()->ResetZeroPose(
-	    vr::ETrackingUniverseOrigin::TrackingUniverseSeated);
+	vr_pointer->ResetSeatedZeroPose();
 	vr_compositor->SetTrackingSpace(
 	    vr::ETrackingUniverseOrigin::TrackingUniverseSeated);
 }

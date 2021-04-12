@@ -176,7 +176,9 @@ class Renderer
 
 	bool wireframe = false;
 	MainRenderTarget::Projection projection
-	    = MainRenderTarget::Projection::DEFAULT;
+	    = QSettings().value("window/domemaster").toBool()
+	          ? MainRenderTarget::Projection::DOMEMASTER180
+	          : MainRenderTarget::Projection::DEFAULT;
 	/**
 	 * @brief Ordered list of render passes to apply as scene rendering.
 	 *

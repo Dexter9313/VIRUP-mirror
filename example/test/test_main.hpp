@@ -22,9 +22,9 @@
 #include "TestExample.hpp"
 
 template <typename Functor>
-void test_main(Functor assert)
+void test_main(Functor assertFunc)
 {
-	assert(new TestExample());
+	assertFunc(new TestExample());
 }
 
 #endif // TEST_MAIN_H

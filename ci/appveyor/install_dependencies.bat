@@ -4,19 +4,22 @@
 IF NOT EXIST openvr\ (
 	mkdir openvr
 	cd openvr
-	appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7/headers/openvr.h -FileName openvr.h
+	mkdir openvr
+	cd openvr
+	appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/176b58f6ccaaae3e9d14efaf612c50b72ec5da76/headers/openvr.h -FileName openvr.h
+	cd ..
 	IF "%BUILD_TYPE%" == "64bit" (
-		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7/lib/win64/openvr_api.lib -FileName openvr_api.lib
-		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7/bin/win64/openvr_api.dll -FileName openvr_api.dll
+		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/176b58f6ccaaae3e9d14efaf612c50b72ec5da76/lib/win64/openvr_api.lib -FileName openvr_api.lib
+		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/176b58f6ccaaae3e9d14efaf612c50b72ec5da76/bin/win64/openvr_api.dll -FileName openvr_api.dll
 	) ELSE (
-		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7/lib/win32/openvr_api.lib -FileName openvr_api.lib
-		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/0eb70325a4ea3edca2a0ff8aefa631f2529e6eb7/bin/win32/openvr_api.dll -FileName openvr_api.dll
+		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/176b58f6ccaaae3e9d14efaf612c50b72ec5da76/lib/win32/openvr_api.lib -FileName openvr_api.lib
+		appveyor DownloadFile https://raw.githubusercontent.com/ValveSoftware/openvr/176b58f6ccaaae3e9d14efaf612c50b72ec5da76/bin/win32/openvr_api.dll -FileName openvr_api.dll
 	)
 	echo "OpenVR installed..."
 	cd ..
 )
-set OPENVR_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/deps/openvr/
-set OPENVR_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/openvr/openvr_api.lib
+set OPENVR_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/openvr/
+set OPENVR_LIBRARIES=%APPVEYOR_BUILD_FOLDER%/deps/openvr/openvr_api.lib
 set OPENVR_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\openvr\openvr_api.dll
 
 ::############################################################################
@@ -32,8 +35,8 @@ IF NOT EXIST leap\ (
 	cd ..
 )
 IF "%BUILD_TYPE%" == "64bit" (set ARCH=x64) ELSE (set ARCH=x86)
-set LEAPMOTION_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/deps/leap/Leap/LeapSDK/include
-set LEAPMOTION_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/leap/Leap/LeapSDK/lib/%ARCH%/Leap.lib
+set LEAPMOTION_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/leap/Leap/LeapSDK/include
+set LEAPMOTION_LIBRARIES=%APPVEYOR_BUILD_FOLDER%/deps/leap/Leap/LeapSDK/lib/%ARCH%/Leap.lib
 set LEAPMOTION_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\leap\Leap\LeapSDK\lib\%ARCH%\Leap.dll
 
 ::############################################################################

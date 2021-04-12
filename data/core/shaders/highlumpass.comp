@@ -17,5 +17,6 @@ void main()
 	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
 	vec4 result = imageLoad(dataIn, pixel_coords);
 	result.rgb *= smoothstep(0.5,1.0, max3(result.rgb));
+	result.rgb = min(vec3(2.0), result.rgb);
 	imageStore(dataOut, pixel_coords, result);
 }

@@ -1,6 +1,6 @@
 # Find PythonQt
 #
-# Sets PYTHONQT_FOUND, PYTHONQT_INCLUDE_DIRS, PYTHONQT_LIBRARY, PYTHONQT_LIBRARIES
+# Sets PythonQt_FOUND, PYTHONQT_INCLUDE_DIRS, PYTHONQT_LIBRARY, PYTHONQT_LIBRARIES
 #
 
 # Python is required
@@ -33,12 +33,12 @@ if(UNIX AND NOT APPLE)
   mark_as_advanced(PYTHONQT_LIBUTIL)
 endif()
 
-set(PYTHONQT_FOUND 0)
+set(PythonQt_FOUND 0)
 if(PYTHONQT_INCLUDE_DIR AND PYTHONQT_LIBRARY)
   # Currently CMake'ified PythonQt only supports building against a python Release build.
   # This applies independently of CTK build type (Release, Debug, ...)
   add_definitions(-DPYTHONQT_USE_RELEASE_PYTHON_FALLBACK)
-  set(PYTHONQT_FOUND 1)
+  set(PythonQt_FOUND 1)
   set(PYTHONQT_INCLUDE_DIRS ${PYTHONQT_INCLUDE_DIR})
   set(PYTHONQT_LIBRARIES ${PYTHONQT_LIBRARY} ${PYTHONQT_LIBUTIL})
   set(PYTHONQT_PYTHON2 OFF)
@@ -47,7 +47,7 @@ elseif(PYTHONQT_PYTHON2_INCLUDE_DIR AND PYTHONQT_PYTHON2_LIBRARY)
   # Currently CMake'ified PythonQt only supports building against a python Release build.
   # This applies independently of CTK build type (Release, Debug, ...)
   add_definitions(-DPYTHONQT_USE_RELEASE_PYTHON_FALLBACK)
-  set(PYTHONQT_FOUND 1)
+  set(PythonQt_FOUND 1)
   set(PYTHONQT_INCLUDE_DIRS ${PYTHONQT_PYTHON2_INCLUDE_DIR})
   set(PYTHONQT_LIBRARIES ${PYTHONQT_PYTHON2_LIBRARY} ${PYTHONQT_PYTHON2_LIBUTIL})
   set(PYTHONQT_PYTHON2 ON)

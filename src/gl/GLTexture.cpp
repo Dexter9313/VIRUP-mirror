@@ -320,9 +320,12 @@ void GLTexture::setSampler(Sampler const& sampler) const
 	                                 sampler.filter);
 	GLHandler::glf().glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER,
 	                                 sampler.filter);
-	GLHandler::glf().glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, sampler.wrap);
-	GLHandler::glf().glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, sampler.wrap);
-	GLHandler::glf().glTexParameteri(glTarget, GL_TEXTURE_WRAP_R, sampler.wrap);
+	GLHandler::glf().glTexParameteri(glTarget, GL_TEXTURE_WRAP_S,
+	                                 sampler.wraps);
+	GLHandler::glf().glTexParameteri(glTarget, GL_TEXTURE_WRAP_T,
+	                                 sampler.wrapt);
+	GLHandler::glf().glTexParameteri(glTarget, GL_TEXTURE_WRAP_R,
+	                                 sampler.wrapr);
 	/*GLfloat fLargest;
 	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest );
 	glTexParameterf( format, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest );*/

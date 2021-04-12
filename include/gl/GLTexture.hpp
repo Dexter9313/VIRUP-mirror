@@ -164,9 +164,23 @@ class GLTexture
 	{
 		Sampler(GLint filter = GL_LINEAR, GLint wrap = GL_CLAMP_TO_EDGE)
 		    : filter(filter)
-		    , wrap(wrap){};
+		    , wraps(wrap)
+		    , wrapt(wrap)
+		    , wrapr(wrap){};
+		Sampler(GLint filter, GLint wraps, GLint wrapt)
+		    : filter(filter)
+		    , wraps(wraps)
+		    , wrapt(wrapt)
+		    , wrapr(wrapt){};
+		Sampler(GLint filter, GLint wraps, GLint wrapt, GLint wrapr)
+		    : filter(filter)
+		    , wraps(wraps)
+		    , wrapt(wrapt)
+		    , wrapr(wrapr){};
 		GLint filter;
-		GLint wrap;
+		GLint wraps;
+		GLint wrapt;
+		GLint wrapr;
 	};
 
 	struct Data

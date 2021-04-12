@@ -1,12 +1,158 @@
-image: gcc
+stages:
+    - dockerbuild
+    - build
+    - test
+    - deploy
 
-before_script:
-    - apt-get update && apt-get install -y cmake doxygen graphviz
+dockerbuild:bionic:
+    image: docker:19.03.12
+    services:
+      - docker:19.03.12-dind
+    stage: dockerbuild
+    only:
+        refs:
+            - pushes
+        changes:
+            - ci/gitlab-ci/commons/install_dependencies.sh
+            - ci/gitlab-ci/ubuntu/18.04/Dockerfile
+            - ci/gitlab-ci/ubuntu/18.04/install_dependencies.sh
+            - .gitlab-ci.yml
+            - '**/ci/gitlab-ci/install_dependencies.sh'
+    script:
+        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        - if [ ! -f "./build.conf" ]; then . ./build.conf.example ; else . ./build.conf ; fi
+        - PROJ_INST_DEP=./$PROJECT_DIRECTORY/ci/gitlab-ci/install_dependencies.sh
+        - if [ ! -f $PROJ_INST_DEP ]; then PROJ_INST_DEP=./example/ci/gitlab-ci/install_dependencies.sh; fi
+        - docker build --pull --build-arg PROJECT_INSTALL_DEPS=$PROJ_INST_DEP -t $CI_REGISTRY_IMAGE:bionic -f ./ci/gitlab-ci/ubuntu/18.04/Dockerfile --no-cache --pull .
+        - docker push $CI_REGISTRY_IMAGE:bionic
+
+dockerbuild:focal:
+    image: docker:19.03.12
+    services:
+      - docker:19.03.12-dind
+    stage: dockerbuild
+    only:
+        refs:
+            - pushes
+        changes:
+            - ci/gitlab-ci/commons/install_dependencies.sh
+            - ci/gitlab-ci/ubuntu/20.04/Dockerfile
+            - ci/gitlab-ci/ubuntu/20.04/install_dependencies.sh
+            - .gitlab-ci.yml
+            - '**/ci/gitlab-ci/install_dependencies.sh'
+    script:
+        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        - if [ ! -f "./build.conf" ]; then . ./build.conf.example ; else . ./build.conf ; fi
+        - PROJ_INST_DEP=./$PROJECT_DIRECTORY/ci/gitlab-ci/install_dependencies.sh
+        - if [ ! -f $PROJ_INST_DEP ]; then PROJ_INST_DEP=./example/ci/gitlab-ci/install_dependencies.sh; fi
+        - docker build --pull --build-arg PROJECT_INSTALL_DEPS=$PROJ_INST_DEP -t $CI_REGISTRY_IMAGE:focal -f ./ci/gitlab-ci/ubuntu/20.04/Dockerfile --no-cache --pull .
+        - docker push $CI_REGISTRY_IMAGE:focal
+
+
+build:bionic:
+    image: $CI_REGISTRY_IMAGE:bionic
+    stage: build
+    only:
+        - pushes
+    script:
+        - ./ci/gitlab-ci/ubuntu/18.04/build.sh
+    artifacts:
+        paths:
+            - build/*.deb
+        expire_in: 1h
+
+build:focal:
+    image: $CI_REGISTRY_IMAGE:focal
+    stage: build
+    only:
+        - pushes
+    script:
+        - ./ci/gitlab-ci/ubuntu/20.04/build.sh
+    artifacts:
+        paths:
+            - build/*.deb
+        expire_in: 1h
+
+test:bionic:
+    image: ubuntu:18.04
+    stage: test
+    dependencies:
+        - build:bionic
+    script:
+        - ./ci/gitlab-ci/commons/test_deb.sh
+    artifacts:
+        paths:
+            - build/*.deb
+        expire_in: 1h
+
+test:focal:
+    image: ubuntu:20.04
+    stage: test
+    dependencies:
+        - build:focal
+    script:
+        - ./ci/gitlab-ci/commons/test_deb.sh
+    artifacts:
+        paths:
+            - build/*.deb
+        expire_in: 1h
+
+checkcode:
+    image: $CI_REGISTRY_IMAGE:bionic
+    stage: test
+    only:
+        refs:
+            - pushes
+    script:
+        - ./ci/gitlab-ci/commons/checkcode.sh
+
+deploy:bionic:
+    image: registry.gitlab.com/gitlab-org/release-cli:latest
+    stage: deploy
+    only:
+        - tags
+    dependencies:
+        - test:bionic
+    script:
+        - apk --no-cache add curl
+        - export IN=$(ls build/*.deb)
+        - export OUT=$(echo $IN | sed 's/.*\/\(.*\)/\1/g')
+        - export URL=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/releases/${CI_COMMIT_TAG}/${OUT}
+        - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file ${IN} ${URL}'
+        - message="Error while adding link to Release :"
+        - message=$message"PRIVATE_TOKEN hasn't been set.\nPlease read "
+        - message=$message"https://gitlab.com/Dexter9313/hydrogenvr/-/wikis/tutorials/1-general-topics/9-continuous-integration for more details."
+        - if [[ -z $PRIVATE_TOKEN ]] ; then echo -e "$message"; fi
+        - 'curl --request POST --header "PRIVATE-TOKEN: $PRIVATE_TOKEN" --data name="${OUT}" --data url="${URL}" --data link_type="package" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+
+deploy:focal:
+    image: registry.gitlab.com/gitlab-org/release-cli:latest
+    stage: deploy
+    only:
+        - tags
+    dependencies:
+        - test:focal
+    script:
+        - apk --no-cache add curl
+        - export IN=$(ls build/*.deb)
+        - export OUT=$(echo $IN | sed 's/.*\/\(.*\)/\1/g')
+        - export URL=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/releases/${CI_COMMIT_TAG}/${OUT}
+        - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file ${IN} ${URL}'
+        - message="Error while adding link to Release :"
+        - message=$message"PRIVATE_TOKEN hasn't been set.\nPlease read "
+        - message=$message"https://gitlab.com/Dexter9313/hydrogenvr/-/wikis/tutorials/1-general-topics/9-continuous-integration for more details."
+        - if [[ -z $PRIVATE_TOKEN ]] ; then echo -e "$message"; fi
+        - 'curl --request POST --header "PRIVATE-TOKEN: $PRIVATE_TOKEN" --data name="${OUT}" --data url="${URL}" --data link_type="package" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+
 
 pages:
+    image: gcc
     stage: deploy
+    only:
+        - pushes
     script:
-        - mkdir build
+        - apt-get update && apt-get install -y cmake doxygen graphviz
+        - mkdir -p build
         - cd build
         - cmake .. -DDOC_ONLY=true
         - make doc

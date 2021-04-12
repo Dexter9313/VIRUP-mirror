@@ -1,3 +1,5 @@
+goto comment
+::EXAMPLE
 ::############################################################################
 ::# Install liboctree
 ::############################################################################
@@ -9,6 +11,7 @@ IF NOT EXIST octree\ (
 	move liboctree* liboctree
 	cd ..
 )
-set OCTREE_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/deps/octree/
-set OCTREE_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/octree/liboctree/octree.lib
+set OCTREE_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/deps/octree/
+set OCTREE_LIBRARIES=%APPVEYOR_BUILD_FOLDER%/deps/octree/liboctree/octree.lib
 set OCTREE_SHARED=%APPVEYOR_BUILD_FOLDER%\deps\octree\liboctree\octree.dll
+:comment

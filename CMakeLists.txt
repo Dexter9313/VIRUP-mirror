@@ -1,23 +1,23 @@
-#Copyright(C) 2018 Florian Cabot < florian.cabot @hotmail.fr >
-#
-#This program is free software; you can redistribute it and / or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation; either version 3 of the License, or
-#(at your option) any later version.
-#
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-#GNU General Public License for more details.
-#
-#You should have received a copy of the GNU General Public License along
-#with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301 USA.
+# Copyright(C) 2018 Florian Cabot < florian.cabot @hotmail.fr >
+# 
+# This program is free software; you can redistribute it and / or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301 USA.
 
-#INIT
+# INIT
 cmake_minimum_required(VERSION 3.0.0)
 
-#READ CONFIG FILE AND SET VARIABLES
+# READ CONFIG FILE AND SET VARIABLES
 set(BUILD_CONF "${CMAKE_CURRENT_SOURCE_DIR}/build.conf")
 if(NOT EXISTS "${BUILD_CONF}")
 	set(BUILD_CONF "${CMAKE_CURRENT_SOURCE_DIR}/build.conf.example")
@@ -25,22 +25,22 @@ endif()
 message(STATUS "Build configuration file: ${BUILD_CONF}")
 file(STRINGS "${BUILD_CONF}" ConfigContents)
 foreach(NameAndValue ${ConfigContents})
-#Strip leading spaces
+# Strip leading spaces
   string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
-#Find variable name
+# Find variable name
   string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
-#Find the value
+# Find the value
   string(REPLACE "${Name}=" "" Value ${NameAndValue})
-#Remove quotes
+# Remove quotes
   string(REPLACE "\"" "" Value ${Value})
-#Set the variable
+# Set the variable
   set(${Name} ${Value})
 endforeach()
 
 project(${PROJECT_NAME} CXX)
 set(CMAKE_PROJECT_DESCRIPTION ${PROJECT_DESCRIPTION})
 
-#C++ 11
+# C++ 11
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
@@ -52,10 +52,10 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
-#For clang - tidy to use(clang - tidy - p)
+# For clang - tidy to use(clang - tidy - p)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-#WARNINGS
+# WARNINGS
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wsuggest-override")
 	set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -65,22 +65,39 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 set(unusedVal "${WERROR}")
 
-#Qt options
+# Qt options
 if(NOT WIN32)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 
-#Define project name in source for preprocessor
+# Get project version from Git
+set(PROJECT_VERSION "custom")
+find_package(Git)
+if(GIT_FOUND)
+	execute_process(COMMAND ${GIT_EXECUTABLE} fetch --tags WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+	execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --always WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_VARIABLE PROJECT_VERSION)
+	string(REGEX REPLACE "\n$" "" PROJECT_VERSION "${PROJECT_VERSION}")
+	# prepend 0.0-0-g if no tag to make dpkg happy
+	execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} RESULT_VARIABLE ret OUTPUT_VARIABLE null ERROR_VARIABLE null)
+	if(NOT ret EQUAL "0")
+		set(PROJECT_VERSION "0.0-0-g${PROJECT_VERSION}")
+	endif()
+endif()
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/PROJECT_VERSION "${PROJECT_VERSION}")
+
+# Define project name in source for preprocessor
 add_definitions(-DPROJECT_NAME="${PROJECT_NAME}")
+add_definitions(-DPROJECT_VERSION="${PROJECT_VERSION}")
 add_definitions(-DPROJECT_DIRECTORY="${PROJECT_DIRECTORY}")
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 add_definitions(-DBUILD_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 message(STATUS "Project name: ${PROJECT_NAME}")
+message(STATUS "Project version: ${PROJECT_VERSION}")
 message(STATUS "Project dir: ${PROJECT_DIRECTORY}")
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 
-#FILES / DIRECTORIES
+# FILES / DIRECTORIES
 
 # Update submodules
 
@@ -123,69 +140,139 @@ FOREACH(PATH ${THIRDPARTY_DATA_FILES})
 	set(LIBRARIES_DIRS "${LIBRARIES_DIRS} ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/thirdparty/${LIB_NAME}/include ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/thirdparty/${LIB_NAME}/src")
 ENDFOREACH(PATH)
 
+# DEPENDENCIES
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+set(CONAN_CMAKE_SILENT_OUTPUT TRUE)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
+
 if(DOC_ONLY)
 	include(cmake/Doc.cmake)
 	return()
 endif()
-
-#DEPENDENCIES
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
-
-#Qt
-find_package(Qt5 COMPONENTS Widgets Concurrent Test Network OpenGLExtensions REQUIRED)
-
-#Assimp
-set(ASSIMP_INCLUDE_DIRS $ENV{ASSIMP_INCLUDE_DIRS})
-set(ASSIMP_LIBRARIES $ENV{ASSIMP_LIBRARIES})
-if((NOT DEFINED ASSIMP_INCLUDE_DIRS) OR (NOT DEFINED ASSIMP_LIBRARIES))
-	find_package(assimp REQUIRED)
+if(CLANG_TOOLS_ONLY)
+	include(cmake/ClangDevTools.cmake)
+	return()
 endif()
 
-#OpenVR
-set(OPENVR_INCLUDE_DIR $ENV{OPENVR_INCLUDE_DIR})
-set(OPENVR_LIBRARY $ENV{OPENVR_LIBRARY})
-if((NOT DEFINED OPENVR_INCLUDE_DIR) OR (NOT DEFINED OPENVR_LIBRARY))
-	find_package(OpenVR REQUIRED)
+if(HYDROGENVR_CONAN_INSTALLED)
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}")
+	list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
+	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	conan_basic_setup(NO_OUTPUT_DIRS)
+	
+	message(STATUS "Adding conan installed libraries to the search path")
 endif()
 
-#LeapMotionSDK
-set(LEAPMOTION_INCLUDE_DIR $ENV{LEAPMOTION_INCLUDE_DIR})
-set(LEAPMOTION_LIBRARY $ENV{LEAPMOTION_LIBRARY})
-if((NOT DEFINED LEAPMOTION_INCLUDE_DIR) OR (NOT DEFINED LEAPMOTION_LIBRARY))
-	find_package(LeapMotion)
-else()
-	set(LEAPMOTION_FOUND true)
+macro(hydrogenvr_find_packages)
+	set(options FORCE_REQUIRED)
+	cmake_parse_arguments(FN "${options}" "" "" ${ARGN})
+	set(REQUIRED_LIBS
+    #   Cmake Pkg Prefix   Version     Conan Pkg         Required
+        "assimp            4.1.0       assimp/5.0.1      true"
+        "OpenVR            1.12.5      openvr/1.12.5     true"
+		"LeapMotion        0.0.0       N/A               false"
+		"PythonQt          0.0.0       N/A               false"
+		"PythonQt_QtAll    0.0.0       N/A               false"
+    )
+
+	foreach(PACKAGE ${REQUIRED_LIBS})
+        string(REGEX REPLACE "[ \t\r\n]+" ";" PACKAGE_SPLIT ${PACKAGE})
+        list(GET PACKAGE_SPLIT 0 PACKAGE_PREFIX)
+        list(GET PACKAGE_SPLIT 1 PACKAGE_VERSION)
+        list(GET PACKAGE_SPLIT 2 PACKAGE_CONAN)
+		list(GET PACKAGE_SPLIT 3 PACKAGE_REQUIRED)
+
+		string(TOUPPER ${PACKAGE_PREFIX} PACKAGE_PREFIX_UPPER)
+		string(TOLOWER ${PACKAGE_PREFIX} PACKAGE_PREFIX_LOWER)
+		set(${PACKAGE_PREFIX_UPPER}_INCLUDE_DIRS $ENV{${PACKAGE_PREFIX_UPPER}_INCLUDE_DIRS})
+		set(${PACKAGE_PREFIX_UPPER}_LIBRARIES $ENV{${PACKAGE_PREFIX_UPPER}_LIBRARIES})
+		if((DEFINED ${PACKAGE_PREFIX_UPPER}_INCLUDE_DIRS) AND (DEFINED ${PACKAGE_PREFIX_UPPER}_LIBRARIES))
+			# If includes and libraries dirs are already provided, no more work is necessary 
+			set(${PACKAGE_PREFIX}_FOUND true)
+		else()
+			# This function is called twice, once to check if the packages exist on the system already
+			# and a second time to check if conan installed them properly. The second check passes in FORCE_REQUIRED
+			if (FN_FORCE_REQUIRED OR PACKAGE_REQUIRED)
+				find_package(${PACKAGE_PREFIX} REQUIRED)
+			else()
+				find_package(${PACKAGE_PREFIX})
+			endif()
+			
+			if ((NOT ${PACKAGE_PREFIX}_FOUND) AND (NOT (${PACKAGE_CONAN} STREQUAL "N/A")) AND PACKAGE_REQUIRED)
+				list(APPEND CONAN_REQUIRED_LIBS ${PACKAGE_CONAN})
+			else()
+				# For each package found by conan a target is configured that avoids to manually set include_dirs 
+				# and stuff. For comptability reasons we still set a legacy findPackage.cmake style PACKAGE_LIBRARIES 
+				# variable and INCLUDE_DIRS variable
+				if(TARGET ${PACKAGE_PREFIX_LOWER}::${PACKAGE_PREFIX_LOWER})
+					if(NOT DEFINED ${PACKAGE_PREFIX_UPPER}_LIBRARIES)
+						set(${PACKAGE_PREFIX_UPPER}_LIBRARIES "${PACKAGE_PREFIX_LOWER}::${PACKAGE_PREFIX_LOWER}")
+					endif()
+					if(NOT DEFINED ${PACKAGE_PREFIX_UPPER}_INCLUDE_DIRS)
+						get_target_property(${PACKAGE_PREFIX_UPPER}_INCLUDE_DIRS ${PACKAGE_PREFIX_LOWER}::${PACKAGE_PREFIX_LOWER} INTERFACE_INCLUDE_DIRECTORIES)
+					endif()
+				endif()
+			endif()
+		endif()
+    endforeach()
+    unset(FN_FORCE_REQUIRED)
+endmacro()
+
+# Attempt to locate any packages that are required and report the missing ones in CONAN_REQUIRED_LIBS
+hydrogenvr_find_packages()
+
+# Qt5 requires that we find individual component
+find_package(Qt5 COMPONENTS Widgets Concurrent Test Network OpenGLExtensions)
+if(NOT Qt5_FOUND)
+    list(APPEND CONAN_REQUIRED_LIBS "qt/5.14.1@bincrafters/stable")
 endif()
 
-#PythonQt
-set(PYTHONQT_INCLUDE_DIRS $ENV{PYTHONQT_INCLUDE_DIRS})
-set(PYTHONQT_LIBRARIES $ENV{PYTHONQT_LIBRARIES})
-set(PYTHONQT_QTALL_INCLUDE_DIRS $ENV{PYTHONQT_QTALL_INCLUDE_DIRS})
-set(PYTHONQT_QTALL_LIBRARIES $ENV{PYTHONQT_QTALL_LIBRARIES})
-if((NOT DEFINED PYTHONQT_INCLUDE_DIRS) OR (NOT DEFINED PYTHONQT_LIBRARIES))
-	find_package(PythonQt)
-else()
-	set(PYTHONQT_FOUND true)
-endif()
-if((NOT DEFINED PYTHONQT_QTALL_INCLUDE_DIRS) OR (NOT DEFINED PYTHONQT_QTALL_LIBRARIES))
-	find_package(PythonQt_QtAll REQUIRED)
-else()
-	set(PYTHONQT_QTALL_FOUND true)
+# Additional
+include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Dependencies.cmake)
+
+# Install any missing dependencies with conan install
+if (CONAN_REQUIRED_LIBS)
+	message(STATUS "Packages ${CONAN_REQUIRED_LIBS} not found!")
+	# Use Conan to fetch the libraries that aren't found
+	# Download conan.cmake automatically, you can also just copy the conan.cmake file
+	if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+		message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+		file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
+						"${CMAKE_BINARY_DIR}/conan.cmake")
+	endif()
+	include(${CMAKE_BINARY_DIR}/conan.cmake)
+
+	set(CONAN_LIB_OPTIONS
+		qt:with_sqlite3=False
+		qt:openssl=False
+		qt:with_harfbuzz=False
+		qt:with_freetype=False
+		qt:with_pcre2=False
+    )
+
+	conan_add_remote(NAME bincrafters
+						URL https://api.bintray.com/conan/bincrafters/public-conan)
+	conan_cmake_run(REQUIRES ${CONAN_REQUIRED_LIBS}
+					OPTIONS ${CONAN_LIB_OPTIONS}
+					BUILD missing
+					GENERATORS cmake cmake_find_package_multi
+	)
+
+	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}")
+	list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
+	conan_basic_setup(NO_OUTPUT_DIRS)
+
+	set(HYDROGENVR_CONAN_INSTALLED TRUE CACHE BOOL "If true, the following builds will add conan to the lib search path" FORCE)
+
+	# Now that we've installed what we are missing, try to locate them again
+	hydrogenvr_find_packages(FORCE_REQUIRED)
+	find_package(Qt5 REQUIRED COMPONENTS Widgets Concurrent Test Network OpenGLExtensions)
 endif()
 
-if(PYTHONQT_FOUND)
-	message(STATUS "Found PythonQt : ${PYTHONQT_INCLUDE_DIRS} | ${PYTHONQT_LIBRARIES}")
-else()
-	message(STATUS "PythonQt not found.")
-endif()
-if(PYTHONQT_QTALL_FOUND)
-	message(STATUS "Found PythonQt_All : ${PYTHONQT_QTALL_INCLUDE_DIRS} | ${PYTHONQT_QTALL_LIBRARIES}")
-else()
-	message(STATUS "PythonQt_All not found.")
-endif()
-
-#Python
-if((PYTHONQT_FOUND) OR (PYTHONQT_QTALL_FOUND))
+# Python
+if((PythonQt_FOUND) OR (PythonQt_QtAll_FOUND))
 	if(PYTHONQT_PYTHON2)
 		find_package(Python2 COMPONENTS Development)
 		set(PYTHON_INCLUDE_DIRS ${Python2_INCLUDE_DIRS})
@@ -196,76 +283,77 @@ if((PYTHONQT_FOUND) OR (PYTHONQT_QTALL_FOUND))
 endif()
 
 #Additional
-include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Dependencies.cmake)
-
-#INCLUDE
-
-set(EXTERNAL_LIBS_INCLUDE_DIRS ${Qt5_DIR} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Concurrent_INCLUDE_DIRS} ${Qt5Test_INCLUDE_DIRS} ${Qt5Network_INCLUDE_DIRS} ${Qt5OpenGLExtensions_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIR} ${PROJECT_INCLUDE_DIRS})
-if(LEAPMOTION_FOUND)
-	add_definitions(-DLEAP_MOTION)
-	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${LEAPMOTION_INCLUDE_DIR})
+if(EXISTS ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Dependencies.cmake)
+	include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Dependencies.cmake)
 endif()
-if(PYTHONQT_FOUND)
+
+# INCLUDE
+set(EXTERNAL_LIBS_INCLUDE_DIRS ${ASSIMP_INCLUDE_DIRS} ${OPENVR_INCLUDE_DIRS} ${PROJECT_INCLUDE_DIRS})
+if(LeapMotion_FOUND)
+	add_definitions(-DLEAP_MOTION)
+	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${LEAPMOTION_INCLUDE_DIRS})
+endif()
+if(PythonQt_FOUND)
 	add_definitions(-DPYTHONQT)
 	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${PYTHONQT_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
 endif()
-if(PYTHONQT_QTALL_FOUND)
+if(PythonQt_QtAll_FOUND)
 	add_definitions(-DPYTHONQT_QTALL)
 	set(EXTERNAL_LIBS_INCLUDE_DIRS ${EXTERNAL_LIBS_INCLUDE_DIRS} ${PYTHONQT_QTALL_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
 endif()
 
 include_directories(${COMMON_INCLUDES} ${THIRDPARTY_INCLUDES} ${PROJECT_INCLUDES} ${TEST_INCLUDES} SYSTEM ${EXTERNAL_LIBS_INCLUDE_DIRS})
 
-#LINKING SETUP
-set(LD_LIBS ${CMAKE_DL_LIBS} Qt5::Widgets Qt5::Concurrent Qt5::Test Qt5::Network Qt5::OpenGLExtensions ${ASSIMP_LIBRARIES} ${OPENVR_LIBRARY} ${PROJECT_LIBRARIES})
-if(LEAPMOTION_FOUND)
-	set(LD_LIBS ${LD_LIBS} ${LEAPMOTION_LIBRARY})
+# LINKING SETUP
+set(LD_LIBS Qt5::Widgets Qt5::Concurrent Qt5::Test Qt5::Network Qt5::OpenGLExtensions ${ASSIMP_LIBRARIES} ${OPENVR_LIBRARIES} ${PROJECT_LIBRARIES})
+if(LeapMotion_FOUND)
+	set(LD_LIBS ${LD_LIBS} ${LEAPMOTION_LIBRARIES})
 endif()
-if(PYTHONQT_FOUND)
+if(PythonQt_FOUND)
 	set(LD_LIBS ${LD_LIBS} ${PYTHONQT_LIBRARIES} ${PYTHON_LIBRARIES})
 endif()
-if(PYTHONQT_QTALL_FOUND)
+if(PythonQt_QtAll_FOUND)
 	set(LD_LIBS ${LD_LIBS} ${PYTHONQT_QTALL_LIBRARIES} ${PYTHON_LIBRARIES})
 endif()
 
-#Find .so in working directory
+# Find .so in working directory
 if(NOT WIN32)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath='$ORIGIN'")
 endif()
 
-#prevent console from popping on Windows
+# Prevent console from popping on Windows
 IF((DEFINED WIN32) AND ($ENV{HIDE_CONSOLE}))
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /entry:mainCRTStartup")
 ENDIF()
 
-
-#RUN MOC (FOR QT5)
+# RUN MOC (FOR QT5)
 qt5_wrap_cpp(MOC_FILES ${HPP_FILES})
 qt5_wrap_cpp(TEST_MOC_FILES ${TEST_HPP_FILES})
 
-#COMMON OBJECTS
+# COMMON OBJECTS
 add_library(objects OBJECT ${SRC_FILES} ${MOC_FILES})
+target_link_libraries(objects ${LD_LIBS})
 
-#TESTS
+# TESTS
 add_executable(tests ${TEST_SRC_FILES} ${TEST_MOC_FILES} $<TARGET_OBJECTS:objects>)
 target_link_libraries(tests ${LD_LIBS})
 
-#EXECUTABLE : PROJECT_NAME
+# EXECUTABLE : PROJECT_NAME
 add_executable(${PROJECT_NAME} ${MAIN_FILE} $<TARGET_OBJECTS:objects>)
 target_link_libraries(${PROJECT_NAME} ${LD_LIBS})
 
 
 #SETUP DATA DIRECTORY
 
-#core
+# core
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/data ${PROJECT_BINARY_DIR}/data
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-#project
+# project
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/data ${PROJECT_BINARY_DIR}/data/${PROJECT_DIRECTORY}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-#thirdparty
+# thirdparty
 
 FOREACH(PATH ${THIRDPARTY_DATA_FILES})
 	get_filename_component(FOO "${PATH}" DIRECTORY)
@@ -274,101 +362,66 @@ FOREACH(PATH ${THIRDPARTY_DATA_FILES})
 						WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 ENDFOREACH(PATH)
 
-#translations
+# translations
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/translations ${PROJECT_BINARY_DIR}/data/translations
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 
-#INSTALL RULES / NOT FOR WINDOWS
+# INSTALL RULES / NOT FOR WINDOWS
 if(NOT WIN32)
-	INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} DESTINATION bin)
-	INSTALL(FILES ${OPENVR_LIBRARY} DESTINATION lib)
-	if(LEAPMOTION_FOUND)
-		INSTALL(FILES ${LEAPMOTION_LIBRARY} DESTINATION lib)
+	# get distro by sourcing /etc/os-release
+	file(STRINGS "/etc/os-release" ConfigContents)
+	foreach(NameAndValue ${ConfigContents})
+	#Strip leading spaces
+	  string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
+	#Find variable name
+	  string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
+	#Find the value
+	  string(REPLACE "${Name}=" "" Value ${NameAndValue})
+	#Remove quotes
+	  string(REPLACE "\"" "" Value ${Value})
+	#Set the variable
+	  set("OSRELEASE_${Name}" ${Value})
+	endforeach()
+
+	set(DEB_DEP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_DIRECTORY}/ci/gitlab-ci/${OSRELEASE_ID}/${OSRELEASE_VERSION_ID}/DEPENDENCIES)
+	if(NOT EXISTS ${DEB_DEP_FILE})
+		set(DEB_DEP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/ci/gitlab-ci/${OSRELEASE_ID}/${OSRELEASE_VERSION_ID}/DEPENDENCIES)
 	endif()
-	if(PYTHONQT_FOUND)
+	message(STATUS "deb DEPENDENCIES file : ${DEB_DEP_FILE}")
+
+	INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} DESTINATION bin)
+	# Ubuntu 20.04 has a package
+	if((NOT "${OSRELEASE_ID}" STREQUAL "ubuntu") OR (NOT "${OSRELEASE_VERSION_ID}" STREQUAL "20.04"))
+		INSTALL(FILES ${OPENVR_LIBRARIES} DESTINATION lib)
+	endif()
+	if(LeapMotion_FOUND)
+		INSTALL(FILES ${LEAPMOTION_LIBRARIES} DESTINATION lib)
+	endif()
+	# Ubuntu 18.04 has a package
+	if(PythonQt_FOUND AND ((NOT ${OSRELEASE_ID} STREQUAL "ubuntu") OR (NOT ${OSRELEASE_VERSION_ID} STREQUAL "18.04")))
 		INSTALL(FILES ${PYTHONQT_LIBRARIES} DESTINATION lib)
 	endif()
-	if(PYTHONQT_QTALL_FOUND)
+	if(PythonQt_QtAll_FOUND AND ((NOT ${OSRELEASE_ID} STREQUAL "ubuntu") OR (NOT ${OSRELEASE_VERSION_ID} STREQUAL "18.04")))
 		INSTALL(FILES ${PYTHONQT_QTALL_LIBRARIES} DESTINATION lib)
 	endif()
 	INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/data DESTINATION share/${PROJECT_NAME})
-	include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Install.cmake)
+	if(EXISTS ${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Install.cmake)
+		include(${PROJECT_SOURCE_DIR}/${PROJECT_DIRECTORY}/cmake/Install.cmake)
+	endif()
 
 	SET(CPACK_GENERATOR "DEB")
 	SET(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 	SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${PROJECT_MAINTAINER})
-	if(TAG)
-		SET(CPACK_PACKAGE_VERSION ${TAG})
-	endif()
-
-	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5widgets5:amd64,\
-	libassimp4:amd64,\
-	libpythonqt-qt5-python3-3:amd64,\
-	libpythonqt-qtall-qt5-python3-3:amd64,\
-	libqt5gui5:amd64,\
-	libqt5core5a:amd64,\
-	libstdc++6:amd64,\
-	libc6:amd64,\
-	libgcc1:amd64,\
-	libpython3.6:amd64,\
-	libqt5svg5:amd64,\
-	libqt5opengl5:amd64,\
-	libqt5printsupport5:amd64,\
-	libqt5multimediawidgets5:amd64,\
-	libqt5quickwidgets5:amd64,\
-	libqt5multimedia5:amd64,\
-	libqt5quick5:amd64,\
-	libqt5sql5:amd64,\
-	libqt5xmlpatterns5,\
-	libqt5qml5:amd64,\
-	libqt5network5:amd64,\
-	libqt5xml5:amd64,\
-	libgl1:amd64,\
-	libpng16-16:amd64,\
-	libharfbuzz0b:amd64,\
-	zlib1g:amd64,\
-	libicu60:amd64,\
-	libdouble-conversion1:amd64,\
-	libglib2.0-0:amd64,\
-	libexpat1:amd64,\
-	libpulse0:amd64,\
-	libglx0:amd64,\
-	libglvnd0:amd64,\
-	libfreetype6:amd64,\
-	libgraphite2-3:amd64,\
-	libicu60:amd64,\
-	libpcre3:amd64,\
-	libpulse0:amd64,\
-	libdbus-1-3:amd64,\
-	libx11-6:amd64,\
-	libxcb1:amd64,\
-	libsystemd0:amd64,\
-	libwrap0:amd64,\
-	libsndfile1:amd64,\
-	libasyncns0:amd64,\
-	libxau6:amd64,\
-	libxdmcp6:amd64,\
-	liblzma5:amd64,\
-	liblz4-1:amd64,\
-	libgcrypt20:amd64,\
-	libflac8:amd64,\
-	libogg0:amd64,\
-	libvorbis0a:amd64,\
-	libvorbisenc2:amd64,\
-	libgpg-error0:amd64,\
-	libbsd0:amd64")
-
-	if(NOT "${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}" STREQUAL "")
-		message(STATUS "${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
-		set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},${PROJECT_ADDITIONAL_DEB_DEPENDENCIES}")
-		message(STATUS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
-	endif()
+	SET(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+	SET(CPACK_SYSTEM_NAME "${OSRELEASE_NAME}-${OSRELEASE_VERSION_ID}")
+	file(READ ${DEB_DEP_FILE} CPACK_DEBIAN_PACKAGE_DEPENDS)
+	string(REGEX REPLACE "\n$" "" CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
 
 	INCLUDE(CPack)
 
-	#Create uninstall target
+	# Create uninstall target
 	add_custom_target(uninstall
 			COMMAND xargs rm < install_manifest.txt && rm install_manifest.txt
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -376,10 +429,15 @@ if(NOT WIN32)
 			VERBATIM)
 endif()
 
+# Copy Qt5 DLL files for windows
+if(MSVC)
+	include(cmake/CopyQt5Deps.cmake)
+	copy_Qt5_deps(${PROJECT_NAME})
+endif()
+
 # Including extra cmake rules
 include(cmake/ClangDevTools.cmake)
 include(cmake/Doc.cmake)
-
 
 # Translation
 if(PROJECT_TRANSLATE)

@@ -1,15 +1,15 @@
 # Find the LeapMotion SDK
 # NOTE: there is no default installation path as the code needs to be build
 # This module defines:
-# LEAPMOTION_FOUND, if false do not try to link against the LeapMotion SDK
-# LEAPMOTION_LIBRARY, the name of the LeapMotion SDK library to link against
-# LEAPMOTION_INCLUDE_DIR, the LeapMotion VR SDK include directory
+# LeapMotion_FOUND, if false do not try to link against the LeapMotion SDK
+# LEAPMOTION_LIBRARIES, the name of the LeapMotion SDK library to link against
+# LEAPMOTION_INCLUDE_DIRS, the LeapMotion VR SDK include directory
 #
 # You can also specify the environment variable LEAPMOTION_DIR or define it with
 # -DLEAPMOTION_DIR=... to hint at the module where to search for the LeapMotion SDK if it's
 # installed in a non-standard location.
 
-find_path(LEAPMOTION_INCLUDE_DIR Leap.h
+find_path(LEAPMOTION_INCLUDE_DIRS Leap.h
 	HINTS
 	${LEAPMOTION_DIR}
 	$ENV{LEAPMOTION_DIR}
@@ -46,7 +46,7 @@ else()
 	endif()
 endif()
 
-find_library(LEAPMOTION_LIBRARY_TMP NAMES Leap Leap.lib
+find_library(LEAPMOTION_LIBRARIES_TMP NAMES Leap Leap.lib
 	HINTS
 	${LEAPMOTION_DIR}
 	$ENV{LEAPMOTION_DIR}
@@ -60,13 +60,13 @@ find_library(LEAPMOTION_LIBRARY_TMP NAMES Leap Leap.lib
 	/opt
 )
 
-set(LEAPMOTION_FOUND FALSE)
-if (LEAPMOTION_LIBRARY_TMP AND LEAPMOTION_INCLUDE_DIR)
-	set(LEAPMOTION_LIBRARY ${LEAPMOTION_LIBRARY_TMP} CACHE STRING "Which Leap Motion library to link against")
-	set(LEAPMOTION_LIBRARY_TMP ${LEAPMOTION_LIBRARY_TMP} CACHE INTERNAL "")
-	set(LEAPMOTION_FOUND TRUE)
+set(LeapMotion_FOUND FALSE)
+if (LEAPMOTION_LIBRARIES_TMP AND LEAPMOTION_INCLUDE_DIRS)
+	set(LEAPMOTION_LIBRARIES ${LEAPMOTION_LIBRARIES_TMP} CACHE STRING "Which Leap Motion library to link against")
+	set(LEAPMOTION_LIBRARIES_TMP ${LEAPMOTION_LIBRARIES_TMP} CACHE INTERNAL "")
+	set(LeapMotion_FOUND TRUE)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LeapMotion REQUIRED_VARS LEAPMOTION_LIBRARY LEAPMOTION_INCLUDE_DIR)
+find_package_handle_standard_args(LeapMotion REQUIRED_VARS LEAPMOTION_LIBRARIES LEAPMOTION_INCLUDE_DIRS)
 

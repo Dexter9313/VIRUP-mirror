@@ -3,7 +3,6 @@ PROJECT_URL="https://gitlab.com/Dexter9313/hydrogenvr"
 PROJECT_DESCRIPTION="A C++ lightweight 3D rendering engine that tightly integrates VR at its core. It is based on OpenGL, Qt, OpenVR and the Leap Motion SDK."
 PROJECT_MAINTAINER="Florian Cabot <florian.cabot@epfl.ch>"
 PROJECT_DIRECTORY=example
-PROJECT_ADDITIONAL_DEB_DEPENDENCIES=""
 PROJECT_CHECK_FORMAT=false
 PROJECT_CHECK_TIDY=false
 PROJECT_DOC=false

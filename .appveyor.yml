@@ -34,19 +34,21 @@ install:
     - IF NOT EXIST deps\ ( mkdir deps )
     - cd deps
     ############################################################################
-    # Install Engine Deps
+    # Install Engine Dependencies
     ############################################################################
-    - ..\ci\appveyor\install.bat
+    - ..\ci\appveyor\install_dependencies.bat
     ############################################################################
-    # Install Additional Project Deps
+    # Install Additional Project Dependencies
     ############################################################################
-    - ..\%PROJECT_DIRECTORY%\ci\appveyor\install.bat
+    - set USER_INSTALL=..\%PROJECT_DIRECTORY%\ci\appveyor\install_dependencies.bat
+    - IF NOT EXIST %USER_INSTALL% (set USER_INSTALL=..\ci\appveyor\install_dependencies.bat)
+    - .\%USER_INSTALL%
 
 cache:
-    - '%APPVEYOR_BUILD_FOLDER%\deps -> .appveyor.yml, **\install.bat'
+    - '%APPVEYOR_BUILD_FOLDER%\deps -> **\install_dependencies.bat'
 
 before_build:
-    - IF %APPVEYOR_REPO_TAG% == true (set VERSION=%APPVEYOR_REPO_TAG_NAME%) ELSE (set VERSION=snapshot-%APPVEYOR_BUILD_NUMBER%)
+    #- IF %APPVEYOR_REPO_TAG% == true (set VERSION=%APPVEYOR_REPO_TAG_NAME%) ELSE (set VERSION=snapshot-%APPVEYOR_BUILD_NUMBER%)
     - IF %APPVEYOR_REPO_TAG% == true (set HIDE_CONSOLE=1) ELSE (set HIDE_CONSOLE=0)
 
 build_script:
@@ -54,6 +56,7 @@ build_script:
     - mkdir build
     - cd build
     - cmake .. -G %GENERATOR%
+    - set /p VERSION=<PROJECT_VERSION
     - cmake --build . --config Release
     - cd %BINDIR%
     #- tests.exe
@@ -94,7 +97,8 @@ after_build:
     - cd ..
     - move data %RELEASE_DIR%
     - cd Release
-    - ..\..\%PROJECT_DIRECTORY%\ci\appveyor\before_archiving.bat
+    - set USER_BEFORE_ARCHIVING=..\..\%PROJECT_DIRECTORY%\ci\appveyor\before_archiving.bat
+    - IF EXIST %USER_BEFORE_ARCHIVING% (%USER_BEFORE_ARCHIVING%)
     - 7z a -tzip %RELEASE_DIR_NAME%.zip %RELEASE_DIR%
     - IF "%BUILD_TYPE%" == "64bit" (set ARCH=/DX64) ELSE (set ARCH=/DX86)
 
@@ -105,16 +109,11 @@ after_build:
     - appveyor DownloadFile %PYTHON_URL% -FileName python.exe
     - iscc.exe %ARCH% /DPROJECT_NAME=%PROJECT_NAME% /DPROJECT_MAINTAINER=%PROJECT_MAINTAINER% /DEXTERNAL_VERSION=%VERSION% /DPROJECT_URL=%PROJECT_URL% /DLICENSE=%APPVEYOR_BUILD_FOLDER%\LICENSE /DROOT_DIR=%RELEASE_DIR% /DVCREDIST13=%RELEASE_DIR%/../vcredist13.exe /DVCREDIST15=%RELEASE_DIR%/../vcredist15.exe /DPYTHONREDIST=%RELEASE_DIR%/../python.exe %APPVEYOR_BUILD_FOLDER%\innosetup\config.iss
     - move %APPVEYOR_BUILD_FOLDER%\innosetup\Output\setup.exe %APPVEYOR_BUILD_FOLDER%\innosetup\Output\%RELEASE_DIR_NAME%_setup.exe
+    # push artifacts to Gitlab
+    - IF %APPVEYOR_REPO_TAG% == true ( %APPVEYOR_BUILD_FOLDER%\ci\appveyor\deploy.bat )
+
 artifacts:
   - path: build\Release\*.zip
     name: zipfile
   - path: innosetup\Output\*.exe
     name: installer
-deploy:
-  provider: GitHub
-  auth_token:
-    secure: zl4QU+v4bBjyTAJkEVn7y1tBF63bC79DMH9rzcfYGMZnW8d1bDr8LWGHhNCrL44w
-  artifact: zipfile, installer
-  on:
-    branch: master                 # release from master branch only
-    appveyor_repo_tag: true        # deploy on tag push only

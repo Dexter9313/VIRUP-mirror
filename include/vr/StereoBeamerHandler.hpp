@@ -7,7 +7,7 @@
 
 #include <array>
 #include <iostream>
-#include <openvr.h>
+#include <openvr/openvr.h>
 
 #include "../PythonQtHandler.hpp"
 #include "Controller.hpp"

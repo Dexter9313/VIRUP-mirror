@@ -1,11 +1,10 @@
-[![Build Status](https://travis-ci.org/Dexter9313/HydrogenVR-mirror.svg?branch=master)](https://travis-ci.org/Dexter9313/HydrogenVR-mirror)
-[![Build status](https://ci.appveyor.com/api/projects/status/i44acm08ah869xdg/branch/master?svg=true)](https://ci.appveyor.com/project/Dexter9313/hydrogenvr-mirror/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/i44acm08ah869xdg/branch/master?svg=true)](https://ci.appveyor.com/project/Dexter9313/hydrogenvr/branch/master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b6520a9f88a14fa3b8aa9c23ac4411c3)](https://www.codacy.com/app/Dexter9313/HydrogenVR-mirror?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Dexter9313/HydrogenVR-mirror&amp;utm_campaign=Badge_Grade)
 
 # HydrogenVR
 
 A C++ lightweight 3D rendering engine that tightly integrates VR at its core. It is based on OpenGL, Qt, OpenVR and the Leap Motion SDK.
-This engine is used as a template right now, you have to write your code on top of it (but it's easy, follow the guide). This engine is not only a library but also provides CMake, Travis CI and Appveyor scripts to build and deploy your project, that's why it wouldn't be enough to only link to it.
+This engine is used as a template right now, you have to write your code on top of it (but it's easy, follow the guide). This engine is not only a library but also provides CMake, GitLab CI and Appveyor scripts to build and deploy your project, that's why it wouldn't be enough to only link to it.
 Strong OpenGL knowledge is required as the GLHandler class is merely a convenient wrapper you will use to draw. Most of the higher level concepts wrapped are close to the OpenGL low-level concepts (for example, a Mesh is only a struct containing GLuint pointing to vertex or element buffers).
 
 ## Documentation
@@ -52,7 +51,7 @@ For initial setup, make sure you :
 
 *  Write your own README.md (see bellow for informations to put in it)
 *  Copy build.conf.example as build.conf, then change variables values in build.conf accordingly.
-*  If you deploy on Github, add the API_KEY secure variable in the Travis CI project and replace the encrypted key in .appveyor.yml.
+*  Setup Continuous Integration following [this guide](https://gitlab.com/Dexter9313/hydrogenvr/-/wikis/tutorials/1-general-topics/9-continuous-integration).
 *  Create a project directory. We will call it "projectdir" in this README but you can name it whatever you want as long as build.conf is set accordingly. All your source code should be within your project directory. Don't change anything at root level unless specified as safe here, unless you want engine update problems (see data/ and example/ directories for an example project).
 *  Create a MainWin class in projectdir/include/MainWin.hpp that inherits from AbstractMainWin to draw. It can do nothing if you don't want to do anything (you only have to implement the pure virtual methods, but you can make them do nothing).
 *  Create a Launcher class in projectdir/include/Launcher.hpp that inherits from BaseLauncher to instanciate a Launcher. It can do nothing if you don't want to do anything.
@@ -62,7 +61,7 @@ For initial setup, make sure you :
 You can also :
 *  Add CMake dependencies in projectdir/cmake/Dependencies.cmake
 *  Add files to install with CMake install() in projectdir/cmake/Install.cmake
-*  Add a custom install script for Travis CI as projectdir/ci/travis/install.sh
+*  Add a custom install script for GitLab CI as projectdir/ci/gitlab-ci/install.sh
 *  Add a custom install script for Appveyor as projectdir/ci/appveyor/install.bat
 *  Add files to the final archive via a script for Appveyor as projectdir/ci/appveyor/before_archive.bat
 *  Add settings to the SettingsWidget constructor.
@@ -78,7 +77,7 @@ You can add HydrogenVR libraries to your project. Add them in projectdir/thirdpa
 
 ## Example releases
 
-You can see releases for Linux and Windows produced by the engine build system through Travis CI and Appveyor on Github : [HydrogenVR Releases](https://github.com/Dexter9313/HydrogenVR-mirror/releases).
+You can see releases for Linux and Windows produced by the engine build system through GitLab CI and Appveyor here : [HydrogenVR Releases](https://gitlab.com/Dexter9313/hydrogenvr/-/releases).
 
 ## Example of things that should be in your README
 

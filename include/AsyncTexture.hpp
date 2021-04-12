@@ -83,7 +83,8 @@ class AsyncTexture
 	// will override the file texture size to load more (interpolate) or less
 	// pixels
 	AsyncTexture(QString const& path, unsigned int width, unsigned int height,
-	             QColor const& defaultColor, bool sRGB = true);
+	             QColor const& defaultColor, bool sRGB = true,
+	             bool forbidUpsample = true);
 	bool isLoaded() const { return loaded; };
 	GLTexture const& getDefaultTexture() const { return defaultTex; };
 	GLTexture const& getTexture();

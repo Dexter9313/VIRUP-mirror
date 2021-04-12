@@ -57,7 +57,7 @@ AsyncTexture::AsyncTexture(QString const& path, QColor const& defaultColor,
 
 AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
                            unsigned int height, QColor const& defaultColor,
-                           bool sRGB)
+                           bool sRGB, bool forbidUpSample)
     : defaultTex(GLTexture::Tex2DProperties(1, 1, sRGB))
     , sRGB(sRGB)
     , averageColor(defaultColor)
@@ -75,11 +75,27 @@ AsyncTexture::AsyncTexture(QString const& path, unsigned int width,
 		return;
 	}
 
-	pbo = new GLPixelBufferObject(width, height);
-	unsigned char* data(pbo->getMappedData());
+	QImageReader imReader(path);
+	QSize size(imReader.size());
 
-	thread = new at::WorkerThread(path, data, width, height);
-	thread->start();
+	if(forbidUpSample
+	   && (width > static_cast<unsigned int>(size.width())
+	       || height > static_cast<unsigned int>(size.height())))
+	{
+		pbo = new GLPixelBufferObject(size);
+		unsigned char* data(pbo->getMappedData());
+
+		thread = new at::WorkerThread(path, data);
+		thread->start();
+	}
+	else
+	{
+		pbo = new GLPixelBufferObject(width, height);
+		unsigned char* data(pbo->getMappedData());
+
+		thread = new at::WorkerThread(path, data, width, height);
+		thread->start();
+	}
 }
 
 GLTexture const& AsyncTexture::getTexture()

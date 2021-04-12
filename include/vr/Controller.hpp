@@ -3,7 +3,7 @@
 
 #include <QThread>
 #include <QVector2D>
-#include <openvr.h>
+#include <openvr/openvr.h>
 
 #include "../BasicCamera.hpp"
 #include "../utils.hpp"

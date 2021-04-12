@@ -38,13 +38,16 @@ void GLComputeShader::exec(
 	{
 		textures[i].first->use(GL_TEXTURE0 + i);
 
-		GLint format;
-		GLHandler::glf().glGetTexLevelParameteriv(
-		    textures[i].first->getGLTarget(), 0, GL_TEXTURE_INTERNAL_FORMAT,
-		    &format);
-		GLHandler::glf().glBindImageTexture(
-		    i, textures[i].first->getGLTexture(), 0, GL_FALSE, 0,
-		    textures[i].second, format);
+		if(textures[i].second != DataAccessMode::SAMPLER)
+		{
+			GLint format;
+			GLHandler::glf().glGetTexLevelParameteriv(
+			    textures[i].first->getGLTarget(), 0, GL_TEXTURE_INTERNAL_FORMAT,
+			    &format);
+			GLHandler::glf().glBindImageTexture(
+			    i, textures[i].first->getGLTexture(), 0, GL_FALSE, 0,
+			    textures[i].second, format);
+		}
 	}
 	std::array<unsigned int, 3> dispatchSize{};
 	for(unsigned int i(0); i < 3; ++i)

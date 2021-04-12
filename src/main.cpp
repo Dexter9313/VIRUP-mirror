@@ -13,6 +13,13 @@
 
 int main(int argc, char* argv[])
 {
+	if(argc == 2 && std::string(argv[1]) == "--version")
+	{
+		std::cout << PROJECT_NAME << " version " << PROJECT_VERSION
+		          << std::endl;
+		return EXIT_SUCCESS;
+	}
+
 	// setup logging
 	Logger::init();
 
@@ -34,6 +41,10 @@ int main(int argc, char* argv[])
 	    QCoreApplication::translate("main", "Read .ini config from <file>."),
 	    "file");
 	parser.addOption(config);
+	QCommandLineOption version(
+	    "version",
+	    QCoreApplication::translate("main", "Display version information."));
+	parser.addOption(version);
 	parser.process(a);
 
 	// set settings
@@ -98,7 +109,7 @@ int main(int argc, char* argv[])
 		launcher.init();
 		if(launcher.exec() == QDialog::Rejected)
 		{
-			return 1;
+			return EXIT_SUCCESS;
 		}
 	}
 

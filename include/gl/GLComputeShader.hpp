@@ -36,9 +36,10 @@ class GLComputeShader : public GLShaderProgram
   public:
 	enum DataAccessMode
 	{
-		R  = GL_READ_ONLY,
-		W  = GL_WRITE_ONLY,
-		RW = GL_READ_WRITE
+		SAMPLER = 0,
+		R       = GL_READ_ONLY,
+		W       = GL_WRITE_ONLY,
+		RW      = GL_READ_WRITE,
 	};
 
 	explicit GLComputeShader(QString const& fileName,
