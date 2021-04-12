@@ -58,6 +58,21 @@ void TreeMethodLOD::init(std::string const& gasPath,
                          std::string const& starsPath,
                          std::string const& darkMatterPath)
 {
+	if(!gasPath.empty())
+	{
+		if(gasPath.find(".dat") == std::string::npos && gasTree == nullptr)
+		{
+			loadOctreeFromFile(gasPath, &gasTree, "Gas", shaderProgram);
+		}
+		else
+		{
+			dustModel = new VolumetricModel(gasPath.c_str());
+		}
+	}
+	if(!starsPath.empty() && starsTree == nullptr)
+	{
+		loadOctreeFromFile(starsPath, &starsTree, "Stars", shaderProgram);
+	}
 	if(!darkMatterPath.empty())
 	{
 		if(darkMatterPath.find(".dat") == std::string::npos
@@ -72,26 +87,6 @@ void TreeMethodLOD::init(std::string const& gasPath,
 			hiiModel->initMesh();
 		}
 	}
-	if(!gasPath.empty())
-	{
-		if(gasPath.find(".dat") == std::string::npos && gasTree == nullptr)
-		{
-			loadOctreeFromFile(gasPath, &gasTree, "Gas", shaderProgram);
-		}
-		else
-		{
-			dustModel = new VolumetricModel(gasPath.c_str());
-			if(hiiModel != nullptr)
-			{
-				hiiModel->initOcclusionModel(gasPath.c_str());
-			}
-		}
-	}
-	if(!starsPath.empty() && starsTree == nullptr)
-	{
-		loadOctreeFromFile(starsPath, &starsTree, "Stars", shaderProgram);
-	}
-
 	// preload data to fill VRAM giving priority to top levels
 	uint64_t max(OctreeLOD::getMemLimit());
 
@@ -286,7 +281,7 @@ void TreeMethodLOD::render(Camera const& camera, QMatrix4x4 const& model,
 	GLHandler::endTransparent();
 	if(hiiModel != nullptr)
 	{
-		hiiModel->render(camera, model, campos);
+		hiiModel->render(camera, model, campos, dustModel);
 	}
 
 	(void) rendered;
