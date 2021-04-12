@@ -49,6 +49,8 @@ float density(vec3 pos, sampler3D dusttex, mat4 dusttransform)
 
 vec3 att(float NHval)
 {
+	// g / cm^3 -> atom / cm^3
+	NHval /= 1.6726219e-24;
 	// atom / cm^3 * (3.086e+21 * kpc) => atom /
 	// cm^3 * cm => atom / cm^2
 	// 1e-22 constants are in cm^2 / atom => dimensionless (mag)

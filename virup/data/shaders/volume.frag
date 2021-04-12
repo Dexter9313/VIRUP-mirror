@@ -57,7 +57,7 @@ void main()
 	//float fragAlpha   = i.a;
 	//fragAlpha = density(vec3(f_position.xy, 0.0) + vec3(0.5), volumetex) / 40.0;
 
-	outColor = vec4(color * i.rgb * 1.0e14, 1.0); // 1e14 hardcoded
+	outColor = vec4(color * i.rgb * 4.0e26, 1.0); // 1e14 hardcoded
 	//outColor = vec4(10000.0 * color, 1.0);
 }
 // 255 0 98
