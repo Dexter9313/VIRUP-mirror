@@ -69,7 +69,7 @@ VIRUPSettings::VIRUPSettings(QWidget* parent)
 	editGroup("graphics");
 	addUIntSetting("texmaxsize", 4, tr("Textures max size (x2048)"), 1, 8);
 	addUIntSetting("gentexload", 3, tr("Texture generation GPU load"), 1, 4);
-	addUIntSetting("atmoquality", 6, tr("Atmosphere rendering quality"), 1, 8);
+	addUIntSetting("atmoquality", 6, tr("Atmosphere rendering quality"), 1, 5);
 	addUIntSetting("maxlightcasters", 2,
 	               tr("Maximum number of light casters per object"), 1, 2);
 
